@@ -97,6 +97,23 @@ namespace
         });
     }
 
+    void OnClose(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) {
+            return;
+        }
+
+        if (!g_ui.RequestMenu(kViewId, false)) {
+            request.Reject("close-failed", "OSF UI could not queue the menu close request.");
+            return;
+        }
+
+        (void)request.Respond("console.command-center.closeResult", OSFUI::API::Json{
+            { "ok", true }
+        });
+    }
+
     void OnSFSEMessage(SFSE::MessagingInterface::Message* message)
     {
         if (message->type != SFSE::MessagingInterface::kPostLoad) {
@@ -108,6 +125,7 @@ namespace
 
         g_ui.RegisterRequest("console.command-center.ping", &OnPing, nullptr);
         g_ui.RegisterRequest("console.command-center.execute", &OnExecute, nullptr);
+        g_ui.RegisterRequest("console.command-center.close", &OnClose, nullptr);
         (void)g_ui.RegisterView(kViewId);
     }
 }

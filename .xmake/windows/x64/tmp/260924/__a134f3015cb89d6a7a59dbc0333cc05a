@@ -1,5 +1,0 @@
-{
-    files = {
-        [[build\windows\x64\release\ConsoleCommandCenter.dll]]
-    }
-}

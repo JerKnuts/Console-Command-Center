@@ -31,6 +31,10 @@ type ExecuteReply = {
   command: string;
 };
 
+type CloseReply = {
+  ok: boolean;
+};
+
 const app = document.querySelector('#app');
 if (!(app instanceof HTMLElement)) throw new Error('Missing #app element');
 
@@ -39,7 +43,7 @@ const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '0.2.3';
+const CONSOLE_COMMAND_CENTER_VERSION = '0.2.7';
 const LATEST_STARFIELD_VERSION = '1.16.244';
 
 let activeView: ViewMode = 'recent';
@@ -693,8 +697,22 @@ commandList.addEventListener('input', (event) => {
   if (input?.dataset.commandInput) updatePreview(input.dataset.commandInput);
 });
 
+async function closeCurrentView(): Promise<void> {
+  if (!window.osfui?.call) {
+    setStatus('OSF UI native request API is unavailable.', 'error');
+    return;
+  }
+
+  try {
+    const reply = await window.osfui.call<CloseReply>('console.command-center.close');
+    if (!reply?.ok) throw new Error('Native backend did not confirm the close request');
+  } catch (error) {
+    setStatus(`Unable to close Console Command Center: ${error instanceof Error ? error.message : String(error)}`, 'error');
+  }
+}
+
 closeView.addEventListener('click', () => {
-  if (!window.osfui?.action?.('close')) setStatus('OSF UI bridge is unavailable.', 'error');
+  void closeCurrentView();
 });
 
 confirmCancel.addEventListener('click', () => {
@@ -725,7 +743,7 @@ document.addEventListener('keydown', (event) => {
     } else if (openCaution) {
       closeCautionPopovers();
     } else {
-      window.osfui?.action?.('close');
+      void closeCurrentView();
     }
   }
   if (event.key === '/' && activeView !== 'custom' && document.activeElement !== search) {

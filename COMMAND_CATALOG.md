@@ -1,6 +1,6 @@
 # Console Command Center — Command Catalog
 
-Version: 0.2.2
+Version: 0.2.7
 
 Curated commands: 75
 
@@ -27,18 +27,19 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 | Restore Normal Speech Challenges | `setforcespeechchallengealwayssucceed 0` | Normal | Untested |
 | Clear Faction Bounty | `player.paycrimegold 0 0 {factionId}` | Caution | Untested |
 
-## Player (10)
+## Player (11)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
-| Add Experience | `player.modav experience {amount}` | Caution | Untested |
+| Add Experience | `player.modav experience {amount}` | Caution | Verified |
 | Set Player Level | `player.setlevel {level}` | Caution | Untested |
 | Set Carry Weight | `player.setav carryweight {value}` | Normal | Untested |
-| Modify Carry Weight | `player.modav carryweight {amount}` | Caution | Untested |
-| Set Movement Speed | `player.setav speedmult {value}` | Caution | Untested |
-| Set Max Health | `player.setav health {value}` | Caution | Untested |
-| Open Full Character Creator | `showlooksmenu player 1` | Caution | Untested |
-| Open Appearance Editor | `showlooksmenu player 2` | Normal | Untested |
+| Adjust Carry Weight (+/-) | `player.modav carryweight {amount}` | Caution | Verified |
+| Change Player Size | `player.setscale {scale}` | Caution | Untested |
+| Set Movement Speed | `player.setav speedmult {value}` | Caution | Verified |
+| Set Max Health | `player.setav health {value}` | Caution | Verified |
+| Open Full Character Creator (Advanced) | `showlooksmenu player 1` | Danger | Verified |
+| Open Appearance Editor | `showlooksmenu player 2` | Normal | Verified |
 | Teleport Player to Reference | `player.moveto {refId}` | Caution | Untested |
 | Set Player Position Axis | `player.setpos {axis} {value}` | Caution | Untested |
 
@@ -50,11 +51,11 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 | Add Digipicks | `player.additem 0000000A {amount}` | Normal | Verified |
 | Add Med Packs | `player.additem 0000ABF9 {amount}` | Normal | Verified |
 | Add Ship Parts | `player.additem 0003FB19 {amount}` | Normal | Verified |
-| Add Item by Form ID | `player.additem {formId} {amount}` | Caution | Untested |
-| Remove Item by Form ID | `player.removeitem {formId} {amount}` | Danger | Untested |
+| Add Item by Form ID | `player.additem {formId} {amount}` | Caution | Verified |
+| Remove Item by Form ID | `player.removeitem {formId} {amount}` | Danger | Verified |
 | Equip Item by Form ID | `player.equipitem {formId}` | Caution | Untested |
 | Unequip Item by Form ID | `player.unequipitem {formId}` | Normal | Untested |
-| Drop Item by Form ID | `player.drop {formId} {amount}` | Caution | Untested |
+| Drop Item by Form ID | `player.drop {formId} {amount}` | Caution | Verified |
 | Spawn Object / NPC by Base ID | `player.placeatme {baseId} {amount}` | Danger | Untested |
 
 ## Skills (6)
@@ -75,17 +76,16 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 | Toggle Free Camera | `tfc` | Normal | Verified |
 | Enter Free Camera + Freeze | `tfc 1` | Caution | Verified |
 | Toggle HUD / Interface | `tm` | Caution | Untested |
-| Set Free Camera Speed | `sucsm {speed}` | Normal | Untested |
-| Clear Screen Blood | `csb` | Normal | Untested |
+| Set Free Camera Speed | `sucsm {speed}` | Normal | Verified |
+| Clear Screen Blood | `ClearScreenBlood` | Normal | Untested |
 
-## World (9)
+## World (8)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Toggle Game Pause | `tgp` | Normal | Untested |
-| Set Game Speed | `sgtm {value}` | Caution | Untested |
+| Set Game Speed | `sgtm {value}` | Caution | Verified |
 | Pass Time | `passtime {hours}` | Normal | Verified |
-| Open Wait / Pass Time Menu | `showmenu sleepwaitmenu` | Normal | Untested |
 | Set Local Gravity Scale | `setgravityscale {value}` | Caution | Untested |
 | Reveal Planet Map Markers | `tmm 1` | Danger | Untested |
 | Teleport to Cell | `coc {cellName}` | Danger | Untested |
@@ -104,7 +104,7 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 | Enable Reference | `{refId}.enable` | Caution | Untested |
 | Unlock Door / Container by Reference ID | `{refId}.unlock` | Danger | Untested |
 | Lock Door / Container by Reference ID | `{refId}.lock {level}` | Caution | Untested |
-| Set Reference Scale | `{refId}.setscale {scale}` | Caution | Untested |
+| Set Target / Reference Scale | `{refId}.setscale {scale}` | Caution | Untested |
 | Set Reference Ownership | `{refId}.setownership` | Caution | Untested |
 | Move Reference Along Axis | `{refId}.modpos {axis} {amount}` | Caution | Untested |
 | Rotate Reference Along Axis | `{refId}.modangle {axis} {degrees}` | Caution | Untested |

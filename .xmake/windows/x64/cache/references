@@ -1,6 +1,0 @@
-{
-    packages = {
-        [[C:\Users\knuts\AppData\Local\.xmake\packages\s\spdlog\v1.16.0\1053dccb2da94316b3bef3cb1db15374]],
-        [[C:\Users\knuts\AppData\Local\.xmake\packages\n\nlohmann_json\v3.12.0\ab8414047c424750bdc9d7a0ff7afdde]]
-    }
-}
