@@ -1,0 +1,9 @@
+{
+    mtimes = {
+        ["xmake.lua"] = 1790298556,
+        ["native\\lib\\commonlibsf\\lib\\commonlib-shared\\xmake.lua"] = 1790298587,
+        ["native\\lib\\commonlibsf\\xmake.lua"] = 1790298584
+    },
+    options = { },
+    recheck = false
+}

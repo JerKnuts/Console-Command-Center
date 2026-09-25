@@ -1,0 +1,18 @@
+Console Command Center - Native TCL smoke test
+
+Extract this ZIP over the fresh console-command-center project and overwrite files.
+
+Then run:
+  npm run build
+  npm run doctor
+  npm run dev:game
+
+In MO2, disable/remove all older Console Command Center test mods before enabling this fresh deployment.
+There should be no ESM/Papyrus backend in this test.
+
+In game:
+1. Open Console Command Center.
+2. Confirm the panel says Native backend ready / ConsoleCommandCenter.dll.
+3. Click TEST TOGGLE COLLISION (TCL).
+4. If it reports Native backend executed: tcl, close the menu and try walking through a wall.
+5. Open the menu and click it again to restore collision.

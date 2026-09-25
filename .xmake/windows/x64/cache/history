@@ -1,0 +1,11 @@
+{
+    cmdlines = {
+        [[xmake build -P "C:\\Users\\knuts\\Desktop\\Starfield Modding\\console-command-center"]],
+        [[xmake build -P "C:\\Users\\knuts\\Desktop\\Starfield Modding\\console-command-center"]],
+        [[xmake build -P "C:\\Users\\knuts\\Desktop\\Starfield Modding\\console-command-center"]],
+        [[xmake build -P "C:\\Users\\knuts\\Desktop\\Starfield Modding\\console-command-center"]],
+        [[xmake build -P "C:\\Users\\knuts\\Desktop\\Starfield Modding\\console-command-center"]],
+        [[xmake build -P "C:\\Users\\knuts\\Desktop\\Starfield Modding\\console-command-center"]],
+        [[xmake build -P "C:\\Users\\knuts\\Desktop\\Starfield Modding\\console-command-center"]]
+    }
+}

@@ -1,0 +1,27 @@
+# Node
+node_modules/
+
+# Build/generated output
+build/
+dist/
+mod/
+
+# OSF UI local/generated files
+.osfui/
+
+# External dependency
+native/lib/commonlibsf/
+
+# Logs
+*.log
+
+# Packaged releases
+*.zip
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# IDE/editor local settings
+.vscode/
+.idea/

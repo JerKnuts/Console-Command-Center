@@ -1,0 +1,127 @@
+{
+    find_program = {
+        dotnet = false,
+        ["C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.26100.0\\x64\\rc.exe"] = [[c:\program files (x86)\windows kits\10\bin\10.0.26100.0\x64\rc.exe]],
+        git = [[C:\Program Files\Git\cmd\git.exe]],
+        ["7z"] = [[C:\Program Files\xmake\winenv\bin\7z]],
+        ["cl.exe"] = [[C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\bin\HostX64\x64\cl.exe]],
+        nim = false,
+        ["C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\cl.exe"] = [[c:\program files (x86)\microsoft visual studio\2022\buildtools\vc\tools\msvc\14.44.35207\bin\hostx64\x64\cl.exe]],
+        gzip = false,
+        zig = false,
+        curl = [[C:\Program Files\xmake\winenv\bin\curl]]
+    },
+    find_program_msvc_arch_x64_plat_windows_checktoolsh = {
+        ["link.exe"] = [[C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\bin\HostX64\x64\link.exe]]
+    },
+    find_program_msvc_arch_x64_plat_windows_checktoolcc = {
+        ["cl.exe"] = [[C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\bin\HostX64\x64\cl.exe]]
+    },
+    find_programver_fetch_package_system = {
+        ["C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake"] = "3.31.6-msvc6",
+        ["C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\Ninja\\ninja"] = "1.12.1"
+    },
+    ["core.tools.rc.has_flags"] = {
+        ["c:\\program files (x86)\\windows kits\\10\\bin\\10.0.26100.0\\x64\\rc.exe_"] = {
+            ["-d"] = true,
+            ["-c"] = true,
+            ["-g2"] = true,
+            ["-w"] = true,
+            ["-x"] = true,
+            ["-v"] = true,
+            ["-u"] = true,
+            ["-g"] = true,
+            ["-i"] = true,
+            ["-gn"] = true,
+            ["-n"] = true,
+            ["-l"] = true,
+            ["-nologo"] = true,
+            ["-fm"] = true,
+            ["-8"] = true,
+            ["-ln"] = true,
+            ["-sl"] = true,
+            ["-g1"] = true,
+            ["-q"] = true,
+            ["-r"] = true,
+            ["-fo"] = true,
+            ["-y"] = true
+        }
+    },
+    find_program_msvc_arch_x64_plat_windows_checktoolld = {
+        ["link.exe"] = [[C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\bin\HostX64\x64\link.exe]]
+    },
+    ["lib.detect.has_flags"] = {
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/permissive-"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/wd4201"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/fp:except-"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/diagnostics:caret"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxflags_-nologo_-std:c++23preview"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/fp:contract"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/bigobj"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxflags_-nologo_cl_external_includedir"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/Zc:preprocessor"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/wd4200"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/EHsc"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/external:W0"] = true,
+        ["windows_x64_c:\\program files (x86)\\windows kits\\10\\bin\\10.0.26100.0\\x64\\rc.exe__mrc_mrcflags__-nologo"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/Zc:templateScope"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/guard:cf-"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/cgthreads8"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/wd4324"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxflags_-nologo_cl_sourceDependencies"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/Zc:enumTypes"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxxflags_-nologo_/we4715"] = true,
+        ["windows_x64_c:\\program files (x86)\\microsoft visual studio\\2022\\buildtools\\vc\\tools\\msvc\\14.44.35207\\bin\\hostx64\\x64\\cl.exe__cxx_cxflags_-nologo_-std:c++23"] = false
+    },
+    find_program_fetch_package_system = {
+        ninja = [[C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja]],
+        cmake = [[C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake]]
+    },
+    find_program_fetch_package_xmake = {
+        ninja = false,
+        cmake = false
+    },
+    ["detect.sdks.find_dotnet"] = {
+        dotnet = false
+    },
+    find_package_windows_x64_fetch_package_xmake = {
+        ["xmake::spdlog_1053dccb2da94316b3bef3cb1db15374_release_v1.16.0_external"] = {
+            license = "MIT",
+            linkdirs = {
+                [[C:\Users\knuts\AppData\Local\.xmake\packages\s\spdlog\v1.16.0\1053dccb2da94316b3bef3cb1db15374\lib]]
+            },
+            links = {
+                "spdlog"
+            },
+            defines = {
+                "SPDLOG_COMPILED_LIB",
+                "SPDLOG_USE_STD_FORMAT",
+                "SPDLOG_WCHAR_TO_UTF8_SUPPORT"
+            },
+            sysincludedirs = {
+                [[C:\Users\knuts\AppData\Local\.xmake\packages\s\spdlog\v1.16.0\1053dccb2da94316b3bef3cb1db15374\include]]
+            },
+            static = true,
+            version = "v1.16.0",
+            libfiles = {
+                [[C:\Users\knuts\AppData\Local\.xmake\packages\s\spdlog\v1.16.0\1053dccb2da94316b3bef3cb1db15374\lib\spdlog.lib]]
+            }
+        },
+        ["xmake::nlohmann_json_ab8414047c424750bdc9d7a0ff7afdde_release_v3.12.0_external"] = {
+            sysincludedirs = {
+                [[C:\Users\knuts\AppData\Local\.xmake\packages\n\nlohmann_json\v3.12.0\ab8414047c424750bdc9d7a0ff7afdde\include]]
+            },
+            version = "v3.12.0",
+            license = "MIT"
+        }
+    },
+    find_program_msvc_arch_x64_plat_windows_checktoolcxx = {
+        ["cl.exe"] = [[C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\bin\HostX64\x64\cl.exe]]
+    },
+    find_program_msvc_arch_x64_plat_windows_checktoolmrc = {
+        ["rc.exe"] = [[C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\rc.exe]]
+    },
+    find_program_msvc_arch_x64_plat_windows_checktoolar = {
+        ["link.exe"] = [[C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\bin\HostX64\x64\link.exe]]
+    }
+}
