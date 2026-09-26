@@ -108,7 +108,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['ai', 'npc', 'toggle'],
     warning: 'This affects NPC behavior globally. Run the command again to restore AI processing.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'kill-hostiles',
@@ -119,7 +119,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['kill', 'hostile', 'combat'],
     warning: 'This can kill nearby hostile actors immediately, including enemies involved in scripted encounters.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'kill-all-nearby',
@@ -178,33 +178,21 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['xp', 'experience', 'level', 'perk points'],
     warning: 'Large XP amounts can cause many levels to process at once. Make a save first.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'set-level',
-    title: 'Set Player Level',
+    title: 'Increase Player Level',
     category: 'Player',
-    description: 'Set the player level directly to the chosen value.',
+    description: 'Raise the player directly to the chosen level. Starfield does not allow this command to lower your level.',
     command: 'player.setlevel {level}',
     inputs: [
-      { key: 'level', label: 'Level', type: 'number', defaultValue: 10, min: 1, step: 1 },
+      { key: 'level', label: 'New Level', type: 'number', defaultValue: 10, min: 1, step: 1, hint: 'Can only increase level; reload an earlier save to undo' },
     ],
-    tags: ['level', 'progression'],
-    warning: 'Directly setting level can bypass normal XP progression and may not behave like earning levels naturally.',
+    tags: ['level', 'progression', 'increase'],
+    warning: 'This is effectively one-way on the current save: Starfield refuses requests below your current level. It also bypasses normal XP progression, so save first and reload if you need to undo it.',
     risk: 'caution',
-    testStatus: 'untested',
-  },
-  {
-    id: 'carry-weight',
-    title: 'Set Carry Weight',
-    category: 'Player',
-    description: 'Set the player carry-weight actor value to an exact number.',
-    command: 'player.setav carryweight {value}',
-    inputs: [
-      { key: 'value', label: 'Carry Weight', type: 'number', defaultValue: 1000, min: 1, step: 1 },
-    ],
-    tags: ['carry', 'weight', 'mass'],
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'modify-carry-weight',
@@ -227,12 +215,12 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Resize the player character only. This is different from Set Target / Reference Scale. 1 is the normal scale.',
     command: 'player.setscale {scale}',
     inputs: [
-      { key: 'scale', label: 'Scale', type: 'number', defaultValue: 1, min: 0.1, max: 3, step: 0.05 },
+      { key: 'scale', label: 'Scale', type: 'number', defaultValue: 1, min: 0.1, max: 3, step: 0.05, hint: 'Default: 1' },
     ],
     tags: ['scale', 'size', 'height', 'player'],
     warning: 'Non-default player scale can affect camera position, animation alignment, collision, and interactions. Use 1 to restore normal scale.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'movement-speed',
@@ -241,12 +229,12 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Set the player movement-speed multiplier. 100 is the normal baseline.',
     command: 'player.setav speedmult {value}',
     inputs: [
-      { key: 'value', label: 'Speed Multiplier', type: 'number', defaultValue: 100, min: 1, max: 1000, step: 1 },
+      { key: 'value', label: 'Speed Multiplier', type: 'number', defaultValue: 100, min: 1, max: 1000, step: 1, hint: 'Default: 100' },
     ],
     tags: ['speed', 'movement'],
     warning: 'Extreme values can make movement difficult to control. Use 100 to restore the normal baseline.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'max-health',
@@ -260,7 +248,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['health', 'actor value'],
     warning: 'This directly changes a saved player actor value.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'character-creator-full',
@@ -292,22 +280,22 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['teleport', 'moveto', 'reference', 'npc'],
     warning: 'Teleporting to an arbitrary reference can place you inside geometry, in unloaded areas, or in dangerous locations.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'set-player-position-axis',
-    title: 'Set Player Position Axis',
+    title: 'Set Player Coordinate Axis',
     category: 'Player',
-    description: 'Set the player position on a single X, Y, or Z axis.',
+    description: 'Set the player to an absolute coordinate on a single X, Y, or Z axis. This is not a relative movement amount.',
     command: 'player.setpos {axis} {value}',
     inputs: [
       { key: 'axis', label: 'Axis', type: 'text', defaultValue: 'x', pattern: AXIS_PATTERN, hint: 'x, y, or z' },
-      { key: 'value', label: 'Position', type: 'number', defaultValue: 0, step: 0.1 },
+      { key: 'value', label: 'Coordinate', type: 'number', placeholder: '5', step: 0.1, hint: 'Absolute coordinate; even small values can move you a long way' },
     ],
-    tags: ['position', 'movement', 'axis', 'spacewalk'],
-    warning: 'Setting coordinates directly can move the player into geometry, outside a cell, or into empty space.',
+    tags: ['position', 'coordinate', 'movement', 'axis', 'spacewalk', 'setpos'],
+    warning: 'This sets an absolute coordinate, not an offset. Even values around 15 can move the player a surprising distance vertically. Save first and enter the value deliberately.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
 
   // INVENTORY
@@ -382,12 +370,12 @@ export const COMMANDS: CommandDefinition[] = [
     command: 'player.removeitem {formId} {amount}',
     tags: ['item', 'remove', 'formid', 'inventory'],
     inputs: [
-      hexInput('formId', 'Form ID', '0000000F'),
+      hexInput('formId', 'Form ID', '0000000F', 'Find inventory Form IDs with player.showinventory in the normal console'),
       { key: 'amount', label: 'Amount', type: 'number', defaultValue: 1, min: 1, step: 1 },
     ],
     warning: 'Removing quest items or scripted items can break quests or inventory scripts.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'equip-item',
@@ -396,10 +384,10 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Equip an item on the player. If the item is missing, the command may add it.',
     command: 'player.equipitem {formId}',
     tags: ['equip', 'item', 'weapon', 'armor'],
-    inputs: [hexInput('formId', 'Form ID', '00228829')],
+    inputs: [hexInput('formId', 'Form ID', '00228829', 'Find inventory Form IDs with player.showinventory in the normal console')],
     warning: 'Use an equippable item Form ID. Some unusual or scripted equipment can behave unexpectedly.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'unequip-item',
@@ -408,8 +396,8 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Unequip a specific item from the player.',
     command: 'player.unequipitem {formId}',
     tags: ['unequip', 'item', 'weapon', 'armor'],
-    inputs: [hexInput('formId', 'Form ID', '00228829')],
-    testStatus: 'untested',
+    inputs: [hexInput('formId', 'Form ID', '00228829', 'Find inventory Form IDs with player.showinventory in the normal console')],
+    testStatus: 'verified',
   },
   {
     id: 'drop-item',
@@ -419,12 +407,12 @@ export const COMMANDS: CommandDefinition[] = [
     command: 'player.drop {formId} {amount}',
     tags: ['drop', 'item', 'inventory'],
     inputs: [
-      hexInput('formId', 'Form ID', '0000000F'),
+      hexInput('formId', 'Form ID', '0000000F', 'Find inventory Form IDs with player.showinventory in the normal console'),
       { key: 'amount', label: 'Amount', type: 'number', defaultValue: 1, min: 1, step: 1 },
     ],
     warning: 'Do not use this on quest items or items you cannot safely recover.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'spawn-by-base-id',
@@ -439,7 +427,7 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     warning: 'This creates new instances. Spawning unique NPCs can create duplicates and spawning many objects can destabilize or crash the game.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
 
   // SKILLS / POWERS / EFFECTS
@@ -453,7 +441,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('formId', 'Form ID', '002C59D9')],
     warning: 'Adding progression records without normal prerequisites may produce unusual progression states.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'remove-perk',
@@ -465,7 +453,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('formId', 'Form ID', '002C59D9')],
     warning: 'Removing progression records can create inconsistent character progression. Make a save first.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'all-powers',
@@ -557,9 +545,9 @@ export const COMMANDS: CommandDefinition[] = [
     command: 'sucsm {speed}',
     tags: ['camera', 'photo', 'speed', 'sucsm'],
     inputs: [
-      { key: 'speed', label: 'Camera Speed', type: 'number', defaultValue: 2, min: 0.1, max: 100, step: 0.1 },
+      { key: 'speed', label: 'Camera Speed', type: 'number', defaultValue: 2, min: 0.1, max: 100, step: 0.1, hint: 'Default: 2' },
     ],
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'clear-screen-blood',
@@ -589,7 +577,7 @@ export const COMMANDS: CommandDefinition[] = [
     command: 'sgtm {value}',
     tags: ['time', 'speed', 'slow motion'],
     inputs: [
-      { key: 'value', label: 'Multiplier', type: 'number', defaultValue: 1, min: 0.01, max: 10, step: 0.01 },
+      { key: 'value', label: 'Multiplier', type: 'number', defaultValue: 1, min: 0.01, max: 10, step: 0.01, hint: 'Default: 1' },
     ],
     warning: 'Very low or high multipliers can make the game difficult to control. Use 1 to restore normal speed.',
     risk: 'caution',
@@ -606,20 +594,6 @@ export const COMMANDS: CommandDefinition[] = [
       { key: 'hours', label: 'Hours', type: 'number', defaultValue: 1, min: 1, max: 1000, step: 1 },
     ],
     testStatus: 'verified',
-  },
-  {
-    id: 'gravity-scale',
-    title: 'Set Local Gravity Scale',
-    category: 'World',
-    description: 'Change local gravity. 1 is a normal Earth-like scale; 0 creates zero gravity.',
-    command: 'setgravityscale {value}',
-    tags: ['gravity', 'zero g', 'world'],
-    inputs: [
-      { key: 'value', label: 'Gravity Scale', type: 'number', defaultValue: 1, min: 0, max: 10, step: 0.05 },
-    ],
-    warning: 'Changing gravity can affect movement and physics. Restore a sensible value before continuing normal play.',
-    risk: 'caution',
-    testStatus: 'untested',
   },
   {
     id: 'show-map-markers',
@@ -682,7 +656,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('refId', 'Reference ID', '000BDA6A')],
     warning: 'Use a Reference ID, not a Base ID. Moving quest actors can trigger or disrupt scripted scenes.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'kill-ref',
@@ -694,7 +668,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('refId', 'Reference ID', '000BDA6A')],
     warning: 'Killing quest or unique actors can break quests and scripted scenes. Essential actors may only be incapacitated.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'resurrect-ref',
@@ -706,7 +680,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('refId', 'Reference ID', '000BDA6A')],
     warning: 'Resurrecting unique or quest actors can produce duplicated state, missing scripts, or broken quest logic.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'recycle-ref',
@@ -718,7 +692,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('refId', 'Reference ID', '000BDA6A')],
     warning: 'RecycleActor can reset inventory, state, placement, and script-related data. Never use it casually on important NPCs.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'disable-ref',
@@ -730,7 +704,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('refId', 'Reference ID', '00000000')],
     warning: 'Record the Reference ID before disabling anything. Disabling quest actors or objects can block progression.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'enable-ref',
@@ -742,7 +716,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('refId', 'Reference ID', '00000000')],
     warning: 'Use the exact Reference ID for the previously disabled object or actor.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'unlock-ref',
@@ -754,7 +728,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('refId', 'Reference ID', '00000000')],
     warning: 'Quest-locked doors and scripted locks may be intentional. Forcing them open can bypass triggers or break quest flow.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'lock-ref',
@@ -769,7 +743,7 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     warning: 'Locking quest-critical doors or containers can interfere with progression.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'set-ref-scale',
@@ -780,11 +754,11 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['scale', 'npc', 'object', 'reference'],
     inputs: [
       hexInput('refId', 'Reference ID', '00000000'),
-      { key: 'scale', label: 'Scale', type: 'number', defaultValue: 1, min: 0.1, max: 10, step: 0.1 },
+      { key: 'scale', label: 'Scale', type: 'number', defaultValue: 1, min: 0.1, max: 10, step: 0.1, hint: 'Default: 1' },
     ],
     warning: 'Extreme scales can cause collision, animation, or interaction problems.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'set-ref-ownership',
@@ -796,7 +770,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('refId', 'Reference ID', '00000000')],
     warning: 'Changing ownership can affect theft/crime behavior and scripted objects.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'move-ref-axis',
@@ -812,7 +786,7 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     warning: 'Moving scripted or structural references can create visual, collision, or quest problems.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'rotate-ref-axis',
@@ -828,7 +802,7 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     warning: 'Rotating scripted or structural references can create visual, collision, or quest problems.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'add-item-mod',

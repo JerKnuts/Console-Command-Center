@@ -1,6 +1,6 @@
 {
   "name": "console-command-center",
-  "version": "0.2.7",
+  "version": "0.2.11",
   "private": true,
   "type": "module",
   "scripts": {

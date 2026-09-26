@@ -43,7 +43,7 @@ const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '0.2.7';
+const CONSOLE_COMMAND_CENTER_VERSION = '0.2.10';
 const LATEST_STARFIELD_VERSION = '1.16.244';
 
 let activeView: ViewMode = 'recent';
@@ -95,7 +95,7 @@ app.innerHTML = `
           </div>
           <label class="search-wrap" id="search-wrap">
             <span class="osf-eyebrow">SEARCH</span>
-            <input class="osf-input" id="search" type="search" placeholder="Search name, command, tag..." autocomplete="off">
+            <input class="osf-input" id="search" type="search" placeholder="Search name, command, tag..." autocomplete="off" autofocus>
           </label>
         </div>
 
@@ -265,7 +265,8 @@ function commandMatches(command: CommandDefinition): boolean {
   const haystack = [command.title, command.category, command.description, command.command, ...(command.tags ?? [])]
     .join(' ')
     .toLowerCase();
-  return haystack.includes(query.toLowerCase());
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  return terms.every((term) => haystack.includes(term));
 }
 
 function activeCommands(): CommandDefinition[] {
@@ -649,6 +650,32 @@ search.addEventListener('input', () => {
   render();
 });
 
+function focusSearchOnEntry(): void {
+  if (activeView === 'custom' || activeView === 'activity' || !confirmBackdrop.hidden) return;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (!document.hidden) {
+        search.focus({ preventScroll: true });
+        search.setSelectionRange(search.value.length, search.value.length);
+      }
+    });
+  });
+}
+
+function primeSearchForNextOpen(): void {
+  if (activeView === 'custom' || activeView === 'activity' || !confirmBackdrop.hidden) return;
+  // OSF UI keeps this webview alive between closes. Leave focus on Search
+  // before hiding the surface so reopening the same view retains Search as
+  // the active control.
+  search.focus({ preventScroll: true });
+  search.setSelectionRange(search.value.length, search.value.length);
+}
+
+window.addEventListener('focus', focusSearchOnEntry);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) focusSearchOnEntry();
+});
+
 commandList.addEventListener('click', (event) => {
   const cautionButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-caution]');
   if (cautionButton?.dataset.caution) {
@@ -698,6 +725,8 @@ commandList.addEventListener('input', (event) => {
 });
 
 async function closeCurrentView(): Promise<void> {
+  primeSearchForNextOpen();
+
   if (!window.osfui?.call) {
     setStatus('OSF UI native request API is unavailable.', 'error');
     return;
@@ -746,9 +775,32 @@ document.addEventListener('keydown', (event) => {
       void closeCurrentView();
     }
   }
-  if (event.key === '/' && activeView !== 'custom' && document.activeElement !== search) {
+  if (event.key === '/' && activeView !== 'custom' && activeView !== 'activity' && document.activeElement !== search) {
     event.preventDefault();
-    search.focus();
+    search.focus({ preventScroll: true });
+    return;
+  }
+
+  const activeElement = document.activeElement;
+  const isEditable = activeElement instanceof HTMLInputElement
+    || activeElement instanceof HTMLTextAreaElement
+    || activeElement instanceof HTMLSelectElement
+    || (activeElement instanceof HTMLElement && activeElement.isContentEditable);
+
+  if (
+    event.key.length === 1
+    && !event.ctrlKey
+    && !event.altKey
+    && !event.metaKey
+    && activeView !== 'custom'
+    && activeView !== 'activity'
+    && confirmBackdrop.hidden
+    && !isEditable
+  ) {
+    event.preventDefault();
+    search.focus({ preventScroll: true });
+    search.value += event.key;
+    search.dispatchEvent(new Event('input', { bubbles: true }));
   }
 });
 
@@ -781,6 +833,7 @@ if (ready) {
     setStatus('OSF UI ready; checking ConsoleCommandCenter.dll...', 'working');
     if (activeView === 'activity') render();
     await connectNativeBackend();
+    focusSearchOnEntry();
   }).catch(() => {
     bridgeState = 'unavailable';
     nativeBackendReady = false;
@@ -796,3 +849,4 @@ if (ready) {
 }
 
 render();
+focusSearchOnEntry();

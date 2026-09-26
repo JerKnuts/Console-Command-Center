@@ -1,8 +1,8 @@
 # Console Command Center — Command Catalog
 
-Version: 0.2.7
+Version: 0.2.11
 
-Curated commands: 75
+Curated commands: 73
 
 Risk levels:
 - **Normal** — ordinary confirmation before execution.
@@ -20,28 +20,27 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 | Toggle Collision | `tcl` | Normal | Verified |
 | Toggle Detection | `tdetect` | Normal | Verified |
 | Toggle Combat AI | `tcai` | Normal | Verified |
-| Toggle All AI | `tai` | Caution | Untested |
-| Kill Nearby Hostiles | `kah` | Caution | Untested |
+| Toggle All AI | `tai` | Caution | Verified |
+| Kill Nearby Hostiles | `kah` | Caution | Verified |
 | Kill Everyone Nearby | `killall` | Danger | Untested |
 | Always Succeed Speech Challenges | `setforcespeechchallengealwayssucceed 1` | Caution | Untested |
 | Restore Normal Speech Challenges | `setforcespeechchallengealwayssucceed 0` | Normal | Untested |
 | Clear Faction Bounty | `player.paycrimegold 0 0 {factionId}` | Caution | Untested |
 
-## Player (11)
+## Player (10)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Add Experience | `player.modav experience {amount}` | Caution | Verified |
-| Set Player Level | `player.setlevel {level}` | Caution | Untested |
-| Set Carry Weight | `player.setav carryweight {value}` | Normal | Untested |
+| Increase Player Level | `player.setlevel {level}` | Caution | Verified |
 | Adjust Carry Weight (+/-) | `player.modav carryweight {amount}` | Caution | Verified |
-| Change Player Size | `player.setscale {scale}` | Caution | Untested |
+| Change Player Size | `player.setscale {scale}` | Caution | Verified |
 | Set Movement Speed | `player.setav speedmult {value}` | Caution | Verified |
 | Set Max Health | `player.setav health {value}` | Caution | Verified |
 | Open Full Character Creator (Advanced) | `showlooksmenu player 1` | Danger | Verified |
 | Open Appearance Editor | `showlooksmenu player 2` | Normal | Verified |
-| Teleport Player to Reference | `player.moveto {refId}` | Caution | Untested |
-| Set Player Position Axis | `player.setpos {axis} {value}` | Caution | Untested |
+| Teleport Player to Reference | `player.moveto {refId}` | Caution | Verified |
+| Set Player Coordinate Axis | `player.setpos {axis} {value}` | Caution | Verified |
 
 ## Inventory (10)
 
@@ -53,17 +52,17 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 | Add Ship Parts | `player.additem 0003FB19 {amount}` | Normal | Verified |
 | Add Item by Form ID | `player.additem {formId} {amount}` | Caution | Verified |
 | Remove Item by Form ID | `player.removeitem {formId} {amount}` | Danger | Verified |
-| Equip Item by Form ID | `player.equipitem {formId}` | Caution | Untested |
-| Unequip Item by Form ID | `player.unequipitem {formId}` | Normal | Untested |
+| Equip Item by Form ID | `player.equipitem {formId}` | Caution | Verified |
+| Unequip Item by Form ID | `player.unequipitem {formId}` | Normal | Verified |
 | Drop Item by Form ID | `player.drop {formId} {amount}` | Caution | Verified |
-| Spawn Object / NPC by Base ID | `player.placeatme {baseId} {amount}` | Danger | Untested |
+| Spawn Object / NPC by Base ID | `player.placeatme {baseId} {amount}` | Danger | Verified |
 
 ## Skills (6)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
-| Add Perk / Skill by Form ID | `player.addperk {formId}` | Caution | Untested |
-| Remove Perk / Skill by Form ID | `player.removeperk {formId}` | Danger | Untested |
+| Add Perk / Skill by Form ID | `player.addperk {formId}` | Caution | Verified |
+| Remove Perk / Skill by Form ID | `player.removeperk {formId}` | Danger | Verified |
 | Grant All Powers | `psb` | Danger | Untested |
 | Set Star Power | `player.setav starpower {value}` | Caution | Untested |
 | Add Spell / Effect by Form ID | `player.addspell {formId}` | Danger | Untested |
@@ -79,14 +78,13 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 | Set Free Camera Speed | `sucsm {speed}` | Normal | Verified |
 | Clear Screen Blood | `ClearScreenBlood` | Normal | Untested |
 
-## World (8)
+## World (7)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Toggle Game Pause | `tgp` | Normal | Untested |
 | Set Game Speed | `sgtm {value}` | Caution | Verified |
 | Pass Time | `passtime {hours}` | Normal | Verified |
-| Set Local Gravity Scale | `setgravityscale {value}` | Caution | Untested |
 | Reveal Planet Map Markers | `tmm 1` | Danger | Untested |
 | Teleport to Cell | `coc {cellName}` | Danger | Untested |
 | Force Weather | `fw {weatherId}` | Caution | Untested |
@@ -96,18 +94,18 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
-| Move Reference to Player | `{refId}.moveto player` | Caution | Untested |
-| Kill Actor by Reference ID | `{refId}.kill` | Danger | Untested |
-| Resurrect Actor by Reference ID | `{refId}.resurrect` | Danger | Untested |
-| Recycle Actor / Reference | `{refId}.recycleactor` | Danger | Untested |
-| Disable Reference | `{refId}.disable` | Danger | Untested |
-| Enable Reference | `{refId}.enable` | Caution | Untested |
-| Unlock Door / Container by Reference ID | `{refId}.unlock` | Danger | Untested |
-| Lock Door / Container by Reference ID | `{refId}.lock {level}` | Caution | Untested |
-| Set Target / Reference Scale | `{refId}.setscale {scale}` | Caution | Untested |
-| Set Reference Ownership | `{refId}.setownership` | Caution | Untested |
-| Move Reference Along Axis | `{refId}.modpos {axis} {amount}` | Caution | Untested |
-| Rotate Reference Along Axis | `{refId}.modangle {axis} {degrees}` | Caution | Untested |
+| Move Reference to Player | `{refId}.moveto player` | Caution | Verified |
+| Kill Actor by Reference ID | `{refId}.kill` | Danger | Verified |
+| Resurrect Actor by Reference ID | `{refId}.resurrect` | Danger | Verified |
+| Recycle Actor / Reference | `{refId}.recycleactor` | Danger | Verified |
+| Disable Reference | `{refId}.disable` | Danger | Verified |
+| Enable Reference | `{refId}.enable` | Caution | Verified |
+| Unlock Door / Container by Reference ID | `{refId}.unlock` | Danger | Verified |
+| Lock Door / Container by Reference ID | `{refId}.lock {level}` | Caution | Verified |
+| Set Target / Reference Scale | `{refId}.setscale {scale}` | Caution | Verified |
+| Set Reference Ownership | `{refId}.setownership` | Caution | Verified |
+| Move Reference Along Axis | `{refId}.modpos {axis} {amount}` | Caution | Verified |
+| Rotate Reference Along Axis | `{refId}.modangle {axis} {degrees}` | Caution | Verified |
 | Attach Weapon / Armor Mod | `{refId}.amod {modId}` | Caution | Untested |
 | Remove Weapon / Armor Mod | `{refId}.rmod {modId}` | Caution | Untested |
 | Set Companion Affinity | `{refId}.setav com_affinity {value}` | Danger | Untested |
