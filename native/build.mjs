@@ -8,9 +8,21 @@ const env = { ...process.env };
 delete env.XSE_SF_MODS_PATH;
 delete env.XSE_SF_GAME_PATH;
 
-const code = await new Promise((resolve, reject) => {
-  const child = spawn('xmake', ['build', '-P', projectRoot], { env, stdio: 'inherit' });
-  child.once('error', reject);
-  child.once('exit', resolve);
-});
-if (code !== 0) process.exit(code ?? 1);
+function run(command, args) {
+  return new Promise((resolveRun, reject) => {
+    const child = spawn(command, args, { env, stdio: 'inherit' });
+    child.once('error', reject);
+    child.once('exit', (code) => {
+      if (code === 0) resolveRun();
+      else reject(new Error(`${command} exited with code ${code ?? 'unknown'}.`));
+    });
+  });
+}
+
+try {
+  await run(process.execPath, [resolve(projectRoot, 'native', 'setup-deps.mjs')]);
+  await run('xmake', ['build', '-P', projectRoot]);
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+}

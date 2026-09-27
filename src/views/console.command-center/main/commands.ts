@@ -1,3 +1,5 @@
+import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, WEATHER_PICKER, type ReferenceIdPicker } from './reference-ids';
+
 export type CommandCategory =
   | 'Gameplay'
   | 'Player'
@@ -23,6 +25,7 @@ export type CommandInput = {
   step?: number;
   pattern?: string;
   hint?: string;
+  picker?: ReferenceIdPicker;
 };
 
 export type CommandDefinition = {
@@ -130,7 +133,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['kill', 'npc', 'all'],
     warning: 'This can kill friendly, neutral, or quest-related actors in the area. Use only on a disposable save.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'speech-success-on',
@@ -154,15 +157,18 @@ export const COMMANDS: CommandDefinition[] = [
   },
   {
     id: 'clear-bounty',
-    title: 'Clear Faction Bounty',
+    title: 'Pay Bounty',
     category: 'Gameplay',
-    description: 'Pay off the current bounty for a specified faction without going to jail or confiscating stolen goods.',
+    description: 'Pay the current bounty for a faction using your credits. You avoid jail and keep stolen goods.',
     command: 'player.paycrimegold 0 0 {factionId}',
-    inputs: [hexInput('factionId', 'Faction ID', '000638E5')],
-    tags: ['crime', 'bounty', 'faction', 'credits'],
-    warning: 'Use the correct faction ID. This directly changes crime/bounty state for that faction.',
+    inputs: [{
+      ...hexInput('factionId', 'Faction', '00010B30', 'Choose a bounty faction or enter a 1-8 digit hexadecimal faction ID'),
+      picker: BOUNTY_FACTION_PICKER,
+    }],
+    tags: ['crime', 'bounty', 'faction', 'credits', 'pay'],
+    warning: 'This pays the selected faction bounty from your current credits. It is not a free bounty removal.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
 
   // PLAYER
@@ -464,7 +470,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['powers', 'starborn', 'spellbook'],
     warning: 'This grants a large set of progression content at once and can permanently alter power progression.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'set-star-power',
@@ -478,7 +484,7 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     warning: 'This directly changes a player actor value.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'add-spell',
@@ -490,7 +496,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('formId', 'Spell / Effect ID', '0008CB48')],
     warning: 'Adding arbitrary effects can create persistent or unintended status effects. Only use IDs you understand.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'remove-spell',
@@ -502,7 +508,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('formId', 'Spell / Effect ID', '00163FE7')],
     warning: 'Removing the wrong effect can remove legitimate powers or scripted effects. Confirm the effect ID first.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
 
   // CAMERA
@@ -535,7 +541,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['hud', 'ui', 'photo', 'toggle'],
     warning: 'This hides the game UI, including the normal console display. Run the command again to restore it.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'free-camera-speed',
@@ -567,7 +573,7 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Toggle the gameplay pause state.',
     command: 'tgp',
     tags: ['pause', 'world', 'toggle'],
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'game-speed',
@@ -604,7 +610,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['map', 'markers', 'locations'],
     warning: 'Published reports indicate the added markers may persist and may not be cleanly undone with tmm 0 during the session.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'center-on-cell',
@@ -618,31 +624,37 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     warning: 'An invalid or unsuitable cell can place you in test areas, unloaded spaces, or locations with broken progression context.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'force-weather',
     title: 'Force Weather',
     category: 'World',
-    description: 'Immediately force a weather record by Form ID.',
+    description: 'Immediately force a weather record. Choose a weather from the menu or enter any valid Weather Form ID.',
     command: 'fw {weatherId}',
-    tags: ['weather', 'forceweather', 'photo'],
-    inputs: [hexInput('weatherId', 'Weather ID', '00000000')],
-    warning: 'Use a valid weather Form ID. Forced weather can look wrong in locations it was not designed for.',
+    tags: ['weather', 'forceweather', 'photo', 'rain', 'snow', 'storm', 'fog'],
+    inputs: [{
+      ...hexInput('weatherId', 'Weather', '0002B07E', 'Choose a weather or enter a 1-8 digit hexadecimal Weather Form ID'),
+      picker: WEATHER_PICKER,
+    }],
+    warning: 'Weather records are location-dependent. A selected weather may look wrong or be overridden in a location or climate it was not designed for.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'set-weather',
     title: 'Set Weather Gradually',
     category: 'World',
-    description: 'Transition toward a weather record by Form ID.',
+    description: 'Transition toward a weather record. Choose a weather from the menu or enter any valid Weather Form ID.',
     command: 'setweather {weatherId}',
-    tags: ['weather', 'transition', 'photo'],
-    inputs: [hexInput('weatherId', 'Weather ID', '00000000')],
-    warning: 'Use a valid weather Form ID. Weather changes may be overridden by the current location or scripts.',
+    tags: ['weather', 'transition', 'photo', 'rain', 'snow', 'storm', 'fog'],
+    inputs: [{
+      ...hexInput('weatherId', 'Weather', '0002B07E', 'Choose a weather or enter a 1-8 digit hexadecimal Weather Form ID'),
+      picker: WEATHER_PICKER,
+    }],
+    warning: 'Weather records are location-dependent. A selected weather may look wrong or be overridden by the current location, climate, or scripts.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
 
   // TARGETS (NPCs / OBJECTS / WORLD REFERENCES)
@@ -838,11 +850,14 @@ export const COMMANDS: CommandDefinition[] = [
     id: 'set-companion-affinity',
     title: 'Set Companion Affinity',
     category: 'Targets',
-    description: 'Set a companion affinity actor value using the companion Reference ID.',
+    description: 'Set affinity for one of the four core affinity-capable companions, or enter a companion Reference ID manually.',
     command: '{refId}.setav com_affinity {value}',
     tags: ['companion', 'affinity', 'relationship', 'npc'],
     inputs: [
-      hexInput('refId', 'Companion Reference ID', '00005986'),
+      {
+        ...hexInput('refId', 'Companion', '00005986', 'Choose an affinity-capable companion or enter a 1-8 digit hexadecimal Reference ID'),
+        picker: CORE_COMPANION_PICKER,
+      },
       { key: 'value', label: 'Affinity', type: 'number', defaultValue: 99, step: 1 },
     ],
     warning: 'Changing affinity directly can skip natural relationship progression and dialogue triggers. Values just below thresholds are generally safer than jumping far ahead.',
@@ -853,11 +868,14 @@ export const COMMANDS: CommandDefinition[] = [
     id: 'set-companion-affinity-level',
     title: 'Set Companion Relationship Level',
     category: 'Targets',
-    description: 'Set a companion relationship-level actor value using the companion Reference ID.',
+    description: 'Set relationship level for one of the four core affinity-capable companions, or enter a companion Reference ID manually.',
     command: '{refId}.setav com_affinitylevel {value}',
     tags: ['companion', 'affinity', 'relationship', 'npc'],
     inputs: [
-      hexInput('refId', 'Companion Reference ID', '00005986'),
+      {
+        ...hexInput('refId', 'Companion', '00005986', 'Choose an affinity-capable companion or enter a 1-8 digit hexadecimal Reference ID'),
+        picker: CORE_COMPANION_PICKER,
+      },
       { key: 'value', label: 'Relationship Level', type: 'number', defaultValue: 1, min: 0, max: 3, step: 1, hint: '0 Neutral, 1 Friendship, 2 Affection, 3 Commitment' },
     ],
     warning: 'Direct relationship-level changes can skip dialogue and quest triggers. Use only on a backup save.',
@@ -939,7 +957,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('questId', 'Quest ID', '00003448')],
     warning: 'This can place you directly into combat, hazardous terrain, interiors, or scripted areas and may trigger quest events immediately.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
 
   // SHIP

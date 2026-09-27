@@ -1,6 +1,6 @@
 {
   "name": "console-command-center",
-  "version": "0.2.11",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +10,7 @@
     "build": "npm run build:native && osfui build",
     "package": "npm run build:native && osfui package",
     "doctor": "osfui doctor",
+    "setup:deps": "node native/setup-deps.mjs",
     "build:native": "node native/build.mjs"
   },
   "devDependencies": {

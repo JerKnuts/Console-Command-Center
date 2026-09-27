@@ -1,8 +1,10 @@
 # Console Command Center — Command Catalog
 
-Version: 0.2.11
+Version: 0.3.0
 
 Curated commands: 73
+
+Guided quest repairs: 248 stage selections (246 unique setstage commands) across 80 named entries / 78 unique quest FormIDs
 
 Risk levels:
 - **Normal** — ordinary confirmation before execution.
@@ -22,10 +24,12 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 | Toggle Combat AI | `tcai` | Normal | Verified |
 | Toggle All AI | `tai` | Caution | Verified |
 | Kill Nearby Hostiles | `kah` | Caution | Verified |
-| Kill Everyone Nearby | `killall` | Danger | Untested |
+| Kill Everyone Nearby | `killall` | Danger | Verified |
 | Always Succeed Speech Challenges | `setforcespeechchallengealwayssucceed 1` | Caution | Untested |
 | Restore Normal Speech Challenges | `setforcespeechchallengealwayssucceed 0` | Normal | Untested |
-| Clear Faction Bounty | `player.paycrimegold 0 0 {factionId}` | Caution | Untested |
+| Pay Bounty | `player.paycrimegold 0 0 {factionId}` | Caution | Verified |
+
+**Pay Bounty** uses the compact ID field + **CHOOSE FACTION** box layout. The choice list is intentionally limited to bounty-relevant faction records (including supported Shattered Space entries), while manual faction-ID entry remains available. Inline preset-button grids are not used. The command spends the player's credits; it does not erase the bounty for free.
 
 ## Player (10)
 
@@ -63,10 +67,10 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 |---|---|---|---|
 | Add Perk / Skill by Form ID | `player.addperk {formId}` | Caution | Verified |
 | Remove Perk / Skill by Form ID | `player.removeperk {formId}` | Danger | Verified |
-| Grant All Powers | `psb` | Danger | Untested |
-| Set Star Power | `player.setav starpower {value}` | Caution | Untested |
-| Add Spell / Effect by Form ID | `player.addspell {formId}` | Danger | Untested |
-| Remove Spell / Status Effect by Form ID | `player.removespell {formId}` | Caution | Untested |
+| Grant All Powers | `psb` | Danger | Verified |
+| Set Star Power | `player.setav starpower {value}` | Caution | Verified |
+| Add Spell / Effect by Form ID | `player.addspell {formId}` | Danger | Verified |
+| Remove Spell / Status Effect by Form ID | `player.removespell {formId}` | Caution | Verified |
 
 ## Camera (5)
 
@@ -74,7 +78,7 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 |---|---|---|---|
 | Toggle Free Camera | `tfc` | Normal | Verified |
 | Enter Free Camera + Freeze | `tfc 1` | Caution | Verified |
-| Toggle HUD / Interface | `tm` | Caution | Untested |
+| Toggle HUD / Interface | `tm` | Caution | Verified |
 | Set Free Camera Speed | `sucsm {speed}` | Normal | Verified |
 | Clear Screen Blood | `ClearScreenBlood` | Normal | Untested |
 
@@ -82,13 +86,15 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
-| Toggle Game Pause | `tgp` | Normal | Untested |
+| Toggle Game Pause | `tgp` | Normal | Verified |
 | Set Game Speed | `sgtm {value}` | Caution | Verified |
 | Pass Time | `passtime {hours}` | Normal | Verified |
-| Reveal Planet Map Markers | `tmm 1` | Danger | Untested |
-| Teleport to Cell | `coc {cellName}` | Danger | Untested |
-| Force Weather | `fw {weatherId}` | Caution | Untested |
-| Set Weather Gradually | `setweather {weatherId}` | Caution | Untested |
+| Reveal Planet Map Markers | `tmm 1` | Danger | Verified |
+| Teleport to Cell | `coc {cellName}` | Danger | Verified |
+| Force Weather | `fw {weatherId}` | Caution | Verified |
+| Set Weather Gradually | `setweather {weatherId}` | Caution | Verified |
+
+**Weather choices:** both weather commands use the same compact ID field + **CHOOSE WEATHER** box layout as the companion commands. Clear, Rain, Snow, Heavy Snow, Thunderstorm, Sandstorm, Dense Mist, Light Mist, and Burning Haze are available through the chooser, while manual Weather Form IDs remain supported. No inline weather-button grid is used.
 
 ## Targets (16)
 
@@ -111,6 +117,8 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 | Set Companion Affinity | `{refId}.setav com_affinity {value}` | Danger | Untested |
 | Set Companion Relationship Level | `{refId}.setav com_affinitylevel {value}` | Danger | Untested |
 
+**Companion choices:** the affinity commands use the compact ID field + **CHOOSE COMPANION** box for Sarah Morgan (`00005986`), Barrett (`00005788`), Sam Coe (`0029D488`), and Andreja (`000059A9`). These are the four core companions that use Starfield's affinity/relationship progression; other recruitable crew are intentionally not presented for these commands. Manual Reference ID entry remains available.
+
 ## Quests (6)
 
 | Command | Console syntax | Risk | CCC test |
@@ -120,7 +128,7 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 | Set Quest Stage | `setstage {questId} {stage}` | Danger | Untested |
 | Complete Quest by ID | `completequest {questId}` | Danger | Untested |
 | Reset Quest by ID | `resetquest {questId}` | Danger | Untested |
-| Teleport to Quest Target | `movetoqt {questId}` | Caution | Untested |
+| Teleport to Quest Target | `movetoqt {questId}` | Caution | Verified |
 
 ## Ship (2)
 
@@ -128,3 +136,19 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 |---|---|---|---|
 | Refuel Player Spaceship | `RefuelSpaceship` | Normal | Untested |
 | Spawn Ship by Base ID | `player.placeatme {baseId}` | Danger | Untested |
+
+
+
+## Reference ID Picker
+
+v0.3.0 uses one consistent choice-control pattern for commands that depend on known Form/Reference IDs: keep the editable ID field visible and place a boxed **CHOOSE ...** control beside it. The chooser can search by display name, aliases/keywords, and hexadecimal ID, then fills the existing field so the generated console command remains visible before confirmation. Inline preset-button grids are not used.
+
+This is the foundation for a future standalone ID Browser. Large ID catalogs are deliberately not dumped into individual command cards.
+
+## Quest Fixes (248 guided stage repairs)
+
+Version 0.3.0 adds a dedicated **Quest Fixes** browser separate from the normal command catalog.
+It contains 248 curated `setstage` targets for known quest-progression repair scenarios.
+CCC executes the vanilla Starfield console command directly.
+
+Every guided quest repair is treated as **Danger** because `setstage` can skip dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save first and use these entries only to repair a quest that is already stuck.

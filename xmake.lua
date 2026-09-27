@@ -1,5 +1,5 @@
 set_project("ConsoleCommandCenter")
-set_version("0.1.0")
+set_version("0.3.0")
 set_arch("x64")
 set_languages("c++23")
 add_requires("nlohmann_json")
@@ -10,9 +10,9 @@ includes("native/lib/commonlibsf")
 
 target("ConsoleCommandCenter")
     add_rules("commonlibsf.plugin", {
-        name = "command center",
-        author = "console",
-        description = "OSF UI native example"
+        name = "Console Command Center",
+        author = "JerKnuts",
+        description = "In-game Starfield console command controller"
     })
     add_files("native/src/**.cpp")
     add_headerfiles("native/include/**.h")

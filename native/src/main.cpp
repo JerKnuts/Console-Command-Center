@@ -3,8 +3,17 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
+#include <cstddef>
+#include <cstdlib>
+#include <cstdio>
+#include <chrono>
+#include <functional>
+#include <memory>
 #include <string>
 #include <string_view>
+#include <thread>
+#include <vector>
 
 #include "OSFUI_JSON.h"
 
@@ -83,6 +92,269 @@ namespace
         });
     }
 
+
+    std::string ReadConsoleBuffer()
+    {
+        auto* consoleLog = RE::ConsoleLog::GetSingleton();
+        if (!consoleLog || !consoleLog->buffer.data()) {
+            return {};
+        }
+
+        const std::string_view view{ consoleLog->buffer };
+        return std::string{ view };
+    }
+
+    std::string ConsoleBufferDelta(const std::string& before)
+    {
+        const auto after = ReadConsoleBuffer();
+        if (after.size() >= before.size() && after.compare(0, before.size(), before) == 0) {
+            return after.substr(before.size());
+        }
+
+        // The console buffer is bounded and may roll over. If that happens,
+        // parsing the newest complete buffer is safer than returning nothing.
+        return after;
+    }
+
+    bool ParseGetStageOutput(std::string_view output, std::uint16_t& stage) noexcept
+    {
+        constexpr std::string_view marker = "GetStage >>";
+        const auto markerPos = output.rfind(marker);
+        if (markerPos == std::string_view::npos) {
+            return false;
+        }
+
+        auto valuePos = markerPos + marker.size();
+        while (valuePos < output.size() && std::isspace(static_cast<unsigned char>(output[valuePos])) != 0) {
+            ++valuePos;
+        }
+        if (valuePos >= output.size()) {
+            return false;
+        }
+
+        const std::string valueText{ output.substr(valuePos) };
+        char* end = nullptr;
+        const double value = std::strtod(valueText.c_str(), &end);
+        if (end == valueText.c_str() || value < 0.0 || value > 65535.0) {
+            return false;
+        }
+
+        stage = static_cast<std::uint16_t>(value);
+        return true;
+    }
+
+    std::vector<std::uint16_t> ParseSQSCompletedStages(std::string_view output)
+    {
+        std::vector<std::uint16_t> completedStages;
+        constexpr std::string_view marker = "(done)";
+
+        std::size_t lineStart = 0;
+        while (lineStart < output.size()) {
+            const auto lineEnd = output.find('\n', lineStart);
+            const auto line = output.substr(
+                lineStart,
+                lineEnd == std::string_view::npos ? output.size() - lineStart : lineEnd - lineStart);
+
+            const auto markerPos = line.find(marker);
+            if (markerPos != std::string_view::npos) {
+                auto valuePos = markerPos + marker.size();
+                while (valuePos < line.size() && std::isspace(static_cast<unsigned char>(line[valuePos])) != 0) {
+                    ++valuePos;
+                }
+
+                if (valuePos < line.size()) {
+                    const std::string valueText{ line.substr(valuePos) };
+                    char* end = nullptr;
+                    const long value = std::strtol(valueText.c_str(), &end, 10);
+                    if (end != valueText.c_str() && value >= 0 && value <= 65535) {
+                        completedStages.push_back(static_cast<std::uint16_t>(value));
+                    }
+                }
+            }
+
+            if (lineEnd == std::string_view::npos) {
+                break;
+            }
+            lineStart = lineEnd + 1;
+        }
+
+        std::sort(completedStages.begin(), completedStages.end());
+        completedStages.erase(std::unique(completedStages.begin(), completedStages.end()), completedStages.end());
+        return completedStages;
+    }
+
+    struct QuestStatusCapture
+    {
+        OSFUI::API::Request request{};
+        std::string questIDText;
+        std::uint16_t currentStage{ 0 };
+
+        std::string getStageBufferBefore;
+        std::uint32_t getStagePolls{ 0 };
+
+        std::string sqsBufferBefore;
+        std::string lastSqsOutput;
+        std::uint32_t sqsPolls{ 0 };
+        std::uint32_t sqsStablePolls{ 0 };
+    };
+
+    constexpr std::uint32_t kQuestStatusMaxPolls = 24;
+    constexpr auto kGetStagePollDelay = std::chrono::milliseconds{ 50 };
+    constexpr auto kSqsPollDelay = std::chrono::milliseconds{ 75 };
+
+    bool QueueMainTaskAfter(std::chrono::milliseconds delay, std::function<void()> task) noexcept
+    {
+        try {
+            const auto* taskInterface = SFSE::GetTaskInterface();
+            if (!taskInterface) {
+                return false;
+            }
+
+            std::thread([taskInterface, delay, task = std::move(task)]() mutable {
+                std::this_thread::sleep_for(delay);
+                try {
+                    taskInterface->AddTask(std::move(task));
+                } catch (...) {
+                    // The game may be shutting down. There is nothing useful
+                    // to do from the worker thread if the queue is unavailable.
+                }
+            }).detach();
+            return true;
+        } catch (...) {
+            return false;
+        }
+    }
+
+    void RejectQuestStatus(const std::shared_ptr<QuestStatusCapture>& state, const char* code, const char* message) noexcept
+    {
+        if (state) {
+            state->request.Reject(code, message);
+        }
+    }
+
+    void RespondQuestStatus(const std::shared_ptr<QuestStatusCapture>& state, const std::vector<std::uint16_t>& completedStages) noexcept
+    {
+        try {
+            const auto payload = OSFUI::API::Json{
+                { "ok", true },
+                { "questId", state->questIDText },
+                { "currentStage", state->currentStage },
+                { "completedStages", completedStages }
+            }.dump();
+            state->request.Respond("console.command-center.questStatusResult", payload.c_str());
+        } catch (...) {
+            RejectQuestStatus(state, "quest-status-failed", "Could not serialize quest stage state.");
+        }
+    }
+
+    void PollSQSOutput(const std::shared_ptr<QuestStatusCapture>& state) noexcept;
+
+    void PollGetStageOutput(const std::shared_ptr<QuestStatusCapture>& state) noexcept
+    {
+        try {
+            const auto output = ConsoleBufferDelta(state->getStageBufferBefore);
+            std::uint16_t currentStage = 0;
+            if (ParseGetStageOutput(output, currentStage)) {
+                state->currentStage = currentStage;
+                state->sqsBufferBefore = ReadConsoleBuffer();
+
+                const std::string sqsCommand = std::string{ "sqs " } + state->questIDText;
+                if (!ExecuteConsoleCommand(sqsCommand)) {
+                    RejectQuestStatus(state, "quest-status-failed", "Could not execute SQS for this quest.");
+                    return;
+                }
+
+                if (!QueueMainTaskAfter(kSqsPollDelay, [state]() noexcept { PollSQSOutput(state); })) {
+                    RejectQuestStatus(state, "quest-status-failed", "Could not schedule SQS output capture.");
+                }
+                return;
+            }
+
+            if (++state->getStagePolls >= kQuestStatusMaxPolls) {
+                RejectQuestStatus(state, "quest-status-unavailable", "GetStage did not return a quest stage. The quest may not exist or may be unavailable on this save.");
+                return;
+            }
+
+            if (!QueueMainTaskAfter(kGetStagePollDelay, [state]() noexcept { PollGetStageOutput(state); })) {
+                RejectQuestStatus(state, "quest-status-failed", "Could not schedule GetStage output capture.");
+            }
+        } catch (...) {
+            RejectQuestStatus(state, "quest-status-failed", "Could not capture GetStage output.");
+        }
+    }
+
+    void PollSQSOutput(const std::shared_ptr<QuestStatusCapture>& state) noexcept
+    {
+        try {
+            const auto output = ConsoleBufferDelta(state->sqsBufferBefore);
+            const bool hasStageTable = output.find("(done)") != std::string::npos || output.find("(not set)") != std::string::npos;
+
+            if (!output.empty() && output == state->lastSqsOutput) {
+                ++state->sqsStablePolls;
+            } else {
+                state->lastSqsOutput = output;
+                state->sqsStablePolls = 0;
+            }
+
+            // SQS can print a long table. Wait until the captured output has
+            // stopped changing for a full game tick so we do not return a
+            // partially-written list of completed stages.
+            if (hasStageTable && state->sqsStablePolls >= 1) {
+                RespondQuestStatus(state, ParseSQSCompletedStages(output));
+                return;
+            }
+
+            if (++state->sqsPolls >= kQuestStatusMaxPolls) {
+                RejectQuestStatus(state, "quest-status-unavailable", "SQS did not return a quest stage table for this quest.");
+                return;
+            }
+
+            if (!QueueMainTaskAfter(kSqsPollDelay, [state]() noexcept { PollSQSOutput(state); })) {
+                RejectQuestStatus(state, "quest-status-failed", "Could not schedule SQS output capture.");
+            }
+        } catch (...) {
+            RejectQuestStatus(state, "quest-status-failed", "Could not capture SQS output.");
+        }
+    }
+
+    void OnQuestStatus(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) {
+            return;
+        }
+
+        const auto questFormID = request.Get<std::uint32_t>("questFormId");
+        if (!questFormID) {
+            return;
+        }
+
+        try {
+            auto state = std::make_shared<QuestStatusCapture>();
+            state->request = raw;
+
+            char questIDText[9]{};
+            std::snprintf(questIDText, sizeof(questIDText), "%08X", *questFormID);
+            state->questIDText = questIDText;
+
+            state->getStageBufferBefore = ReadConsoleBuffer();
+            const std::string getStageCommand = std::string{ "getstage " } + state->questIDText;
+            if (!ExecuteConsoleCommand(getStageCommand)) {
+                request.Reject("quest-status-failed", "Could not execute GetStage for this quest.");
+                return;
+            }
+
+            // Console diagnostics are written asynchronously after the command
+            // handler returns. A normal AddTask can be drained again in the same
+            // frame, so use an actual short delay before each main-thread read.
+            if (!QueueMainTaskAfter(kGetStagePollDelay, [state]() noexcept { PollGetStageOutput(state); })) {
+                request.Reject("quest-status-failed", "Could not schedule GetStage output capture.");
+            }
+        } catch (...) {
+            request.Reject("quest-status-failed", "Could not start quest stage diagnostics.");
+        }
+    }
+
     void OnPing(const OSFUI::API::Request& raw, void*) noexcept
     {
         OSFUI::API::JsonRequest request{ raw };
@@ -125,6 +397,7 @@ namespace
 
         g_ui.RegisterRequest("console.command-center.ping", &OnPing, nullptr);
         g_ui.RegisterRequest("console.command-center.execute", &OnExecute, nullptr);
+        g_ui.RegisterRequest("console.command-center.questStatus", &OnQuestStatus, nullptr);
         g_ui.RegisterRequest("console.command-center.close", &OnClose, nullptr);
         (void)g_ui.RegisterView(kViewId);
     }

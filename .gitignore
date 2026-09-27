@@ -1,4 +1,4 @@
-# Node
+# Node dependencies
 node_modules/
 
 # Build/generated output
@@ -6,25 +6,28 @@ build/
 dist/
 mod/
 
-# OSF UI local/generated files
+# OSF UI / XMake local caches
 .osfui/
+.xmake/
 
 # External dependency
+# Kept locally for development, but automatically restored by native/setup-deps.mjs
+# when missing from a fresh clone.
 native/lib/commonlibsf/
 
 # Logs
 *.log
 
-# Packaged releases
+# Packaged releases / archives
 *.zip
+*.rar
+*.7z
 
-# Windows
+# Windows / macOS junk
 Thumbs.db
 Desktop.ini
+.DS_Store
 
 # IDE/editor local settings
 .vscode/
 .idea/
-
-# XMake local cache
-.xmake/

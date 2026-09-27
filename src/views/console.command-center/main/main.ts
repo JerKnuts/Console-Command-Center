@@ -2,12 +2,22 @@ import '/shared/osfui.css';
 import '/shared/osfui.js';
 import './style.css';
 import { CATEGORY_ORDER, COMMANDS, type CommandDefinition, type CommandInput } from './commands';
+import { QUEST_FIXES, QUEST_FIX_STAGE_COUNT, type QuestFixGroup } from './quest-fixes';
+import type { ReferenceIdPicker } from './reference-ids';
 
-type ViewMode = 'favorites' | 'recent' | 'activity' | 'custom' | string;
+type ViewMode = 'favorites' | 'recent' | 'quest-fixes' | 'activity' | 'custom' | string;
 
 type PendingExecution = {
   command: string;
   definition?: CommandDefinition;
+  rememberRecent?: boolean;
+  questId?: string;
+};
+
+type ActiveIdPicker = {
+  commandId: string;
+  inputKey: string;
+  picker: ReferenceIdPicker;
 };
 
 type ActivityEntry = {
@@ -31,6 +41,20 @@ type ExecuteReply = {
   command: string;
 };
 
+type QuestStatusReply = {
+  ok: boolean;
+  questId: string;
+  currentStage: number | null;
+  completedStages: number[];
+};
+
+type QuestDiagnostic = {
+  state: 'loading' | 'ready' | 'error';
+  currentStage: number | null;
+  completedStages: number[];
+  message?: string;
+};
+
 type CloseReply = {
   ok: boolean;
 };
@@ -43,7 +67,7 @@ const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '0.2.10';
+const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0';
 const LATEST_STARFIELD_VERSION = '1.16.244';
 
 let activeView: ViewMode = 'recent';
@@ -52,11 +76,13 @@ let favorites = readStringArray(STORAGE_FAVORITES);
 let recent = readStringArray(STORAGE_RECENT);
 let activityLog = readActivityLog();
 let pendingExecution: PendingExecution | null = null;
+let activeIdPicker: ActiveIdPicker | null = null;
 let executionCount = 0;
 let lastCommand = 'None this session';
 let bridgeVersion = 'unknown';
 let bridgeState: 'connecting' | 'ready' | 'unavailable' = 'connecting';
 let nativeBackendReady = false;
+const questDiagnostics = new Map<string, QuestDiagnostic>();
 
 app.innerHTML = `
   <main class="command-center-shell">
@@ -78,11 +104,14 @@ app.innerHTML = `
         <nav id="navigation" class="navigation"></nav>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-bottom-actions">
-          <button class="nav-button nav-button--utility" type="button" data-view="activity">
-            <span>Activity Log</span><span class="nav-count" id="activity-nav-count">0</span>
+          <button class="nav-button nav-button--quest" type="button" data-view="quest-fixes">
+            <span>Quest Fixes</span><span class="nav-count">${QUEST_FIX_STAGE_COUNT}</span>
           </button>
           <button class="nav-button nav-button--custom" type="button" data-view="custom">
             <span>Custom Command</span><span class="nav-count">&gt;_</span>
+          </button>
+          <button class="nav-button nav-button--utility" type="button" data-view="activity">
+            <span>Activity Log</span><span class="nav-count" id="activity-nav-count">0</span>
           </button>
         </div>
       </aside>
@@ -122,6 +151,28 @@ app.innerHTML = `
     </footer>
   </main>
 
+  <div class="id-picker-backdrop" id="id-picker-backdrop" hidden>
+    <section class="id-picker-dialog osf-card" role="dialog" aria-modal="true" aria-labelledby="id-picker-title">
+      <div class="id-picker-head">
+        <div>
+          <p class="osf-eyebrow">REFERENCE ID PICKER</p>
+          <h2 id="id-picker-title">Select Reference ID</h2>
+        </div>
+        <button class="osf-btn osf-btn--sm osf-btn--ghost" id="id-picker-close" type="button">Close</button>
+      </div>
+      <label class="id-picker-search-wrap">
+        <span class="osf-eyebrow">SEARCH</span>
+        <input class="osf-input" id="id-picker-search" type="search" autocomplete="off" placeholder="Search name or ID...">
+      </label>
+      <div class="id-picker-summary" id="id-picker-summary">0 IDs</div>
+      <div class="id-picker-results" id="id-picker-results" aria-live="polite"></div>
+      <div class="id-picker-footer">
+        <span>Choose an entry to fill the command field. Manual ID entry remains available.</span>
+        <button class="osf-btn" id="id-picker-cancel" type="button">Cancel</button>
+      </div>
+    </section>
+  </div>
+
   <div class="confirm-backdrop" id="confirm-backdrop" hidden>
     <section class="confirm-dialog osf-card" id="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
       <p class="osf-eyebrow confirm-label" id="confirm-label">CONFIRM</p>
@@ -153,6 +204,13 @@ const customPanel = requiredElement('#custom-panel', HTMLElement);
 const status = requiredElement('#status', HTMLElement);
 const footerOsfVersion = requiredElement('#footer-osf-version', HTMLElement);
 const closeView = requiredElement('#close-view', HTMLButtonElement);
+const idPickerBackdrop = requiredElement('#id-picker-backdrop', HTMLElement);
+const idPickerTitle = requiredElement('#id-picker-title', HTMLElement);
+const idPickerSearch = requiredElement('#id-picker-search', HTMLInputElement);
+const idPickerSummary = requiredElement('#id-picker-summary', HTMLElement);
+const idPickerResults = requiredElement('#id-picker-results', HTMLElement);
+const idPickerClose = requiredElement('#id-picker-close', HTMLButtonElement);
+const idPickerCancel = requiredElement('#id-picker-cancel', HTMLButtonElement);
 const confirmBackdrop = requiredElement('#confirm-backdrop', HTMLElement);
 const confirmDialog = requiredElement('#confirm-dialog', HTMLElement);
 const confirmLabel = requiredElement('#confirm-label', HTMLElement);
@@ -240,16 +298,31 @@ function categoryCount(category: string): number {
 }
 
 function renderNavigation(): void {
+  const previousCategoryScrollTop = navigation.querySelector<HTMLElement>('.navigation-categories')?.scrollTop ?? 0;
+
   const special = [
     { id: 'recent', label: 'Recent', count: recent.filter((id) => COMMANDS.some((command) => command.id === id)).length },
     { id: 'favorites', label: 'Favorites', count: favorites.filter((id) => COMMANDS.some((command) => command.id === id)).length },
   ];
 
+  const categories = CATEGORY_ORDER.map((category) => ({
+    id: category,
+    label: category,
+    count: categoryCount(category),
+  }));
+
   navigation.innerHTML = `
-    ${special.map((item) => navButton(item.id, item.label, item.count)).join('')}
+    <div class="navigation-stationary" aria-label="Recent and favorite commands">
+      ${special.map((item) => navButton(item.id, item.label, item.count)).join('')}
+    </div>
     <div class="nav-divider"><span></span><span class="osf-eyebrow">CATEGORIES</span><span></span></div>
-    ${CATEGORY_ORDER.map((category) => navButton(category, category, categoryCount(category))).join('')}
+    <div class="navigation-categories" aria-label="Command categories">
+      ${categories.map((item) => navButton(item.id, item.label, item.count)).join('')}
+    </div>
   `;
+
+  const categoryScroller = navigation.querySelector<HTMLElement>('.navigation-categories');
+  if (categoryScroller) categoryScroller.scrollTop = previousCategoryScrollTop;
 
   const activityCount = document.querySelector('#activity-nav-count');
   if (activityCount instanceof HTMLElement) activityCount.textContent = String(activityLog.length);
@@ -284,7 +357,7 @@ function activeCommands(): CommandDefinition[] {
     commands = recent
       .map((id) => COMMANDS.find((command) => command.id === id))
       .filter((command): command is CommandDefinition => Boolean(command));
-  } else if (activeView !== 'custom' && activeView !== 'activity') {
+  } else if (activeView !== 'custom' && activeView !== 'activity' && activeView !== 'quest-fixes') {
     commands = COMMANDS.filter((command) => command.category === activeView);
   }
 
@@ -295,6 +368,7 @@ function viewTitle(): string {
   if (query && activeView !== 'custom' && activeView !== 'activity') return 'Search Results';
   if (activeView === 'favorites') return 'Favorites';
   if (activeView === 'recent') return 'Recent Commands';
+  if (activeView === 'quest-fixes') return 'Quest Fixes';
   if (activeView === 'activity') return 'Activity Log';
   if (activeView === 'custom') return 'Custom Command';
   return activeView;
@@ -307,8 +381,26 @@ function render(): void {
   });
 
   sectionTitle.textContent = viewTitle();
-  sectionKicker.textContent = activeView === 'custom' ? 'ADVANCED' : activeView === 'activity' ? 'DIAGNOSTICS' : query ? 'SEARCH' : 'COMMANDS';
+  sectionKicker.textContent = activeView === 'custom'
+    ? 'ADVANCED'
+    : activeView === 'activity'
+      ? 'DIAGNOSTICS'
+      : activeView === 'quest-fixes'
+        ? 'QUEST REPAIR'
+        : query
+          ? 'SEARCH'
+          : 'COMMANDS';
   searchWrap.hidden = activeView === 'custom' || activeView === 'activity';
+  search.placeholder = activeView === 'quest-fixes'
+    ? 'Search quest, Form ID, stage...'
+    : 'Search name, command, tag...';
+
+  if (activeView === 'quest-fixes') {
+    customPanel.hidden = true;
+    commandList.hidden = false;
+    renderQuestFixes();
+    return;
+  }
 
   if (activeView === 'activity') {
     commandList.hidden = true;
@@ -344,6 +436,152 @@ function render(): void {
   }
 
   commandList.innerHTML = commands.map(renderCommandCard).join('');
+}
+
+function questFixMatches(group: QuestFixGroup, stage: number): boolean {
+  if (!query) return true;
+  const command = `setstage ${group.questId} ${stage}`;
+  const haystack = `${group.quest} ${group.questId} stage ${stage} ${command}`.toLowerCase();
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  return terms.every((term) => haystack.includes(term));
+}
+
+function matchingQuestFixes(): Array<QuestFixGroup & { stages: number[] }> {
+  return QUEST_FIXES
+    .map((group) => ({ ...group, stages: group.stages.filter((stage) => questFixMatches(group, stage)) }))
+    .filter((group) => group.stages.length > 0);
+}
+
+function renderQuestFixes(): void {
+  const groups = matchingQuestFixes();
+  const visibleStageCount = groups.reduce((total, group) => total + group.stages.length, 0);
+  resultCount.textContent = query
+    ? `${groups.length} quest${groups.length === 1 ? '' : 's'} / ${visibleStageCount} matching fix${visibleStageCount === 1 ? '' : 'es'}`
+    : `${QUEST_FIXES.length} quest entries / ${QUEST_FIX_STAGE_COUNT} stage fixes`;
+
+  if (groups.length === 0) {
+    commandList.innerHTML = `<div class="empty-state"><p class="osf-eyebrow">NO QUEST FIXES</p><h3>No matching quest repair</h3><p>Try the quest name, Quest Form ID, or a stage number.</p></div>`;
+    return;
+  }
+
+  const intro = `
+    <section class="quest-fix-intro osf-card">
+      <div>
+        <p class="osf-eyebrow">SURGICAL QUEST REPAIR</p>
+        <h3>Diagnose first. Repair second.</h3>
+        <p>Use <strong>Check Status</strong> to read the quest's highest completed stage and completed-stage history before choosing a fix. These repair buttons run Starfield's vanilla <code>setstage</code> command. Make a manual save first.</p>
+        <p class="quest-stage-caveat">* Starfield reports the highest completed stage as the current stage. A quest designed to revisit a lower stage can therefore show a higher historical value.</p>
+      </div>
+      <div class="quest-fix-source">
+        <span class="osf-eyebrow">DATASET</span>
+        <strong>${QUEST_FIX_STAGE_COUNT} stage fixes</strong>
+        <span>Curated quest-stage repair mappings.</span>
+      </div>
+    </section>`;
+
+  const cards = groups.map((group) => {
+    const diagnostic = questDiagnostics.get(group.questId);
+    const completedSet = new Set(diagnostic?.completedStages ?? []);
+    const currentStage = diagnostic?.state === 'ready' ? diagnostic.currentStage : null;
+
+    const stages = group.stages.map((stage) => {
+      const command = `setstage ${group.questId} ${stage}`;
+      const isCompleted = completedSet.has(stage);
+      const isCurrent = currentStage === stage;
+      const stateClass = isCurrent ? ' is-current' : isCompleted ? ' is-completed' : '';
+      const stateLabel = isCurrent ? 'CURRENT' : isCompleted ? 'DONE' : 'STAGE';
+      return `<button class="quest-stage-button${stateClass}" type="button" data-quest-command="${escapeHtml(command)}" data-quest-id="${escapeHtml(group.questId)}" data-quest-title="${escapeHtml(group.quest)}" data-quest-stage="${stage}"${nativeBackendReady ? '' : ' disabled'}>
+        <span>${stateLabel}</span><strong>${stage}</strong>
+      </button>`;
+    }).join('');
+
+    let statusValue = 'NOT CHECKED';
+    let statusDetail = 'Check the live save before using a repair stage.';
+    if (diagnostic?.state === 'loading') {
+      statusValue = 'CHECKING...';
+      statusDetail = 'Reading quest stage state from the game.';
+    } else if (diagnostic?.state === 'error') {
+      statusValue = 'UNAVAILABLE';
+      statusDetail = diagnostic.message ?? 'Could not read this quest.';
+    } else if (diagnostic?.state === 'ready') {
+      statusValue = diagnostic.currentStage === null ? 'NONE COMPLETED' : String(diagnostic.currentStage);
+      statusDetail = `${diagnostic.completedStages.length} completed stage${diagnostic.completedStages.length === 1 ? '' : 's'} found.`;
+    }
+
+    const history = diagnostic?.state === 'ready'
+      ? diagnostic.completedStages.length > 0
+        ? `<div class="quest-stage-history"><span>COMPLETED STAGES</span><div>${diagnostic.completedStages.map((stage) => `<code>${stage}</code>`).join('')}</div></div>`
+        : `<div class="quest-stage-history"><span>COMPLETED STAGES</span><div class="quest-stage-history-empty">None reported yet.</div></div>`
+      : '';
+
+    return `
+      <article class="quest-fix-card" data-quest-card="${escapeHtml(group.questId)}">
+        <div class="quest-fix-heading">
+          <div>
+            <h3>${escapeHtml(group.quest)}</h3>
+            <div class="quest-fix-id"><span>QUEST ID</span><code>${escapeHtml(group.questId)}</code></div>
+          </div>
+          <span class="quest-fix-count">${group.stages.length} repair stage${group.stages.length === 1 ? '' : 's'}</span>
+        </div>
+
+        <div class="quest-diagnostic-row">
+          <div class="quest-current-stage${diagnostic?.state === 'ready' ? ' is-ready' : ''}${diagnostic?.state === 'error' ? ' is-error' : ''}">
+            <span class="osf-eyebrow">CURRENT / HIGHEST COMPLETED*</span>
+            <strong>${escapeHtml(statusValue)}</strong>
+            <small>${escapeHtml(statusDetail)}</small>
+          </div>
+          <div class="quest-diagnostic-actions">
+            <button class="osf-btn osf-btn--sm" type="button" data-quest-status="${escapeHtml(group.questId)}"${nativeBackendReady && diagnostic?.state !== 'loading' ? '' : ' disabled'}>${diagnostic?.state === 'ready' ? 'Refresh Status' : 'Check Status'}</button>
+            <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-quest-sqs="${escapeHtml(group.questId)}" data-quest-title="${escapeHtml(group.quest)}"${nativeBackendReady ? '' : ' disabled'}>Full SQS</button>
+          </div>
+        </div>
+
+        ${history}
+
+        <div class="quest-fix-stage-label"><span class="osf-eyebrow">AVAILABLE REPAIR STAGES</span><span>Choose only the stage needed to get past the broken step.</span></div>
+        <div class="quest-stage-grid">${stages}</div>
+      </article>`;
+  }).join('');
+
+  commandList.innerHTML = intro + cards;
+}
+
+async function loadQuestStatus(questId: string): Promise<void> {
+  if (!nativeBackendReady) {
+    setStatus('ConsoleCommandCenter.dll is not connected.', 'error');
+    return;
+  }
+
+  const numericQuestId = Number.parseInt(questId, 16);
+  if (!Number.isFinite(numericQuestId)) {
+    setStatus(`Invalid Quest Form ID: ${questId}`, 'error');
+    return;
+  }
+
+  questDiagnostics.set(questId, { state: 'loading', currentStage: null, completedStages: [] });
+  render();
+  setStatus(`Checking quest ${questId}...`, 'working');
+
+  try {
+    if (!window.osfui?.call) throw new Error('OSF UI native request API is unavailable');
+    const reply = await window.osfui.call<QuestStatusReply>('console.command-center.questStatus', { questFormId: numericQuestId });
+    if (!reply?.ok) throw new Error('Native backend did not return quest status');
+
+    const completedStages = Array.isArray(reply.completedStages)
+      ? reply.completedStages.filter((stage) => Number.isInteger(stage)).sort((a, b) => a - b)
+      : [];
+    const currentStage = typeof reply.currentStage === 'number' ? reply.currentStage : null;
+    questDiagnostics.set(questId, { state: 'ready', currentStage, completedStages });
+    setStatus(currentStage === null
+      ? `Quest ${questId}: no completed stages reported.`
+      : `Quest ${questId}: highest completed stage ${currentStage}.`, 'success');
+  } catch (error) {
+    const message = describe(error);
+    questDiagnostics.set(questId, { state: 'error', currentStage: null, completedStages: [], message });
+    setStatus(message, 'error');
+  }
+
+  if (activeView === 'quest-fixes') render();
 }
 
 function renderCommandCard(command: CommandDefinition): string {
@@ -382,6 +620,8 @@ function renderCommandCard(command: CommandDefinition): string {
 }
 
 function renderInput(command: CommandDefinition, input: CommandInput): string {
+  // Curated ID choices always use the same compact field + boxed CHOOSE control.
+  // Do not reintroduce inline preset-button grids inside command cards.
   const id = `${command.id}-${input.key}`;
   const attributes = [
     `id="${escapeHtml(id)}"`,
@@ -398,7 +638,14 @@ function renderInput(command: CommandDefinition, input: CommandInput): string {
   if (input.pattern) attributes.push(`pattern="${escapeHtml(input.pattern)}"`);
 
   const hint = input.hint ? escapeHtml(input.hint) : '&nbsp;';
-  return `<label class="input-field"><span class="input-label">${escapeHtml(input.label)}</span><input ${attributes.join(' ')}><small class="input-hint${input.hint ? '' : ' input-hint--empty'}">${hint}</small></label>`;
+  const pickerButton = input.picker
+    ? `<button class="input-picker-button" type="button" data-open-id-picker="${escapeHtml(command.id)}" data-input-key="${escapeHtml(input.key)}" aria-haspopup="dialog">${escapeHtml(input.picker.buttonLabel)}</button>`
+    : '';
+  const control = pickerButton
+    ? `<div class="input-control-row"><input ${attributes.join(' ')}>${pickerButton}</div>`
+    : `<input ${attributes.join(' ')}>`;
+
+  return `<div class="input-field${input.picker ? ' input-field--picker' : ''}"><label class="input-label" for="${escapeHtml(id)}">${escapeHtml(input.label)}</label>${control}<small class="input-hint${input.hint ? '' : ' input-hint--empty'}">${hint}</small></div>`;
 }
 
 function buildCommand(command: CommandDefinition): string {
@@ -420,6 +667,60 @@ function validateCommand(command: CommandDefinition): string | null {
     if (!element.checkValidity()) return `${input.label} is not valid${input.hint ? ` (${input.hint})` : ''}.`;
   }
   return null;
+}
+
+function pickerSearchText(picker: ReferenceIdPicker, option: ReferenceIdPicker['options'][number]): string {
+  return [option.label, option.value, option.detail ?? '', ...(option.keywords ?? [])].join(' ').toLowerCase();
+}
+
+function renderIdPickerResults(): void {
+  if (!activeIdPicker) return;
+  const term = idPickerSearch.value.trim().toLowerCase();
+  const matches = activeIdPicker.picker.options.filter((option) => !term || pickerSearchText(activeIdPicker!.picker, option).includes(term));
+  idPickerSummary.textContent = `${matches.length} matching ID${matches.length === 1 ? '' : 's'}`;
+  idPickerResults.innerHTML = matches.length > 0
+    ? matches.map((option) => `<button class="id-picker-option" type="button" data-picker-value="${escapeHtml(option.value)}" data-picker-label="${escapeHtml(option.label)}">
+        <span class="id-picker-option-copy"><strong>${escapeHtml(option.label)}</strong>${option.detail ? `<small>${escapeHtml(option.detail)}</small>` : ''}</span>
+        <code>${escapeHtml(option.value)}</code>
+      </button>`).join('')
+    : `<div class="id-picker-empty"><strong>No matching IDs</strong><span>Try another name or type the Form ID manually in the command field.</span></div>`;
+}
+
+function openIdPicker(commandId: string, inputKey: string, picker: ReferenceIdPicker): void {
+  activeIdPicker = { commandId, inputKey, picker };
+  idPickerTitle.textContent = picker.title;
+  idPickerSearch.placeholder = picker.searchPlaceholder;
+  idPickerSearch.value = '';
+  idPickerBackdrop.hidden = false;
+  renderIdPickerResults();
+  requestAnimationFrame(() => {
+    idPickerSearch.focus({ preventScroll: true });
+    idPickerSearch.select();
+  });
+}
+
+function closeIdPicker(refocus = true): void {
+  const previous = activeIdPicker;
+  activeIdPicker = null;
+  idPickerBackdrop.hidden = true;
+  idPickerSearch.value = '';
+  idPickerResults.innerHTML = '';
+  if (!refocus || !previous) return;
+  const input = document.getElementById(`${previous.commandId}-${previous.inputKey}`);
+  if (input instanceof HTMLInputElement) input.focus({ preventScroll: true });
+}
+
+function chooseIdPickerValue(value: string, label: string): void {
+  if (!activeIdPicker) return;
+  const { commandId, inputKey } = activeIdPicker;
+  const input = document.getElementById(`${commandId}-${inputKey}`);
+  if (!(input instanceof HTMLInputElement)) return;
+  input.value = value;
+  updatePreview(commandId);
+  setStatus(`Selected ${label}: ${value}`, 'success');
+  closeIdPicker(false);
+  input.focus({ preventScroll: true });
+  input.select();
 }
 
 function updatePreview(commandId: string): void {
@@ -495,9 +796,13 @@ async function executeConsole(execution: PendingExecution): Promise<void> {
     executionCount += 1;
     lastCommand = executedCommand;
     setStatus(successMessage, 'success');
-    if (execution.definition) addRecent(execution.definition.id);
+    if (execution.definition && execution.rememberRecent !== false) addRecent(execution.definition.id);
     addActivity(execution, 'success', successMessage);
-    if (activeView === 'recent' || activeView === 'activity') render();
+    if (execution.questId) {
+      await loadQuestStatus(execution.questId);
+    } else if (activeView === 'recent' || activeView === 'activity') {
+      render();
+    }
   } catch (error) {
     const message = describe(error);
     setStatus(message, 'error');
@@ -650,25 +955,33 @@ search.addEventListener('input', () => {
   render();
 });
 
+function focusSearchNow(): void {
+  if (activeView === 'custom' || activeView === 'activity' || !confirmBackdrop.hidden || !idPickerBackdrop.hidden || document.hidden) return;
+  search.focus({ preventScroll: true });
+  search.select();
+}
+
 function focusSearchOnEntry(): void {
-  if (activeView === 'custom' || activeView === 'activity' || !confirmBackdrop.hidden) return;
+  if (activeView === 'custom' || activeView === 'activity' || !confirmBackdrop.hidden || !idPickerBackdrop.hidden) return;
+
+  // OSF UI keeps this webview alive between closes, so normal browser
+  // focus/visibility events are not guaranteed to fire when the menu is
+  // reopened. Try after paint and again shortly afterward so the host has
+  // finished transferring keyboard focus to the newly-active menu.
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      if (!document.hidden) {
-        search.focus({ preventScroll: true });
-        search.setSelectionRange(search.value.length, search.value.length);
-      }
-    });
+    requestAnimationFrame(focusSearchNow);
   });
+  window.setTimeout(focusSearchNow, 50);
+  window.setTimeout(focusSearchNow, 150);
 }
 
 function primeSearchForNextOpen(): void {
-  if (activeView === 'custom' || activeView === 'activity' || !confirmBackdrop.hidden) return;
+  if (activeView === 'custom' || activeView === 'activity' || !confirmBackdrop.hidden || !idPickerBackdrop.hidden) return;
   // OSF UI keeps this webview alive between closes. Leave focus on Search
   // before hiding the surface so reopening the same view retains Search as
   // the active control.
   search.focus({ preventScroll: true });
-  search.setSelectionRange(search.value.length, search.value.length);
+  search.select();
 }
 
 window.addEventListener('focus', focusSearchOnEntry);
@@ -676,7 +989,70 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden) focusSearchOnEntry();
 });
 
+// This is the reliable lifecycle edge for an OSF UI menu. It fires every
+// time CCC becomes the focused menu, including reopenings where the webview
+// itself never reloads and the browser's normal focus/visibility events do
+// not change.
+window.osfui?.on?.<{ visible: boolean; reason?: 'overlay' | 'focus' }>('ui.visibility', (payload) => {
+  if (payload.visible) focusSearchOnEntry();
+});
+
 commandList.addEventListener('click', (event) => {
+  const pickerButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-open-id-picker]');
+  if (pickerButton?.dataset.openIdPicker && pickerButton.dataset.inputKey) {
+    const command = COMMANDS.find((entry) => entry.id === pickerButton.dataset.openIdPicker);
+    const input = command?.inputs?.find((entry) => entry.key === pickerButton.dataset.inputKey);
+    if (command && input?.picker) openIdPicker(command.id, input.key, input.picker);
+    return;
+  }
+
+
+  const statusButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-quest-status]');
+  if (statusButton?.dataset.questStatus) {
+    void loadQuestStatus(statusButton.dataset.questStatus);
+    return;
+  }
+
+  const sqsButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-quest-sqs]');
+  if (sqsButton?.dataset.questSqs && sqsButton.dataset.questTitle) {
+    const questId = sqsButton.dataset.questSqs;
+    const questTitle = sqsButton.dataset.questTitle;
+    const command = `sqs ${questId}`;
+    const definition: CommandDefinition = {
+      id: `quest-sqs-${questId.toLowerCase()}`,
+      title: `${questTitle} — Full SQS`,
+      category: 'Quests',
+      description: `Print the full stage-status table for ${questTitle} to Starfield's console.`,
+      command,
+      testStatus: 'untested',
+    };
+    showConfirmation(
+      { command, definition, rememberRecent: false },
+      'This is a read-only diagnostic command. It prints the full stage table to Starfield\'s console. Check Status summarizes the same quest data inside CCC.',
+      'normal',
+    );
+    return;
+  }
+
+  const questButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-quest-command]');
+  if (questButton?.dataset.questCommand && questButton.dataset.questTitle && questButton.dataset.questStage) {
+    const questTitle = questButton.dataset.questTitle;
+    const stage = Number(questButton.dataset.questStage);
+    const command = questButton.dataset.questCommand;
+    const definition: CommandDefinition = {
+      id: `quest-fix-${command.replace(/\s+/g, '-').toLowerCase()}`,
+      title: `${questTitle} — Stage ${stage}`,
+      category: 'Quests',
+      description: `Advance ${questTitle} directly to stage ${stage}.`,
+      command,
+      warning: 'SetStage can bypass dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save and use this only to repair a quest that is already stuck.',
+      risk: 'danger',
+      testStatus: 'untested',
+    };
+    requestExecution({ command, definition, rememberRecent: false, questId: questButton.dataset.questId });
+    return;
+  }
+
   const cautionButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-caution]');
   if (cautionButton?.dataset.caution) {
     const wrap = cautionButton.closest<HTMLElement>('.caution-wrap');
@@ -724,7 +1100,20 @@ commandList.addEventListener('input', (event) => {
   if (input?.dataset.commandInput) updatePreview(input.dataset.commandInput);
 });
 
+idPickerSearch.addEventListener('input', renderIdPickerResults);
+idPickerClose.addEventListener('click', () => closeIdPicker());
+idPickerCancel.addEventListener('click', () => closeIdPicker());
+idPickerBackdrop.addEventListener('click', (event) => {
+  if (event.target === idPickerBackdrop) closeIdPicker();
+});
+idPickerResults.addEventListener('click', (event) => {
+  const option = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-picker-value]');
+  if (!option?.dataset.pickerValue || !option.dataset.pickerLabel) return;
+  chooseIdPickerValue(option.dataset.pickerValue, option.dataset.pickerLabel);
+});
+
 async function closeCurrentView(): Promise<void> {
+  if (!idPickerBackdrop.hidden) closeIdPicker(false);
   primeSearchForNextOpen();
 
   if (!window.osfui?.call) {
@@ -766,7 +1155,9 @@ confirmBackdrop.addEventListener('click', (event) => {
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
     const openCaution = commandList.querySelector<HTMLElement>('.caution-wrap.is-open');
-    if (!confirmBackdrop.hidden) {
+    if (!idPickerBackdrop.hidden) {
+      closeIdPicker();
+    } else if (!confirmBackdrop.hidden) {
       pendingExecution = null;
       confirmBackdrop.hidden = true;
     } else if (openCaution) {
@@ -775,9 +1166,10 @@ document.addEventListener('keydown', (event) => {
       void closeCurrentView();
     }
   }
-  if (event.key === '/' && activeView !== 'custom' && activeView !== 'activity' && document.activeElement !== search) {
+  if (event.key === '/' && idPickerBackdrop.hidden && activeView !== 'custom' && activeView !== 'activity' && document.activeElement !== search) {
     event.preventDefault();
     search.focus({ preventScroll: true });
+    search.select();
     return;
   }
 
@@ -795,6 +1187,7 @@ document.addEventListener('keydown', (event) => {
     && activeView !== 'custom'
     && activeView !== 'activity'
     && confirmBackdrop.hidden
+    && idPickerBackdrop.hidden
     && !isEditable
   ) {
     event.preventDefault();
