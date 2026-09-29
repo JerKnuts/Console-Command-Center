@@ -108,6 +108,12 @@ npm run setup:deps
 
 The dependency revision is pinned in `native/setup-deps.mjs`, so fresh clones use the same CommonLibSF revision as the development build.
 
+## License and corresponding source
+
+Console Command Center is licensed under **GPL-3.0-or-later with the CommonLibSF Modding Exception and GPL-3.0 Linking Exception (with Corresponding Source)**. See [`LICENSE`](LICENSE) and [`EXCEPTIONS`](EXCEPTIONS).
+
+The native DLL links against CommonLibSF. The exact corresponding CommonLibSF revision and restoration instructions are recorded in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and `native/setup-deps.mjs`. Binary releases must be accompanied by this project's source and access to that pinned dependency source.
+
 ## Generated folders
 
 The following are local/generated and should not be committed or included in source archives:

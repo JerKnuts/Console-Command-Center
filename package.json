@@ -2,6 +2,7 @@
   "name": "console-command-center",
   "version": "0.3.0",
   "private": true,
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "clean": "node scripts/clean.mjs",

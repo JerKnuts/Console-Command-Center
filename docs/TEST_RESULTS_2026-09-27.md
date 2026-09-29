@@ -1,6 +1,6 @@
 # Starfield Console Command Center — latest in-game test results
 
-Source: user testing reported in “Replace Picker With Box” (conversation 6ab8971a-dda0-83ea-9a9f-1a72a3db4f5b), September 27, 2026.
+Source: user testing reported during the September 27, 2026 development session.
 
 These are user-reported results, not independently reproduced. The previous conversation describes the output failures as timeouts; screenshots have not yet been inspected. This test build replaces the main inspections with direct game reads and adds a results window. Fixes have not been verified in game; the table preserves the last user-reported results.
 
