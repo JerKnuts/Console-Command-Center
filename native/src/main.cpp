@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "OSFUI_JSON.h"
+#include "DirectQuery.h"
 
 namespace
 {
@@ -23,6 +24,13 @@ namespace
 
     constexpr const char* kViewId = "console.command-center/main";
     constexpr std::size_t kMaxCommandLength = 1024;
+
+    bool g_captureActive = false;
+    struct CaptureLease
+    {
+        CaptureLease() { g_captureActive = true; }
+        ~CaptureLease() { g_captureActive = false; }
+    };
 
     bool ExecuteConsoleCommand(std::string_view command) noexcept
     {
@@ -64,6 +72,8 @@ namespace
         });
     }
 
+    bool QueueMainTaskAfter(std::chrono::milliseconds delay, std::function<void()> task) noexcept;
+
     void OnExecute(const OSFUI::API::Request& raw, void*) noexcept
     {
         OSFUI::API::JsonRequest request{ raw };
@@ -79,6 +89,34 @@ namespace
         }
         if (!IsSafeBridgeString(*command)) {
             request.Reject("invalid-command", "Command is empty, too long, or contains control characters.");
+            return;
+        }
+        if (g_captureActive) {
+            request.Reject("query-busy", "Wait for the current inspection to finish before running another command.");
+            return;
+        }
+        const bool closeBeforeExecute = request.Get<bool>("closeBeforeExecute").value_or(false);
+        if (closeBeforeExecute) {
+            if (!g_ui.RequestMenu(kViewId, false)) {
+                request.Reject("close-failed", "OSF UI could not close CCC before opening the requested game menu.");
+                return;
+            }
+            const std::string queuedCommand = *command;
+            if (!QueueMainTaskAfter(std::chrono::milliseconds{ 150 }, [queuedCommand]() noexcept {
+                if (queuedCommand == "showmenu sleepwaitmenu") {
+                    if (auto* messages = RE::UIMessageQueue::GetSingleton()) {
+                        (void)messages->AddMessage(RE::BSFixedString{ "SleepWaitMenu" }, RE::UI_MESSAGE_TYPE::kShow);
+                    }
+                    return;
+                }
+                (void)ExecuteConsoleCommand(queuedCommand);
+            })) {
+                request.Reject("execution-failed", "Could not schedule the command after closing CCC.");
+                return;
+            }
+            (void)request.Respond("console.command-center.executeResult", OSFUI::API::Json{
+                { "ok", true }, { "command", *command }, { "queuedAfterClose", true }
+            });
             return;
         }
         if (!ExecuteConsoleCommand(*command)) {
@@ -111,9 +149,13 @@ namespace
             return after.substr(before.size());
         }
 
-        // The console buffer is bounded and may roll over. If that happens,
-        // parsing the newest complete buffer is safer than returning nothing.
-        return after;
+        // Find a suffix/prefix overlap on rollover. Never return old history as
+        // if it belonged to this query when the buffer cannot be correlated.
+        for (auto offset = before.find('\n'); offset != std::string::npos; offset = before.find('\n', offset + 1)) {
+            const auto suffix = std::string_view(before).substr(offset + 1);
+            if (!suffix.empty() && after.starts_with(suffix)) return after.substr(suffix.size());
+        }
+        return {};
     }
 
     bool ParseGetStageOutput(std::string_view output, std::uint16_t& stage) noexcept
@@ -185,6 +227,7 @@ namespace
 
     struct QuestStatusCapture
     {
+        std::shared_ptr<CaptureLease> lease;
         OSFUI::API::Request request{};
         std::string questIDText;
         std::uint16_t currentStage{ 0 };
@@ -232,14 +275,15 @@ namespace
         }
     }
 
-    void RespondQuestStatus(const std::shared_ptr<QuestStatusCapture>& state, const std::vector<std::uint16_t>& completedStages) noexcept
+    void RespondQuestStatus(const std::shared_ptr<QuestStatusCapture>& state, const std::vector<std::uint16_t>& completedStages, bool historyAvailable = true) noexcept
     {
         try {
             const auto payload = OSFUI::API::Json{
                 { "ok", true },
                 { "questId", state->questIDText },
                 { "currentStage", state->currentStage },
-                { "completedStages", completedStages }
+                { "completedStages", completedStages },
+                { "historyAvailable", historyAvailable }
             }.dump();
             state->request.Respond("console.command-center.questStatusResult", payload.c_str());
         } catch (...) {
@@ -305,7 +349,9 @@ namespace
             }
 
             if (++state->sqsPolls >= kQuestStatusMaxPolls) {
-                RejectQuestStatus(state, "quest-status-unavailable", "SQS did not return a quest stage table for this quest.");
+                // The scalar stage is still useful. An unavailable SQS table
+                // must not be reported as an empty completed-stage history.
+                RespondQuestStatus(state, {}, false);
                 return;
             }
 
@@ -319,39 +365,127 @@ namespace
 
     void OnQuestStatus(const OSFUI::API::Request& raw, void*) noexcept
     {
+        raw.Reject("inspection-disabled", "Quest Status is temporarily disabled after a native crash in the shared test1 evaluator. Scale, Open State, and GetStage need a verified replacement adapter.");
+    }
+
+    struct ConsoleQueryCapture
+    {
+        std::shared_ptr<CaptureLease> lease;
+        OSFUI::API::Request request{};
+        std::string command;
+        std::string bufferBefore;
+        std::string lastOutput;
+        std::uint32_t polls{ 0 };
+        std::uint32_t stablePolls{ 0 };
+    };
+
+    constexpr std::uint32_t kConsoleQueryMaxPolls = 40;
+    constexpr auto kConsoleQueryPollDelay = std::chrono::milliseconds{ 50 };
+
+    void RejectConsoleQuery(const std::shared_ptr<ConsoleQueryCapture>& state, const char* code, const char* message) noexcept
+    {
+        if (state) {
+            state->request.Reject(code, message);
+        }
+    }
+
+    void RespondConsoleQuery(const std::shared_ptr<ConsoleQueryCapture>& state, const std::string& output) noexcept
+    {
+        try {
+            const auto payload = OSFUI::API::Json{
+                { "ok", true },
+                { "command", state->command },
+                { "output", output }
+            }.dump();
+            state->request.Respond("console.command-center.queryResult", payload.c_str());
+        } catch (...) {
+            RejectConsoleQuery(state, "query-failed", "Could not serialize console query output.");
+        }
+    }
+
+    void PollConsoleQueryOutput(const std::shared_ptr<ConsoleQueryCapture>& state) noexcept
+    {
+        try {
+            const auto output = ConsoleBufferDelta(state->bufferBefore);
+
+            if (!output.empty() && output == state->lastOutput) {
+                ++state->stablePolls;
+            } else {
+                state->lastOutput = output;
+                state->stablePolls = 0;
+            }
+
+            // Console read commands can emit their result after the execution
+            // call has returned. Wait until the new buffer text has stopped
+            // changing for two polls before returning it to the UI. This gives long outputs
+            // such as ShowInventory, Help, and SQS more time to finish printing.
+            if (!output.empty() && state->stablePolls >= 2) {
+                RespondConsoleQuery(state, output);
+                return;
+            }
+
+            if (++state->polls >= kConsoleQueryMaxPolls) {
+                RejectConsoleQuery(state, "query-timeout", "No complete console output was captured. The command may have run without printing text. Try it in Starfield's console; this is not a zero or empty result.");
+                return;
+            }
+
+            if (!QueueMainTaskAfter(kConsoleQueryPollDelay, [state]() noexcept { PollConsoleQueryOutput(state); })) {
+                RejectConsoleQuery(state, "query-failed", "Could not schedule console output capture.");
+            }
+        } catch (...) {
+            RejectConsoleQuery(state, "query-failed", "Could not capture console query output.");
+        }
+    }
+
+    void OnQuery(const OSFUI::API::Request& raw, void*) noexcept
+    {
         OSFUI::API::JsonRequest request{ raw };
         if (!request) {
             return;
         }
 
-        const auto questFormID = request.Get<std::uint32_t>("questFormId");
-        if (!questFormID) {
+        const auto command = request.Get<std::string>("consoleCommand");
+        if (!command) {
+            return;
+        }
+        if (!IsSafeBridgeString(*command)) {
+            request.Reject("invalid-command", "Command is empty, too long, or contains control characters.");
             return;
         }
 
         try {
-            auto state = std::make_shared<QuestStatusCapture>();
+            if (g_captureActive) {
+                request.Reject("query-busy", "Wait for the current inspection to finish.");
+                return;
+            }
+            if (const auto output = CCC::ReadDirectQuery(*command)) {
+                // Game strings (and localized names) can contain non-UTF-8
+                // bytes. Preserve IDs/counts and replace invalid text bytes
+                // instead of rejecting the entire inventory snapshot.
+                const auto payload = OSFUI::API::Json{
+                    { "ok", true }, { "command", *command }, { "output", *output }, { "source", "direct" }
+                }.dump(-1, ' ', false, OSFUI::API::Json::error_handler_t::replace);
+                raw.Respond("console.command-center.queryResult", payload.c_str());
+                return;
+            }
+            auto state = std::make_shared<ConsoleQueryCapture>();
+            state->lease = std::make_shared<CaptureLease>();
             state->request = raw;
+            state->command = *command;
+            state->bufferBefore = ReadConsoleBuffer();
 
-            char questIDText[9]{};
-            std::snprintf(questIDText, sizeof(questIDText), "%08X", *questFormID);
-            state->questIDText = questIDText;
-
-            state->getStageBufferBefore = ReadConsoleBuffer();
-            const std::string getStageCommand = std::string{ "getstage " } + state->questIDText;
-            if (!ExecuteConsoleCommand(getStageCommand)) {
-                request.Reject("quest-status-failed", "Could not execute GetStage for this quest.");
+            if (!ExecuteConsoleCommand(*command)) {
+                request.Reject("query-failed", "Native Starfield console execution failed.");
                 return;
             }
 
-            // Console diagnostics are written asynchronously after the command
-            // handler returns. A normal AddTask can be drained again in the same
-            // frame, so use an actual short delay before each main-thread read.
-            if (!QueueMainTaskAfter(kGetStagePollDelay, [state]() noexcept { PollGetStageOutput(state); })) {
-                request.Reject("quest-status-failed", "Could not schedule GetStage output capture.");
+            if (!QueueMainTaskAfter(kConsoleQueryPollDelay, [state]() noexcept { PollConsoleQueryOutput(state); })) {
+                request.Reject("query-failed", "Could not schedule console output capture.");
             }
+        } catch (const std::exception& error) {
+            request.Reject("query-failed", error.what());
         } catch (...) {
-            request.Reject("quest-status-failed", "Could not start quest stage diagnostics.");
+            request.Reject("query-failed", "Could not start console output capture.");
         }
     }
 
@@ -365,6 +499,7 @@ namespace
         (void)request.Respond("console.command-center.pingResult", OSFUI::API::Json{
             { "ok", true },
             { "backend", "ConsoleCommandCenter.dll" },
+            { "build", "id-browser-6" },
             { "executor", "native" }
         });
     }
@@ -397,6 +532,7 @@ namespace
 
         g_ui.RegisterRequest("console.command-center.ping", &OnPing, nullptr);
         g_ui.RegisterRequest("console.command-center.execute", &OnExecute, nullptr);
+        g_ui.RegisterRequest("console.command-center.query", &OnQuery, nullptr);
         g_ui.RegisterRequest("console.command-center.questStatus", &OnQuestStatus, nullptr);
         g_ui.RegisterRequest("console.command-center.close", &OnClose, nullptr);
         (void)g_ui.RegisterView(kViewId);

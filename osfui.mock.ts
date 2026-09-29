@@ -1,73 +1,43 @@
 import { defineMock, type MockContext } from '@osfui/cli';
 
-// The browser harness mirrors native/src/main.cpp so every round trip works
-// without launching Starfield. This file stays at project root and never ships.
-const state = {
-  count: 0,
-  enabled: true,
-  greeting: 'Hello from the mocked C++ plugin',
-  lastAction: 'Browser mock initialized',
-  features: ['typed JSON', 'commands', 'requests', 'native pushes', 'settings', 'hotkeys'],
-};
-
-export default defineMock({
-  locales: { en: { title: 'Native bridge example' } },
-});
-
+// Browser-only fixtures. These never execute game commands or ship in the mod.
+export default defineMock({});
 export function install(ctx: MockContext) {
-  const pushState = () => ctx.send({
-    type: 'console.command-center.state',
-    payload: { ...state, features: [...state.features] },
+  let failQuery = false;
+  ctx.registerTools([{ id: 'fail-query', kind: 'toggle', label: 'Fail inspections', value: false }], (_id, value) => {
+    failQuery = value === true;
   });
-  const notice = (message: string) => ctx.send({
-    type: 'console.command-center.notice', payload: { message },
-  });
-
   ctx.onCommand((command, payload, reply) => {
-    if (command === 'console.command-center.getState') {
-      reply('console.command-center.state', { ...state, features: [...state.features] });
+    if (command === 'console.command-center.ping') {
+      reply('console.command-center.pingResult', { ok: true, backend: 'Browser test fixture', executor: 'native' });
       return true;
     }
-    if (command === 'console.command-center.increment') {
-      const requested = Number(payload.amount);
-      const amount = Number.isFinite(requested) ? Math.max(-10, Math.min(10, requested)) : 1;
-      if (state.enabled) {
-        state.count += amount;
-        state.lastAction = 'JavaScript sent a fire-and-forget command';
-        pushState();
-      } else {
-        notice('The native counter is disabled in Mod Settings');
-      }
-      return true;
-    }
-    if (command === 'console.command-center.greet') {
-      const name = typeof payload.name === 'string' ? payload.name : '';
-      if (!name) {
-        reply('ui.error', { code: 'invalid-payload', message: 'name is required' });
+    if (command === 'console.command-center.query') {
+      if (failQuery) {
+        reply('ui.error', { code: 'query-failed', message: 'Test fixture: reference unavailable.' });
         return true;
       }
-      const excited = payload.excited === true;
-      reply('console.command-center.greeting', {
-        message: state.greeting + ', ' + name + (excited ? '!!' : '!'),
-        receivedFromJs: { name, excited },
-        nativeCount: state.count,
-      });
+      const text = String(payload.consoleCommand ?? '');
+      const output = text.startsWith('help ')
+        ? 'WEAP: (0004716C) Beowulf'
+        : text.includes('showinventory')
+          ? Array.from({ length: 250 }, (_, i) => `000${i.toString(16).padStart(5, '0')}  1  Test item ${i + 1}`).join('\n')
+          : text.includes('getspaceship') ? 'Current spaceship Reference ID: FF001234'
+          : 'Value >> 0.000000';
+      reply('console.command-center.queryResult', { ok: true, command: text, output });
       return true;
     }
-  });
-
-  ctx.registerTools([
-    { id: 'native-enabled', kind: 'toggle', label: 'Native enabled', value: true },
-    { id: 'native-hotkey', kind: 'button', label: 'Fire hotkey callback' },
-  ], (id, value) => {
-    if (id === 'native-enabled') {
-      state.enabled = value === true;
-      state.lastAction = 'Mocked C++ settings callback applied a value';
-      pushState();
-    } else if (id === 'native-hotkey') {
-      state.lastAction = 'Mocked C++ hotkey callback fired';
-      pushState();
-      notice('The native open-view hotkey fired');
+    if (command === 'console.command-center.execute') {
+      reply('console.command-center.executeResult', { ok: true, command: String(payload.consoleCommand ?? '') });
+      return true;
+    }
+    if (command === 'console.command-center.questStatus') {
+      reply('console.command-center.questStatusResult', { ok: true, questId: 'test', currentStage: 20, completedStages: [10, 20] });
+      return true;
+    }
+    if (command === 'console.command-center.close') {
+      reply('console.command-center.closeResult', { ok: true });
+      return true;
     }
   });
 }

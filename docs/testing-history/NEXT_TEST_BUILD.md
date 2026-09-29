@@ -1,5 +1,9 @@
 # Console Command Center v0.3.0 — Next Test Build
 
+**Historical note:** v0.3.0-test2 used [TEST_BUILD_CRASH_GUARD.md](TEST_BUILD_CRASH_GUARD.md). Test1 was superseded after a scale-inspection crash; the shared evaluator was removed in test2.
+
+**Superseded:** this file describes old test packages. See [the consolidated test results](../TEST_RESULTS_2026-09-27.md) for the latest recorded outcomes.
+
 This is a cumulative overlay for the next in-game test launch.
 
 Included since the last tested build:

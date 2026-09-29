@@ -4,6 +4,7 @@ import './style.css';
 import { CATEGORY_ORDER, COMMANDS, type CommandDefinition, type CommandInput } from './commands';
 import { QUEST_FIXES, QUEST_FIX_STAGE_COUNT, type QuestFixGroup } from './quest-fixes';
 import type { ReferenceIdPicker } from './reference-ids';
+import { ID_BROWSER_CATEGORIES, ID_CATALOG, type IdCatalogEntry } from './id-catalog';
 
 type ViewMode = 'favorites' | 'recent' | 'quest-fixes' | 'activity' | 'custom' | string;
 
@@ -41,17 +42,32 @@ type ExecuteReply = {
   command: string;
 };
 
+type QueryReply = {
+  ok: boolean;
+  command: string;
+  output: string;
+};
+
+type InventoryResultRow = {
+  type: string;
+  id: string;
+  count: number;
+  name: string;
+};
+
 type QuestStatusReply = {
   ok: boolean;
   questId: string;
   currentStage: number | null;
   completedStages: number[];
+  historyAvailable?: boolean;
 };
 
 type QuestDiagnostic = {
   state: 'loading' | 'ready' | 'error';
   currentStage: number | null;
   completedStages: number[];
+  historyAvailable?: boolean;
   message?: string;
 };
 
@@ -67,7 +83,7 @@ const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0';
+const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0-test6';
 const LATEST_STARFIELD_VERSION = '1.16.244';
 
 let activeView: ViewMode = 'recent';
@@ -82,6 +98,11 @@ let lastCommand = 'None this session';
 let bridgeVersion = 'unknown';
 let bridgeState: 'connecting' | 'ready' | 'unavailable' = 'connecting';
 let nativeBackendReady = false;
+let idBrowserCategory = 'all';
+let idBrowserLiveResults: IdCatalogEntry[] = [];
+let idBrowserRawOutput = '';
+let idBrowserSearching = false;
+let idBrowserSelected: IdCatalogEntry | null = null;
 const questDiagnostics = new Map<string, QuestDiagnostic>();
 
 app.innerHTML = `
@@ -102,18 +123,6 @@ app.innerHTML = `
       <aside class="sidebar" aria-label="Command categories">
         <div class="sidebar-head osf-eyebrow">COMMAND LIBRARY</div>
         <nav id="navigation" class="navigation"></nav>
-        <div class="sidebar-spacer"></div>
-        <div class="sidebar-bottom-actions">
-          <button class="nav-button nav-button--quest" type="button" data-view="quest-fixes">
-            <span>Quest Fixes</span><span class="nav-count">${QUEST_FIX_STAGE_COUNT}</span>
-          </button>
-          <button class="nav-button nav-button--custom" type="button" data-view="custom">
-            <span>Custom Command</span><span class="nav-count">&gt;_</span>
-          </button>
-          <button class="nav-button nav-button--utility" type="button" data-view="activity">
-            <span>Activity Log</span><span class="nav-count" id="activity-nav-count">0</span>
-          </button>
-        </div>
       </aside>
 
       <section class="content">
@@ -139,6 +148,21 @@ app.innerHTML = `
       </section>
     </section>
 
+    <nav class="utility-nav-bar" aria-label="Tools and utilities">
+      <button class="nav-button nav-button--ids" type="button" data-view="id-browser">
+        <span>ID Browser</span><span class="nav-count">${ID_CATALOG.length}</span>
+      </button>
+      <button class="nav-button nav-button--quest" type="button" data-view="quest-fixes">
+        <span>Quest Fixes</span><span class="nav-count">${QUEST_FIX_STAGE_COUNT}</span>
+      </button>
+      <button class="nav-button nav-button--custom" type="button" data-view="custom">
+        <span>Custom Command</span><span class="nav-count">&gt;_</span>
+      </button>
+      <button class="nav-button nav-button--utility" type="button" data-view="activity">
+        <span>Activity Log</span><span class="nav-count" id="activity-nav-count">0</span>
+      </button>
+    </nav>
+
     <footer class="statusbar">
       <div class="status-primary"><span class="osf-eyebrow">STATUS</span><span id="status">Ready.</span></div>
       <div class="status-versions" aria-label="Version information">
@@ -155,7 +179,7 @@ app.innerHTML = `
     <section class="id-picker-dialog osf-card" role="dialog" aria-modal="true" aria-labelledby="id-picker-title">
       <div class="id-picker-head">
         <div>
-          <p class="osf-eyebrow">REFERENCE ID PICKER</p>
+          <p class="osf-eyebrow">QUICK CHOICES</p>
           <h2 id="id-picker-title">Select Reference ID</h2>
         </div>
         <button class="osf-btn osf-btn--sm osf-btn--ghost" id="id-picker-close" type="button">Close</button>
@@ -165,6 +189,7 @@ app.innerHTML = `
         <input class="osf-input" id="id-picker-search" type="search" autocomplete="off" placeholder="Search name or ID...">
       </label>
       <div class="id-picker-summary" id="id-picker-summary">0 IDs</div>
+      <div class="osf-tricolor popup-stripe popup-stripe--picker-divider" aria-hidden="true"></div>
       <div class="id-picker-results" id="id-picker-results" aria-live="polite"></div>
       <div class="id-picker-footer">
         <span>Choose an entry to fill the command field. Manual ID entry remains available.</span>
@@ -175,6 +200,7 @@ app.innerHTML = `
 
   <div class="confirm-backdrop" id="confirm-backdrop" hidden>
     <section class="confirm-dialog osf-card" id="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+      <div class="osf-tricolor popup-stripe" aria-hidden="true"></div>
       <p class="osf-eyebrow confirm-label" id="confirm-label">CONFIRM</p>
       <h2 id="confirm-title">Confirm execution</h2>
       <p id="confirm-message"></p>
@@ -186,6 +212,150 @@ app.innerHTML = `
     </section>
   </div>
 `;
+
+const resultsDialog = document.createElement('dialog');
+resultsDialog.className = 'results-dialog';
+resultsDialog.setAttribute('aria-labelledby', 'results-title');
+resultsDialog.innerHTML = `
+  <header class="results-head"><div><p class="osf-eyebrow">INSPECTION RESULTS</p><h2 id="results-title"></h2></div>
+    <button class="osf-btn" id="results-close" type="button">Close</button></header>
+  <code id="results-command"></code>
+  <p id="results-status" role="status"></p>
+  <div class="results-id-actions" id="results-id-actions" hidden></div>
+  <div class="inventory-results-toolbar" id="inventory-results-toolbar" hidden>
+    <label><span class="osf-eyebrow">SEARCH INVENTORY</span><input class="osf-input" id="inventory-results-search" type="search" autocomplete="off" placeholder="Search item name, type, or Form ID..."></label>
+    <label><span class="osf-eyebrow">SORT</span><select class="osf-input" id="inventory-results-sort"><option value="type">Type, then name</option><option value="name">Name</option><option value="id">Form ID</option><option value="count">Quantity, highest first</option></select></label>
+  </div>
+  <div class="inventory-results" id="inventory-results" hidden></div>
+  <pre id="results-output" tabindex="0" aria-label="Command output"></pre>
+  <footer id="results-footer">Results are saved in Activity Log. Select text to copy it. Escape closes this window.</footer>`;
+document.body.append(resultsDialog);
+const resultsTitle = requiredElement('#results-title', HTMLElement);
+const resultsCommand = requiredElement('#results-command', HTMLElement);
+const resultsStatus = requiredElement('#results-status', HTMLElement);
+const resultsIdActions = requiredElement('#results-id-actions', HTMLElement);
+const resultsOutput = requiredElement('#results-output', HTMLElement);
+const inventoryResultsToolbar = requiredElement('#inventory-results-toolbar', HTMLElement);
+const inventoryResultsSearch = requiredElement('#inventory-results-search', HTMLInputElement);
+const inventoryResultsSort = requiredElement('#inventory-results-sort', HTMLSelectElement);
+const inventoryResults = requiredElement('#inventory-results', HTMLElement);
+const resultsFooter = requiredElement('#results-footer', HTMLElement);
+let inventoryResultRows: InventoryResultRow[] = [];
+requiredElement('#results-close', HTMLButtonElement).addEventListener('click', () => resultsDialog.close());
+// Handle Escape here so it cannot also close the entire CCC view.
+resultsDialog.addEventListener('keydown', (event) => {
+  event.stopPropagation();
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    resultsDialog.close();
+  }
+});
+
+function showResults(title: string, command: string, output: string, state: 'loading' | 'ready' | 'error'): void {
+  resultsTitle.textContent = title;
+  resultsCommand.textContent = command;
+  resultsStatus.textContent = state === 'loading' ? 'Reading game data…'
+    : state === 'error' ? 'Inspection failed — no value was verified.'
+    : `${output.length.toLocaleString()} characters • saved in Activity Log`;
+  resultsStatus.dataset.state = state;
+  const isInventory = state === 'ready' && output.startsWith('CCC_INVENTORY_V1\n');
+  const resultIds = state === 'ready' && !isInventory ? extractResultIds(output) : [];
+  resultsIdActions.hidden = resultIds.length === 0;
+  resultsIdActions.innerHTML = resultIds.map((id) => `<button class="osf-btn osf-btn--sm" type="button" data-copy-result-id="${id}">Copy ID <code>${id}</code></button>`).join('');
+  inventoryResultRows = isInventory ? parseInventoryResults(output) : [];
+  inventoryResultsToolbar.hidden = !isInventory;
+  inventoryResults.hidden = !isInventory;
+  resultsOutput.hidden = isInventory;
+  resultsFooter.textContent = isInventory
+    ? 'Use Copy ID beside any item. Results are saved in Activity Log. Escape closes this window.'
+    : 'Results are saved in Activity Log. Select text to copy it. Escape closes this window.';
+  if (isInventory) {
+    inventoryResultsSearch.value = '';
+    inventoryResultsSort.value = 'type';
+    renderInventoryResults();
+  } else {
+    resultsOutput.textContent = output;
+    resultsOutput.scrollTop = 0;
+  }
+  if (!resultsDialog.open) resultsDialog.showModal();
+}
+
+function extractResultIds(output: string): string[] {
+  return [...new Set(output.match(/\b[0-9A-F]{8}\b/gi)?.map((id) => id.toUpperCase()) ?? [])];
+}
+
+const INVENTORY_TYPE_LABELS: Record<string, string> = {
+  WEAP: 'Weapons', ARMO: 'Armor & Apparel', AMMO: 'Ammo', AID: 'Aid & Consumables',
+  BOOK: 'Books', NOTE: 'Notes', KEY: 'Keys', MISC: 'Miscellaneous & Resources',
+  INGR: 'Ingredients', SPEL: 'Spells & Powers', OTHER: 'Other',
+};
+
+function parseInventoryResults(output: string): InventoryResultRow[] {
+  return output.split(/\r?\n/).slice(2).flatMap((line) => {
+    if (!line || line.startsWith('SUMMARY\t')) return [];
+    const [type, id, countText, ...nameParts] = line.split('\t');
+    const count = Number(countText);
+    if (!type || !/^[0-9A-F]{8}$/i.test(id ?? '') || !Number.isFinite(count) || nameParts.length === 0) return [];
+    return [{ type, id: id.toUpperCase(), count, name: nameParts.join(' ') }];
+  });
+}
+
+function renderInventoryResults(): void {
+  const term = inventoryResultsSearch.value.trim().toLowerCase();
+  const sort = inventoryResultsSort.value;
+  const rows = inventoryResultRows.filter((row) => !term || [row.name, row.id, row.type, INVENTORY_TYPE_LABELS[row.type] ?? 'Other']
+    .some((value) => value.toLowerCase().includes(term)));
+  rows.sort((a, b) => sort === 'count' ? b.count - a.count || a.name.localeCompare(b.name)
+    : sort === 'id' ? a.id.localeCompare(b.id)
+      : sort === 'name' ? a.name.localeCompare(b.name)
+        : (INVENTORY_TYPE_LABELS[a.type] ?? a.type).localeCompare(INVENTORY_TYPE_LABELS[b.type] ?? b.type) || a.name.localeCompare(b.name));
+  const renderRow = (row: InventoryResultRow) => `<article class="inventory-result-row"><span class="inventory-result-name">${escapeHtml(row.name)}</span><span class="inventory-result-type">${escapeHtml(INVENTORY_TYPE_LABELS[row.type] ?? row.type)}</span><strong class="inventory-result-count">${row.count.toLocaleString()}</strong><code>${escapeHtml(row.id)}</code><button class="osf-btn osf-btn--sm" type="button" data-copy-inventory-id="${escapeHtml(row.id)}">Copy ID</button></article>`;
+  let contents = '';
+  if (sort === 'type') {
+    const groups = new Map<string, InventoryResultRow[]>();
+    for (const row of rows) {
+      const group = groups.get(row.type) ?? [];
+      group.push(row);
+      groups.set(row.type, group);
+    }
+    contents = [...groups].map(([type, group]) => `<details class="inventory-type-group"${term ? ' open' : ''}><summary><span>${escapeHtml(INVENTORY_TYPE_LABELS[type] ?? type)}</span><span>${group.length.toLocaleString()} ${group.length === 1 ? 'entry' : 'entries'}</span></summary><div class="inventory-type-contents">${group.map(renderRow).join('')}</div></details>`).join('');
+  } else {
+    contents = rows.map(renderRow).join('');
+  }
+  inventoryResults.innerHTML = `<div class="inventory-results-summary">${rows.length.toLocaleString()} of ${inventoryResultRows.length.toLocaleString()} entries</div>`
+    + (contents || '<div class="id-picker-empty"><strong>No matching inventory entries</strong><span>Try a broader name, type, or Form ID.</span></div>');
+}
+
+async function copyResultId(id: string): Promise<void> {
+  try {
+    if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(id);
+    else {
+      const temporary = document.createElement('textarea');
+      temporary.value = id;
+      temporary.style.position = 'fixed';
+      temporary.style.opacity = '0';
+      document.body.append(temporary);
+      temporary.select();
+      if (!document.execCommand('copy')) throw new Error('Copy command was rejected');
+      temporary.remove();
+    }
+    setStatus(`Copied Form ID ${id}.`, 'success');
+  } catch {
+    setStatus(`Could not access the clipboard. Select this ID manually: ${id}`, 'error');
+  }
+}
+
+inventoryResultsSearch.addEventListener('input', renderInventoryResults);
+inventoryResultsSearch.addEventListener('click', () => inventoryResultsSearch.select());
+inventoryResultsSort.addEventListener('change', renderInventoryResults);
+inventoryResults.addEventListener('click', (event) => {
+  const button = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-copy-inventory-id]');
+  if (button?.dataset.copyInventoryId) void copyResultId(button.dataset.copyInventoryId);
+});
+resultsIdActions.addEventListener('click', (event) => {
+  const button = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-copy-result-id]');
+  if (button?.dataset.copyResultId) void copyResultId(button.dataset.copyResultId);
+});
 
 function requiredElement<T extends Element>(selector: string, kind: { new(): T }): T {
   const element = document.querySelector(selector);
@@ -279,6 +449,11 @@ function addActivity(execution: PendingExecution, outcome: 'success' | 'error', 
     message,
   };
   activityLog = [entry, ...activityLog].slice(0, MAX_ACTIVITY);
+  // Large inventory snapshots should not exhaust the webview's storage quota.
+  let retainedCharacters = activityLog.reduce((total, item) => total + item.message.length, 0);
+  while (retainedCharacters > 1_000_000 && activityLog.length > 1) {
+    retainedCharacters -= activityLog.pop()!.message.length;
+  }
   writeActivityLog();
   if (activeView === 'activity') render();
 }
@@ -357,7 +532,7 @@ function activeCommands(): CommandDefinition[] {
     commands = recent
       .map((id) => COMMANDS.find((command) => command.id === id))
       .filter((command): command is CommandDefinition => Boolean(command));
-  } else if (activeView !== 'custom' && activeView !== 'activity' && activeView !== 'quest-fixes') {
+  } else if (activeView !== 'custom' && activeView !== 'activity' && activeView !== 'quest-fixes' && activeView !== 'id-browser') {
     commands = COMMANDS.filter((command) => command.category === activeView);
   }
 
@@ -369,6 +544,7 @@ function viewTitle(): string {
   if (activeView === 'favorites') return 'Favorites';
   if (activeView === 'recent') return 'Recent Commands';
   if (activeView === 'quest-fixes') return 'Quest Fixes';
+  if (activeView === 'id-browser') return 'ID Browser';
   if (activeView === 'activity') return 'Activity Log';
   if (activeView === 'custom') return 'Custom Command';
   return activeView;
@@ -385,15 +561,26 @@ function render(): void {
     ? 'ADVANCED'
     : activeView === 'activity'
       ? 'DIAGNOSTICS'
-      : activeView === 'quest-fixes'
-        ? 'QUEST REPAIR'
-        : query
-          ? 'SEARCH'
-          : 'COMMANDS';
+      : activeView === 'id-browser'
+        ? 'FORM / REFERENCE IDS'
+        : activeView === 'quest-fixes'
+          ? 'QUEST REPAIR'
+          : query
+            ? 'SEARCH'
+            : 'COMMANDS';
   searchWrap.hidden = activeView === 'custom' || activeView === 'activity';
   search.placeholder = activeView === 'quest-fixes'
     ? 'Search quest, Form ID, stage...'
-    : 'Search name, command, tag...';
+    : activeView === 'id-browser'
+      ? 'Search name, Form ID, type... then Search Game for live results'
+      : 'Search name, command, tag...';
+
+  if (activeView === 'id-browser') {
+    commandList.hidden = true;
+    customPanel.hidden = false;
+    renderIdBrowserPanel();
+    return;
+  }
 
   if (activeView === 'quest-fixes') {
     customPanel.hidden = true;
@@ -466,17 +653,9 @@ function renderQuestFixes(): void {
 
   const intro = `
     <section class="quest-fix-intro osf-card">
-      <div>
-        <p class="osf-eyebrow">SURGICAL QUEST REPAIR</p>
-        <h3>Diagnose first. Repair second.</h3>
-        <p>Use <strong>Check Status</strong> to read the quest's highest completed stage and completed-stage history before choosing a fix. These repair buttons run Starfield's vanilla <code>setstage</code> command. Make a manual save first.</p>
-        <p class="quest-stage-caveat">* Starfield reports the highest completed stage as the current stage. A quest designed to revisit a lower stage can therefore show a higher historical value.</p>
-      </div>
-      <div class="quest-fix-source">
-        <span class="osf-eyebrow">DATASET</span>
-        <strong>${QUEST_FIX_STAGE_COUNT} stage fixes</strong>
-        <span>Curated quest-stage repair mappings.</span>
-      </div>
+      <strong>Check Status first.</strong>
+      <span>Then use a repair stage only if needed. <code>setstage</code> can skip scripts, scenes, or rewards — make a manual save first.</span>
+      <span class="quest-stage-caveat">Current stage is Starfield's highest completed stage, so it may be higher than the quest's active step.</span>
     </section>`;
 
   const cards = groups.map((group) => {
@@ -505,11 +684,14 @@ function renderQuestFixes(): void {
       statusDetail = diagnostic.message ?? 'Could not read this quest.';
     } else if (diagnostic?.state === 'ready') {
       statusValue = diagnostic.currentStage === null ? 'NONE COMPLETED' : String(diagnostic.currentStage);
-      statusDetail = `${diagnostic.completedStages.length} completed stage${diagnostic.completedStages.length === 1 ? '' : 's'} found.`;
+      statusDetail = diagnostic.historyAvailable === false ? 'Current stage read; full stage history unavailable.'
+        : `${diagnostic.completedStages.length} completed stage${diagnostic.completedStages.length === 1 ? '' : 's'} found.`;
     }
 
     const history = diagnostic?.state === 'ready'
-      ? diagnostic.completedStages.length > 0
+      ? diagnostic.historyAvailable === false
+        ? '<div class="quest-stage-history"><span>COMPLETED STAGES</span><div class="quest-stage-history-empty">Unavailable — SQS did not return a stage table. Do not infer that no stages are complete.</div></div>'
+        : diagnostic.completedStages.length > 0
         ? `<div class="quest-stage-history"><span>COMPLETED STAGES</span><div>${diagnostic.completedStages.map((stage) => `<code>${stage}</code>`).join('')}</div></div>`
         : `<div class="quest-stage-history"><span>COMPLETED STAGES</span><div class="quest-stage-history-empty">None reported yet.</div></div>`
       : '';
@@ -571,10 +753,10 @@ async function loadQuestStatus(questId: string): Promise<void> {
       ? reply.completedStages.filter((stage) => Number.isInteger(stage)).sort((a, b) => a - b)
       : [];
     const currentStage = typeof reply.currentStage === 'number' ? reply.currentStage : null;
-    questDiagnostics.set(questId, { state: 'ready', currentStage, completedStages });
+    questDiagnostics.set(questId, { state: 'ready', currentStage, completedStages, historyAvailable: reply.historyAvailable });
     setStatus(currentStage === null
       ? `Quest ${questId}: no completed stages reported.`
-      : `Quest ${questId}: highest completed stage ${currentStage}.`, 'success');
+      : `Quest ${questId}: current stage ${currentStage}.${reply.historyAvailable === false ? ' Full stage history unavailable.' : ''}`, 'success');
   } catch (error) {
     const message = describe(error);
     questDiagnostics.set(questId, { state: 'error', currentStage: null, completedStages: [], message });
@@ -602,12 +784,14 @@ function renderCommandCard(command: CommandDefinition): string {
     <article class="command-card" data-command-id="${escapeHtml(command.id)}">
       <div class="command-main">
         <div class="command-heading">
-          <h3>${escapeHtml(command.title)}</h3>
+          <div class="command-heading-main">
+            <h3>${escapeHtml(command.title)}</h3>
+            <code class="command-heading-preview" data-preview="${escapeHtml(command.id)}">${escapeHtml(buildCommand(command))}</code>
+          </div>
           ${warningTag}
         </div>
         <p class="command-description">${escapeHtml(command.description)}</p>
         ${inputs ? `<div class="command-inputs">${inputs}</div>` : ''}
-        <div class="command-preview"><span>COMMAND</span><code data-preview="${escapeHtml(command.id)}">${escapeHtml(buildCommand(command))}</code></div>
       </div>
       <div class="command-actions">
         <button class="favorite-button${isFavorite ? ' is-favorite' : ''}" type="button" data-favorite="${escapeHtml(command.id)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
@@ -677,7 +861,7 @@ function renderIdPickerResults(): void {
   if (!activeIdPicker) return;
   const term = idPickerSearch.value.trim().toLowerCase();
   const matches = activeIdPicker.picker.options.filter((option) => !term || pickerSearchText(activeIdPicker!.picker, option).includes(term));
-  idPickerSummary.textContent = `${matches.length} matching ID${matches.length === 1 ? '' : 's'}`;
+  idPickerSummary.textContent = `${matches.length} matching choice${matches.length === 1 ? '' : 's'}`;
   idPickerResults.innerHTML = matches.length > 0
     ? matches.map((option) => `<button class="id-picker-option" type="button" data-picker-value="${escapeHtml(option.value)}" data-picker-label="${escapeHtml(option.label)}">
         <span class="id-picker-option-copy"><strong>${escapeHtml(option.label)}</strong>${option.detail ? `<small>${escapeHtml(option.detail)}</small>` : ''}</span>
@@ -785,19 +969,33 @@ async function executeConsole(execution: PendingExecution): Promise<void> {
     return;
   }
 
+  const capturesOutput = execution.definition?.captureOutput === true;
+  const resultTitle = execution.definition?.title ?? 'Command Results';
+  if (capturesOutput) showResults(resultTitle, command, '', 'loading');
   setStatus(`Executing: ${command}`, 'working');
   try {
     if (!window.osfui?.call) throw new Error('OSF UI native request API is unavailable');
-    const reply = await window.osfui.call<ExecuteReply>('console.command-center.execute', { consoleCommand: command });
+    const reply = capturesOutput
+      ? await window.osfui.call<QueryReply>('console.command-center.query', { consoleCommand: command })
+      : await window.osfui.call<ExecuteReply>('console.command-center.execute', {
+        consoleCommand: command,
+        closeBeforeExecute: execution.definition?.closeBeforeExecute === true,
+      });
     if (!reply?.ok) throw new Error('Native backend did not report success');
 
     const executedCommand = reply.command || command;
-    const successMessage = `Executed: ${executedCommand}`;
+    const capturedOutput = capturesOutput ? ((reply as QueryReply).output ?? '').trim() : '';
+    if (capturesOutput && !capturedOutput) throw new Error('No readable result was returned. This does not mean the value is zero or the inventory is empty.');
+    const activityMessage = capturedOutput ? `Result: ${capturedOutput}` : `Executed: ${executedCommand}`;
+    const statusMessage = capturesOutput
+      ? 'Inspection complete. Results saved in Activity Log.'
+      : `Executed: ${executedCommand}`;
     executionCount += 1;
     lastCommand = executedCommand;
-    setStatus(successMessage, 'success');
+    setStatus(statusMessage, 'success');
     if (execution.definition && execution.rememberRecent !== false) addRecent(execution.definition.id);
-    addActivity(execution, 'success', successMessage);
+    addActivity(execution, 'success', activityMessage);
+    if (capturesOutput) showResults(resultTitle, executedCommand, capturedOutput, 'ready');
     if (execution.questId) {
       await loadQuestStatus(execution.questId);
     } else if (activeView === 'recent' || activeView === 'activity') {
@@ -807,6 +1005,7 @@ async function executeConsole(execution: PendingExecution): Promise<void> {
     const message = describe(error);
     setStatus(message, 'error');
     addActivity(execution, 'error', message);
+    if (capturesOutput) showResults(resultTitle, command, message, 'error');
   }
 }
 
@@ -839,7 +1038,11 @@ function renderActivityPanel(): void {
         <time datetime="${new Date(entry.timestamp).toISOString()}">${escapeHtml(formatActivityTime(entry.timestamp))}</time>
       </div>
       <code class="activity-command">${escapeHtml(entry.command)}</code>
-      ${entry.outcome === 'error' || entry.message !== `Executed: ${entry.command}` ? `<p>${escapeHtml(entry.message)}</p>` : ''}
+      ${entry.message.startsWith('Result:') || entry.outcome === 'error'
+        ? `<button class="osf-btn osf-btn--sm" type="button" data-show-result="${escapeHtml(entry.id)}">Open Results</button><p>${entry.outcome === 'error' ? 'Error details saved' : `${(entry.message.length - 'Result:'.length).toLocaleString()} characters saved`}</p>`
+        : entry.message !== `Executed: ${entry.command}`
+          ? `<p>${escapeHtml(entry.message)}</p>`
+          : ''}
     </article>
   `).join('');
 
@@ -867,7 +1070,7 @@ function renderActivityPanel(): void {
       <div class="activity-toolbar">
         <div>
           <p class="osf-eyebrow">COMMAND HISTORY</p>
-          <p>Records commands executed through ConsoleCommandCenter.dll and the native Starfield console bridge. It does not capture text printed by Starfield's console.</p>
+          <p>Records commands executed through ConsoleCommandCenter.dll and the native Starfield console bridge. Read-only inspection commands capture their console result and save it with the activity entry.</p>
         </div>
         <button class="osf-btn osf-btn--sm osf-btn--ghost" id="clear-activity" type="button" ${activityLog.length === 0 ? 'disabled' : ''}>Clear Log</button>
       </div>
@@ -879,6 +1082,14 @@ function renderActivityPanel(): void {
   `;
 
   const clearButton = document.querySelector('#clear-activity');
+  customPanel.querySelectorAll<HTMLButtonElement>('[data-show-result]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const entry = activityLog.find((candidate) => candidate.id === button.dataset.showResult);
+      if (entry) showResults(entry.label, entry.command,
+        entry.message.startsWith('Result:') ? entry.message.slice('Result:'.length).trim() : entry.message,
+        entry.outcome === 'error' ? 'error' : 'ready');
+    });
+  });
   if (clearButton instanceof HTMLButtonElement) {
     clearButton.addEventListener('click', () => {
       activityLog = [];
@@ -895,6 +1106,320 @@ function formatActivityTime(timestamp: number): string {
   } catch {
     return String(timestamp);
   }
+}
+
+
+function activeIdBrowserCategory() {
+  return ID_BROWSER_CATEGORIES.find((category) => category.value === idBrowserCategory) ?? ID_BROWSER_CATEGORIES[0];
+}
+
+function idBrowserLiveTypeMatches(entry: IdCatalogEntry): boolean {
+  const recordType = activeIdBrowserCategory().recordType;
+  return !recordType || entry.type.toUpperCase() === recordType;
+}
+
+function idBrowserTextMatches(entry: IdCatalogEntry): boolean {
+  if (!query) return true;
+  const haystack = [entry.label, entry.value, entry.type, entry.category, entry.detail ?? '', ...(entry.keywords ?? [])]
+    .join(' ')
+    .toLowerCase();
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  return terms.every((term) => haystack.includes(term));
+}
+
+function matchingBuiltInIds(): IdCatalogEntry[] {
+  const categories = activeIdBrowserCategory().builtInCategories;
+  return ID_CATALOG.filter((entry) => {
+    const categoryMatches = categories.includes('*') || categories.includes(entry.category);
+    return categoryMatches && idBrowserTextMatches(entry);
+  });
+}
+
+function mergedIdBrowserResults(): IdCatalogEntry[] {
+  const output: IdCatalogEntry[] = [];
+  const seen = new Set<string>();
+  const add = (entry: IdCatalogEntry) => {
+    const key = `${entry.type.toUpperCase()}:${entry.value.toUpperCase()}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    output.push(entry);
+  };
+  idBrowserLiveResults.filter(idBrowserLiveTypeMatches).filter(idBrowserTextMatches).forEach(add);
+  matchingBuiltInIds().forEach(add);
+  return output;
+}
+
+function parseHelpResults(output: string): IdCatalogEntry[] {
+  const parsed: IdCatalogEntry[] = [];
+  const seen = new Set<string>();
+  const primary = /\b([A-Z_]{2,8})\s*:\s*\(([0-9A-Fa-f]{1,8})\)\s*(.*)$/;
+  const fallback = /\(([0-9A-Fa-f]{6,8})\)\s*(.*)$/;
+
+  for (const rawLine of output.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    const match = line.match(primary);
+    let type = 'FORM';
+    let value = '';
+    let label = '';
+    if (match) {
+      type = match[1].toUpperCase();
+      value = match[2].toUpperCase().padStart(8, '0');
+      label = match[3].trim();
+    } else {
+      const loose = line.match(fallback);
+      if (!loose) continue;
+      value = loose[1].toUpperCase().padStart(8, '0');
+      label = loose[2].trim();
+    }
+
+    label = label.replace(/^[-–—:\s]+/, '').replace(/^["']+|["']+$/g, '').trim();
+    if (!label) label = 'Unnamed record';
+    const key = `${type}:${value}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    parsed.push({
+      label,
+      value,
+      type,
+      category: 'Live Search',
+      detail: 'Loaded-game help result',
+      source: 'live',
+    });
+    if (parsed.length >= 250) break;
+  }
+
+  return parsed.sort((a, b) => a.label.localeCompare(b.label));
+}
+
+function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspell' | 'spawn' | null {
+  if (entry.action) return entry.action;
+  const type = entry.type.toUpperCase();
+  if (['WEAP', 'ARMO', 'AMMO', 'ALCH', 'MISC'].includes(type)) return 'additem';
+  if (type === 'PERK') return 'addperk';
+  if (type === 'SPEL') return 'addspell';
+  if (type === 'NPC_' || type === 'GBFM') return 'spawn';
+  return null;
+}
+
+function renderIdBrowserSelection(): string {
+  const entry = idBrowserSelected;
+  if (!entry) {
+    return `<div class="id-browser-selection id-browser-selection--empty"><span class="osf-eyebrow">SELECTED ID</span><span>Choose a result to inspect it and reveal a safe quick action when available.</span></div>`;
+  }
+  const action = idBrowserAction(entry);
+  const actionLabel = action === 'additem'
+    ? 'Add 1 to Player'
+    : action === 'addperk'
+      ? 'Add Perk'
+      : action === 'addspell'
+        ? 'Add Spell / Power'
+        : action === 'spawn'
+          ? 'Spawn 1'
+          : '';
+  return `
+    <div class="id-browser-selection">
+      <div class="id-browser-selection-copy">
+        <span class="osf-eyebrow">SELECTED ID</span>
+        <strong>${escapeHtml(entry.label)}</strong>
+        <span>${escapeHtml(entry.type)} / ${escapeHtml(entry.category)}${entry.detail ? ` — ${escapeHtml(entry.detail)}` : ''}</span>
+      </div>
+      <code>${escapeHtml(entry.value)}</code>
+      <div class="id-browser-selection-actions">
+        <button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(entry.value)}">Copy ID</button>
+        ${action ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-id-browser-action="${action}">${actionLabel}</button>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderIdBrowserPanel(): void {
+  const results = mergedIdBrowserResults();
+  const builtInCount = matchingBuiltInIds().length;
+  const liveCount = idBrowserLiveResults.filter(idBrowserLiveTypeMatches).filter(idBrowserTextMatches).length;
+  resultCount.textContent = `${results.length} shown / ${ID_CATALOG.length} built-in IDs${liveCount ? ` / ${liveCount} live` : ''}`;
+
+  const resultRows = results.map((entry, index) => `
+    <button class="id-browser-row${entry.source === 'live' ? ' is-live' : ''}${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
+      <span class="id-browser-row-main">
+        <strong>${escapeHtml(entry.label)}</strong>
+        <small>${escapeHtml(entry.category)}${entry.detail ? ` — ${escapeHtml(entry.detail)}` : ''}</small>
+      </span>
+      <span class="id-browser-row-meta"><span>${escapeHtml(entry.type)}</span><code>${escapeHtml(entry.value)}</code><em>${entry.source === 'live' ? 'LIVE' : 'BUILT-IN'}</em></span>
+    </button>`).join('');
+
+  const rawBlock = idBrowserRawOutput && idBrowserLiveResults.length === 0
+    ? `<div class="id-browser-raw"><span class="osf-eyebrow">RAW GAME OUTPUT</span><pre>${escapeHtml(idBrowserRawOutput)}</pre></div>`
+    : '';
+
+  customPanel.innerHTML = `
+    <section class="id-browser-panel">
+      <div class="id-browser-controls">
+        <label>
+          <span class="osf-eyebrow">CATEGORY</span>
+          <select class="osf-input" id="id-browser-category">
+            ${ID_BROWSER_CATEGORIES.map((category) => `<option value="${escapeHtml(category.value)}"${category.value === idBrowserCategory ? ' selected' : ''}>${escapeHtml(category.label)}</option>`).join('')}
+          </select>
+        </label>
+        <button class="osf-btn osf-btn--osf-accent" id="id-browser-search-game" type="button" ${!query || !nativeBackendReady || idBrowserSearching ? 'disabled' : ''}>${idBrowserSearching ? 'Searching...' : 'Search Game'}</button>
+        <button class="osf-btn osf-btn--ghost" id="id-browser-clear-live" type="button" ${idBrowserLiveResults.length === 0 && !idBrowserRawOutput ? 'disabled' : ''}>Clear Live</button>
+      </div>
+
+      ${renderIdBrowserSelection()}
+
+      <div class="id-browser-result-head">
+        <span>${results.length} matching IDs</span>
+        <span>${builtInCount} built-in${liveCount ? ` + ${liveCount} live` : ''}</span>
+      </div>
+      <div class="osf-tricolor id-browser-divider" aria-hidden="true"></div>
+      <div class="id-browser-results" id="id-browser-results">
+        ${resultRows || '<div class="id-picker-empty"><strong>No matching IDs</strong><span>Try a broader search or use Search Game to query the loaded Starfield data.</span></div>'}
+      </div>
+      ${rawBlock}
+    </section>`;
+
+  const categorySelect = document.querySelector('#id-browser-category');
+  if (categorySelect instanceof HTMLSelectElement) {
+    categorySelect.addEventListener('change', () => {
+      idBrowserCategory = categorySelect.value;
+      idBrowserLiveResults = [];
+      idBrowserRawOutput = '';
+      idBrowserSelected = null;
+      render();
+    });
+  }
+
+  document.querySelector<HTMLButtonElement>('#id-browser-search-game')?.addEventListener('click', () => {
+    void runIdBrowserLiveSearch();
+  });
+  document.querySelector<HTMLButtonElement>('#id-browser-clear-live')?.addEventListener('click', () => {
+    idBrowserLiveResults = [];
+    idBrowserRawOutput = '';
+    idBrowserSelected = null;
+    setStatus('Cleared live ID Browser results.');
+    render();
+  });
+
+  const resultsElement = document.querySelector('#id-browser-results');
+  resultsElement?.addEventListener('click', (event) => {
+    const row = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-id-browser-index]');
+    if (!row?.dataset.idBrowserIndex) return;
+    const index = Number(row.dataset.idBrowserIndex);
+    const entry = results[index];
+    if (!entry) return;
+    idBrowserSelected = entry;
+    setStatus(`Selected ${entry.label}: ${entry.value}`, 'success');
+    render();
+  });
+
+  document.querySelector<HTMLButtonElement>('[data-id-browser-action]')?.addEventListener('click', () => {
+    if (idBrowserSelected) requestIdBrowserQuickAction(idBrowserSelected);
+  });
+  document.querySelector<HTMLButtonElement>('[data-copy-id-browser-id]')?.addEventListener('click', (event) => {
+    const button = event.currentTarget as HTMLButtonElement;
+    if (button.dataset.copyIdBrowserId) void copyResultId(button.dataset.copyIdBrowserId);
+  });
+}
+
+async function runIdBrowserLiveSearch(): Promise<void> {
+  const term = query.replace(/["\r\n]/g, ' ').trim();
+  if (!term) {
+    setStatus('Enter a name or partial name before searching the game.', 'error');
+    return;
+  }
+  if (!nativeBackendReady || !window.osfui?.call) {
+    setStatus('ConsoleCommandCenter.dll is not connected.', 'error');
+    return;
+  }
+
+  const recordType = activeIdBrowserCategory().recordType;
+  const command = `help "${term}" 4${recordType ? ` ${recordType}` : ''}`;
+  idBrowserSearching = true;
+  render();
+  setStatus(`Searching loaded game records: ${command}`, 'working');
+
+  try {
+    const reply = await window.osfui.call<QueryReply>('console.command-center.query', { consoleCommand: command });
+    if (!reply?.ok) throw new Error('Native backend did not report success');
+    const output = reply.output?.trim() ?? '';
+    idBrowserLiveResults = parseHelpResults(output);
+    idBrowserRawOutput = output;
+    executionCount += 1;
+    lastCommand = command;
+    addActivity({
+      command,
+      definition: {
+        id: 'id-browser-live-search',
+        title: 'ID Browser Live Search',
+        category: 'Inventory',
+        description: 'Search loaded Starfield records with the help command.',
+        command,
+        captureOutput: true,
+        testStatus: 'untested',
+      },
+      rememberRecent: false,
+    }, 'success', `Result: ${output}`);
+    setStatus(idBrowserLiveResults.length
+      ? `Found ${idBrowserLiveResults.length} parsed game record${idBrowserLiveResults.length === 1 ? '' : 's'}.`
+      : 'Game search completed, but no ID rows were parsed. Raw output is shown below.', 'success');
+  } catch (error) {
+    const message = describe(error);
+    idBrowserLiveResults = [];
+    idBrowserRawOutput = '';
+    setStatus(message, 'error');
+    addActivity({ command, rememberRecent: false }, 'error', message);
+  } finally {
+    idBrowserSearching = false;
+    render();
+  }
+}
+
+function requestIdBrowserQuickAction(entry: IdCatalogEntry): void {
+  const action = idBrowserAction(entry);
+  if (!action) return;
+
+  let command = '';
+  let title = '';
+  let description = '';
+  let warning: string | undefined;
+  let risk: 'caution' | 'danger' | undefined;
+
+  if (action === 'additem') {
+    command = `player.additem ${entry.value} 1`;
+    title = `Add ${entry.label}`;
+    description = `Add one ${entry.label} to the player inventory.`;
+    warning = 'This adds one item directly to the player inventory.';
+    risk = 'caution';
+  } else if (action === 'addperk') {
+    command = `player.addperk ${entry.value}`;
+    title = `Add ${entry.label}`;
+    description = `Add the selected perk / skill record.`;
+    warning = 'Adding progression records can bypass normal prerequisites or progression. Save first.';
+    risk = 'caution';
+  } else if (action === 'addspell') {
+    command = `player.addspell ${entry.value}`;
+    title = `Add ${entry.label}`;
+    description = `Add the selected spell / power record.`;
+    warning = 'Adding arbitrary spell or power records can create persistent progression or status changes. Save first.';
+    risk = 'danger';
+  } else {
+    command = `player.placeatme ${entry.value} 1`;
+    title = `Spawn ${entry.label}`;
+    description = `Spawn one instance of the selected base record.`;
+    warning = 'Spawning base records can create duplicate NPCs, ships, or objects and may destabilize scripted content. Use a disposable save.';
+    risk = 'danger';
+  }
+
+  const definition: CommandDefinition = {
+    id: `id-browser-${action}-${entry.value.toLowerCase()}`,
+    title,
+    category: action === 'addperk' || action === 'addspell' ? 'Skills' : action === 'spawn' ? 'Targets' : 'Inventory',
+    description,
+    command,
+    warning,
+    risk,
+    testStatus: 'untested',
+  };
+  requestExecution({ command, definition, rememberRecent: false });
 }
 
 function renderCustomPanel(): void {
@@ -947,13 +1472,21 @@ navigation.addEventListener('click', (event) => {
   switchView(button.dataset.view);
 });
 
-document.querySelector<HTMLButtonElement>('[data-view="activity"]')?.addEventListener('click', () => switchView('activity'));
-document.querySelector<HTMLButtonElement>('[data-view="custom"]')?.addEventListener('click', () => switchView('custom'));
+(['id-browser', 'quest-fixes', 'activity', 'custom'] as const).forEach((view) => {
+  document.querySelector<HTMLButtonElement>(`[data-view="${view}"]`)?.addEventListener('click', () => switchView(view));
+});
 
 search.addEventListener('input', () => {
   query = search.value.trim();
+  if (activeView === 'id-browser') {
+    idBrowserLiveResults = [];
+    idBrowserRawOutput = '';
+    idBrowserSelected = null;
+  }
   render();
 });
+search.addEventListener('click', () => search.select());
+idPickerSearch.addEventListener('click', () => idPickerSearch.select());
 
 function focusSearchNow(): void {
   if (activeView === 'custom' || activeView === 'activity' || !confirmBackdrop.hidden || !idPickerBackdrop.hidden || document.hidden) return;
@@ -1153,6 +1686,14 @@ confirmBackdrop.addEventListener('click', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
+  // OSF UI's synthetic Back can target the document instead of the focused
+  // dialog, so handle it here as well as on the dialog itself.
+  if (event.key === 'Escape' && resultsDialog.open) {
+    event.preventDefault();
+    event.stopPropagation();
+    resultsDialog.close();
+    return;
+  }
   if (event.key === 'Escape') {
     const openCaution = commandList.querySelector<HTMLElement>('.caution-wrap.is-open');
     if (!idPickerBackdrop.hidden) {
@@ -1220,6 +1761,7 @@ async function connectNativeBackend(): Promise<void> {
 const ready = window.osfui?.ready;
 if (ready) {
   ready.then(async (info) => {
+    window.osfui?.send?.('osfui.handleBack', { handle: true });
     bridgeVersion = info.version;
     bridgeState = 'ready';
     footerOsfVersion.textContent = info.version;
