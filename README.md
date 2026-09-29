@@ -8,7 +8,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 **Current development version: v0.3.0 Beta**
 
-**Current test build: v0.3.0-test6.** The ID Browser now uses one expanded category selector and provides Copy ID for selected built-in and live results. Inspect Game Setting has a searchable chooser, tested settings and SetAV warnings are updated, and Open Wait Menu now uses Starfield's UI queue after CCC closes. Follow [the test6 instructions](TEST_BUILD_RESULT_ACTIONS.md).
+**Current test build: v0.3.0-test7.** This build gives the main command lists and every secondary window one consistent dark-neutral palette, orange selection treatment, row rhythm, button styling, and tricolor header bar. It retains the ID Browser, chooser, copy-action, and command fixes from test6. Follow [the test7 instructions](TEST_BUILD_RESULT_ACTIONS.md).
 
 **Previous hotfix: v0.3.0-test2.** Test1 crashed during scale inspection. The shared evaluator calls remain removed, and Scale/Open State/GetStage/Quest Status remain temporarily disabled. Test2 verified Escape handling, inventory, companion readouts, and ship readouts in game.
 

@@ -83,7 +83,7 @@ const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0-test6';
+const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0-test7';
 const LATEST_STARFIELD_VERSION = '1.16.244';
 
 let activeView: ViewMode = 'recent';
@@ -177,6 +177,7 @@ app.innerHTML = `
 
   <div class="id-picker-backdrop" id="id-picker-backdrop" hidden>
     <section class="id-picker-dialog osf-card" role="dialog" aria-modal="true" aria-labelledby="id-picker-title">
+      <div class="osf-tricolor popup-stripe" aria-hidden="true"></div>
       <div class="id-picker-head">
         <div>
           <p class="osf-eyebrow">QUICK CHOICES</p>
@@ -217,8 +218,9 @@ const resultsDialog = document.createElement('dialog');
 resultsDialog.className = 'results-dialog';
 resultsDialog.setAttribute('aria-labelledby', 'results-title');
 resultsDialog.innerHTML = `
+  <div class="osf-tricolor popup-stripe" aria-hidden="true"></div>
   <header class="results-head"><div><p class="osf-eyebrow">INSPECTION RESULTS</p><h2 id="results-title"></h2></div>
-    <button class="osf-btn" id="results-close" type="button">Close</button></header>
+    <button class="osf-btn osf-btn--sm osf-btn--ghost" id="results-close" type="button">Close</button></header>
   <code id="results-command"></code>
   <p id="results-status" role="status"></p>
   <div class="results-id-actions" id="results-id-actions" hidden></div>

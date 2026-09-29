@@ -1,5 +1,21 @@
-/* Console Command Center layout. OSF UI owns the component palette and interaction
-   states; this file only composes those primitives into the command browser. */
+/* Console Command Center layout. OSF UI owns the base component palette; these
+   shared tokens keep the main view and every secondary window visually aligned. */
+
+:root {
+  --ccc-orange: #f47c20;
+  --ccc-orange-rgb: 244, 124, 32;
+  --ccc-orange-soft: rgba(var(--ccc-orange-rgb), 0.055);
+  --ccc-orange-hover: rgba(var(--ccc-orange-rgb), 0.105);
+  --ccc-danger: #ff5f61;
+  --ccc-danger-rgb: 255, 95, 97;
+  --ccc-surface: rgba(10, 13, 18, 0.985);
+  --ccc-surface-raised: #111922;
+  --ccc-surface-inset: #080d13;
+  --ccc-surface-row: rgba(242, 239, 233, 0.018);
+  --ccc-line: rgba(156, 177, 194, 0.28);
+  --ccc-line-strong: rgba(181, 200, 214, 0.48);
+  --ccc-console-font: "OCR A Extended", "Cascadia Code", "Cascadia Mono", "Lucida Console", Consolas, "Courier New", monospace;
+}
 
 body {
   min-height: 100vh;
@@ -9,60 +25,120 @@ body {
 button { -webkit-user-select: none; user-select: none; }
 
 /* Native popup menus do not reliably inherit the themed input background. */
-select.osf-input { color-scheme: dark; color: #f4f7fa; background-color: #182330; }
-select.osf-input option, select.osf-input optgroup { color: #f4f7fa; background-color: #182330; }
-select.osf-input option:checked { color: #ffffff; background-color: #345774; }
-select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px; }
+select.osf-input {
+  color-scheme: dark;
+  color: var(--osf-text-bright, #f4f7fa);
+  background-color: var(--ccc-surface-raised);
+  border-color: var(--ccc-line-strong);
+}
+select.osf-input option,
+select.osf-input optgroup {
+  color: var(--osf-text-bright, #f4f7fa);
+  background-color: var(--ccc-surface-raised);
+}
+select.osf-input option:checked { color: #fff; background-color: #5c3218; }
+select.osf-input:hover { border-color: rgba(var(--ccc-orange-rgb), 0.52); }
+select.osf-input:focus-visible {
+  border-color: var(--ccc-orange);
+  outline: 1px solid var(--ccc-orange);
+  outline-offset: 1px;
+}
+
+.results-dialog,
+.id-picker-dialog,
+.confirm-dialog {
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--osf-text-body, #d9e1e7);
+  background: var(--ccc-surface);
+  border: 1px solid var(--ccc-line-strong);
+  border-radius: 4px;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.72);
+}
+
+.results-dialog::backdrop,
+.id-picker-backdrop,
+.confirm-backdrop { background: rgba(5, 7, 10, 0.84); }
 
 .results-dialog {
-  width: min(1000px, 92vw); height: min(590px, 88vh); max-height: 88vh;
-  box-sizing: border-box; padding: 20px; color: #f4f7fa; background: #131e2a;
-  border: 1px solid #7290a8; border-radius: 8px; box-shadow: 0 20px 70px #000b;
+  width: min(1000px, 92vw);
+  height: min(590px, 88vh);
+  max-height: 88vh;
+  padding: 20px;
 }
 .results-dialog[open] { display: flex; flex-direction: column; gap: 12px; }
-.results-dialog::backdrop { background: #000b; }
 .results-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-.results-head h2, .results-head p, #results-status { margin: 0; }
-#results-command { overflow-wrap: anywhere; flex-shrink: 0; }
-#results-status { color: #bdd7eb; }
-#results-status[data-state="error"] { color: #ffb5ad; }
+.results-head h2 { margin: 2px 0 0; font-size: var(--osf-text-2xl); letter-spacing: 0.035em; }
+.results-head p,
+#results-status { margin: 0; }
+.results-head .osf-btn { min-height: 40px; }
+#results-command {
+  flex-shrink: 0;
+  overflow-wrap: anywhere;
+  color: var(--ccc-orange);
+  font-family: var(--ccc-console-font);
+  font-size: 13px;
+  letter-spacing: 0.035em;
+}
+#results-status { color: var(--osf-text-muted, #b8c4ce); }
+#results-status[data-state="error"] { color: var(--osf-signal-stop, #ff8f86); }
 .results-id-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .results-id-actions[hidden] { display: none !important; }
 .results-id-actions button { display: inline-flex; align-items: center; gap: 8px; }
 .results-id-actions code { color: inherit; }
 #results-output {
   flex: 1; min-height: 0; overflow: auto; margin: 0; padding: 14px;
-  white-space: pre-wrap; overflow-wrap: anywhere; background: #09121b;
-  color: #edf4f9; border: 1px solid #405469; border-radius: 4px;
-  font: 14px/1.5 Consolas, monospace; user-select: text; -webkit-user-select: text;
+  white-space: pre-wrap; overflow-wrap: anywhere; background: var(--ccc-surface-inset);
+  color: var(--osf-text-bright, #edf4f9); border: 1px solid var(--ccc-line); border-radius: 2px;
+  font: 14px/1.5 var(--ccc-console-font); user-select: text; -webkit-user-select: text;
 }
-.results-dialog footer { color: #bdd0df; font-size: 12px; }
+.results-dialog footer {
+  padding-top: 9px;
+  border-top: 1px solid var(--ccc-line);
+  color: var(--osf-text-faint, #93a3af);
+  font-size: var(--osf-text-xs, 12px);
+}
 .inventory-results-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 12px; }
 .inventory-results-toolbar[hidden], .inventory-results[hidden], #results-output[hidden] { display: none !important; }
 .inventory-results-toolbar label { display: grid; gap: 5px; }
-.inventory-results { flex: 1; min-height: 0; overflow: auto; padding: 0 10px 10px; background: #09121b; border: 1px solid #405469; border-radius: 4px; }
-.inventory-results-summary { position: sticky; top: 0; z-index: 2; padding: 9px 2px; color: #bdd0df; background: #09121b; border-bottom: 1px solid #304356; }
-.inventory-type-group { margin: 8px 0; border: 1px solid #405469; border-radius: 4px; background: #0d1823; }
-.inventory-type-group summary { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 12px; color: #cfe8fa; background: #182a3a; cursor: pointer; font-weight: 700; letter-spacing: .06em; list-style: none; text-transform: uppercase; }
-.inventory-type-group summary::before { content: '\25B6'; color: #8fc8ee; font-size: 11px; transition: transform .12s ease; }
+.inventory-results {
+  flex: 1; min-height: 0; overflow: auto; padding: 0 8px 8px;
+  background: var(--ccc-surface-inset); border: 1px solid var(--ccc-line); border-radius: 2px;
+}
+.inventory-results-summary {
+  position: sticky; top: 0; z-index: 2; padding: 9px 4px;
+  color: var(--osf-text-faint, #93a3af); background: var(--ccc-surface-inset);
+  border-bottom: 1px solid var(--ccc-line);
+  font-family: var(--osf-font-mono); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.inventory-type-group { margin: 8px 0; border: 1px solid var(--ccc-line); border-radius: 2px; background: var(--ccc-surface-row); }
+.inventory-type-group summary {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  min-height: 44px; padding: 6px 12px; color: var(--osf-text-body, #d9e1e7);
+  background: var(--ccc-surface-raised); cursor: pointer; font-weight: 700;
+  letter-spacing: .06em; list-style: none; text-transform: uppercase;
+}
+.inventory-type-group summary:hover,
+.inventory-type-group summary:focus-visible { color: var(--osf-text-bright, #fff); background: var(--ccc-orange-hover); outline: none; }
+.inventory-type-group summary::before { content: '\25B6'; color: var(--ccc-orange); font-size: 11px; transition: transform .12s ease; }
 .inventory-type-group[open] summary::before { transform: rotate(90deg); }
 .inventory-type-group summary::-webkit-details-marker { display: none; }
-.inventory-type-group summary span:last-child { color: #9eb5c6; font-size: 11px; letter-spacing: .04em; }
-.inventory-type-contents { padding: 0 8px 4px; }
-.inventory-result-row { display: grid; grid-template-columns: minmax(180px, 1fr) 150px 70px 90px 86px; gap: 10px; align-items: center; min-height: 38px; padding: 4px 2px; border-bottom: 1px solid #233242; }
+.inventory-type-group summary span:last-child { color: var(--osf-text-faint, #93a3af); font-size: 10px; letter-spacing: .04em; }
+.inventory-type-contents { padding: 0; }
+.inventory-result-row {
+  display: grid; grid-template-columns: minmax(180px, 1fr) 150px 70px 90px 86px;
+  gap: 10px; align-items: center; min-height: 44px; padding: 5px 10px 5px 12px;
+  border-bottom: 1px solid var(--ccc-line); border-left: 2px solid transparent;
+  transition: background var(--osf-dur-fast), border-color var(--osf-dur-fast);
+}
+.inventory-result-row:nth-child(even) { background: var(--ccc-orange-soft); }
+.inventory-result-row:hover { background: var(--ccc-orange-hover); border-left-color: var(--ccc-orange); }
 .inventory-result-name { overflow-wrap: anywhere; }
-.inventory-result-type { color: #a9bdcc; font-size: 12px; }
+.inventory-result-type { color: var(--osf-text-faint, #93a3af); font-size: 11px; }
 .inventory-result-count { text-align: right; font-variant-numeric: tabular-nums; }
-.inventory-result-row code { color: #d9efff; user-select: text; -webkit-user-select: text; }
+.inventory-result-row code { color: var(--ccc-orange); user-select: text; -webkit-user-select: text; }
 
 .command-center-shell {
-  --ccc-orange: #f47c20;
-  --ccc-orange-rgb: 244, 124, 32;
-  --ccc-orange-soft: rgba(var(--ccc-orange-rgb), 0.055);
-  --ccc-orange-hover: rgba(var(--ccc-orange-rgb), 0.105);
-  --ccc-danger: #ff5f61;
-  --ccc-danger-rgb: 255, 95, 97;
-  --ccc-console-font: "OCR A Extended", "Cascadia Code", "Cascadia Mono", "Lucida Console", Consolas, "Courier New", monospace;
   width: 100vw;
   height: 100vh;
   min-width: 880px;
@@ -605,11 +681,13 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
   padding-right: 8px;
 }
 .activity-entry {
+  min-height: 44px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--osf-line);
   border-left: 2px solid var(--osf-signal-go);
-  background: rgba(242, 239, 233, 0.018);
+  background: var(--ccc-surface-row);
 }
+.activity-entry:nth-child(even) { background: var(--ccc-orange-soft); }
 .activity-entry:first-child { border-top: 1px solid var(--osf-line); }
 .activity-entry--error { border-left-color: var(--osf-signal-stop); }
 .activity-entry-head {
@@ -665,8 +743,8 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   color: var(--osf-text-muted);
-  background: rgba(5, 7, 10, 0.35);
-  border: 1px solid var(--osf-line);
+  background: var(--ccc-surface-inset);
+  border: 1px solid var(--ccc-line);
   font-family: var(--ccc-console-font);
   font-size: 10px;
   line-height: 1.35;
@@ -680,7 +758,7 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
   display: grid;
   place-items: center;
   padding: 18px;
-  background: rgba(5, 7, 10, 0.78);
+  background: rgba(5, 7, 10, 0.84);
 }
 .confirm-backdrop[hidden] { display: none; }
 .confirm-dialog { width: min(560px, 90vw); padding: 20px; box-shadow: var(--osf-shadow); overflow: hidden; }
@@ -689,7 +767,7 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
 .confirm-label { color: var(--ccc-orange); }
 .confirm-dialog.is-caution .confirm-label { color: var(--osf-signal-warn); }
 .confirm-dialog.is-danger .confirm-label { color: var(--ccc-danger); }
-.confirm-command { display: grid; gap: 5px; margin: 12px 0; padding: 9px; background: rgba(5, 7, 10, 0.48); border: 1px solid var(--osf-line); }
+.confirm-command { display: grid; gap: 5px; margin: 12px 0; padding: 9px; background: var(--ccc-surface-inset); border: 1px solid var(--ccc-line); }
 .confirm-command span { color: var(--osf-text-faint); font-family: var(--osf-font-mono); font-size: 9px; letter-spacing: 0.12em; }
 .confirm-command code { overflow-wrap: anywhere; color: var(--ccc-orange); font-family: var(--ccc-console-font); font-weight: 600; letter-spacing: 0.025em; }
 .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
@@ -705,11 +783,17 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
 
 /* Console Command Center orange signature accents. Keep the large controls neutral/high-contrast,
    and use orange for orientation, focus, hover, favorites, and alternating rows. */
-.command-center-shell .osf-input:hover {
+.command-center-shell .osf-input:hover,
+.results-dialog .osf-input:hover,
+.id-picker-dialog .osf-input:hover {
   border-color: rgba(var(--ccc-orange-rgb), 0.52);
 }
 .command-center-shell .osf-input:focus,
-.command-center-shell .osf-input:focus-visible {
+.command-center-shell .osf-input:focus-visible,
+.results-dialog .osf-input:focus,
+.results-dialog .osf-input:focus-visible,
+.id-picker-dialog .osf-input:focus,
+.id-picker-dialog .osf-input:focus-visible {
   border-color: var(--ccc-orange);
   outline: 1px solid rgba(var(--ccc-orange-rgb), 0.78);
   outline-offset: 1px;
@@ -720,14 +804,26 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
 .topbar .osf-btn:hover,
 .topbar .osf-btn:focus-visible,
 .activity-toolbar .osf-btn:hover,
-.activity-toolbar .osf-btn:focus-visible {
+.activity-toolbar .osf-btn:focus-visible,
+.results-dialog .osf-btn:hover,
+.results-dialog .osf-btn:focus-visible,
+.id-picker-dialog .osf-btn:hover,
+.id-picker-dialog .osf-btn:focus-visible,
+.id-browser-panel .osf-btn:hover,
+.id-browser-panel .osf-btn:focus-visible,
+.quest-diagnostic-actions .osf-btn:hover,
+.quest-diagnostic-actions .osf-btn:focus-visible {
   box-shadow: inset 0 -2px 0 var(--ccc-orange);
 }
 
 .topbar .osf-btn:focus-visible,
 .activity-toolbar .osf-btn:focus-visible,
 .custom-form .osf-btn:focus-visible,
-.confirm-actions .osf-btn:focus-visible {
+.confirm-actions .osf-btn:focus-visible,
+.results-dialog .osf-btn:focus-visible,
+.id-picker-dialog .osf-btn:focus-visible,
+.id-browser-panel .osf-btn:focus-visible,
+.quest-diagnostic-actions .osf-btn:focus-visible {
   outline: 1px solid var(--ccc-orange);
   outline-offset: 2px;
 }
@@ -735,7 +831,7 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
 .version-item:first-child .version-label,
 .version-item:first-child > span:last-child { color: var(--ccc-orange); }
 
-.activity-entry:hover { background: rgba(var(--ccc-orange-rgb), 0.045); }
+.activity-entry:hover { background: var(--ccc-orange-hover); }
 
 
 /* Dense layout, controller-friendly targets. Content is compact; anything the
@@ -743,7 +839,11 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
 .topbar .osf-btn,
 .activity-toolbar .osf-btn,
 .custom-form .osf-btn,
-.confirm-actions .osf-btn {
+.confirm-actions .osf-btn,
+.results-dialog .osf-btn,
+.id-picker-dialog .osf-btn,
+.id-browser-panel .osf-btn,
+.quest-diagnostic-actions .osf-btn {
   min-height: 42px;
   padding-inline: 16px;
 }
@@ -822,7 +922,7 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
   border-left: 2px solid transparent;
   transition: background var(--osf-dur-fast), border-color var(--osf-dur-fast);
 }
-.quest-fix-card:nth-child(odd) { background: var(--ccc-orange-soft); }
+.quest-fix-card:nth-child(even) { background: var(--ccc-orange-soft); }
 .quest-fix-card:last-child { border-bottom: 1px solid var(--osf-line); }
 .quest-fix-card:hover,
 .quest-fix-card:focus-within {
@@ -1067,7 +1167,7 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
   width: min(720px, 92vw);
   max-height: min(720px, 88vh);
   display: grid;
-  grid-template-rows: auto auto auto auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto auto auto auto minmax(0, 1fr) auto;
   gap: 10px;
   padding: 18px;
   overflow: hidden;
@@ -1086,6 +1186,10 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
 .confirm-dialog .popup-stripe {
   width: calc(100% + 40px);
   margin: -20px -20px 16px;
+}
+.results-dialog .popup-stripe {
+  width: calc(100% + 40px);
+  margin: -20px -20px 2px;
 }
 
 .id-picker-head {
@@ -1219,7 +1323,7 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
   width: 100%;
   min-height: 36px;
   color: var(--osf-text-body);
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--ccc-surface-raised);
 }
 .id-browser-controls .osf-btn { min-height: 36px; white-space: nowrap; }
 
@@ -1386,10 +1490,20 @@ select.osf-input:focus-visible { outline: 2px solid #a9d5f7; outline-offset: 2px
   overflow: auto;
   padding: 8px 10px;
   color: var(--osf-text-muted);
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--osf-line);
+  background: var(--ccc-surface-inset);
+  border: 1px solid var(--ccc-line);
   font-family: var(--ccc-console-font);
   font-size: 9px;
   line-height: 1.35;
   white-space: pre-wrap;
+}
+
+.command-list,
+.activity-list,
+.id-browser-results,
+.id-picker-results,
+.inventory-results,
+#results-output,
+.id-browser-raw pre {
+  scrollbar-color: rgba(var(--ccc-orange-rgb), 0.48) rgba(5, 7, 10, 0.32);
 }
