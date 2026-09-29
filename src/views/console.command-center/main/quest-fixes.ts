@@ -15,7 +15,6 @@ export const QUEST_FIXES: QuestFixGroup[] = [
   { quest: 'Accidents Happen', questId: '002A8319', stages: [300, 10000] },
   { quest: 'All That Money Can Buy', questId: '002C1C9B', stages: [17, 900, 1000, 2000] },
   { quest: 'Among the Stars', questId: '001DC418', stages: [1000] },
-  { quest: 'Ask Yannick about Another Shift at Xenofresh', questId: '0003B7C0', stages: [1000] },
   { quest: 'Back to the Grind', questId: '002C9C97', stages: [1300, 10000] },
   { quest: 'Back to Vectera', questId: '0001638D', stages: [10, 100, 110, 130, 131, 300, 1000] },
   { quest: 'Blast Zone', questId: '0003DC10', stages: [400] },

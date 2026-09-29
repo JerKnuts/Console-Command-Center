@@ -41,6 +41,8 @@ export type CommandDefinition = {
   testStatus?: CommandTestStatus;
   captureOutput?: boolean;
   closeBeforeExecute?: boolean;
+  unavailableReason?: string;
+  effectiveTotal?: boolean;
 };
 
 const HEX_ID_PATTERN = '^[0-9A-Fa-f]{1,8}$';
@@ -552,6 +554,19 @@ export const COMMANDS: CommandDefinition[] = [
     testStatus: 'verified',
   },
   {
+    id: 'set-boostpack-horizontal-total',
+    title: 'Set Boostpack Horizontal Effective Total',
+    category: 'Player',
+    description: 'Set the final BoostpackHorizontalPercentage total while preserving the currently detected modifier contribution.',
+    command: 'ccc.seteffectivetotal player BoostpackHorizontalPercentage {value}',
+    inputs: [{ key: 'value', label: 'Desired Effective Total', type: 'number', defaultValue: 100, min: 0, max: 10000, step: 1 }],
+    tags: ['boostpack', 'horizontal', 'effective total', 'actor value'],
+    warning: 'CCC calculates a new base from the current base and effective values. Review the calculation before applying it.',
+    risk: 'caution',
+    testStatus: 'untested',
+    effectiveTotal: true,
+  },
+  {
     id: 'set-boostpack-sustained-thrust',
     title: 'Set Boostpack Sustained Thrust Base',
     category: 'Player',
@@ -566,6 +581,19 @@ export const COMMANDS: CommandDefinition[] = [
     testStatus: 'verified',
   },
   {
+    id: 'set-boostpack-initial-thrust-total',
+    title: 'Set Boostpack Initial Thrust Effective Total',
+    category: 'Player',
+    description: 'Set the final BoostpackThrustInitial total while preserving the currently detected modifier contribution.',
+    command: 'ccc.seteffectivetotal player BoostpackThrustInitial {value}',
+    inputs: [{ key: 'value', label: 'Desired Effective Total', type: 'number', defaultValue: 500, min: 0, max: 10000, step: 1 }],
+    tags: ['boostpack', 'initial thrust', 'effective total', 'actor value'],
+    warning: 'Extreme thrust values can make movement difficult to control. Review CCC\'s calculated base before applying it.',
+    risk: 'caution',
+    testStatus: 'untested',
+    effectiveTotal: true,
+  },
+  {
     id: 'set-boostpack-time-to-sustained',
     title: 'Set Boostpack Transition-Time Base',
     category: 'Player',
@@ -578,6 +606,32 @@ export const COMMANDS: CommandDefinition[] = [
     warning: 'TESTED BEHAVIOR: GetAV reports the effective total, but SetAV changes the base value. Entering that total can stack with modifiers. Large values can make boost behavior feel delayed or broken.',
     risk: 'caution',
     testStatus: 'verified',
+  },
+  {
+    id: 'set-boostpack-sustained-thrust-total',
+    title: 'Set Boostpack Sustained Thrust Effective Total',
+    category: 'Player',
+    description: 'Set the final BoostpackThrustSustained total while preserving the currently detected modifier contribution.',
+    command: 'ccc.seteffectivetotal player BoostpackThrustSustained {value}',
+    inputs: [{ key: 'value', label: 'Desired Effective Total', type: 'number', defaultValue: 100, min: 0, max: 10000, step: 1 }],
+    tags: ['boostpack', 'sustained thrust', 'effective total', 'actor value'],
+    warning: 'Extreme thrust values can make movement difficult to control. Review CCC\'s calculated base before applying it.',
+    risk: 'caution',
+    testStatus: 'untested',
+    effectiveTotal: true,
+  },
+  {
+    id: 'set-boostpack-time-to-sustained-total',
+    title: 'Set Boostpack Transition-Time Effective Total',
+    category: 'Player',
+    description: 'Set the final BoostpackTimetoSustained total while preserving the currently detected modifier contribution.',
+    command: 'ccc.seteffectivetotal player BoostpackTimetoSustained {value}',
+    inputs: [{ key: 'value', label: 'Desired Effective Total', type: 'number', defaultValue: 1, min: 0, max: 100, step: 0.1 }],
+    tags: ['boostpack', 'transition time', 'effective total', 'actor value'],
+    warning: 'Large values can make boost behavior feel delayed or broken. Review CCC\'s calculated base before applying it.',
+    risk: 'caution',
+    testStatus: 'untested',
+    effectiveTotal: true,
   },
 
   // SKILLS / POWERS / EFFECTS
@@ -782,6 +836,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['wait', 'sleep', 'menu', 'time'],
     closeBeforeExecute: true,
     testStatus: 'failed',
+    unavailableReason: 'Starfield accepted the request but did not open the wait menu. This command is disabled until a verified native menu adapter is available.',
   },
   {
     id: 'set-scanner-range',
@@ -1121,6 +1176,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['door', 'open', 'state', 'getopenstate', 'inspect', 'read only'],
     captureOutput: true,
     testStatus: 'failed',
+    unavailableReason: 'The previous native inspection adapter was disabled after the test1 crash. Set Open State remains available.',
   },
   {
     id: 'set-open-state',
@@ -1145,7 +1201,7 @@ export const COMMANDS: CommandDefinition[] = [
     command: 'getplayergrabbedref',
     tags: ['reference id', 'object', 'grabbed', 'getplayergrabbedref', 'inspect', 'read only'],
     captureOutput: true,
-    testStatus: 'failed',
+    testStatus: 'untested',
   },
   {
     id: 'inspect-ref-actor-value',
@@ -1243,6 +1299,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('refId', 'Reference ID', '00000000')],
     captureOutput: true,
     testStatus: 'failed',
+    unavailableReason: 'Scale inspection is disabled because the previous native adapter crashed Starfield during test1.',
   },
   {
     id: 'add-item-mod',
@@ -1382,6 +1439,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['quest', 'targets', 'sqt', 'inspect', 'read only'],
     captureOutput: true,
     testStatus: 'failed',
+    unavailableReason: 'This command depends on console-output capture, which is being replaced with a reliable native diagnostic path.',
   },
   {
     id: 'get-quest-stage',
@@ -1393,6 +1451,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['quest', 'stage', 'getstage', 'inspect', 'read only'],
     captureOutput: true,
     testStatus: 'failed',
+    unavailableReason: 'The previous native GetStage adapter was disabled after the test1 crash.',
   },
   {
     id: 'show-quest-stages',
@@ -1404,6 +1463,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['quest', 'stages', 'sqs', 'history', 'inspect', 'read only'],
     captureOutput: true,
     testStatus: 'failed',
+    unavailableReason: 'This command depends on long console-output capture, which is not reliable enough to expose as a supported diagnostic.',
   },
   {
     id: 'start-quest',
@@ -1522,6 +1582,22 @@ export const COMMANDS: CommandDefinition[] = [
     testStatus: 'verified',
   },
   {
+    id: 'set-ship-cargo-total',
+    title: 'Set Ship Cargo Effective Total',
+    category: 'Ship',
+    description: 'Set the final CarryWeight total while preserving the currently detected cargo-module contribution.',
+    command: 'ccc.seteffectivetotal {shipRef} CarryWeight {value}',
+    inputs: [
+      hexInput('shipRef', 'Ship Reference ID', 'FF000000', 'Use Get Current Ship Reference ID first.'),
+      { key: 'value', label: 'Desired Effective Total', type: 'number', defaultValue: 5000, min: 0, max: 1000000000, step: 1 },
+    ],
+    tags: ['ship', 'cargo', 'carryweight', 'effective total'],
+    warning: 'CCC calculates a new base from the ship\'s current base and effective cargo values. Review the calculation before applying it.',
+    risk: 'caution',
+    testStatus: 'untested',
+    effectiveTotal: true,
+  },
+  {
     id: 'set-ship-shielded-cargo',
     title: 'Set Shielded Cargo Capacity',
     category: 'Ship',
@@ -1535,6 +1611,22 @@ export const COMMANDS: CommandDefinition[] = [
     warning: 'TESTED BEHAVIOR: GetAV reports the effective shielded cargo capacity, but SetAV changes the base. Entering the inspected total can stack beneath shielded-cargo module modifiers and raise the final capacity.',
     risk: 'caution',
     testStatus: 'verified',
+  },
+  {
+    id: 'set-ship-shielded-cargo-total',
+    title: 'Set Shielded Cargo Effective Total',
+    category: 'Ship',
+    description: 'Set the final CarryWeightShielded total while preserving the currently detected module contribution.',
+    command: 'ccc.seteffectivetotal {shipRef} CarryWeightShielded {value}',
+    inputs: [
+      hexInput('shipRef', 'Ship Reference ID', 'FF000000', 'Use Get Current Ship Reference ID first.'),
+      { key: 'value', label: 'Desired Effective Total', type: 'number', defaultValue: 1000, min: 0, max: 1000000000, step: 1 },
+    ],
+    tags: ['ship', 'shielded cargo', 'carryweightshielded', 'effective total'],
+    warning: 'CCC calculates a new base from the ship\'s current base and effective shielded-cargo values. Review the calculation before applying it.',
+    risk: 'caution',
+    testStatus: 'untested',
+    effectiveTotal: true,
   },
   {
     id: 'set-ship-crew-capacity',
@@ -1579,6 +1671,22 @@ export const COMMANDS: CommandDefinition[] = [
     warning: 'TESTED BEHAVIOR: GetAV reports effective reactor power, while SetAV changes the base. Entering the inspected total can stack beneath reactor-module modifiers and raise the displayed final power.',
     risk: 'caution',
     testStatus: 'verified',
+  },
+  {
+    id: 'set-ship-reactor-power-total',
+    title: 'Set Ship Reactor Effective Total',
+    category: 'Ship',
+    description: 'Set the final SpaceshipReactorPower total while preserving the currently detected reactor-module contribution.',
+    command: 'ccc.seteffectivetotal {shipRef} SpaceshipReactorPower {value}',
+    inputs: [
+      hexInput('shipRef', 'Ship Reference ID', 'FF000000', 'Use Get Current Ship Reference ID first.'),
+      { key: 'value', label: 'Desired Effective Total', type: 'number', defaultValue: 40, min: 0, max: 1000, step: 1 },
+    ],
+    tags: ['ship', 'reactor', 'power', 'effective total'],
+    warning: 'CCC calculates a new base from the ship\'s current base and effective reactor values. Review the calculation before applying it.',
+    risk: 'caution',
+    testStatus: 'untested',
+    effectiveTotal: true,
   },
   {
     id: 'set-ship-grav-fuel',

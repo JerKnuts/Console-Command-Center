@@ -12,7 +12,13 @@ type PendingExecution = {
   command: string;
   definition?: CommandDefinition;
   rememberRecent?: boolean;
-  questId?: string;
+  effectiveTotal?: EffectiveTotalRequest;
+};
+
+type EffectiveTotalRequest = {
+  target: string;
+  actorValue: string;
+  desiredTotal: number;
 };
 
 type ActiveIdPicker = {
@@ -34,7 +40,11 @@ type ActivityEntry = {
 type PingReply = {
   ok: boolean;
   backend: string;
+  build?: string;
   executor?: string;
+  runtime?: string;
+  testedRuntime?: string;
+  runtimeSupported?: boolean;
 };
 
 type ExecuteReply = {
@@ -48,27 +58,32 @@ type QueryReply = {
   output: string;
 };
 
+type FormSearchReply = {
+  ok: boolean;
+  results: Array<{
+    label: string;
+    value: string;
+    type: string;
+    editorId?: string;
+  }>;
+};
+
+type EffectiveTotalReply = EffectiveTotalRequest & {
+  ok: boolean;
+  applied: boolean;
+  currentBase: number;
+  currentEffective: number;
+  modifierContribution: number;
+  calculatedBase: number;
+  resultingEffective: number;
+  command: string;
+};
+
 type InventoryResultRow = {
   type: string;
   id: string;
   count: number;
   name: string;
-};
-
-type QuestStatusReply = {
-  ok: boolean;
-  questId: string;
-  currentStage: number | null;
-  completedStages: number[];
-  historyAvailable?: boolean;
-};
-
-type QuestDiagnostic = {
-  state: 'loading' | 'ready' | 'error';
-  currentStage: number | null;
-  completedStages: number[];
-  historyAvailable?: boolean;
-  message?: string;
 };
 
 type CloseReply = {
@@ -83,8 +98,7 @@ const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0-test7';
-const LATEST_STARFIELD_VERSION = '1.16.244';
+const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0-test8';
 
 let activeView: ViewMode = 'recent';
 let query = '';
@@ -103,7 +117,6 @@ let idBrowserLiveResults: IdCatalogEntry[] = [];
 let idBrowserRawOutput = '';
 let idBrowserSearching = false;
 let idBrowserSelected: IdCatalogEntry | null = null;
-const questDiagnostics = new Map<string, QuestDiagnostic>();
 
 app.innerHTML = `
   <main class="command-center-shell">
@@ -168,7 +181,7 @@ app.innerHTML = `
       <div class="status-versions" aria-label="Version information">
         <span class="version-item"><span class="version-label">CCC</span><span>v${CONSOLE_COMMAND_CENTER_VERSION}</span></span>
         <span class="version-separator">//</span>
-        <span class="version-item"><span class="version-label">STARFIELD LATEST</span><span>${LATEST_STARFIELD_VERSION}</span></span>
+        <span class="version-item"><span class="version-label">STARFIELD</span><span id="footer-starfield-version">...</span></span>
         <span class="version-separator">//</span>
         <span class="version-item"><span class="version-label">OSF UI</span><span id="footer-osf-version">...</span></span>
       </div>
@@ -375,6 +388,7 @@ const commandList = requiredElement('#command-list', HTMLElement);
 const customPanel = requiredElement('#custom-panel', HTMLElement);
 const status = requiredElement('#status', HTMLElement);
 const footerOsfVersion = requiredElement('#footer-osf-version', HTMLElement);
+const footerStarfieldVersion = requiredElement('#footer-starfield-version', HTMLElement);
 const closeView = requiredElement('#close-view', HTMLButtonElement);
 const idPickerBackdrop = requiredElement('#id-picker-backdrop', HTMLElement);
 const idPickerTitle = requiredElement('#id-picker-title', HTMLElement);
@@ -655,48 +669,18 @@ function renderQuestFixes(): void {
 
   const intro = `
     <section class="quest-fix-intro osf-card">
-      <strong>Check Status first.</strong>
-      <span>Then use a repair stage only if needed. <code>setstage</code> can skip scripts, scenes, or rewards — make a manual save first.</span>
-      <span class="quest-stage-caveat">Current stage is Starfield's highest completed stage, so it may be higher than the quest's active step.</span>
+      <strong>Quest stages are unverified repair choices.</strong>
+      <span>Live quest diagnostics are temporarily unavailable. Check the quest in Starfield, make a manual save, and use <code>setstage</code> only when a quest is already stuck.</span>
+      <span class="quest-stage-caveat">A stage can skip scripts, dialogue, scenes, prerequisites, or rewards.</span>
     </section>`;
 
   const cards = groups.map((group) => {
-    const diagnostic = questDiagnostics.get(group.questId);
-    const completedSet = new Set(diagnostic?.completedStages ?? []);
-    const currentStage = diagnostic?.state === 'ready' ? diagnostic.currentStage : null;
-
     const stages = group.stages.map((stage) => {
       const command = `setstage ${group.questId} ${stage}`;
-      const isCompleted = completedSet.has(stage);
-      const isCurrent = currentStage === stage;
-      const stateClass = isCurrent ? ' is-current' : isCompleted ? ' is-completed' : '';
-      const stateLabel = isCurrent ? 'CURRENT' : isCompleted ? 'DONE' : 'STAGE';
-      return `<button class="quest-stage-button${stateClass}" type="button" data-quest-command="${escapeHtml(command)}" data-quest-id="${escapeHtml(group.questId)}" data-quest-title="${escapeHtml(group.quest)}" data-quest-stage="${stage}"${nativeBackendReady ? '' : ' disabled'}>
-        <span>${stateLabel}</span><strong>${stage}</strong>
+      return `<button class="quest-stage-button" type="button" data-quest-command="${escapeHtml(command)}" data-quest-id="${escapeHtml(group.questId)}" data-quest-title="${escapeHtml(group.quest)}" data-quest-stage="${stage}"${nativeBackendReady ? '' : ' disabled'}>
+        <span>STAGE</span><strong>${stage}</strong>
       </button>`;
     }).join('');
-
-    let statusValue = 'NOT CHECKED';
-    let statusDetail = 'Check the live save before using a repair stage.';
-    if (diagnostic?.state === 'loading') {
-      statusValue = 'CHECKING...';
-      statusDetail = 'Reading quest stage state from the game.';
-    } else if (diagnostic?.state === 'error') {
-      statusValue = 'UNAVAILABLE';
-      statusDetail = diagnostic.message ?? 'Could not read this quest.';
-    } else if (diagnostic?.state === 'ready') {
-      statusValue = diagnostic.currentStage === null ? 'NONE COMPLETED' : String(diagnostic.currentStage);
-      statusDetail = diagnostic.historyAvailable === false ? 'Current stage read; full stage history unavailable.'
-        : `${diagnostic.completedStages.length} completed stage${diagnostic.completedStages.length === 1 ? '' : 's'} found.`;
-    }
-
-    const history = diagnostic?.state === 'ready'
-      ? diagnostic.historyAvailable === false
-        ? '<div class="quest-stage-history"><span>COMPLETED STAGES</span><div class="quest-stage-history-empty">Unavailable — SQS did not return a stage table. Do not infer that no stages are complete.</div></div>'
-        : diagnostic.completedStages.length > 0
-        ? `<div class="quest-stage-history"><span>COMPLETED STAGES</span><div>${diagnostic.completedStages.map((stage) => `<code>${stage}</code>`).join('')}</div></div>`
-        : `<div class="quest-stage-history"><span>COMPLETED STAGES</span><div class="quest-stage-history-empty">None reported yet.</div></div>`
-      : '';
 
     return `
       <article class="quest-fix-card" data-quest-card="${escapeHtml(group.questId)}">
@@ -709,18 +693,16 @@ function renderQuestFixes(): void {
         </div>
 
         <div class="quest-diagnostic-row">
-          <div class="quest-current-stage${diagnostic?.state === 'ready' ? ' is-ready' : ''}${diagnostic?.state === 'error' ? ' is-error' : ''}">
-            <span class="osf-eyebrow">CURRENT / HIGHEST COMPLETED*</span>
-            <strong>${escapeHtml(statusValue)}</strong>
-            <small>${escapeHtml(statusDetail)}</small>
+          <div class="quest-current-stage is-error">
+            <span class="osf-eyebrow">LIVE QUEST DIAGNOSTICS</span>
+            <strong>UNAVAILABLE</strong>
+            <small>The previous native adapter is disabled while a safe replacement is developed.</small>
           </div>
           <div class="quest-diagnostic-actions">
-            <button class="osf-btn osf-btn--sm" type="button" data-quest-status="${escapeHtml(group.questId)}"${nativeBackendReady && diagnostic?.state !== 'loading' ? '' : ' disabled'}>${diagnostic?.state === 'ready' ? 'Refresh Status' : 'Check Status'}</button>
-            <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-quest-sqs="${escapeHtml(group.questId)}" data-quest-title="${escapeHtml(group.quest)}"${nativeBackendReady ? '' : ' disabled'}>Full SQS</button>
+            <button class="osf-btn osf-btn--sm" type="button" disabled>Check Status</button>
+            <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" disabled>Full SQS</button>
           </div>
         </div>
-
-        ${history}
 
         <div class="quest-fix-stage-label"><span class="osf-eyebrow">AVAILABLE REPAIR STAGES</span><span>Choose only the stage needed to get past the broken step.</span></div>
         <div class="quest-stage-grid">${stages}</div>
@@ -730,46 +712,9 @@ function renderQuestFixes(): void {
   commandList.innerHTML = intro + cards;
 }
 
-async function loadQuestStatus(questId: string): Promise<void> {
-  if (!nativeBackendReady) {
-    setStatus('ConsoleCommandCenter.dll is not connected.', 'error');
-    return;
-  }
-
-  const numericQuestId = Number.parseInt(questId, 16);
-  if (!Number.isFinite(numericQuestId)) {
-    setStatus(`Invalid Quest Form ID: ${questId}`, 'error');
-    return;
-  }
-
-  questDiagnostics.set(questId, { state: 'loading', currentStage: null, completedStages: [] });
-  render();
-  setStatus(`Checking quest ${questId}...`, 'working');
-
-  try {
-    if (!window.osfui?.call) throw new Error('OSF UI native request API is unavailable');
-    const reply = await window.osfui.call<QuestStatusReply>('console.command-center.questStatus', { questFormId: numericQuestId });
-    if (!reply?.ok) throw new Error('Native backend did not return quest status');
-
-    const completedStages = Array.isArray(reply.completedStages)
-      ? reply.completedStages.filter((stage) => Number.isInteger(stage)).sort((a, b) => a - b)
-      : [];
-    const currentStage = typeof reply.currentStage === 'number' ? reply.currentStage : null;
-    questDiagnostics.set(questId, { state: 'ready', currentStage, completedStages, historyAvailable: reply.historyAvailable });
-    setStatus(currentStage === null
-      ? `Quest ${questId}: no completed stages reported.`
-      : `Quest ${questId}: current stage ${currentStage}.${reply.historyAvailable === false ? ' Full stage history unavailable.' : ''}`, 'success');
-  } catch (error) {
-    const message = describe(error);
-    questDiagnostics.set(questId, { state: 'error', currentStage: null, completedStages: [], message });
-    setStatus(message, 'error');
-  }
-
-  if (activeView === 'quest-fixes') render();
-}
-
 function renderCommandCard(command: CommandDefinition): string {
   const isFavorite = favorites.includes(command.id);
+  const unavailable = Boolean(command.unavailableReason);
   const inputs = (command.inputs ?? []).map((input) => renderInput(command, input)).join('');
   const riskLabel = command.risk === 'danger' ? 'DANGER' : 'CAUTION';
   const warningTag = command.warning
@@ -790,16 +735,17 @@ function renderCommandCard(command: CommandDefinition): string {
             <h3>${escapeHtml(command.title)}</h3>
             <code class="command-heading-preview" data-preview="${escapeHtml(command.id)}">${escapeHtml(buildCommand(command))}</code>
           </div>
-          ${warningTag}
+          <span class="command-heading-tags">${command.unavailableReason ? '<span class="command-availability-tag">UNAVAILABLE</span>' : ''}${warningTag}</span>
         </div>
         <p class="command-description">${escapeHtml(command.description)}</p>
+        ${command.unavailableReason ? `<p class="command-unavailable-reason">${escapeHtml(command.unavailableReason)}</p>` : ''}
         ${inputs ? `<div class="command-inputs">${inputs}</div>` : ''}
       </div>
       <div class="command-actions">
         <button class="favorite-button${isFavorite ? ' is-favorite' : ''}" type="button" data-favorite="${escapeHtml(command.id)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
           <span aria-hidden="true">${isFavorite ? '★' : '☆'}</span>
         </button>
-        <button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${nativeBackendReady ? '' : ' disabled'}>Execute</button>
+        <button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${nativeBackendReady && !unavailable ? '' : ' disabled'}>${unavailable ? 'Unavailable' : 'Execute'}</button>
       </div>
     </article>
   `;
@@ -951,6 +897,10 @@ function showConfirmation(execution: PendingExecution, message: string, risk: 'n
 }
 
 function requestExecution(execution: PendingExecution): void {
+  if (execution.definition?.unavailableReason) {
+    setStatus(execution.definition.unavailableReason, 'error');
+    return;
+  }
   const warning = execution.definition?.warning;
   const risk = execution.definition?.risk ?? (warning ? 'caution' : 'normal');
   showConfirmation(
@@ -958,6 +908,45 @@ function requestExecution(execution: PendingExecution): void {
     warning ?? 'Run this command now? Review the command below before continuing.',
     risk,
   );
+}
+
+function formatActorValue(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+async function prepareEffectiveTotalExecution(definition: CommandDefinition, builtCommand: string): Promise<void> {
+  const match = builtCommand.match(/^ccc\.seteffectivetotal\s+(player|[0-9A-Fa-f]{1,8})\s+([A-Za-z0-9_]{1,64})\s+(-?(?:\d+(?:\.\d*)?|\.\d+))$/i);
+  if (!match) {
+    setStatus('Could not read the effective-total target, actor value, and desired total.', 'error');
+    return;
+  }
+  if (!nativeBackendReady || !window.osfui?.call) {
+    setStatus('ConsoleCommandCenter.dll is not connected.', 'error');
+    return;
+  }
+
+  const effectiveTotal: EffectiveTotalRequest = {
+    target: match[1],
+    actorValue: match[2],
+    desiredTotal: Number(match[3]),
+  };
+  setStatus(`Calculating the base value for ${effectiveTotal.actorValue}...`, 'working');
+  try {
+    const preview = await window.osfui.call<EffectiveTotalReply>('console.command-center.setEffectiveActorValue', {
+      ...effectiveTotal,
+      apply: false,
+    });
+    if (!preview?.ok) throw new Error('Native backend did not return an effective-total calculation');
+    const message = `Current base: ${formatActorValue(preview.currentBase)}. Current effective total: ${formatActorValue(preview.currentEffective)}. Detected modifier contribution: ${formatActorValue(preview.modifierContribution)}. To reach ${formatActorValue(preview.desiredTotal)}, CCC will set the base to ${formatActorValue(preview.calculatedBase)}.`;
+    showConfirmation(
+      { command: preview.command, definition, effectiveTotal },
+      message,
+      definition.risk ?? 'caution',
+    );
+    setStatus('Effective-total calculation ready for review.');
+  } catch (error) {
+    setStatus(describe(error), 'error');
+  }
 }
 
 async function executeConsole(execution: PendingExecution): Promise<void> {
@@ -977,6 +966,21 @@ async function executeConsole(execution: PendingExecution): Promise<void> {
   setStatus(`Executing: ${command}`, 'working');
   try {
     if (!window.osfui?.call) throw new Error('OSF UI native request API is unavailable');
+    if (execution.effectiveTotal) {
+      const reply = await window.osfui.call<EffectiveTotalReply>('console.command-center.setEffectiveActorValue', {
+        ...execution.effectiveTotal,
+        apply: true,
+      });
+      if (!reply?.ok || !reply.applied) throw new Error('Native backend did not apply the calculated base value');
+      const message = `${reply.actorValue}: base ${formatActorValue(reply.calculatedBase)} applied for requested effective total ${formatActorValue(reply.desiredTotal)}. Immediate effective value: ${formatActorValue(reply.resultingEffective)}.`;
+      executionCount += 1;
+      lastCommand = reply.command;
+      setStatus(message, 'success');
+      if (execution.definition && execution.rememberRecent !== false) addRecent(execution.definition.id);
+      addActivity({ ...execution, command: reply.command }, 'success', message);
+      if (activeView === 'recent' || activeView === 'activity') render();
+      return;
+    }
     const reply = capturesOutput
       ? await window.osfui.call<QueryReply>('console.command-center.query', { consoleCommand: command })
       : await window.osfui.call<ExecuteReply>('console.command-center.execute', {
@@ -998,9 +1002,7 @@ async function executeConsole(execution: PendingExecution): Promise<void> {
     if (execution.definition && execution.rememberRecent !== false) addRecent(execution.definition.id);
     addActivity(execution, 'success', activityMessage);
     if (capturesOutput) showResults(resultTitle, executedCommand, capturedOutput, 'ready');
-    if (execution.questId) {
-      await loadQuestStatus(execution.questId);
-    } else if (activeView === 'recent' || activeView === 'activity') {
+    if (activeView === 'recent' || activeView === 'activity' || activeView === 'quest-fixes') {
       render();
     }
   } catch (error) {
@@ -1151,47 +1153,8 @@ function mergedIdBrowserResults(): IdCatalogEntry[] {
   return output;
 }
 
-function parseHelpResults(output: string): IdCatalogEntry[] {
-  const parsed: IdCatalogEntry[] = [];
-  const seen = new Set<string>();
-  const primary = /\b([A-Z_]{2,8})\s*:\s*\(([0-9A-Fa-f]{1,8})\)\s*(.*)$/;
-  const fallback = /\(([0-9A-Fa-f]{6,8})\)\s*(.*)$/;
-
-  for (const rawLine of output.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line) continue;
-    const match = line.match(primary);
-    let type = 'FORM';
-    let value = '';
-    let label = '';
-    if (match) {
-      type = match[1].toUpperCase();
-      value = match[2].toUpperCase().padStart(8, '0');
-      label = match[3].trim();
-    } else {
-      const loose = line.match(fallback);
-      if (!loose) continue;
-      value = loose[1].toUpperCase().padStart(8, '0');
-      label = loose[2].trim();
-    }
-
-    label = label.replace(/^[-–—:\s]+/, '').replace(/^["']+|["']+$/g, '').trim();
-    if (!label) label = 'Unnamed record';
-    const key = `${type}:${value}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    parsed.push({
-      label,
-      value,
-      type,
-      category: 'Live Search',
-      detail: 'Loaded-game help result',
-      source: 'live',
-    });
-    if (parsed.length >= 250) break;
-  }
-
-  return parsed.sort((a, b) => a.label.localeCompare(b.label));
+function liveCategoryForType(type: string): string {
+  return ID_BROWSER_CATEGORIES.find((category) => category.recordType === type.toUpperCase())?.label ?? 'Loaded Game';
 }
 
 function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspell' | 'spawn' | null {
@@ -1262,7 +1225,7 @@ function renderIdBrowserPanel(): void {
             ${ID_BROWSER_CATEGORIES.map((category) => `<option value="${escapeHtml(category.value)}"${category.value === idBrowserCategory ? ' selected' : ''}>${escapeHtml(category.label)}</option>`).join('')}
           </select>
         </label>
-        <button class="osf-btn osf-btn--osf-accent" id="id-browser-search-game" type="button" ${!query || !nativeBackendReady || idBrowserSearching ? 'disabled' : ''}>${idBrowserSearching ? 'Searching...' : 'Search Game'}</button>
+        <button class="osf-btn osf-btn--osf-accent" id="id-browser-search-game" type="button" ${query.trim().length < 2 || !nativeBackendReady || idBrowserSearching ? 'disabled' : ''}>${idBrowserSearching ? 'Searching...' : 'Search Game'}</button>
         <button class="osf-btn osf-btn--ghost" id="id-browser-clear-live" type="button" ${idBrowserLiveResults.length === 0 && !idBrowserRawOutput ? 'disabled' : ''}>Clear Live</button>
       </div>
 
@@ -1324,8 +1287,8 @@ function renderIdBrowserPanel(): void {
 
 async function runIdBrowserLiveSearch(): Promise<void> {
   const term = query.replace(/["\r\n]/g, ' ').trim();
-  if (!term) {
-    setStatus('Enter a name or partial name before searching the game.', 'error');
+  if (term.length < 2) {
+    setStatus('Enter at least two characters before searching the game.', 'error');
     return;
   }
   if (!nativeBackendReady || !window.osfui?.call) {
@@ -1334,17 +1297,23 @@ async function runIdBrowserLiveSearch(): Promise<void> {
   }
 
   const recordType = activeIdBrowserCategory().recordType;
-  const command = `help "${term}" 4${recordType ? ` ${recordType}` : ''}`;
+  const command = `Native form search: ${term}${recordType ? ` [${recordType}]` : ''}`;
   idBrowserSearching = true;
   render();
   setStatus(`Searching loaded game records: ${command}`, 'working');
 
   try {
-    const reply = await window.osfui.call<QueryReply>('console.command-center.query', { consoleCommand: command });
+    const reply = await window.osfui.call<FormSearchReply>('console.command-center.searchForms', { searchText: term, recordType });
     if (!reply?.ok) throw new Error('Native backend did not report success');
-    const output = reply.output?.trim() ?? '';
-    idBrowserLiveResults = parseHelpResults(output);
-    idBrowserRawOutput = output;
+    idBrowserLiveResults = (Array.isArray(reply.results) ? reply.results : []).map((entry) => ({
+      label: entry.label || entry.editorId || 'Unnamed record',
+      value: entry.value.toUpperCase().padStart(8, '0'),
+      type: entry.type.toUpperCase(),
+      category: liveCategoryForType(entry.type),
+      detail: entry.editorId ? `EditorID: ${entry.editorId}` : 'Loaded-game record',
+      source: 'live',
+    }));
+    idBrowserRawOutput = '';
     executionCount += 1;
     lastCommand = command;
     addActivity({
@@ -1353,16 +1322,15 @@ async function runIdBrowserLiveSearch(): Promise<void> {
         id: 'id-browser-live-search',
         title: 'ID Browser Live Search',
         category: 'Inventory',
-        description: 'Search loaded Starfield records with the help command.',
+        description: 'Search loaded Starfield forms directly by display name and EditorID.',
         command,
-        captureOutput: true,
         testStatus: 'untested',
       },
       rememberRecent: false,
-    }, 'success', `Result: ${output}`);
+    }, 'success', `Found ${idBrowserLiveResults.length} loaded-game record${idBrowserLiveResults.length === 1 ? '' : 's'}.`);
     setStatus(idBrowserLiveResults.length
-      ? `Found ${idBrowserLiveResults.length} parsed game record${idBrowserLiveResults.length === 1 ? '' : 's'}.`
-      : 'Game search completed, but no ID rows were parsed. Raw output is shown below.', 'success');
+      ? `Found ${idBrowserLiveResults.length} loaded-game record${idBrowserLiveResults.length === 1 ? '' : 's'}.`
+      : 'No loaded-game records matched that name or EditorID.', 'success');
   } catch (error) {
     const message = describe(error);
     idBrowserLiveResults = [];
@@ -1542,33 +1510,6 @@ commandList.addEventListener('click', (event) => {
   }
 
 
-  const statusButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-quest-status]');
-  if (statusButton?.dataset.questStatus) {
-    void loadQuestStatus(statusButton.dataset.questStatus);
-    return;
-  }
-
-  const sqsButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-quest-sqs]');
-  if (sqsButton?.dataset.questSqs && sqsButton.dataset.questTitle) {
-    const questId = sqsButton.dataset.questSqs;
-    const questTitle = sqsButton.dataset.questTitle;
-    const command = `sqs ${questId}`;
-    const definition: CommandDefinition = {
-      id: `quest-sqs-${questId.toLowerCase()}`,
-      title: `${questTitle} — Full SQS`,
-      category: 'Quests',
-      description: `Print the full stage-status table for ${questTitle} to Starfield's console.`,
-      command,
-      testStatus: 'untested',
-    };
-    showConfirmation(
-      { command, definition, rememberRecent: false },
-      'This is a read-only diagnostic command. It prints the full stage table to Starfield\'s console. Check Status summarizes the same quest data inside CCC.',
-      'normal',
-    );
-    return;
-  }
-
   const questButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-quest-command]');
   if (questButton?.dataset.questCommand && questButton.dataset.questTitle && questButton.dataset.questStage) {
     const questTitle = questButton.dataset.questTitle;
@@ -1584,7 +1525,7 @@ commandList.addEventListener('click', (event) => {
       risk: 'danger',
       testStatus: 'untested',
     };
-    requestExecution({ command, definition, rememberRecent: false, questId: questButton.dataset.questId });
+    requestExecution({ command, definition, rememberRecent: false });
     return;
   }
 
@@ -1613,7 +1554,12 @@ commandList.addEventListener('click', (event) => {
     setStatus(validationError, 'error');
     return;
   }
-  requestExecution({ command: buildCommand(command), definition: command });
+  const builtCommand = buildCommand(command);
+  if (command.effectiveTotal) {
+    void prepareEffectiveTotalExecution(command, builtCommand);
+    return;
+  }
+  requestExecution({ command: builtCommand, definition: command });
 });
 
 function closeCautionPopovers(exceptCommandId?: string): void {
@@ -1750,8 +1696,15 @@ async function connectNativeBackend(): Promise<void> {
   try {
     const reply = await window.osfui.call<PingReply>('console.command-center.ping');
     if (!reply?.ok) throw new Error('Native backend returned an unsuccessful ping');
+    footerStarfieldVersion.textContent = reply.runtime ?? 'UNKNOWN';
+    if (reply.runtimeSupported === false) {
+      nativeBackendReady = false;
+      setStatus(`CCC ${reply.build ?? ''} is tested for Starfield ${reply.testedRuntime ?? '1.16.244'}, but ${reply.runtime ?? 'an unknown runtime'} is running. Native commands are disabled.`, 'error');
+      render();
+      return;
+    }
     nativeBackendReady = true;
-    setStatus(`${reply.backend} connected.`, 'success');
+    setStatus(`${reply.backend}${reply.build ? ` ${reply.build}` : ''} connected.`, 'success');
   } catch (error) {
     nativeBackendReady = false;
     setStatus(`Native backend unavailable: ${describe(error)}`, 'error');
@@ -1775,6 +1728,7 @@ if (ready) {
     bridgeState = 'unavailable';
     nativeBackendReady = false;
     footerOsfVersion.textContent = 'UNAVAILABLE';
+    footerStarfieldVersion.textContent = 'UNKNOWN';
     setStatus('OSF UI bridge unavailable.', 'error');
     render();
   });
@@ -1782,6 +1736,7 @@ if (ready) {
   bridgeState = 'unavailable';
   nativeBackendReady = false;
   footerOsfVersion.textContent = 'UNAVAILABLE';
+  footerStarfieldVersion.textContent = 'UNKNOWN';
   setStatus('OSF UI bridge unavailable.', 'error');
 }
 

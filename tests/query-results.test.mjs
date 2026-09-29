@@ -7,6 +7,8 @@ import { stripTypeScriptTypes } from 'node:module';
 // Exercise the actual response handler without a game or browser. DOM layout,
 // engine values, focus trapping, and scrolling still need a browser/game test.
 const source = readFileSync(new URL('../src/views/console.command-center/main/main.ts', import.meta.url), 'utf8');
+const commandSource = readFileSync(new URL('../src/views/console.command-center/main/commands.ts', import.meta.url), 'utf8');
+const nativeSource = readFileSync(new URL('../native/src/main.cpp', import.meta.url), 'utf8');
 const names = new Set(['executeConsole', 'showResults', 'extractResultIds', 'parseInventoryResults', 'renderInventoryResults', 'describe', 'escapeHtml', 'renderActivityPanel']);
 const functions = [...source.matchAll(/^(?:async )?function (\w+)\b[\s\S]*?^}/gm)]
   .filter(match => names.has(match[1])).map(match => match[0]);
@@ -169,4 +171,24 @@ test('document-targeted native Escape closes only the Results window', () => {
   sandbox.handleKey({ key: 'Escape', preventDefault() { prevented = true; }, stopPropagation() { stopped = true; } });
   assert.equal(closed, 1);
   assert.ok(prevented && stopped);
+});
+
+test('Search Game uses native loaded-form search instead of a help console query', () => {
+  assert.match(source, /console\.command-center\.searchForms/);
+  assert.doesNotMatch(source, /help \"\$\{escapedSearch\}\"/);
+  assert.match(nativeSource, /RegisterRequest\("console\.command-center\.searchForms"/);
+});
+
+test('known-broken command cards are unavailable at both render and execution boundaries', () => {
+  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 6);
+  assert.match(source, /const unavailable = Boolean\(command\.unavailableReason\)/);
+  assert.match(source, /if \(execution\.definition\?\.unavailableReason\)/);
+});
+
+test('effective-total commands use the native preview-and-apply route', () => {
+  assert.equal((commandSource.match(/effectiveTotal: true/g) ?? []).length, 7);
+  assert.match(source, /apply: false/);
+  assert.match(source, /apply: true/);
+  assert.match(source, /console\.command-center\.setEffectiveActorValue/);
+  assert.match(nativeSource, /calculatedBase = \*desiredTotal - modifierContribution/);
 });

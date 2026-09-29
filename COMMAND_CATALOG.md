@@ -2,9 +2,9 @@
 
 Version: 0.3.0
 
-Curated commands: 134
+Curated commands: 141 (6 currently disabled)
 
-Guided quest repairs: 248 stage selections (246 unique setstage commands) across 80 named entries / 78 unique quest FormIDs
+Guided quest repairs: 247 stage selections (245 unique setstage commands) across 79 named entries / 77 unique quest FormIDs
 
 Risk levels:
 - **Normal** — ordinary confirmation before execution.
@@ -33,7 +33,7 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 
 **Pay Bounty** uses the compact ID field + **CHOOSE FACTION** box layout. The choice list is intentionally limited to bounty-relevant faction records (including supported Shattered Space entries), while manual faction-ID entry remains available. Inline preset-button grids are not used. The command spends the player's credits; it does not erase the bounty for free.
 
-## Player (18)
+## Player (22)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -52,9 +52,13 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Teleport Player to Reference | `player.moveto {refId}` | Caution | Verified |
 | Set Player Coordinate Axis | `player.setpos {axis} {value}` | Caution | Verified |
 | Set Boostpack Horizontal Base Value | `player.setav BoostpackHorizontalPercentage {value}` | Caution | Verified — base value stacks with modifiers |
+| Set Boostpack Horizontal Effective Total | calculated native setter | Caution | Untested in test8 |
 | Set Boostpack Initial Thrust Base | `player.setav BoostpackThrustInitial {value}` | Caution | Verified — base value stacks with modifiers |
+| Set Boostpack Initial Thrust Effective Total | calculated native setter | Caution | Untested in test8 |
 | Set Boostpack Sustained Thrust Base | `player.setav BoostpackThrustSustained {value}` | Caution | Verified — base value stacks with modifiers |
+| Set Boostpack Sustained Thrust Effective Total | calculated native setter | Caution | Untested in test8 |
 | Set Boostpack Transition-Time Base | `player.setav BoostpackTimetoSustained {value}` | Caution | Verified — base value stacks with modifiers |
+| Set Boostpack Transition-Time Effective Total | calculated native setter | Caution | Untested in test8 |
 
 
 **Full Character Creator warning:** `showlooksmenu player 1` resets the player's current appearance when it opens and enters the original character-creation flow. Treat it as a very dangerous command: make a manual save first and use **Open Appearance Editor** (`showlooksmenu player 2`) for safer appearance-only edits.
@@ -110,7 +114,7 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Toggle Game Pause | `tgp` | Normal | Verified |
 | Set Game Speed | `sgtm {value}` | Caution | Verified |
 | Pass Time | `passtime {hours}` | Normal | Verified |
-| Open Wait Menu | `showmenu sleepwaitmenu` | Normal | Failed — test5 closed CCC but no wait menu appeared |
+| Open Wait Menu | `showmenu sleepwaitmenu` | Normal | Unavailable — both tested adapters failed to open the menu |
 | Set Scanner Scan Range | `setgs fHandScannerScanRange {value}` | Caution | Verified |
 | Set Scanner Base Range | `setgs fHandScannerBaseRange {value}` | Caution | Verified |
 | Set Scanner Social Range | `setgs fHandScannerSocialRange {value}` | Caution | Verified |
@@ -143,9 +147,9 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Activate Reference | `{refId}.activate` | Caution | Verified |
 | Reset Actor AI | `{refId}.resetai` | Caution | Verified |
 | Force Actor Repath | `{refId}.forcerepath` | Caution | Verified |
-| Inspect Reference Open State | `{refId}.getopenstate` | Normal | Failed — retest this build |
+| Inspect Reference Open State | `{refId}.getopenstate` | Normal | Unavailable — unsafe adapter removed after test1 crash |
 | Set Reference Open State | `{refId}.setopenstate {state}` | Caution | Verified |
-| Get Grabbed Object Reference ID | `getplayergrabbedref` | Normal | Failed — test5 returned player Ref ID `00000024` while holding and after dropping an object |
+| Get Grabbed Object Reference ID | native grab/release event | Normal | Untested in test8 |
 | Inspect Reference Actor Value | `{refId}.getav {actorValue}` | Normal | Verified |
 | Mark Reference for Permanent Deletion | `{refId}.markfordelete` | Danger | Untested |
 | Set Exact Reference Position | `{refId}.setpos {axis} {value}` | Caution | Verified |
@@ -165,15 +169,15 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 **Companion choices:** the affinity and anger commands use the compact ID field + **CHOOSE COMPANION** box for Sarah Morgan (`00005986`), Barrett (`00005788`), Sam Coe (`0029D488`), and Andreja (`000059A9`). These are the four core companions that use Starfield's affinity/relationship progression; other recruitable crew are intentionally not presented for these commands. Manual Reference ID entry remains available.
 
 
-**Read-only inspection:** CCC's native query bridge now powers reference inspection, inventory listing, Form-ID search, quest diagnostics, Game Setting inspection, player/ship actor-value inspection, and ship-ID lookup. Short results appear in the status bar; long/multiline results are preserved in a preformatted Activity Log block. Long-output capture waits for the console buffer to stabilize before returning. This requires rebuilding `ConsoleCommandCenter.dll`.
+**Read-only inspection:** CCC's native query bridge powers supported reference inspection, inventory listing, Game Setting inspection, player/ship actor-value inspection, ship-ID lookup, and test8's event-based held-object lookup. Known-broken Scale, Open State, and quest inspections are displayed as unavailable and cannot be executed. Results are preserved in the Results window and Activity Log. This requires rebuilding `ConsoleCommandCenter.dll`.
 
 ## Quests (9)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
-| Show Current Quest Targets | `sqt` | Normal | Failed — retest this build |
-| Get Current Quest Stage | `getstage {questId}` | Normal | Failed — retest this build |
-| Show Quest Stage History | `sqs {questId}` | Normal | Failed — retest this build |
+| Show Current Quest Targets | `sqt` | Normal | Unavailable — console capture was unreliable |
+| Get Current Quest Stage | `getstage {questId}` | Normal | Unavailable — previous native adapter was unsafe |
+| Show Quest Stage History | `sqs {questId}` | Normal | Unavailable — console capture was unreliable |
 | Start Quest by ID | `startquest {questId}` | Danger | Untested |
 | Stop Quest by ID | `stopquest {questId}` | Danger | Untested |
 | Set Quest Stage | `setstage {questId} {stage}` | Danger | Untested |
@@ -181,17 +185,20 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Reset Quest by ID | `resetquest {questId}` | Danger | Untested |
 | Teleport to Quest Target | `movetoqt {questId}` | Caution | Verified |
 
-## Ship (23)
+## Ship (26)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Get Current Ship Reference ID | `player.getspaceship` | Normal | Verified |
 | Inspect Ship Actor Value | `{shipRef}.getav {actorValue}` | Normal | Verified |
 | Set Ship Cargo Base Value | `{shipRef}.setav CarryWeight {value}` | Caution | Verified — base value stacks with module modifiers |
+| Set Ship Cargo Effective Total | calculated native setter | Caution | Untested in test8 |
 | Set Shielded Cargo Capacity | `{shipRef}.setav CarryWeightShielded {value}` | Caution | Verified — base value stacks with module modifiers |
+| Set Shielded Cargo Effective Total | calculated native setter | Caution | Untested in test8 |
 | Set Ship Crew Capacity | `{shipRef}.setav SpaceshipCrewRating {value}` | Caution | Verified |
 | Set Player Ship Command Slots | `player.setav SpaceshipCrewCommandSlots {value}` | Caution | Verified |
 | Set Ship Reactor Power Actor Value | `{shipRef}.setav SpaceshipReactorPower {value}` | Caution | Verified — base value stacks with module modifiers |
+| Set Ship Reactor Power Effective Total | calculated native setter | Caution | Untested in test8 |
 | Set Ship Grav Jump Fuel | `{shipRef}.setav SpaceshipGravJumpFuel {value}` | Caution | Verified |
 | Set Ship Boost Fuel | `{shipRef}.setav SpaceshipBoostFuel {value}` | Caution | Verified |
 | Set Ship Boost Recharge Rate | `{shipRef}.setav SpaceshipBoostRechargeRate {value}` | Caution | Verified |
@@ -221,10 +228,10 @@ The browser supports record-type filtering (including WEAP, ARMO, AMMO, ALCH, MI
 
 The command cards continue to use the compact editable ID field + boxed **CHOOSE ...** control for known curated choices. Inline preset-button grids are intentionally avoided.
 
-## Quest Fixes (248 guided stage repairs)
+## Quest Fixes (247 guided stage repairs)
 
 Version 0.3.0 adds a dedicated **Quest Fixes** browser separate from the normal command catalog.
-It contains 248 curated `setstage` targets for known quest-progression repair scenarios.
+It contains 247 curated `setstage` targets whose Quest IDs and stage numbers are structurally validated against `Starfield.esm`.
 CCC executes the vanilla Starfield console command directly.
 
 Every guided quest repair is treated as **Danger** because `setstage` can skip dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save first and use these entries only to repair a quest that is already stuck.

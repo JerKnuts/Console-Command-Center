@@ -14,6 +14,7 @@
     "package": "npm run build:native && osfui package",
     "doctor": "osfui doctor",
     "setup:deps": "node native/setup-deps.mjs",
+    "validate:quests": "node scripts/validate-quest-fixes.mjs",
     "build:native": "node native/build.mjs"
   },
   "devDependencies": {

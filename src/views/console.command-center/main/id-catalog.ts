@@ -22,8 +22,8 @@ export type IdBrowserCategory = {
 };
 
 // These are intentionally broad Starfield record groups rather than a dump of
-// every known Form ID. The browser can query the running game with `help`, so
-// it also works with DLC and the user's loaded mods instead of going stale.
+// every known Form ID. The native browser searches the running game's loaded
+// forms, so it also works with DLC and the user's loaded mods.
 export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   { label: 'All Categories', value: 'all', detail: 'All built-in IDs and every matching loaded-game record.', recordType: '', builtInCategories: ['*'] },
   { label: 'Common Items', value: 'common', detail: 'Credits, digipicks, med packs, and ship parts.', recordType: '', builtInCategories: ['Common'] },

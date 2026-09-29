@@ -183,3 +183,15 @@ The curated catalog now contains **134 commands**. Testing remains intentionally
 - Added alternating subtle-orange rows to Reference ID Picker results, matching the alternating command-card treatment.
 
 - Compacted the Quest Fixes introduction into a slim safety strip so quest cards start much higher on screen. Duplicate dataset/count information was removed while retaining the Check Status, manual-save, and current-stage caveats.
+
+## Test8 reliability and native-search update
+
+- Replaced ID Browser `help` output scraping with a native search across supported loaded-form groups. Search Game no longer depends on Starfield's rolling console buffer.
+- Added seven calculated **Effective Total** controls for boostpack and ship values. CCC previews the detected modifier contribution and calculated base before applying it.
+- Replaced the incorrect command-target grabbed-object lookup with Starfield grab/release event tracking.
+- Made query capture ownership atomic and removed detached polling threads. Delayed polls now stay on SFSE's task queue and report scheduling failure cleanly.
+- Disabled six known-broken cards with visible explanations: Wait Menu, Open State inspection, Scale inspection, and three quest-inspection commands.
+- Quest Fixes now contains **247 guided selections** covering **79 named entries** and **77 unique Quest FormIDs**. A local validator confirmed **245 unique Quest ID/stage pairs** exist structurally in `Starfield.esm`; this does not establish that every repair is semantically safe for every save.
+- Added an explicit tested-runtime report for Starfield 1.16.244. On another runtime, CCC keeps its view available to explain the mismatch while withholding gameplay request handlers.
+- Added GPL-3.0-or-later licensing, CommonLibSF exceptions/source notices, and removed the private conversation identifier from the published test log.
+- The curated catalog now contains **141 commands**, including the six disabled entries.

@@ -2,7 +2,10 @@
 #include <RE/Starfield.h>
 
 #include <algorithm>
+#include <atomic>
+#include <charconv>
 #include <cctype>
+#include <cmath>
 #include <cstdint>
 #include <cstddef>
 #include <cstdlib>
@@ -12,24 +15,43 @@
 #include <memory>
 #include <string>
 #include <string_view>
-#include <thread>
 #include <vector>
 
 #include "OSFUI_JSON.h"
 #include "DirectQuery.h"
+#include "FormSearch.h"
 
 namespace
 {
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
+    constexpr const char* kBuildId = "0.3.0-test8";
     constexpr std::size_t kMaxCommandLength = 1024;
+    constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
+    REL::Version g_runtimeVersion{};
 
-    bool g_captureActive = false;
+    bool IsRuntimeSupported() noexcept
+    {
+        return g_runtimeVersion == kTestedRuntime;
+    }
+
+    std::atomic_bool g_captureActive{ false };
     struct CaptureLease
     {
-        CaptureLease() { g_captureActive = true; }
-        ~CaptureLease() { g_captureActive = false; }
+        static std::shared_ptr<CaptureLease> TryAcquire()
+        {
+            bool expected = false;
+            if (!g_captureActive.compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
+                return {};
+            }
+            return std::shared_ptr<CaptureLease>{ new CaptureLease{} };
+        }
+
+        ~CaptureLease() { g_captureActive.store(false, std::memory_order_release); }
+
+    private:
+        CaptureLease() = default;
     };
 
     bool ExecuteConsoleCommand(std::string_view command) noexcept
@@ -72,7 +94,10 @@ namespace
         });
     }
 
-    bool QueueMainTaskAfter(std::chrono::milliseconds delay, std::function<void()> task) noexcept;
+    bool QueueMainTaskAfter(
+        std::chrono::milliseconds delay,
+        std::function<void()> task,
+        std::function<void()> onFailure = {}) noexcept;
 
     void OnExecute(const OSFUI::API::Request& raw, void*) noexcept
     {
@@ -91,7 +116,7 @@ namespace
             request.Reject("invalid-command", "Command is empty, too long, or contains control characters.");
             return;
         }
-        if (g_captureActive) {
+        if (g_captureActive.load(std::memory_order_acquire)) {
             request.Reject("query-busy", "Wait for the current inspection to finish before running another command.");
             return;
         }
@@ -103,12 +128,6 @@ namespace
             }
             const std::string queuedCommand = *command;
             if (!QueueMainTaskAfter(std::chrono::milliseconds{ 150 }, [queuedCommand]() noexcept {
-                if (queuedCommand == "showmenu sleepwaitmenu") {
-                    if (auto* messages = RE::UIMessageQueue::GetSingleton()) {
-                        (void)messages->AddMessage(RE::BSFixedString{ "SleepWaitMenu" }, RE::UI_MESSAGE_TYPE::kShow);
-                    }
-                    return;
-                }
                 (void)ExecuteConsoleCommand(queuedCommand);
             })) {
                 request.Reject("execution-failed", "Could not schedule the command after closing CCC.");
@@ -158,94 +177,14 @@ namespace
         return {};
     }
 
-    bool ParseGetStageOutput(std::string_view output, std::uint16_t& stage) noexcept
+    struct DelayedMainTask
     {
-        constexpr std::string_view marker = "GetStage >>";
-        const auto markerPos = output.rfind(marker);
-        if (markerPos == std::string_view::npos) {
-            return false;
-        }
-
-        auto valuePos = markerPos + marker.size();
-        while (valuePos < output.size() && std::isspace(static_cast<unsigned char>(output[valuePos])) != 0) {
-            ++valuePos;
-        }
-        if (valuePos >= output.size()) {
-            return false;
-        }
-
-        const std::string valueText{ output.substr(valuePos) };
-        char* end = nullptr;
-        const double value = std::strtod(valueText.c_str(), &end);
-        if (end == valueText.c_str() || value < 0.0 || value > 65535.0) {
-            return false;
-        }
-
-        stage = static_cast<std::uint16_t>(value);
-        return true;
-    }
-
-    std::vector<std::uint16_t> ParseSQSCompletedStages(std::string_view output)
-    {
-        std::vector<std::uint16_t> completedStages;
-        constexpr std::string_view marker = "(done)";
-
-        std::size_t lineStart = 0;
-        while (lineStart < output.size()) {
-            const auto lineEnd = output.find('\n', lineStart);
-            const auto line = output.substr(
-                lineStart,
-                lineEnd == std::string_view::npos ? output.size() - lineStart : lineEnd - lineStart);
-
-            const auto markerPos = line.find(marker);
-            if (markerPos != std::string_view::npos) {
-                auto valuePos = markerPos + marker.size();
-                while (valuePos < line.size() && std::isspace(static_cast<unsigned char>(line[valuePos])) != 0) {
-                    ++valuePos;
-                }
-
-                if (valuePos < line.size()) {
-                    const std::string valueText{ line.substr(valuePos) };
-                    char* end = nullptr;
-                    const long value = std::strtol(valueText.c_str(), &end, 10);
-                    if (end != valueText.c_str() && value >= 0 && value <= 65535) {
-                        completedStages.push_back(static_cast<std::uint16_t>(value));
-                    }
-                }
-            }
-
-            if (lineEnd == std::string_view::npos) {
-                break;
-            }
-            lineStart = lineEnd + 1;
-        }
-
-        std::sort(completedStages.begin(), completedStages.end());
-        completedStages.erase(std::unique(completedStages.begin(), completedStages.end()), completedStages.end());
-        return completedStages;
-    }
-
-    struct QuestStatusCapture
-    {
-        std::shared_ptr<CaptureLease> lease;
-        OSFUI::API::Request request{};
-        std::string questIDText;
-        std::uint16_t currentStage{ 0 };
-
-        std::string getStageBufferBefore;
-        std::uint32_t getStagePolls{ 0 };
-
-        std::string sqsBufferBefore;
-        std::string lastSqsOutput;
-        std::uint32_t sqsPolls{ 0 };
-        std::uint32_t sqsStablePolls{ 0 };
+        std::chrono::steady_clock::time_point due;
+        std::function<void()> task;
+        std::function<void()> onFailure;
     };
 
-    constexpr std::uint32_t kQuestStatusMaxPolls = 24;
-    constexpr auto kGetStagePollDelay = std::chrono::milliseconds{ 50 };
-    constexpr auto kSqsPollDelay = std::chrono::milliseconds{ 75 };
-
-    bool QueueMainTaskAfter(std::chrono::milliseconds delay, std::function<void()> task) noexcept
+    bool ScheduleDelayedMainTask(const std::shared_ptr<DelayedMainTask>& state) noexcept
     {
         try {
             const auto* taskInterface = SFSE::GetTaskInterface();
@@ -253,113 +192,39 @@ namespace
                 return false;
             }
 
-            std::thread([taskInterface, delay, task = std::move(task)]() mutable {
-                std::this_thread::sleep_for(delay);
-                try {
-                    taskInterface->AddTask(std::move(task));
-                } catch (...) {
-                    // The game may be shutting down. There is nothing useful
-                    // to do from the worker thread if the queue is unavailable.
+            taskInterface->AddTask([state]() mutable {
+                if (std::chrono::steady_clock::now() < state->due) {
+                    if (!ScheduleDelayedMainTask(state)) {
+                        auto onFailure = std::move(state->onFailure);
+                        state->task = {};
+                        if (onFailure) onFailure();
+                    }
+                    return;
                 }
-            }).detach();
+
+                auto task = std::move(state->task);
+                state->onFailure = {};
+                if (task) task();
+            });
             return true;
         } catch (...) {
             return false;
         }
     }
 
-    void RejectQuestStatus(const std::shared_ptr<QuestStatusCapture>& state, const char* code, const char* message) noexcept
-    {
-        if (state) {
-            state->request.Reject(code, message);
-        }
-    }
-
-    void RespondQuestStatus(const std::shared_ptr<QuestStatusCapture>& state, const std::vector<std::uint16_t>& completedStages, bool historyAvailable = true) noexcept
+    bool QueueMainTaskAfter(
+        std::chrono::milliseconds delay,
+        std::function<void()> task,
+        std::function<void()> onFailure) noexcept
     {
         try {
-            const auto payload = OSFUI::API::Json{
-                { "ok", true },
-                { "questId", state->questIDText },
-                { "currentStage", state->currentStage },
-                { "completedStages", completedStages },
-                { "historyAvailable", historyAvailable }
-            }.dump();
-            state->request.Respond("console.command-center.questStatusResult", payload.c_str());
+            auto state = std::make_shared<DelayedMainTask>();
+            state->due = std::chrono::steady_clock::now() + delay;
+            state->task = std::move(task);
+            state->onFailure = std::move(onFailure);
+            return ScheduleDelayedMainTask(state);
         } catch (...) {
-            RejectQuestStatus(state, "quest-status-failed", "Could not serialize quest stage state.");
-        }
-    }
-
-    void PollSQSOutput(const std::shared_ptr<QuestStatusCapture>& state) noexcept;
-
-    void PollGetStageOutput(const std::shared_ptr<QuestStatusCapture>& state) noexcept
-    {
-        try {
-            const auto output = ConsoleBufferDelta(state->getStageBufferBefore);
-            std::uint16_t currentStage = 0;
-            if (ParseGetStageOutput(output, currentStage)) {
-                state->currentStage = currentStage;
-                state->sqsBufferBefore = ReadConsoleBuffer();
-
-                const std::string sqsCommand = std::string{ "sqs " } + state->questIDText;
-                if (!ExecuteConsoleCommand(sqsCommand)) {
-                    RejectQuestStatus(state, "quest-status-failed", "Could not execute SQS for this quest.");
-                    return;
-                }
-
-                if (!QueueMainTaskAfter(kSqsPollDelay, [state]() noexcept { PollSQSOutput(state); })) {
-                    RejectQuestStatus(state, "quest-status-failed", "Could not schedule SQS output capture.");
-                }
-                return;
-            }
-
-            if (++state->getStagePolls >= kQuestStatusMaxPolls) {
-                RejectQuestStatus(state, "quest-status-unavailable", "GetStage did not return a quest stage. The quest may not exist or may be unavailable on this save.");
-                return;
-            }
-
-            if (!QueueMainTaskAfter(kGetStagePollDelay, [state]() noexcept { PollGetStageOutput(state); })) {
-                RejectQuestStatus(state, "quest-status-failed", "Could not schedule GetStage output capture.");
-            }
-        } catch (...) {
-            RejectQuestStatus(state, "quest-status-failed", "Could not capture GetStage output.");
-        }
-    }
-
-    void PollSQSOutput(const std::shared_ptr<QuestStatusCapture>& state) noexcept
-    {
-        try {
-            const auto output = ConsoleBufferDelta(state->sqsBufferBefore);
-            const bool hasStageTable = output.find("(done)") != std::string::npos || output.find("(not set)") != std::string::npos;
-
-            if (!output.empty() && output == state->lastSqsOutput) {
-                ++state->sqsStablePolls;
-            } else {
-                state->lastSqsOutput = output;
-                state->sqsStablePolls = 0;
-            }
-
-            // SQS can print a long table. Wait until the captured output has
-            // stopped changing for a full game tick so we do not return a
-            // partially-written list of completed stages.
-            if (hasStageTable && state->sqsStablePolls >= 1) {
-                RespondQuestStatus(state, ParseSQSCompletedStages(output));
-                return;
-            }
-
-            if (++state->sqsPolls >= kQuestStatusMaxPolls) {
-                // The scalar stage is still useful. An unavailable SQS table
-                // must not be reported as an empty completed-stage history.
-                RespondQuestStatus(state, {}, false);
-                return;
-            }
-
-            if (!QueueMainTaskAfter(kSqsPollDelay, [state]() noexcept { PollSQSOutput(state); })) {
-                RejectQuestStatus(state, "quest-status-failed", "Could not schedule SQS output capture.");
-            }
-        } catch (...) {
-            RejectQuestStatus(state, "quest-status-failed", "Could not capture SQS output.");
+            return false;
         }
     }
 
@@ -417,8 +282,7 @@ namespace
 
             // Console read commands can emit their result after the execution
             // call has returned. Wait until the new buffer text has stopped
-            // changing for two polls before returning it to the UI. This gives long outputs
-            // such as ShowInventory, Help, and SQS more time to finish printing.
+            // changing for two polls before returning it to the UI.
             if (!output.empty() && state->stablePolls >= 2) {
                 RespondConsoleQuery(state, output);
                 return;
@@ -429,7 +293,10 @@ namespace
                 return;
             }
 
-            if (!QueueMainTaskAfter(kConsoleQueryPollDelay, [state]() noexcept { PollConsoleQueryOutput(state); })) {
+            if (!QueueMainTaskAfter(
+                    kConsoleQueryPollDelay,
+                    [state]() noexcept { PollConsoleQueryOutput(state); },
+                    [state]() noexcept { RejectConsoleQuery(state, "query-failed", "The game task queue stopped before console output could be captured."); })) {
                 RejectConsoleQuery(state, "query-failed", "Could not schedule console output capture.");
             }
         } catch (...) {
@@ -454,10 +321,6 @@ namespace
         }
 
         try {
-            if (g_captureActive) {
-                request.Reject("query-busy", "Wait for the current inspection to finish.");
-                return;
-            }
             if (const auto output = CCC::ReadDirectQuery(*command)) {
                 // Game strings (and localized names) can contain non-UTF-8
                 // bytes. Preserve IDs/counts and replace invalid text bytes
@@ -468,8 +331,14 @@ namespace
                 raw.Respond("console.command-center.queryResult", payload.c_str());
                 return;
             }
+
+            auto lease = CaptureLease::TryAcquire();
+            if (!lease) {
+                request.Reject("query-busy", "Wait for the current console-output inspection to finish.");
+                return;
+            }
             auto state = std::make_shared<ConsoleQueryCapture>();
-            state->lease = std::make_shared<CaptureLease>();
+            state->lease = std::move(lease);
             state->request = raw;
             state->command = *command;
             state->bufferBefore = ReadConsoleBuffer();
@@ -479,13 +348,133 @@ namespace
                 return;
             }
 
-            if (!QueueMainTaskAfter(kConsoleQueryPollDelay, [state]() noexcept { PollConsoleQueryOutput(state); })) {
+            if (!QueueMainTaskAfter(
+                    kConsoleQueryPollDelay,
+                    [state]() noexcept { PollConsoleQueryOutput(state); },
+                    [state]() noexcept { RejectConsoleQuery(state, "query-failed", "The game task queue stopped before console output could be captured."); })) {
                 request.Reject("query-failed", "Could not schedule console output capture.");
             }
         } catch (const std::exception& error) {
             request.Reject("query-failed", error.what());
         } catch (...) {
             request.Reject("query-failed", "Could not start console output capture.");
+        }
+    }
+
+    void OnSearchForms(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+
+        const auto searchText = request.Get<std::string>("searchText");
+        const auto recordType = request.Get<std::string>("recordType").value_or("");
+        if (!searchText || searchText->size() < 2 || searchText->size() > 80 || !IsSafeBridgeString(*searchText)) {
+            request.Reject("invalid-search", "Enter 2-80 characters without control characters.");
+            return;
+        }
+        if (recordType.size() > 8 || std::any_of(recordType.begin(), recordType.end(), [](unsigned char ch) {
+                return std::isalnum(ch) == 0 && ch != '_';
+            })) {
+            request.Reject("invalid-record-type", "The requested loaded-form record type is invalid.");
+            return;
+        }
+
+        try {
+            const auto matches = CCC::SearchLoadedForms(*searchText, recordType);
+            auto results = OSFUI::API::Json::array();
+            for (const auto& match : matches) {
+                results.push_back({
+                    { "label", match.label },
+                    { "value", match.formID },
+                    { "type", match.type },
+                    { "editorId", match.editorID }
+                });
+            }
+            const auto payload = OSFUI::API::Json{
+                { "ok", true },
+                { "searchText", *searchText },
+                { "recordType", recordType },
+                { "results", std::move(results) }
+            }.dump(-1, ' ', false, OSFUI::API::Json::error_handler_t::replace);
+            raw.Respond("console.command-center.searchFormsResult", payload.c_str());
+        } catch (const std::exception& error) {
+            request.Reject("form-search-failed", error.what());
+        } catch (...) {
+            request.Reject("form-search-failed", "Could not search Starfield's loaded forms.");
+        }
+    }
+
+    void OnSetEffectiveActorValue(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+
+        const auto targetText = request.Get<std::string>("target");
+        const auto actorValueName = request.Get<std::string>("actorValue");
+        const auto desiredTotal = request.Get<double>("desiredTotal");
+        const bool apply = request.Get<bool>("apply").value_or(false);
+        if (!targetText || !actorValueName || !desiredTotal || !std::isfinite(*desiredTotal) || std::abs(*desiredTotal) > 1.0e9) {
+            request.Reject("invalid-effective-total", "Target, actor value, and a finite desired total are required.");
+            return;
+        }
+        if (actorValueName->empty() || actorValueName->size() > 64 || std::any_of(actorValueName->begin(), actorValueName->end(), [](unsigned char ch) {
+                return std::isalnum(ch) == 0 && ch != '_';
+            })) {
+            request.Reject("invalid-actor-value", "The actor value name is invalid.");
+            return;
+        }
+
+        try {
+            std::uint32_t formID = 0;
+            std::string normalizedTarget;
+            if (CCC::LowerASCII(*targetText) == "player") {
+                formID = 0x14;
+                normalizedTarget = "player";
+            } else {
+                const auto [end, error] = std::from_chars(targetText->data(), targetText->data() + targetText->size(), formID, 16);
+                if (targetText->empty() || targetText->size() > 8 || error != std::errc{} || end != targetText->data() + targetText->size() || formID == 0) {
+                    throw std::runtime_error("Enter a valid player target or 1-8 digit hexadecimal Reference ID.");
+                }
+                normalizedTarget = std::format("{:08X}", formID);
+            }
+
+            auto* form = RE::TESForm::LookupByID(formID);
+            auto* reference = form ? starfield_cast<RE::TESObjectREFR*>(form) : nullptr;
+            if (!reference) throw std::runtime_error("Reference not found. Use a placed Reference ID, not a Base ID.");
+            auto* actorValue = RE::TESForm::LookupByEditorID<RE::ActorValueInfo>(RE::BSFixedString(actorValueName->c_str()));
+            if (!actorValue) throw std::runtime_error("Actor value not found: " + *actorValueName);
+
+            const double currentBase = reference->GetBaseActorValue(*actorValue);
+            const double currentEffective = reference->GetActorValue(*actorValue);
+            const double modifierContribution = currentEffective - currentBase;
+            const double calculatedBase = *desiredTotal - modifierContribution;
+            if (!std::isfinite(calculatedBase) || std::abs(calculatedBase) > 1.0e9) {
+                throw std::runtime_error("The calculated base value is outside CCC's supported range.");
+            }
+
+            const auto command = std::format("{}.setav {} {:.6f}", normalizedTarget, *actorValueName, calculatedBase);
+            if (apply && !ExecuteConsoleCommand(command)) {
+                throw std::runtime_error("Starfield rejected the calculated SetAV command.");
+            }
+            const double resultingEffective = apply ? reference->GetActorValue(*actorValue) : currentEffective;
+            const auto payload = OSFUI::API::Json{
+                { "ok", true },
+                { "applied", apply },
+                { "target", normalizedTarget },
+                { "actorValue", *actorValueName },
+                { "desiredTotal", *desiredTotal },
+                { "currentBase", currentBase },
+                { "currentEffective", currentEffective },
+                { "modifierContribution", modifierContribution },
+                { "calculatedBase", calculatedBase },
+                { "resultingEffective", resultingEffective },
+                { "command", command }
+            }.dump();
+            raw.Respond("console.command-center.setEffectiveActorValueResult", payload.c_str());
+        } catch (const std::exception& error) {
+            request.Reject("effective-total-failed", error.what());
+        } catch (...) {
+            request.Reject("effective-total-failed", "Could not calculate or apply the effective actor-value total.");
         }
     }
 
@@ -499,8 +488,11 @@ namespace
         (void)request.Respond("console.command-center.pingResult", OSFUI::API::Json{
             { "ok", true },
             { "backend", "ConsoleCommandCenter.dll" },
-            { "build", "id-browser-6" },
-            { "executor", "native" }
+            { "build", kBuildId },
+            { "executor", "native" },
+            { "runtime", g_runtimeVersion.string() },
+            { "testedRuntime", kTestedRuntime.string() },
+            { "runtimeSupported", IsRuntimeSupported() }
         });
     }
 
@@ -523,6 +515,12 @@ namespace
 
     void OnSFSEMessage(SFSE::MessagingInterface::Message* message)
     {
+        if (message->type == SFSE::MessagingInterface::kPostDataLoad) {
+            if (IsRuntimeSupported()) {
+                CCC::GrabbedObjectTracker::GetSingleton().Register();
+            }
+            return;
+        }
         if (message->type != SFSE::MessagingInterface::kPostLoad) {
             return;
         }
@@ -531,16 +529,22 @@ namespace
         }
 
         g_ui.RegisterRequest("console.command-center.ping", &OnPing, nullptr);
-        g_ui.RegisterRequest("console.command-center.execute", &OnExecute, nullptr);
-        g_ui.RegisterRequest("console.command-center.query", &OnQuery, nullptr);
-        g_ui.RegisterRequest("console.command-center.questStatus", &OnQuestStatus, nullptr);
         g_ui.RegisterRequest("console.command-center.close", &OnClose, nullptr);
         (void)g_ui.RegisterView(kViewId);
+        if (!IsRuntimeSupported()) {
+            return;
+        }
+        g_ui.RegisterRequest("console.command-center.execute", &OnExecute, nullptr);
+        g_ui.RegisterRequest("console.command-center.query", &OnQuery, nullptr);
+        g_ui.RegisterRequest("console.command-center.searchForms", &OnSearchForms, nullptr);
+        g_ui.RegisterRequest("console.command-center.setEffectiveActorValue", &OnSetEffectiveActorValue, nullptr);
+        g_ui.RegisterRequest("console.command-center.questStatus", &OnQuestStatus, nullptr);
     }
 }
 
 SFSE_PLUGIN_LOAD(const SFSE::LoadInterface* sfse)
 {
+    g_runtimeVersion = sfse->RuntimeVersion();
     SFSE::Init(sfse);
 
     auto* messaging = SFSE::GetMessagingInterface();

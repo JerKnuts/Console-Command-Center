@@ -386,6 +386,18 @@ select.osf-input:focus-visible {
   text-shadow: 0 0 8px rgba(var(--ccc-orange-rgb), 0.14);
   white-space: nowrap;
 }
+.command-heading-tags { flex: none; display: inline-flex; align-items: center; gap: 6px; }
+.command-availability-tag {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  color: var(--osf-text-faint);
+  border: 1px solid var(--ccc-line-strong);
+  font-family: var(--osf-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.09em;
+}
 
 .caution-wrap { position: relative; display: inline-flex; align-items: center; }
 .command-warning-tag {
@@ -478,6 +490,12 @@ select.osf-input:focus-visible {
   overflow-wrap: anywhere;
   text-overflow: clip;
   white-space: normal;
+}
+.command-unavailable-reason {
+  margin: 4px 0 3px;
+  color: var(--osf-signal-stop, #ff8f86);
+  font-size: var(--osf-text-xs);
+  line-height: 1.35;
 }
 
 .command-actions {

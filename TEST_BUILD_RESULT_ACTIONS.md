@@ -1,67 +1,41 @@
-# v0.3.0-test7 — Interface consistency pass
+# v0.3.0-test8 — Native search and reliability pass
 
 ## Install
 
-Close Starfield, extract the patch into the existing CCC project, run **npm run build**, deploy the resulting mod through the existing workflow, and restart Starfield. The footer must show **v0.3.0-test7**. This update changes the UI; the included native DLL retains the test6 fixes.
+Close Starfield, extract the patch into the existing CCC project, run **npm run build**, deploy the resulting mod through the existing workflow, and restart Starfield. The footer must show **v0.3.0-test8**. Both the interface and native DLL changed in this build.
 
-## Test7 changes
+## Priority tests
 
-- Added the OSF tricolor bar to Results and Quick Choices windows so all secondary windows use the same header treatment.
-- Unified secondary-window backgrounds, borders, shadows, title spacing, close buttons, output areas, and focus states.
-- Replaced the older blue Results and inventory palette with the same dark-neutral and orange palette as the main command screen.
-- Standardized alternating rows, hover highlights, borders, and minimum row heights across inventory, activity, quest, ID Browser, and command lists.
-- Matched dropdown, input, and button states across the main interface and secondary windows.
-- Added matching orange scrollbars to long command, activity, inventory, picker, ID, and output lists.
+1. Open **ID Browser**, choose Weapons, search the game for `Beowulf`, and confirm results arrive without a timeout. Select a result and test **Copy ID**.
+2. While holding a movable world object with the grab key, run **Get Grabbed Object Reference ID**. Confirm the returned ID is not the player ID `00000024`. Release the object and run it again; CCC should say that no object is being held.
+3. Run one new boostpack **Effective Total** card. Confirm the warning shows current base, current effective total, modifier contribution, and the calculated base before execution. Apply a modest value, then inspect that actor value.
+4. Use **Get Current Ship Reference ID**, then test **Set Ship Cargo Effective Total** with a modest target. Confirm the inspected final cargo total is close to the requested total rather than adding the requested amount on top of module bonuses.
+5. Confirm **Open Wait Menu**, **Inspect Reference Open State**, **Inspect Reference Scale**, and the three read-only quest inspection cards show **UNAVAILABLE** and cannot execute.
+6. Open Quest Fixes and confirm **Check Status** and **Full SQS** are disabled while the curated repair choices remain available.
+7. Confirm the footer reports Starfield **1.16.244.0** and CCC **v0.3.0-test8**.
 
-## Priority test
+## What changed
 
-1. Open a command with **Choose Value** and confirm the Quick Choices window has a tricolor bar at the top and a second divider above its rows.
-2. Run any working inspection command and confirm the Results window has the same tricolor bar, neutral background, orange command text, and matching Close button.
-3. Open Show Player Inventory and confirm its search, sort, categories, item rows, hover states, and Copy ID buttons match the rest of CCC.
-4. Compare command, Activity Log, Quest Fix, and ID Browser rows for consistent spacing, alternating color, and orange hover treatment.
-5. Check keyboard focus on fields and buttons in the main screen, Results, and Quick Choices windows; each should use the same orange outline.
+- Search Game now searches loaded Starfield records directly instead of scraping `help` output from the console.
+- Held-object ID inspection now follows Starfield's grab/release events.
+- Effective-total setters compensate for the currently detected equipment/module contribution.
+- Console capture uses atomic ownership and SFSE task scheduling without detached polling threads.
+- The Quest Fix dataset was checked against the installed `Starfield.esm`; all 77 Quest IDs and all 245 unique listed stages were found after removing one invalid mapping.
+- The plugin reports and gates its tested runtime, Starfield 1.16.244.
+- Known failures remain visible with explanations but are disabled.
+- GPL licensing, CommonLibSF source/exception notices, and privacy cleanup are included.
 
-## Test6 changes retained
+## Expected limitations
 
-## Test6 changes
+- **Open Wait Menu** remains disabled. Both tested menu-opening routes failed in game, and the pinned CommonLibSF API does not expose a verified replacement adapter.
+- Scale, Open State, and quest-stage inspection remain disabled after the unsafe or unreliable earlier adapters.
+- Quest validation proves that the IDs and stages exist in the base master. It does not prove that forcing a stage is safe for every save; keep using a manual save first.
+- Native Search Game, effective-total controls, and held-object tracking need this test8 in-game pass before they can be marked verified.
 
-- Replaced the overlapping Built-in Category and Game Record Type selectors with one Category selector containing 17 useful groups.
-- A selected built-in or live ID Browser result now always shows Copy ID beside any available quick action.
-- Inspect Game Setting now has a searchable chooser containing every Game Setting controlled by CCC.
-- Added Star Power and Star Power Recharge Rate to the player actor-value chooser.
-- Updated verification badges and warnings from the full test5 session, including additive shielded-cargo and reactor-power behavior.
-- Open Wait Menu now asks Starfield's native UI queue to show `SleepWaitMenu` after CCC closes instead of sending another console command.
-- Get Grabbed Object Reference ID now rejects the player reference instead of presenting `00000024` as a grabbed object. A reliable grabbed-object source still needs investigation.
+## Completed build checks
 
-## Test6 priority test
-
-1. Open ID Browser and confirm there is one Category selector with all 17 categories.
-2. Select a built-in Beowulf result and confirm Copy ID copies `0004716C`.
-3. Use Search Game for Beowulf under Weapons, select a live result, and confirm Copy ID works.
-4. Open Inspect Game Setting and confirm Choose Value is searchable and fills the selected setting.
-5. Run Open Wait Menu and confirm CCC closes and the wait menu appears.
-6. Run Get Grabbed Object Reference ID while holding an object. It must never return `00000024`; record the returned ID or error.
-
-## Test5 record
-
-- Successful non-inventory Results scan returned text for unique eight-digit Form/Reference IDs and show a **Copy ID** button for each one. Activity Log results gain the same buttons when reopened.
-- Inspect Reference Actor Value has choices for common general and companion values.
-- Inspect Ship Actor Value has choices for cargo, shielded cargo, crew, reactor, grav fuel, boost fuel, and boost recharge.
-- Inspect Game Setting reads supported values directly from Starfield instead of waiting for console text.
-- Get Grabbed Object Reference ID uses a native candidate reader based on the player's current command target. It needs specific in-game verification while holding an object and while nothing is targeted.
-- Open Wait Menu closes CCC, waits briefly, and then sends the menu command.
-- Boostpack and ship cargo SetAV cards now state that they change a base value while GetAV can include active equipment, perk, or module modifiers.
-- Test4 and the subsequent command tests are recorded in the catalog and test log.
-
-Scale, Open State, GetStage, and Quest Status remain disabled after the test1 native crash. Stop Actor Combat remains marked Needs Adjustment.
-
-## Test5 final results
-
-1. **Open Wait Menu — Failed in test5.** The command executed and CCC closed quickly, but the wait menu did not appear. A later game crash is unassigned because no connection to CCC was established.
-2. **Inspect Game Setting — Passed.** `fHandScannerScanRange` returned `60.0`.
-3. **Get Grabbed Object Reference ID — Failed.** Returned player Ref ID `00000024` both while holding an object and after dropping it.
-4. **Current Ship Reference ID Copy ID — Passed.**
-5. **Activity Log Copy ID — Passed.**
-6. **Reference and ship actor-value choice boxes — Passed.**
-
-Native DLL build, OSF UI compatibility, production UI build, and all eleven automated response/parser/navigation/category/handoff tests passed before packaging.
+- 11 automated UI/bridge tests pass.
+- OSF UI compatibility check passes.
+- Production UI build passes.
+- Native DLL compiles against pinned CommonLibSF.
+- Quest Fix validation passes against the installed `Starfield.esm`.

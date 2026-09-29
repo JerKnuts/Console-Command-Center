@@ -11,6 +11,8 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "GrabbedObjectTracker.h"
+
 namespace CCC
 {
     inline const char* InventoryTypeCode(RE::FormType type) noexcept
@@ -70,11 +72,8 @@ namespace CCC
         }
         if (operation == "getplayergrabbedref") {
             if (!argument.empty() || !extra.empty()) throw std::runtime_error("Get Grabbed Object does not accept arguments.");
-            auto* player = RE::PlayerCharacter::GetSingleton();
-            auto* reference = player ? player->commandTarget : nullptr;
-            if (!reference || reference == player || reference->GetFormID() == 0x14) {
-                throw std::runtime_error("No grabbed object reference is available. The previous candidate reader returned the player and has been rejected rather than displaying an incorrect ID.");
-            }
+            auto* reference = GrabbedObjectTracker::GetSingleton().GetGrabbedReference();
+            if (!reference) throw std::runtime_error("No object is currently being held. Grab a world object, keep holding it, and try again.");
             return std::format("Grabbed Object Reference ID: {:08X}", reference->GetFormID());
         }
         const bool needsArgument = operation == "getpos" || operation == "getangle" || operation == "getav" || operation == "getstage";

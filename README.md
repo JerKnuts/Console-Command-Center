@@ -8,13 +8,13 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 **Current development version: v0.3.0 Beta**
 
-**Current test build: v0.3.0-test7.** This build gives the main command lists and every secondary window one consistent dark-neutral palette, orange selection treatment, row rhythm, button styling, and tricolor header bar. It retains the ID Browser, chooser, copy-action, and command fixes from test6. Follow [the test7 instructions](TEST_BUILD_RESULT_ACTIONS.md).
+**Current test build: v0.3.0-test8.** This build replaces ID Browser console scraping with native loaded-form search, adds calculated effective-total controls for boostpack and ship values, tracks held objects through Starfield's grab/release events, disables known-broken inspection cards, hardens query scheduling, and validates the Quest Fix dataset against `Starfield.esm`. Follow [the test8 instructions](TEST_BUILD_RESULT_ACTIONS.md).
 
 **Previous hotfix: v0.3.0-test2.** Test1 crashed during scale inspection. The shared evaluator calls remain removed, and Scale/Open State/GetStage/Quest Status remain temporarily disabled. Test2 verified Escape handling, inventory, companion readouts, and ship readouts in game.
 
 **Historical test1 notes:** Test1 introduced dropdown contrast, direct inspection reads, and the dedicated Results window. Its unsafe Scale adapter must not be used; test2 and test3 contain the crash guard.
 
-The core command execution system is working in-game. The command catalog is being tested command-by-command, and v0.3.0 adds guided quest diagnostics, quest-repair tools, a standalone ID Browser, and a larger diagnostics/ship-control command set.
+The core command execution system is working in-game. The command catalog is being tested command-by-command, and v0.3.0 adds guided quest-repair tools, a standalone ID Browser, and a larger inspection/ship-control command set.
 
 Commands that rely on known curated IDs use a reusable searchable Reference ID Picker instead of crowded preset-button grids. A separate **ID Browser** combines a built-in starter catalog with live searches against Starfield's loaded records.
 
@@ -31,14 +31,13 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 - Activity log
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
-- Standalone **ID Browser** with common built-in IDs, category/type filters, live `help` searches, selectable results, and conservative quick actions
+- Standalone **ID Browser** with common built-in IDs, native loaded-form searches, selectable results, and conservative quick actions
 - Confirmation before execution
 - Caution and Danger warnings
 - Mouse, keyboard, and controller-friendly interface
 - Compact Starfield-inspired OSF UI
 - Guided **Quest Fixes** browser
-- Live quest-stage diagnostics before applying a repair
-- Full `sqs` inspection for supported quest fixes
+- Guided quest-stage repair choices with unavailable diagnostics clearly disabled
 - Curated ID choices use the same compact field + **CHOOSE ...** box used by the companion-affinity commands; manual ID entry remains available
 
 
@@ -46,7 +45,7 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 
 The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It includes **193 built-in starter IDs** covering common weapons, armor, ammo, resources, perks, object modifiers, factions, core companions, and weather records. Search and filters work locally against that catalog.
 
-**Search Game** goes further by running Starfield's own `help` command through CCC's read-only native query bridge. Because the lookup runs against the loaded game, it can surface matching base-game, DLC, Creation, and mod records that are not part of the built-in starter list. Supported type filters include common groups such as WEAP, ARMO, AMMO, ALCH, MISC, PERK, SPEL, NPC_, OMOD, FACT, QUST, CELL, GBFM, and FURN. Parsed results can be selected and, when the record type is unambiguous, CCC offers a conservative quick action such as **Add 1**, **Add Perk**, **Add Spell / Power**, or **Spawn 1**.
+**Search Game** searches Starfield's loaded forms directly by display name and EditorID. It does not scrape the rolling console buffer. Because the lookup runs against the loaded game, it can surface matching base-game, DLC, Creation, and mod records that are not part of the built-in starter list. Supported type filters include common groups such as WEAP, ARMO, AMMO, ALCH, MISC, PERK, SPEL, NPC_, OMOD, FACT, QUST, CELL, GBFM, FURN, and WTHR. Results can be selected and, when the record type is unambiguous, CCC offers a conservative quick action such as **Add 1**, **Add Perk**, **Add Spell / Power**, or **Spawn 1**.
 
 The reusable Reference ID Picker remains the compact command-specific chooser. **Pay Bounty** opens bounty-relevant factions, companion affinity commands open Sarah Morgan, Barrett, Sam Coe, and Andreja, and weather commands open common weather records. Selecting an entry fills the normal command input; users can still type any valid hexadecimal ID manually. Inline preset-button grids are intentionally avoided.
 
@@ -54,19 +53,19 @@ The reusable Reference ID Picker remains the compact command-specific chooser. *
 
 ID Browser, Quest Fixes, Custom Command, and Activity Log live in a dedicated horizontal utility bar along the bottom of CCC. Recent and Favorites remain fixed in the left sidebar while Categories scroll independently.
 
-v0.3.0 includes 248 guided quest-stage selections for repairing known quest-progression problems. Console Command Center uses the quest FormIDs and stage mappings to execute vanilla commands such as:
+v0.3.0 includes 247 guided quest-stage selections for repairing known quest-progression problems. Every listed Quest ID and stage number is structurally validated against `Starfield.esm`. Console Command Center uses those mappings to execute vanilla commands such as:
 
 ```text
 setstage <QuestFormID> <Stage>
 ```
 
-Before applying a repair, **Check Status** reads the live quest state and shows the current/highest completed stage plus completed-stage history. Quest repair is intentionally marked **Danger** because forcing a stage can skip dialogue, scripts, rewards, scenes, prerequisites, or other quest state.
+Live quest diagnostics are currently disabled while a safe native adapter is developed. Quest repair is intentionally marked **Danger** because forcing a stage can skip dialogue, scripts, rewards, scenes, prerequisites, or other quest state. Treat every listed stage as unverified until its Quest ID and stage table have been checked against the game data.
 
 See [`QUEST_FIXES.md`](QUEST_FIXES.md) for details.
 
 ## Command catalog
 
-The command library is deliberately curated instead of trying to expose every internal developer command. v0.3.0 currently contains **134 curated command entries** plus the standalone ID Browser and the separate guided Quest Fixes dataset. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The command library is deliberately curated instead of trying to expose every internal developer command. v0.3.0 currently contains **141 curated command entries** plus the standalone ID Browser and the separate guided Quest Fixes dataset. Six known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 
@@ -82,7 +81,7 @@ Starfield native console executor
 Console command
 ```
 
-The native plugin exposes direct game reads for inventory, reference inspection, player/companion/ship actor values, current spaceship, and current quest stage. Help search and other unsupported inspections retain the console-capture path. Results open in a dedicated window and can be reopened from Activity Log. Full quest history can be unavailable even when the current stage is readable; see the test-build notes.
+The native plugin exposes direct game reads for inventory, supported reference inspection, player/companion/ship actor values, current spaceship, and Game Settings. Unsupported inspections are visibly unavailable instead of executing a known-broken adapter. Results open in a dedicated window and can be reopened from Activity Log.
 
 ## Source setup
 
