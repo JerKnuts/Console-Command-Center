@@ -58,17 +58,6 @@ type QueryReply = {
   output: string;
 };
 
-type FormSearchReply = {
-  ok: boolean;
-  scannedForms?: number;
-  results: Array<{
-    label: string;
-    value: string;
-    type: string;
-    editorId?: string;
-  }>;
-};
-
 type EffectiveTotalReply = EffectiveTotalRequest & {
   ok: boolean;
   applied: boolean;
@@ -99,7 +88,7 @@ const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0-test9';
+const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0-test9-hotfix1';
 
 let activeView: ViewMode = 'recent';
 let query = '';
@@ -114,9 +103,6 @@ let bridgeVersion = 'unknown';
 let bridgeState: 'connecting' | 'ready' | 'unavailable' = 'connecting';
 let nativeBackendReady = false;
 let idBrowserCategory = 'all';
-let idBrowserLiveResults: IdCatalogEntry[] = [];
-let idBrowserRawOutput = '';
-let idBrowserSearching = false;
 let idBrowserSelected: IdCatalogEntry | null = null;
 
 app.innerHTML = `
@@ -589,7 +575,7 @@ function render(): void {
   search.placeholder = activeView === 'quest-fixes'
     ? 'Search quest, Form ID, stage...'
     : activeView === 'id-browser'
-      ? 'Filter included IDs instantly, or search the loaded game...'
+      ? 'Search included IDs by name, Form ID, or type...'
       : 'Search name, command, tag...';
 
   if (activeView === 'id-browser') {
@@ -1118,11 +1104,6 @@ function activeIdBrowserCategory() {
   return ID_BROWSER_CATEGORIES.find((category) => category.value === idBrowserCategory) ?? ID_BROWSER_CATEGORIES[0];
 }
 
-function idBrowserLiveTypeMatches(entry: IdCatalogEntry): boolean {
-  const recordType = activeIdBrowserCategory().recordType;
-  return !recordType || entry.type.toUpperCase() === recordType;
-}
-
 function idBrowserTextMatches(entry: IdCatalogEntry): boolean {
   if (!query) return true;
   const haystack = [entry.label, entry.value, entry.type, entry.category, entry.detail ?? '', ...(entry.keywords ?? [])]
@@ -1138,24 +1119,6 @@ function matchingBuiltInIds(): IdCatalogEntry[] {
     const categoryMatches = categories.includes('*') || categories.includes(entry.category);
     return categoryMatches && idBrowserTextMatches(entry);
   });
-}
-
-function mergedIdBrowserResults(): IdCatalogEntry[] {
-  const output: IdCatalogEntry[] = [];
-  const seen = new Set<string>();
-  const add = (entry: IdCatalogEntry) => {
-    const key = `${entry.type.toUpperCase()}:${entry.value.toUpperCase()}`;
-    if (seen.has(key)) return;
-    seen.add(key);
-    output.push(entry);
-  };
-  idBrowserLiveResults.filter(idBrowserLiveTypeMatches).filter(idBrowserTextMatches).forEach(add);
-  matchingBuiltInIds().forEach(add);
-  return output;
-}
-
-function liveCategoryForType(type: string): string {
-  return ID_BROWSER_CATEGORIES.find((category) => category.recordType === type.toUpperCase())?.label ?? 'Loaded Game';
 }
 
 function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspell' | 'spawn' | null {
@@ -1199,23 +1162,17 @@ function renderIdBrowserSelection(): string {
 }
 
 function renderIdBrowserPanel(): void {
-  const results = mergedIdBrowserResults();
-  const builtInCount = matchingBuiltInIds().length;
-  const liveCount = idBrowserLiveResults.filter(idBrowserLiveTypeMatches).filter(idBrowserTextMatches).length;
-  resultCount.textContent = `${results.length} shown / ${ID_CATALOG.length} included IDs${liveCount ? ` / ${liveCount} game results` : ''}`;
+  const results = matchingBuiltInIds();
+  resultCount.textContent = `${results.length} shown / ${ID_CATALOG.length} included IDs`;
 
   const resultRows = results.map((entry, index) => `
-    <button class="id-browser-row${entry.source === 'live' ? ' is-live' : ''}${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
+    <button class="id-browser-row${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
       <span class="id-browser-row-main">
         <strong>${escapeHtml(entry.label)}</strong>
         <small>${escapeHtml(entry.category)}${entry.detail ? ` — ${escapeHtml(entry.detail)}` : ''}</small>
       </span>
-      <span class="id-browser-row-meta"><span>${escapeHtml(entry.type)}</span><code>${escapeHtml(entry.value)}</code>${entry.source === 'live' ? '<em>GAME</em>' : ''}</span>
+      <span class="id-browser-row-meta"><span>${escapeHtml(entry.type)}</span><code>${escapeHtml(entry.value)}</code></span>
     </button>`).join('');
-
-  const rawBlock = idBrowserRawOutput && idBrowserLiveResults.length === 0
-    ? `<div class="id-browser-raw"><span class="osf-eyebrow">RAW GAME OUTPUT</span><pre>${escapeHtml(idBrowserRawOutput)}</pre></div>`
-    : '';
 
   customPanel.innerHTML = `
     <section class="id-browser-panel">
@@ -1226,44 +1183,28 @@ function renderIdBrowserPanel(): void {
             ${ID_BROWSER_CATEGORIES.map((category) => `<option value="${escapeHtml(category.value)}"${category.value === idBrowserCategory ? ' selected' : ''}>${escapeHtml(category.label)}</option>`).join('')}
           </select>
         </label>
-        <button class="osf-btn osf-btn--osf-accent" id="id-browser-search-game" type="button" ${query.trim().length < 2 || !nativeBackendReady || idBrowserSearching ? 'disabled' : ''}>${idBrowserSearching ? 'Searching...' : 'Search Loaded Game'}</button>
-        <button class="osf-btn osf-btn--ghost" id="id-browser-clear-live" type="button" ${idBrowserLiveResults.length === 0 && !idBrowserRawOutput ? 'disabled' : ''}>Clear Game Results</button>
       </div>
 
       ${renderIdBrowserSelection()}
 
       <div class="id-browser-result-head">
         <span>${results.length} matching IDs</span>
-        <span>${builtInCount} included${liveCount ? ` + ${liveCount} from game` : ''}</span>
+        <span>${ID_CATALOG.length} included</span>
       </div>
       <div class="osf-tricolor id-browser-divider" aria-hidden="true"></div>
       <div class="id-browser-results" id="id-browser-results">
-        ${resultRows || '<div class="id-picker-empty"><strong>No matching IDs</strong><span>Try a broader filter or use Search Loaded Game.</span></div>'}
+        ${resultRows || '<div class="id-picker-empty"><strong>No matching IDs</strong><span>Try a broader search or another category.</span></div>'}
       </div>
-      ${rawBlock}
     </section>`;
 
   const categorySelect = document.querySelector('#id-browser-category');
   if (categorySelect instanceof HTMLSelectElement) {
     categorySelect.addEventListener('change', () => {
       idBrowserCategory = categorySelect.value;
-      idBrowserLiveResults = [];
-      idBrowserRawOutput = '';
       idBrowserSelected = null;
       render();
     });
   }
-
-  document.querySelector<HTMLButtonElement>('#id-browser-search-game')?.addEventListener('click', () => {
-    void runIdBrowserLiveSearch();
-  });
-  document.querySelector<HTMLButtonElement>('#id-browser-clear-live')?.addEventListener('click', () => {
-    idBrowserLiveResults = [];
-    idBrowserRawOutput = '';
-    idBrowserSelected = null;
-    setStatus('Cleared live ID Browser results.');
-    render();
-  });
 
   const resultsElement = document.querySelector('#id-browser-results');
   resultsElement?.addEventListener('click', (event) => {
@@ -1284,65 +1225,6 @@ function renderIdBrowserPanel(): void {
     const button = event.currentTarget as HTMLButtonElement;
     if (button.dataset.copyIdBrowserId) void copyResultId(button.dataset.copyIdBrowserId);
   });
-}
-
-async function runIdBrowserLiveSearch(): Promise<void> {
-  const term = query.replace(/["\r\n]/g, ' ').trim();
-  if (term.length < 2) {
-    setStatus('Enter at least two characters before searching the game.', 'error');
-    return;
-  }
-  if (!nativeBackendReady || !window.osfui?.call) {
-    setStatus('ConsoleCommandCenter.dll is not connected.', 'error');
-    return;
-  }
-
-  const recordType = activeIdBrowserCategory().recordType;
-  const command = `Native form search: ${term}${recordType ? ` [${recordType}]` : ''}`;
-  idBrowserSearching = true;
-  render();
-  setStatus(`Searching loaded game records: ${command}`, 'working');
-
-  try {
-    const reply = await window.osfui.call<FormSearchReply>('console.command-center.searchForms', { searchText: term, recordType });
-    if (!reply?.ok) throw new Error('Native backend did not report success');
-    idBrowserLiveResults = (Array.isArray(reply.results) ? reply.results : []).map((entry) => ({
-      label: entry.label || entry.editorId || 'Unnamed record',
-      value: entry.value.toUpperCase().padStart(8, '0'),
-      type: entry.type.toUpperCase(),
-      category: liveCategoryForType(entry.type),
-      detail: entry.editorId ? `EditorID: ${entry.editorId}` : 'Loaded-game record',
-      source: 'live',
-    }));
-    idBrowserRawOutput = '';
-    executionCount += 1;
-    lastCommand = command;
-    addActivity({
-      command,
-      definition: {
-        id: 'id-browser-live-search',
-        title: 'ID Browser Game Search',
-        category: 'Inventory',
-        description: 'Search loaded Starfield forms directly by display name and EditorID.',
-        command,
-        testStatus: 'untested',
-      },
-      rememberRecent: false,
-    }, 'success', `Found ${idBrowserLiveResults.length} loaded-game record${idBrowserLiveResults.length === 1 ? '' : 's'}.`);
-    const scanned = Number.isFinite(reply.scannedForms) ? ` after scanning ${reply.scannedForms} supported forms` : '';
-    setStatus(idBrowserLiveResults.length
-      ? `Found ${idBrowserLiveResults.length} loaded-game record${idBrowserLiveResults.length === 1 ? '' : 's'}${scanned}.`
-      : `No loaded-game records matched that name or EditorID${scanned}.`, 'success');
-  } catch (error) {
-    const message = describe(error);
-    idBrowserLiveResults = [];
-    idBrowserRawOutput = '';
-    setStatus(message, 'error');
-    addActivity({ command, rememberRecent: false }, 'error', message);
-  } finally {
-    idBrowserSearching = false;
-    render();
-  }
 }
 
 function requestIdBrowserQuickAction(entry: IdCatalogEntry): void {
@@ -1451,8 +1333,6 @@ navigation.addEventListener('click', (event) => {
 search.addEventListener('input', () => {
   query = search.value.trim();
   if (activeView === 'id-browser') {
-    idBrowserLiveResults = [];
-    idBrowserRawOutput = '';
     idBrowserSelected = null;
   }
   render();

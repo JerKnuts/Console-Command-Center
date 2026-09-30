@@ -8,7 +8,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 **Current development version: v0.3.0 Beta**
 
-**Current test build: v0.3.0-test9.** This build replaces the empty ID Browser scanner with Starfield's global loaded-form map, reports how many supported records were scanned, simplifies the browser's source labels, and uses Med Pack as a native-search-only test record. It retains the test8 save-load hotfix and verified effective-total controls. Follow [the test9 instructions](TEST_BUILD_RESULT_ACTIONS.md).
+**Current test build: v0.3.0-test9-hotfix1.** This emergency build removes the loaded-game form scanner after test9 caused an access violation during a Med Pack search. The ID Browser now uses its safe instant included catalog only, with Med Pack restored. It retains the test8 save-load hotfix and verified effective-total controls. Follow [the hotfix instructions](TEST_BUILD_RESULT_ACTIONS.md).
 
 **Previous hotfix: v0.3.0-test2.** Test1 crashed during scale inspection. The shared evaluator calls remain removed, and Scale/Open State/GetStage/Quest Status remain temporarily disabled. Test2 verified Escape handling, inventory, companion readouts, and ship readouts in game.
 
@@ -45,7 +45,7 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 
 The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It includes **190 curated IDs** covering common weapons, armor, ammo, resources, perks, object modifiers, factions, core companions, and weather records. Search and filters work instantly against that included catalog.
 
-**Search Loaded Game** searches Starfield's global loaded-form map directly by display name and EditorID. It does not scrape the rolling console buffer. Because the lookup runs against the loaded game, it can surface matching base-game, DLC, Creation, and mod records that are not part of the included list. Supported type filters include common groups such as WEAP, ARMO, AMMO, ALCH, MISC, PERK, SPEL, NPC_, OMOD, FACT, QUST, CELL, GBFM, FURN, and WTHR. Game results carry a **GAME** badge; included rows no longer repeat a source badge. Results can be selected and, when the record type is unambiguous, CCC offers a conservative quick action such as **Add 1**, **Add Perk**, **Add Spell / Power**, or **Spawn 1**.
+The ID Browser searches its **191 included IDs** instantly by name, Form ID, type, category, and keywords. Its category menu narrows the same catalog, and every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous. The experimental loaded-game scanner is disabled because test9 proved its runtime form-map traversal unsafe on Starfield 1.16.244.
 
 The reusable Reference ID Picker remains the compact command-specific chooser. **Pay Bounty** opens bounty-relevant factions, companion affinity commands open Sarah Morgan, Barrett, Sam Coe, and Andreja, and weather commands open common weather records. Selecting an entry fills the normal command input; users can still type any valid hexadecimal ID manually. Inline preset-button grids are intentionally avoided.
 

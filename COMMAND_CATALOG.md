@@ -222,7 +222,7 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 
 ## ID Browser + Reference ID Picker
 
-v0.3.0 now includes a standalone **ID Browser**. It combines a **190-entry included catalog** of common weapons, armor, ammo, resources, perks, modifier IDs, factions, companions, and weather records with a native search of Starfield's global loaded-form map. **Search Loaded Game** is the way to discover records outside the included catalog because it can see the user's currently loaded base game, DLC, and mods. Med Pack is intentionally omitted from the included list as a stable native-search test case.
+v0.3.0 now includes a standalone **ID Browser** with **191 included IDs** covering common weapons, armor, ammo, aid, resources, perks, modifier IDs, factions, companions, and weather records. Search filters the included catalog instantly by name, Form ID, type, category, and keywords. Every selected result offers **Copy ID**, with conservative quick actions for supported record types. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244; Med Pack is included again.
 
 The browser supports record-type filtering (including WEAP, ARMO, AMMO, ALCH, MISC, PERK, SPEL, NPC_, OMOD, FACT, QUST, CELL, GBFM, and FURN), parses matching Form IDs into selectable rows, preserves raw console output if a result cannot be parsed, and exposes conservative quick actions such as **Add 1**, **Add Perk**, **Add Spell / Power**, or **Spawn 1** where the record type makes the action reasonably clear.
 

@@ -30,7 +30,7 @@ export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   { label: 'Weapons', value: 'weapons', detail: 'Weapons and guns.', recordType: 'WEAP', builtInCategories: ['Weapons'] },
   { label: 'Armor / Apparel', value: 'armor', detail: 'Spacesuits, helmets, packs, and clothing.', recordType: 'ARMO', builtInCategories: ['Armor'] },
   { label: 'Ammo', value: 'ammo', detail: 'Ammunition records.', recordType: 'AMMO', builtInCategories: ['Ammo'] },
-  { label: 'Aid / Consumables', value: 'aid', detail: 'Food, medicine, and consumable records.', recordType: 'ALCH', builtInCategories: [] },
+  { label: 'Aid / Consumables', value: 'aid', detail: 'Medicine and consumable records.', recordType: 'ALCH', builtInCategories: ['Aid'] },
   { label: 'Resources / Miscellaneous', value: 'resources', detail: 'Resources, components, and miscellaneous items.', recordType: 'MISC', builtInCategories: ['Resources'] },
   { label: 'Perks / Skills / Traits', value: 'perks', detail: 'Skills, perks, backgrounds, and traits.', recordType: 'PERK', builtInCategories: ['Perks'] },
   { label: 'Spells / Powers', value: 'powers', detail: 'Powers, spells, and effect records.', recordType: 'SPEL', builtInCategories: [] },
@@ -50,7 +50,10 @@ const BASE_CATALOG: IdCatalogEntry[] = [
   { label: 'Digipick', value: '0000000A', type: 'MISC', category: 'Common', detail: 'Lockpick', keywords: ['lockpick'], action: 'additem' },
   { label: 'Ship Parts', value: '0003FB19', type: 'ALCH', category: 'Common', detail: 'Ship repair item', keywords: ['repair'], action: 'additem' },
 
-  // WEAPONS — a useful starter set. Live Search can find the rest.
+  // AID
+  { label: 'Med Pack', value: '0000ABF9', type: 'ALCH', category: 'Aid', detail: 'Restores health', keywords: ['medpack', 'medicine', 'healing'], action: 'additem' },
+
+  // WEAPONS — a useful starter set.
   { label: 'AA-99', value: '002BF65B', type: 'WEAP', category: 'Weapons', action: 'additem' },
   { label: 'Arc Welder', value: '0026D965', type: 'WEAP', category: 'Weapons', action: 'additem' },
   { label: 'Auto-Rivet', value: '0026D964', type: 'WEAP', category: 'Weapons', action: 'additem' },

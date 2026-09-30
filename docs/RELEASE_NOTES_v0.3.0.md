@@ -210,3 +210,10 @@ The curated catalog now contains **134 commands**. Testing remains intentionally
 - Replaced repeated Built-in/Live wording with **Included IDs** and a **GAME** badge only on loaded-game results.
 - Removed Med Pack from the included catalog, leaving 190 curated IDs, so `Med Pack` is a simple controlled native-search test. This also corrects the older documented catalog count.
 - Marked Boostpack Horizontal/Initial, Ship Cargo, Shielded Cargo, and Reactor Effective Total controls verified from the test8 in-game session.
+
+## Test9 hotfix 1
+
+- Removed the experimental loaded-game form scanner and its bridge request after a Med Pack/ALCH search caused an access violation inside `ConsoleCommandCenter.dll` on Starfield 1.16.244.
+- Removed **Search Loaded Game**, **Clear Game Results**, and GAME-source badges from the ID Browser.
+- Restored Med Pack to the included catalog, which now contains 191 IDs.
+- Kept instant included-ID filtering, categories, Copy ID, and supported quick actions.

@@ -150,3 +150,10 @@ Test5 adds native replacements for the two simple timed-out reads, a delayed wai
 - Inventory search/collapse/Copy ID and Results-window Escape behavior passed again as regression tests.
 - Native loaded-game searches failed cleanly. `Aid_MedPack` under ALCH and `npcfsarahmorgan` under NPC_ both returned “No loaded-game records matched that name or EditorID.”
 - Test9 replaces the per-type form-array scan with the global loaded-form map and reports the number of supported forms scanned.
+
+## v0.3.0-test9 crash and hotfix
+
+- The updated footer and save loading passed.
+- Searching the loaded game for Med Pack under ALCH crashed Starfield.
+- Crash log `2026-09-29-21-48-00.log` shows an access violation in `ConsoleCommandCenter.dll` during the `console.command-center.searchForms` bridge request, with `med pack` and `ALCH` present on the request stack.
+- Test9 is superseded. Hotfix1 removes the native scanner and request route, removes its two UI controls, and restores Med Pack to the safe included catalog.

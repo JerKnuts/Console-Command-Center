@@ -1,27 +1,26 @@
-# v0.3.0-test9 — Loaded-game search repair
+# v0.3.0-test9-hotfix1 — Remove unsafe loaded-game scanner
 
 ## Install
 
-Close Starfield, extract the patch into the current CCC project, run **npm run build**, deploy the resulting mod, and restart Starfield. The footer must show **v0.3.0-test9**. The native DLL and interface both changed.
+Close Starfield, extract the patch into the current CCC project, run **npm run build**, deploy the resulting mod, and restart Starfield. The footer must show **v0.3.0-test9-hotfix1**. The native DLL and interface both changed. Do not continue using test9.
 
 ## Priority tests
 
-1. Load a saved game and confirm there is no Address Library error.
-2. Open ID Browser, choose **Aid / Consumables**, and enter `Med Pack`. The instant included-ID filter should show no result because Med Pack was deliberately removed from the included catalog.
-3. Click **Search Loaded Game**. A Med Pack row with a **GAME** badge should appear. Record the status message, including the number of supported forms scanned.
+1. Load the same save that passed with test8-hotfix1.
+2. Open ID Browser, choose **Aid / Consumables**, and enter `Med Pack`.
+3. Confirm Med Pack appears instantly with Form ID `0000ABF9`.
 4. Select Med Pack, test **Copy ID**, and confirm **Add 1 to Player** appears.
-5. Click **Clear Game Results** and confirm the Med Pack game result disappears.
-6. Choose **NPCs / Companions**, enter `npcfsarahmorgan`, and use **Search Loaded Game**. Record the result and scanned-form count.
-7. Confirm included rows no longer repeat a BUILT-IN badge and that the summary uses **included** and **from game** wording.
-8. Run one previously verified inventory or inspection command as a regression check.
+5. Confirm **Search Loaded Game** and **Clear Game Results** are gone.
+6. Clear the search, choose another category, and confirm its included results still filter instantly.
+7. Recheck one inventory inspection and one actor-value inspection as native regressions.
+8. Confirm the footer reports the native runtime as ready and shows the hotfix build.
 
 ## Expected behavior
 
-- The normal search field filters CCC's 190 included IDs immediately.
-- **Search Loaded Game** explicitly scans supported records currently loaded by Starfield, including DLC, Creations, and mods.
-- The status bar reports how many supported records were scanned even when no match is found.
-- Only loaded-game results display a **GAME** source badge.
-- **Clear Game Results** removes loaded-game results without affecting the included catalog.
+- Search operates only on CCC's 191 included IDs in this hotfix.
+- The loaded-game request handler and unsafe global form-map scanner are absent from the DLL.
+- Med Pack is included again so it can be found without touching runtime form memory.
+- Result selection, Copy ID, and supported quick actions remain available.
 
 ## Changes retained
 

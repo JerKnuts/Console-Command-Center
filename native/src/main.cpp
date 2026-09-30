@@ -19,14 +19,13 @@
 
 #include "OSFUI_JSON.h"
 #include "DirectQuery.h"
-#include "FormSearch.h"
 
 namespace
 {
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "0.3.0-test9";
+    constexpr const char* kBuildId = "0.3.0-test9-hotfix1";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -34,6 +33,14 @@ namespace
     bool IsRuntimeSupported() noexcept
     {
         return g_runtimeVersion == kTestedRuntime;
+    }
+
+    std::string LowerASCII(std::string value)
+    {
+        std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
+            return static_cast<char>(std::tolower(ch));
+        });
+        return value;
     }
 
     std::atomic_bool g_captureActive{ false };
@@ -361,51 +368,6 @@ namespace
         }
     }
 
-    void OnSearchForms(const OSFUI::API::Request& raw, void*) noexcept
-    {
-        OSFUI::API::JsonRequest request{ raw };
-        if (!request) return;
-
-        const auto searchText = request.Get<std::string>("searchText");
-        const auto recordType = request.Get<std::string>("recordType").value_or("");
-        if (!searchText || searchText->size() < 2 || searchText->size() > 80 || !IsSafeBridgeString(*searchText)) {
-            request.Reject("invalid-search", "Enter 2-80 characters without control characters.");
-            return;
-        }
-        if (recordType.size() > 8 || std::any_of(recordType.begin(), recordType.end(), [](unsigned char ch) {
-                return std::isalnum(ch) == 0 && ch != '_';
-            })) {
-            request.Reject("invalid-record-type", "The requested loaded-form record type is invalid.");
-            return;
-        }
-
-        try {
-            std::size_t scannedForms = 0;
-            const auto matches = CCC::SearchLoadedForms(*searchText, recordType, 250, &scannedForms);
-            auto results = OSFUI::API::Json::array();
-            for (const auto& match : matches) {
-                results.push_back({
-                    { "label", match.label },
-                    { "value", match.formID },
-                    { "type", match.type },
-                    { "editorId", match.editorID }
-                });
-            }
-            const auto payload = OSFUI::API::Json{
-                { "ok", true },
-                { "searchText", *searchText },
-                { "recordType", recordType },
-                { "scannedForms", scannedForms },
-                { "results", std::move(results) }
-            }.dump(-1, ' ', false, OSFUI::API::Json::error_handler_t::replace);
-            raw.Respond("console.command-center.searchFormsResult", payload.c_str());
-        } catch (const std::exception& error) {
-            request.Reject("form-search-failed", error.what());
-        } catch (...) {
-            request.Reject("form-search-failed", "Could not search Starfield's loaded forms.");
-        }
-    }
-
     void OnSetEffectiveActorValue(const OSFUI::API::Request& raw, void*) noexcept
     {
         OSFUI::API::JsonRequest request{ raw };
@@ -429,7 +391,7 @@ namespace
         try {
             std::uint32_t formID = 0;
             std::string normalizedTarget;
-            if (CCC::LowerASCII(*targetText) == "player") {
+            if (LowerASCII(*targetText) == "player") {
                 formID = 0x14;
                 normalizedTarget = "player";
             } else {
@@ -532,7 +494,6 @@ namespace
         }
         g_ui.RegisterRequest("console.command-center.execute", &OnExecute, nullptr);
         g_ui.RegisterRequest("console.command-center.query", &OnQuery, nullptr);
-        g_ui.RegisterRequest("console.command-center.searchForms", &OnSearchForms, nullptr);
         g_ui.RegisterRequest("console.command-center.setEffectiveActorValue", &OnSetEffectiveActorValue, nullptr);
         g_ui.RegisterRequest("console.command-center.questStatus", &OnQuestStatus, nullptr);
     }
