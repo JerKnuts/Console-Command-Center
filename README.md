@@ -8,7 +8,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 **Current development version: v0.3.0 Beta**
 
-**Current test build: v0.3.0-test9-hotfix1.** This emergency build removes the loaded-game form scanner after test9 caused an access violation during a Med Pack search. The ID Browser now uses its safe instant included catalog only, with Med Pack restored. It retains the test8 save-load hotfix and verified effective-total controls. Follow [the hotfix instructions](TEST_BUILD_RESULT_ACTIONS.md).
+**Current release: v0.3.0.** The ID Browser now searches a larger reviewed catalog packaged with CCC and contains no runtime game scanner. This release retains the test9 crash fix, test8 save-load fix, and verified effective-total controls. Follow [the v0.3.0 checks](TEST_BUILD_RESULT_ACTIONS.md).
 
 **Previous hotfix: v0.3.0-test2.** Test1 crashed during scale inspection. The shared evaluator calls remain removed, and Scale/Open State/GetStage/Quest Status remain temporarily disabled. Test2 verified Escape handling, inventory, companion readouts, and ship readouts in game.
 
@@ -31,7 +31,7 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 - Activity log
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
-- Standalone **ID Browser** with common included IDs, native loaded-form searches, selectable results, and conservative quick actions
+- Standalone **ID Browser** with 340 included IDs, categories, selectable results, Copy ID, and conservative quick actions
 - Confirmation before execution
 - Caution and Danger warnings
 - Mouse, keyboard, and controller-friendly interface
@@ -43,9 +43,9 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 
 ## ID Browser and Reference ID Picker
 
-The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It includes **190 curated IDs** covering common weapons, armor, ammo, resources, perks, object modifiers, factions, core companions, and weather records. Search and filters work instantly against that included catalog.
+The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It searches **340 included IDs** instantly by name, Form ID, type, category, and keywords. The catalog covers all base-game skills and traits, the commonly published base-game weapon, ammunition, and aid lists, plus the existing armor, resources, modifiers, factions, companions, and weather records. Every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous.
 
-The ID Browser searches its **191 included IDs** instantly by name, Form ID, type, category, and keywords. Its category menu narrows the same catalog, and every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous. The experimental loaded-game scanner is disabled because test9 proved its runtime form-map traversal unsafe on Starfield 1.16.244.
+CCC does not scan Starfield's live form memory. That experimental path caused an access violation during test9 and was removed. Expansion-only records carry a visible requirement such as **Shattered Space DLC**. The catalog sources and review status are recorded in [ID Catalog Sources](docs/ID_CATALOG_SOURCES.md).
 
 The reusable Reference ID Picker remains the compact command-specific chooser. **Pay Bounty** opens bounty-relevant factions, companion affinity commands open Sarah Morgan, Barrett, Sam Coe, and Andreja, and weather commands open common weather records. Selecting an entry fills the normal command input; users can still type any valid hexadecimal ID manually. Inline preset-button grids are intentionally avoided.
 

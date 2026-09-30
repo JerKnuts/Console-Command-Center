@@ -217,3 +217,11 @@ The curated catalog now contains **134 commands**. Testing remains intentionally
 - Removed **Search Loaded Game**, **Clear Game Results**, and GAME-source badges from the ID Browser.
 - Restored Med Pack to the included catalog, which now contains 191 IDs.
 - Kept instant included-ID filtering, categories, Copy ID, and supported quick actions.
+
+## v0.3.0 catalog release
+
+- Adopted normal semantic versioning: v0.3.0 is the current release; later fixes increment the patch number to v0.3.1, v0.3.2, and so on.
+- Expanded the static ID Browser catalog to 340 entries and corrected the older count, which omitted two picker-backed entries.
+- Added the complete published base-game skill, trait, ammunition, and aid lists and filled the missing weapons from the reviewed base-game list.
+- Kept the runtime game scanner removed. Search only reads data packaged with CCC.
+- Added catalog source documentation, duplicate-ID checks, and visible DLC requirements for expansion-specific records.

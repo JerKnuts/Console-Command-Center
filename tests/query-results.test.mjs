@@ -10,6 +10,7 @@ const source = readFileSync(new URL('../src/views/console.command-center/main/ma
 const commandSource = readFileSync(new URL('../src/views/console.command-center/main/commands.ts', import.meta.url), 'utf8');
 const nativeSource = readFileSync(new URL('../native/src/main.cpp', import.meta.url), 'utf8');
 const idCatalogSource = readFileSync(new URL('../src/views/console.command-center/main/id-catalog.ts', import.meta.url), 'utf8');
+const referenceIdSource = readFileSync(new URL('../src/views/console.command-center/main/reference-ids.ts', import.meta.url), 'utf8');
 const names = new Set(['executeConsole', 'showResults', 'extractResultIds', 'parseInventoryResults', 'renderInventoryResults', 'describe', 'escapeHtml', 'renderActivityPanel']);
 const functions = [...source.matchAll(/^(?:async )?function (\w+)\b[\s\S]*?^}/gm)]
   .filter(match => names.has(match[1])).map(match => match[0]);
@@ -179,6 +180,24 @@ test('ID Browser does not expose the unsafe native loaded-form search route', ()
   assert.doesNotMatch(source, /help \"\$\{escapedSearch\}\"/);
   assert.doesNotMatch(nativeSource, /RegisterRequest\("console\.command-center\.searchForms"/);
   assert.match(idCatalogSource, /label: 'Med Pack'/);
+});
+
+test('expanded packaged catalog has normalized unique IDs and labeled expansion records', () => {
+  const ids = [...idCatalogSource.matchAll(/value: '([0-9A-F]{8})'/g)].map((match) => match[1]);
+  const pickerCatalog = referenceIdSource.slice(
+    referenceIdSource.indexOf('export const BOUNTY_FACTION_PICKER'),
+    referenceIdSource.length,
+  );
+  const pickerIds = [...pickerCatalog.matchAll(/value: '([0-9A-F]{8})'/g)].map((match) => match[1]);
+  assert.equal(ids.length, 315);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.equal(pickerIds.length, 25);
+  assert.equal(new Set([...ids, ...pickerIds]).size, 340);
+  assert.match(idCatalogSource, /label: 'Trauma Pack', value: '0029A847'/);
+  assert.match(idCatalogSource, /label: 'Boxing', value: '002C59DF'/);
+  assert.match(idCatalogSource, /label: 'Heavy Particle Fuse', value: '002B558B'/);
+  assert.match(referenceIdSource, /Dazra Ship Services[\s\S]*?Shattered Space DLC bounty faction/);
+  assert.match(referenceIdSource, /House Va'ruun — Shattered Space[\s\S]*?Shattered Space DLC bounty faction/);
 });
 
 test('known-broken command cards are unavailable at both render and execution boundaries', () => {
