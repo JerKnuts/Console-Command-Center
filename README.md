@@ -8,7 +8,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 **Current development version: v0.3.0 Beta**
 
-**Current test build: v0.3.0-test8.** This build replaces ID Browser console scraping with native loaded-form search, adds calculated effective-total controls for boostpack and ship values, tracks held objects through Starfield's grab/release events, disables known-broken inspection cards, hardens query scheduling, and validates the Quest Fix dataset against `Starfield.esm`. Follow [the test8 instructions](TEST_BUILD_RESULT_ACTIONS.md).
+**Current test build: v0.3.0-test8-hotfix1.** This hotfix removes the test8 held-object event adapter because CommonLibSF exposes its event source with unresolved Address Library ID `0`, which caused an error while loading a save. Test8's native ID search, calculated effective-total controls, query hardening, disabled-command treatment, and validated Quest Fix dataset remain included. Follow [the test8 hotfix instructions](TEST_BUILD_RESULT_ACTIONS.md).
 
 **Previous hotfix: v0.3.0-test2.** Test1 crashed during scale inspection. The shared evaluator calls remain removed, and Scale/Open State/GetStage/Quest Status remain temporarily disabled. Test2 verified Escape handling, inventory, companion readouts, and ship readouts in game.
 
@@ -65,7 +65,7 @@ See [`QUEST_FIXES.md`](QUEST_FIXES.md) for details.
 
 ## Command catalog
 
-The command library is deliberately curated instead of trying to expose every internal developer command. v0.3.0 currently contains **141 curated command entries** plus the standalone ID Browser and the separate guided Quest Fixes dataset. Six known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The command library is deliberately curated instead of trying to expose every internal developer command. v0.3.0 currently contains **141 curated command entries** plus the standalone ID Browser and the separate guided Quest Fixes dataset. Seven known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 

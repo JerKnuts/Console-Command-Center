@@ -11,8 +11,6 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "GrabbedObjectTracker.h"
-
 namespace CCC
 {
     inline const char* InventoryTypeCode(RE::FormType type) noexcept
@@ -51,8 +49,8 @@ namespace CCC
         // test1 crashed inside the condition evaluator on Starfield 1.16.244.
         // Do not call ANY evaluator through the unverified shared ABI. Return
         // a normal error until a verified adapter replaces that entire path.
-        if (operation == "getscale" || operation == "getopenstate" || operation == "getstage") {
-            throw std::runtime_error("This inspection is temporarily disabled after a native crash in test1. Scale, Open State, and GetStage need a verified replacement adapter.");
+        if (operation == "getscale" || operation == "getopenstate" || operation == "getstage" || operation == "getplayergrabbedref") {
+            throw std::runtime_error("This inspection is disabled because its CommonLibSF adapter is unresolved or unsafe on Starfield 1.16.244.");
         }
         if (operation == "getgs") {
             if (argument.empty() || !extra.empty()) throw std::runtime_error("Enter one exact Game Setting name.");
@@ -69,12 +67,6 @@ namespace CCC
             case RE::Setting::Type::kString: return std::format("{} >> {}", argument, setting->GetString());
             default: throw std::runtime_error("This Game Setting type cannot be displayed safely.");
             }
-        }
-        if (operation == "getplayergrabbedref") {
-            if (!argument.empty() || !extra.empty()) throw std::runtime_error("Get Grabbed Object does not accept arguments.");
-            auto* reference = GrabbedObjectTracker::GetSingleton().GetGrabbedReference();
-            if (!reference) throw std::runtime_error("No object is currently being held. Grab a world object, keep holding it, and try again.");
-            return std::format("Grabbed Object Reference ID: {:08X}", reference->GetFormID());
         }
         const bool needsArgument = operation == "getpos" || operation == "getangle" || operation == "getav" || operation == "getstage";
         if (!extra.empty() || (needsArgument ? argument.empty() : !argument.empty())) {

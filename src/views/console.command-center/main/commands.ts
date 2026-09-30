@@ -1201,7 +1201,8 @@ export const COMMANDS: CommandDefinition[] = [
     command: 'getplayergrabbedref',
     tags: ['reference id', 'object', 'grabbed', 'getplayergrabbedref', 'inspect', 'read only'],
     captureOutput: true,
-    testStatus: 'untested',
+    testStatus: 'failed',
+    unavailableReason: 'Disabled because CommonLibSF exposes the grab/release event source with unresolved Address Library ID 0 on Starfield 1.16.244.',
   },
   {
     id: 'inspect-ref-actor-value',

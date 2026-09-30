@@ -180,7 +180,7 @@ test('Search Game uses native loaded-form search instead of a help console query
 });
 
 test('known-broken command cards are unavailable at both render and execution boundaries', () => {
-  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 6);
+  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 7);
   assert.match(source, /const unavailable = Boolean\(command\.unavailableReason\)/);
   assert.match(source, /if \(execution\.definition\?\.unavailableReason\)/);
 });

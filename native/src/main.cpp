@@ -26,7 +26,7 @@ namespace
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "0.3.0-test8";
+    constexpr const char* kBuildId = "0.3.0-test8-hotfix1";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -515,12 +515,6 @@ namespace
 
     void OnSFSEMessage(SFSE::MessagingInterface::Message* message)
     {
-        if (message->type == SFSE::MessagingInterface::kPostDataLoad) {
-            if (IsRuntimeSupported()) {
-                CCC::GrabbedObjectTracker::GetSingleton().Register();
-            }
-            return;
-        }
         if (message->type != SFSE::MessagingInterface::kPostLoad) {
             return;
         }

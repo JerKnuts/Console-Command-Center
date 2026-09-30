@@ -195,3 +195,9 @@ The curated catalog now contains **134 commands**. Testing remains intentionally
 - Added an explicit tested-runtime report for Starfield 1.16.244. On another runtime, CCC keeps its view available to explain the mismatch while withholding gameplay request handlers.
 - Added GPL-3.0-or-later licensing, CommonLibSF exceptions/source notices, and removed the private conversation identifier from the published test log.
 - The curated catalog now contains **141 commands**, including the six disabled entries.
+
+## Test8 hotfix 1
+
+- Removed the held-object grab/release event adapter after in-game loading exposed `TESGrabReleaseEvent::GetEventSource()` as unresolved Address Library ID `0` in the pinned CommonLibSF build.
+- Disabled **Get Grabbed Object Reference ID** again with a visible explanation. The commented upstream numeric hint is not used without runtime verification.
+- The catalog now has seven disabled entries. Native form search, effective-total controls, query hardening, quest validation, and runtime reporting remain unchanged.

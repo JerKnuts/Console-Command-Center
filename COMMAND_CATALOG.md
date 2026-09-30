@@ -2,7 +2,7 @@
 
 Version: 0.3.0
 
-Curated commands: 141 (6 currently disabled)
+Curated commands: 141 (7 currently disabled)
 
 Guided quest repairs: 247 stage selections (245 unique setstage commands) across 79 named entries / 77 unique quest FormIDs
 
@@ -149,7 +149,7 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Force Actor Repath | `{refId}.forcerepath` | Caution | Verified |
 | Inspect Reference Open State | `{refId}.getopenstate` | Normal | Unavailable — unsafe adapter removed after test1 crash |
 | Set Reference Open State | `{refId}.setopenstate {state}` | Caution | Verified |
-| Get Grabbed Object Reference ID | native grab/release event | Normal | Untested in test8 |
+| Get Grabbed Object Reference ID | `getplayergrabbedref` | Normal | Unavailable — CommonLibSF event source resolves to Address Library ID `0` |
 | Inspect Reference Actor Value | `{refId}.getav {actorValue}` | Normal | Verified |
 | Mark Reference for Permanent Deletion | `{refId}.markfordelete` | Danger | Untested |
 | Set Exact Reference Position | `{refId}.setpos {axis} {value}` | Caution | Verified |
@@ -169,7 +169,7 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 **Companion choices:** the affinity and anger commands use the compact ID field + **CHOOSE COMPANION** box for Sarah Morgan (`00005986`), Barrett (`00005788`), Sam Coe (`0029D488`), and Andreja (`000059A9`). These are the four core companions that use Starfield's affinity/relationship progression; other recruitable crew are intentionally not presented for these commands. Manual Reference ID entry remains available.
 
 
-**Read-only inspection:** CCC's native query bridge powers supported reference inspection, inventory listing, Game Setting inspection, player/ship actor-value inspection, ship-ID lookup, and test8's event-based held-object lookup. Known-broken Scale, Open State, and quest inspections are displayed as unavailable and cannot be executed. Results are preserved in the Results window and Activity Log. This requires rebuilding `ConsoleCommandCenter.dll`.
+**Read-only inspection:** CCC's native query bridge powers supported reference inspection, inventory listing, Game Setting inspection, player/ship actor-value inspection, and ship-ID lookup. Known-broken Scale, Open State, held-object, and quest inspections are displayed as unavailable and cannot be executed. Results are preserved in the Results window and Activity Log. This requires rebuilding `ConsoleCommandCenter.dll`.
 
 ## Quests (9)
 

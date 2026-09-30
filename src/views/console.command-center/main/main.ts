@@ -98,7 +98,7 @@ const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0-test8';
+const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0-test8-hotfix1';
 
 let activeView: ViewMode = 'recent';
 let query = '';
