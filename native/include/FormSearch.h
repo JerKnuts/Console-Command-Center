@@ -90,7 +90,8 @@ namespace CCC
     inline std::vector<LoadedFormSearchResult> SearchLoadedForms(
         std::string_view searchText,
         std::string_view requestedType,
-        std::size_t limit = 250)
+        std::size_t limit = 250,
+        std::size_t* scannedForms = nullptr)
     {
         std::vector<LoadedFormSearchResult> results;
         if (searchText.empty() || limit == 0) return results;
@@ -101,55 +102,55 @@ namespace CCC
             throw std::invalid_argument("Unsupported loaded-form record type.");
         }
 
-        auto* dataHandler = RE::TESDataHandler::GetSingleton();
-        if (!dataHandler) {
-            throw std::runtime_error("Starfield's loaded-form data is unavailable.");
+        using AllFormsMap = RE::BSTHashMap<RE::TESFormID, RE::TESForm*>;
+        static REL::Relocation<AllFormsMap**> allForms{ RE::ID::TESForm::AllFormsMap };
+        auto* forms = *allForms;
+        if (!forms) {
+            throw std::runtime_error("Starfield's loaded-form map is unavailable.");
         }
 
-        const auto scanType = [&](const SearchableFormType& formType) {
-            auto& forms = dataHandler->formArrays[std::to_underlying(formType.type)];
-            const RE::BSAutoReadLock lock{ forms.lock };
-            for (const auto& formPointer : forms.formArray) {
-                auto* form = formPointer.get();
-                if (!form || form->IsDeleted()) continue;
+        std::size_t scanned = 0;
+        for (const auto& pair : *forms) {
+            auto* form = pair.value;
+            if (!form || form->IsDeleted()) continue;
 
-                try {
-                    const auto* fullName = starfield_cast<RE::TESFullName*>(form);
-                    auto name = CleanFormText(fullName ? fullName->GetFullName() : nullptr);
-                    auto editorID = CleanFormText(form->GetFormEditorID());
-                    const auto score = MatchScore(term, LowerASCII(name), LowerASCII(editorID));
-                    if (score < 0) continue;
-                    if (name.empty()) name = editorID.empty() ? "Unnamed record" : editorID;
+            const auto type = std::find_if(kSearchableFormTypes.begin(), kSearchableFormTypes.end(), [&](const auto& entry) {
+                return entry.type == form->GetFormType();
+            });
+            if (type == kSearchableFormTypes.end() || (selectedType && type->type != selectedType->type)) continue;
+            ++scanned;
 
-                    LoadedFormSearchResult result{
-                        .label = std::move(name),
-                        .formID = std::format("{:08X}", form->GetFormID()),
-                        .type = std::string{ formType.code },
-                        .editorID = std::move(editorID),
-                        .score = score,
+            try {
+                const auto* fullName = starfield_cast<RE::TESFullName*>(form);
+                auto name = CleanFormText(fullName ? fullName->GetFullName() : nullptr);
+                auto editorID = CleanFormText(form->GetFormEditorID());
+                const auto score = MatchScore(term, LowerASCII(name), LowerASCII(editorID));
+                if (score < 0) continue;
+                if (name.empty()) name = editorID.empty() ? "Unnamed record" : editorID;
+
+                LoadedFormSearchResult result{
+                    .label = std::move(name),
+                    .formID = std::format("{:08X}", form->GetFormID()),
+                    .type = std::string{ type->code },
+                    .editorID = std::move(editorID),
+                    .score = score,
+                };
+
+                if (results.size() < limit) {
+                    results.push_back(std::move(result));
+                } else {
+                    const auto worse = [](const auto& left, const auto& right) {
+                        if (left.score != right.score) return left.score < right.score;
+                        return left.label < right.label;
                     };
-
-                    if (results.size() < limit) {
-                        results.push_back(std::move(result));
-                    } else {
-                        const auto worse = [](const auto& left, const auto& right) {
-                            if (left.score != right.score) return left.score < right.score;
-                            return left.label < right.label;
-                        };
-                        const auto worst = std::max_element(results.begin(), results.end(), worse);
-                        if (worse(result, *worst)) *worst = std::move(result);
-                    }
-                } catch (...) {
-                    // A malformed or partially loaded record should not abort the search.
+                    const auto worst = std::max_element(results.begin(), results.end(), worse);
+                    if (worse(result, *worst)) *worst = std::move(result);
                 }
+            } catch (...) {
+                // A malformed or partially loaded record should not abort the search.
             }
-        };
-
-        if (selectedType) {
-            scanType(*selectedType);
-        } else {
-            for (const auto& formType : kSearchableFormTypes) scanType(formType);
         }
+        if (scannedForms) *scannedForms = scanned;
 
         std::sort(results.begin(), results.end(), [](const auto& left, const auto& right) {
             if (left.score != right.score) return left.score < right.score;

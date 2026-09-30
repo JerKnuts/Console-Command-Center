@@ -28,7 +28,7 @@
 ## ID Browser and Reddit command expansion
 
 - Added a standalone **ID Browser** to the sidebar.
-- Added a **193-entry built-in starter catalog** for common weapons, armor, ammo, resources/components, perks, object modifiers, bounty factions, core companions, and weather records.
+- Added a **191-entry built-in starter catalog** for common weapons, armor, ammo, resources/components, perks, object modifiers, bounty factions, core companions, and weather records.
 - Added local search plus built-in category and record-type filtering.
 - Added **Search Game**, which runs Starfield's `help` command through CCC's read-only query bridge and parses loaded-game Form IDs into selectable rows. This lets the browser discover DLC/Creation/mod records without baking every possible ID into CCC.
 - Added conservative ID Browser quick actions where the record type is clear: **Add 1**, **Add Perk**, **Add Spell / Power**, and **Spawn 1**. Object-mod records deliberately do not get a one-click attach action because many OMODs are item-specific.
@@ -201,3 +201,12 @@ The curated catalog now contains **134 commands**. Testing remains intentionally
 - Removed the held-object grab/release event adapter after in-game loading exposed `TESGrabReleaseEvent::GetEventSource()` as unresolved Address Library ID `0` in the pinned CommonLibSF build.
 - Disabled **Get Grabbed Object Reference ID** again with a visible explanation. The commented upstream numeric hint is not used without runtime verification.
 - The catalog now has seven disabled entries. Native form search, effective-total controls, query hardening, quest validation, and runtime reporting remain unchanged.
+
+## Test9 loaded-form search repair
+
+- Replaced the empty per-type `TESDataHandler::formArrays` scan with the global loaded-form map exposed by the pinned CommonLibSF Address Library entry.
+- Added a scanned-form count to native search responses and status messages so an empty result can be distinguished from an empty scanner.
+- Renamed **Search Game** to **Search Loaded Game** and **Clear Live** to **Clear Game Results**.
+- Replaced repeated Built-in/Live wording with **Included IDs** and a **GAME** badge only on loaded-game results.
+- Removed Med Pack from the included catalog, leaving 190 curated IDs, so `Med Pack` is a simple controlled native-search test. This also corrects the older documented catalog count.
+- Marked Boostpack Horizontal/Initial, Ship Cargo, Shielded Cargo, and Reactor Effective Total controls verified from the test8 in-game session.

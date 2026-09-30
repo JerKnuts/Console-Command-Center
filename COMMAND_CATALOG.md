@@ -52,9 +52,9 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Teleport Player to Reference | `player.moveto {refId}` | Caution | Verified |
 | Set Player Coordinate Axis | `player.setpos {axis} {value}` | Caution | Verified |
 | Set Boostpack Horizontal Base Value | `player.setav BoostpackHorizontalPercentage {value}` | Caution | Verified — base value stacks with modifiers |
-| Set Boostpack Horizontal Effective Total | calculated native setter | Caution | Untested in test8 |
+| Set Boostpack Horizontal Effective Total | calculated native setter | Caution | Verified |
 | Set Boostpack Initial Thrust Base | `player.setav BoostpackThrustInitial {value}` | Caution | Verified — base value stacks with modifiers |
-| Set Boostpack Initial Thrust Effective Total | calculated native setter | Caution | Untested in test8 |
+| Set Boostpack Initial Thrust Effective Total | calculated native setter | Caution | Verified |
 | Set Boostpack Sustained Thrust Base | `player.setav BoostpackThrustSustained {value}` | Caution | Verified — base value stacks with modifiers |
 | Set Boostpack Sustained Thrust Effective Total | calculated native setter | Caution | Untested in test8 |
 | Set Boostpack Transition-Time Base | `player.setav BoostpackTimetoSustained {value}` | Caution | Verified — base value stacks with modifiers |
@@ -192,13 +192,13 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Get Current Ship Reference ID | `player.getspaceship` | Normal | Verified |
 | Inspect Ship Actor Value | `{shipRef}.getav {actorValue}` | Normal | Verified |
 | Set Ship Cargo Base Value | `{shipRef}.setav CarryWeight {value}` | Caution | Verified — base value stacks with module modifiers |
-| Set Ship Cargo Effective Total | calculated native setter | Caution | Untested in test8 |
+| Set Ship Cargo Effective Total | calculated native setter | Caution | Verified |
 | Set Shielded Cargo Capacity | `{shipRef}.setav CarryWeightShielded {value}` | Caution | Verified — base value stacks with module modifiers |
-| Set Shielded Cargo Effective Total | calculated native setter | Caution | Untested in test8 |
+| Set Shielded Cargo Effective Total | calculated native setter | Caution | Verified |
 | Set Ship Crew Capacity | `{shipRef}.setav SpaceshipCrewRating {value}` | Caution | Verified |
 | Set Player Ship Command Slots | `player.setav SpaceshipCrewCommandSlots {value}` | Caution | Verified |
 | Set Ship Reactor Power Actor Value | `{shipRef}.setav SpaceshipReactorPower {value}` | Caution | Verified — base value stacks with module modifiers |
-| Set Ship Reactor Power Effective Total | calculated native setter | Caution | Untested in test8 |
+| Set Ship Reactor Power Effective Total | calculated native setter | Caution | Verified |
 | Set Ship Grav Jump Fuel | `{shipRef}.setav SpaceshipGravJumpFuel {value}` | Caution | Verified |
 | Set Ship Boost Fuel | `{shipRef}.setav SpaceshipBoostFuel {value}` | Caution | Verified |
 | Set Ship Boost Recharge Rate | `{shipRef}.setav SpaceshipBoostRechargeRate {value}` | Caution | Verified |
@@ -222,7 +222,7 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 
 ## ID Browser + Reference ID Picker
 
-v0.3.0 now includes a standalone **ID Browser**. It combines a **193-entry built-in starter catalog** of common weapons, armor, ammo, resources, perks, modifier IDs, factions, companions, and weather records with live loaded-game search through Starfield's own `help` command. The live search is intentionally the primary way to discover records outside the starter catalog because it can see the user's currently loaded base game, DLC, and mods.
+v0.3.0 now includes a standalone **ID Browser**. It combines a **190-entry included catalog** of common weapons, armor, ammo, resources, perks, modifier IDs, factions, companions, and weather records with a native search of Starfield's global loaded-form map. **Search Loaded Game** is the way to discover records outside the included catalog because it can see the user's currently loaded base game, DLC, and mods. Med Pack is intentionally omitted from the included list as a stable native-search test case.
 
 The browser supports record-type filtering (including WEAP, ARMO, AMMO, ALCH, MISC, PERK, SPEL, NPC_, OMOD, FACT, QUST, CELL, GBFM, and FURN), parses matching Form IDs into selectable rows, preserves raw console output if a result cannot be parsed, and exposes conservative quick actions such as **Add 1**, **Add Perk**, **Add Spell / Power**, or **Spawn 1** where the record type makes the action reasonably clear.
 

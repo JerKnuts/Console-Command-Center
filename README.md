@@ -8,7 +8,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 **Current development version: v0.3.0 Beta**
 
-**Current test build: v0.3.0-test8-hotfix1.** This hotfix removes the test8 held-object event adapter because CommonLibSF exposes its event source with unresolved Address Library ID `0`, which caused an error while loading a save. Test8's native ID search, calculated effective-total controls, query hardening, disabled-command treatment, and validated Quest Fix dataset remain included. Follow [the test8 hotfix instructions](TEST_BUILD_RESULT_ACTIONS.md).
+**Current test build: v0.3.0-test9.** This build replaces the empty ID Browser scanner with Starfield's global loaded-form map, reports how many supported records were scanned, simplifies the browser's source labels, and uses Med Pack as a native-search-only test record. It retains the test8 save-load hotfix and verified effective-total controls. Follow [the test9 instructions](TEST_BUILD_RESULT_ACTIONS.md).
 
 **Previous hotfix: v0.3.0-test2.** Test1 crashed during scale inspection. The shared evaluator calls remain removed, and Scale/Open State/GetStage/Quest Status remain temporarily disabled. Test2 verified Escape handling, inventory, companion readouts, and ship readouts in game.
 
@@ -31,7 +31,7 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 - Activity log
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
-- Standalone **ID Browser** with common built-in IDs, native loaded-form searches, selectable results, and conservative quick actions
+- Standalone **ID Browser** with common included IDs, native loaded-form searches, selectable results, and conservative quick actions
 - Confirmation before execution
 - Caution and Danger warnings
 - Mouse, keyboard, and controller-friendly interface
@@ -43,9 +43,9 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 
 ## ID Browser and Reference ID Picker
 
-The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It includes **193 built-in starter IDs** covering common weapons, armor, ammo, resources, perks, object modifiers, factions, core companions, and weather records. Search and filters work locally against that catalog.
+The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It includes **190 curated IDs** covering common weapons, armor, ammo, resources, perks, object modifiers, factions, core companions, and weather records. Search and filters work instantly against that included catalog.
 
-**Search Game** searches Starfield's loaded forms directly by display name and EditorID. It does not scrape the rolling console buffer. Because the lookup runs against the loaded game, it can surface matching base-game, DLC, Creation, and mod records that are not part of the built-in starter list. Supported type filters include common groups such as WEAP, ARMO, AMMO, ALCH, MISC, PERK, SPEL, NPC_, OMOD, FACT, QUST, CELL, GBFM, FURN, and WTHR. Results can be selected and, when the record type is unambiguous, CCC offers a conservative quick action such as **Add 1**, **Add Perk**, **Add Spell / Power**, or **Spawn 1**.
+**Search Loaded Game** searches Starfield's global loaded-form map directly by display name and EditorID. It does not scrape the rolling console buffer. Because the lookup runs against the loaded game, it can surface matching base-game, DLC, Creation, and mod records that are not part of the included list. Supported type filters include common groups such as WEAP, ARMO, AMMO, ALCH, MISC, PERK, SPEL, NPC_, OMOD, FACT, QUST, CELL, GBFM, FURN, and WTHR. Game results carry a **GAME** badge; included rows no longer repeat a source badge. Results can be selected and, when the record type is unambiguous, CCC offers a conservative quick action such as **Add 1**, **Add Perk**, **Add Spell / Power**, or **Spawn 1**.
 
 The reusable Reference ID Picker remains the compact command-specific chooser. **Pay Bounty** opens bounty-relevant factions, companion affinity commands open Sarah Morgan, Barrett, Sam Coe, and Andreja, and weather commands open common weather records. Selecting an entry fills the normal command input; users can still type any valid hexadecimal ID manually. Inline preset-button grids are intentionally avoided.
 

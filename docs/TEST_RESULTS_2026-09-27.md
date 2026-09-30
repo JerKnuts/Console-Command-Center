@@ -137,3 +137,16 @@ Test5 adds native replacements for the two simple timed-out reads, a delayed wai
 - Form-ID searches for Beowulf, Adaptive Frame, and Sarah displayed no Copy ID action in Build 5. Quest search returned no matching IDs. Reopening a custom `help "beow" 4` attempt from Activity Log showed that the underlying query had timed out after 10 seconds.
 - Invalid Game Setting handling: passed with a clear error and correct Escape behavior.
 - The two similar ID Browser selectors were replaced with one expanded Category selector. Its 17 choices jointly filter built-in entries and select the corresponding live-game record type.
+
+## Test8 and hotfix1 session
+
+- Initial test8 failed while loading a save with `REL/IDDB.cpp(459)` and Address Library ID `0`. The cause was the new `TESGrabReleaseEvent::GetEventSource()` adapter. Hotfix1 removed it, disabled Get Grabbed Object Reference ID, and loaded the same save successfully.
+- ID Browser included-ID filtering passed.
+- Disabled command cards passed: they display Unavailable and cannot execute.
+- Boostpack Horizontal Effective Total passed. Example: current base `100`, effective `100.6`, modifier `0.6`, calculated base `99.4` for a requested total of `100`.
+- Boostpack Initial Thrust Effective Total passed.
+- Ship Cargo, Shielded Cargo, and Reactor Effective Total controls passed.
+- Quest Fix controls and footer/runtime reporting passed.
+- Inventory search/collapse/Copy ID and Results-window Escape behavior passed again as regression tests.
+- Native loaded-game searches failed cleanly. `Aid_MedPack` under ALCH and `npcfsarahmorgan` under NPC_ both returned “No loaded-game records matched that name or EditorID.”
+- Test9 replaces the per-type form-array scan with the global loaded-form map and reports the number of supported forms scanned.

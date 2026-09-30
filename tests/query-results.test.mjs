@@ -9,6 +9,8 @@ import { stripTypeScriptTypes } from 'node:module';
 const source = readFileSync(new URL('../src/views/console.command-center/main/main.ts', import.meta.url), 'utf8');
 const commandSource = readFileSync(new URL('../src/views/console.command-center/main/commands.ts', import.meta.url), 'utf8');
 const nativeSource = readFileSync(new URL('../native/src/main.cpp', import.meta.url), 'utf8');
+const formSearchSource = readFileSync(new URL('../native/include/FormSearch.h', import.meta.url), 'utf8');
+const idCatalogSource = readFileSync(new URL('../src/views/console.command-center/main/id-catalog.ts', import.meta.url), 'utf8');
 const names = new Set(['executeConsole', 'showResults', 'extractResultIds', 'parseInventoryResults', 'renderInventoryResults', 'describe', 'escapeHtml', 'renderActivityPanel']);
 const functions = [...source.matchAll(/^(?:async )?function (\w+)\b[\s\S]*?^}/gm)]
   .filter(match => names.has(match[1])).map(match => match[0]);
@@ -177,6 +179,9 @@ test('Search Game uses native loaded-form search instead of a help console query
   assert.match(source, /console\.command-center\.searchForms/);
   assert.doesNotMatch(source, /help \"\$\{escapedSearch\}\"/);
   assert.match(nativeSource, /RegisterRequest\("console\.command-center\.searchForms"/);
+  assert.match(formSearchSource, /ID::TESForm::AllFormsMap/);
+  assert.doesNotMatch(formSearchSource, /formArrays/);
+  assert.doesNotMatch(idCatalogSource, /label: 'Med Pack'/);
 });
 
 test('known-broken command cards are unavailable at both render and execution boundaries', () => {

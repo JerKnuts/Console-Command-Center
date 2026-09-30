@@ -60,6 +60,7 @@ type QueryReply = {
 
 type FormSearchReply = {
   ok: boolean;
+  scannedForms?: number;
   results: Array<{
     label: string;
     value: string;
@@ -98,7 +99,7 @@ const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0-test8-hotfix1';
+const CONSOLE_COMMAND_CENTER_VERSION = '0.3.0-test9';
 
 let activeView: ViewMode = 'recent';
 let query = '';
@@ -588,7 +589,7 @@ function render(): void {
   search.placeholder = activeView === 'quest-fixes'
     ? 'Search quest, Form ID, stage...'
     : activeView === 'id-browser'
-      ? 'Search name, Form ID, type... then Search Game for live results'
+      ? 'Filter included IDs instantly, or search the loaded game...'
       : 'Search name, command, tag...';
 
   if (activeView === 'id-browser') {
@@ -1201,7 +1202,7 @@ function renderIdBrowserPanel(): void {
   const results = mergedIdBrowserResults();
   const builtInCount = matchingBuiltInIds().length;
   const liveCount = idBrowserLiveResults.filter(idBrowserLiveTypeMatches).filter(idBrowserTextMatches).length;
-  resultCount.textContent = `${results.length} shown / ${ID_CATALOG.length} built-in IDs${liveCount ? ` / ${liveCount} live` : ''}`;
+  resultCount.textContent = `${results.length} shown / ${ID_CATALOG.length} included IDs${liveCount ? ` / ${liveCount} game results` : ''}`;
 
   const resultRows = results.map((entry, index) => `
     <button class="id-browser-row${entry.source === 'live' ? ' is-live' : ''}${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
@@ -1209,7 +1210,7 @@ function renderIdBrowserPanel(): void {
         <strong>${escapeHtml(entry.label)}</strong>
         <small>${escapeHtml(entry.category)}${entry.detail ? ` — ${escapeHtml(entry.detail)}` : ''}</small>
       </span>
-      <span class="id-browser-row-meta"><span>${escapeHtml(entry.type)}</span><code>${escapeHtml(entry.value)}</code><em>${entry.source === 'live' ? 'LIVE' : 'BUILT-IN'}</em></span>
+      <span class="id-browser-row-meta"><span>${escapeHtml(entry.type)}</span><code>${escapeHtml(entry.value)}</code>${entry.source === 'live' ? '<em>GAME</em>' : ''}</span>
     </button>`).join('');
 
   const rawBlock = idBrowserRawOutput && idBrowserLiveResults.length === 0
@@ -1225,19 +1226,19 @@ function renderIdBrowserPanel(): void {
             ${ID_BROWSER_CATEGORIES.map((category) => `<option value="${escapeHtml(category.value)}"${category.value === idBrowserCategory ? ' selected' : ''}>${escapeHtml(category.label)}</option>`).join('')}
           </select>
         </label>
-        <button class="osf-btn osf-btn--osf-accent" id="id-browser-search-game" type="button" ${query.trim().length < 2 || !nativeBackendReady || idBrowserSearching ? 'disabled' : ''}>${idBrowserSearching ? 'Searching...' : 'Search Game'}</button>
-        <button class="osf-btn osf-btn--ghost" id="id-browser-clear-live" type="button" ${idBrowserLiveResults.length === 0 && !idBrowserRawOutput ? 'disabled' : ''}>Clear Live</button>
+        <button class="osf-btn osf-btn--osf-accent" id="id-browser-search-game" type="button" ${query.trim().length < 2 || !nativeBackendReady || idBrowserSearching ? 'disabled' : ''}>${idBrowserSearching ? 'Searching...' : 'Search Loaded Game'}</button>
+        <button class="osf-btn osf-btn--ghost" id="id-browser-clear-live" type="button" ${idBrowserLiveResults.length === 0 && !idBrowserRawOutput ? 'disabled' : ''}>Clear Game Results</button>
       </div>
 
       ${renderIdBrowserSelection()}
 
       <div class="id-browser-result-head">
         <span>${results.length} matching IDs</span>
-        <span>${builtInCount} built-in${liveCount ? ` + ${liveCount} live` : ''}</span>
+        <span>${builtInCount} included${liveCount ? ` + ${liveCount} from game` : ''}</span>
       </div>
       <div class="osf-tricolor id-browser-divider" aria-hidden="true"></div>
       <div class="id-browser-results" id="id-browser-results">
-        ${resultRows || '<div class="id-picker-empty"><strong>No matching IDs</strong><span>Try a broader search or use Search Game to query the loaded Starfield data.</span></div>'}
+        ${resultRows || '<div class="id-picker-empty"><strong>No matching IDs</strong><span>Try a broader filter or use Search Loaded Game.</span></div>'}
       </div>
       ${rawBlock}
     </section>`;
@@ -1320,7 +1321,7 @@ async function runIdBrowserLiveSearch(): Promise<void> {
       command,
       definition: {
         id: 'id-browser-live-search',
-        title: 'ID Browser Live Search',
+        title: 'ID Browser Game Search',
         category: 'Inventory',
         description: 'Search loaded Starfield forms directly by display name and EditorID.',
         command,
@@ -1328,9 +1329,10 @@ async function runIdBrowserLiveSearch(): Promise<void> {
       },
       rememberRecent: false,
     }, 'success', `Found ${idBrowserLiveResults.length} loaded-game record${idBrowserLiveResults.length === 1 ? '' : 's'}.`);
+    const scanned = Number.isFinite(reply.scannedForms) ? ` after scanning ${reply.scannedForms} supported forms` : '';
     setStatus(idBrowserLiveResults.length
-      ? `Found ${idBrowserLiveResults.length} loaded-game record${idBrowserLiveResults.length === 1 ? '' : 's'}.`
-      : 'No loaded-game records matched that name or EditorID.', 'success');
+      ? `Found ${idBrowserLiveResults.length} loaded-game record${idBrowserLiveResults.length === 1 ? '' : 's'}${scanned}.`
+      : `No loaded-game records matched that name or EditorID${scanned}.`, 'success');
   } catch (error) {
     const message = describe(error);
     idBrowserLiveResults = [];

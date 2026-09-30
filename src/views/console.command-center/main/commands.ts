@@ -563,7 +563,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['boostpack', 'horizontal', 'effective total', 'actor value'],
     warning: 'CCC calculates a new base from the current base and effective values. Review the calculation before applying it.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
     effectiveTotal: true,
   },
   {
@@ -590,7 +590,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['boostpack', 'initial thrust', 'effective total', 'actor value'],
     warning: 'Extreme thrust values can make movement difficult to control. Review CCC\'s calculated base before applying it.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
     effectiveTotal: true,
   },
   {
@@ -1595,7 +1595,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['ship', 'cargo', 'carryweight', 'effective total'],
     warning: 'CCC calculates a new base from the ship\'s current base and effective cargo values. Review the calculation before applying it.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
     effectiveTotal: true,
   },
   {
@@ -1626,7 +1626,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['ship', 'shielded cargo', 'carryweightshielded', 'effective total'],
     warning: 'CCC calculates a new base from the ship\'s current base and effective shielded-cargo values. Review the calculation before applying it.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
     effectiveTotal: true,
   },
   {
@@ -1686,7 +1686,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['ship', 'reactor', 'power', 'effective total'],
     warning: 'CCC calculates a new base from the ship\'s current base and effective reactor values. Review the calculation before applying it.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
     effectiveTotal: true,
   },
   {

@@ -26,7 +26,7 @@ namespace
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "0.3.0-test8-hotfix1";
+    constexpr const char* kBuildId = "0.3.0-test9";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -380,7 +380,8 @@ namespace
         }
 
         try {
-            const auto matches = CCC::SearchLoadedForms(*searchText, recordType);
+            std::size_t scannedForms = 0;
+            const auto matches = CCC::SearchLoadedForms(*searchText, recordType, 250, &scannedForms);
             auto results = OSFUI::API::Json::array();
             for (const auto& match : matches) {
                 results.push_back({
@@ -394,6 +395,7 @@ namespace
                 { "ok", true },
                 { "searchText", *searchText },
                 { "recordType", recordType },
+                { "scannedForms", scannedForms },
                 { "results", std::move(results) }
             }.dump(-1, ' ', false, OSFUI::API::Json::error_handler_t::replace);
             raw.Respond("console.command-center.searchFormsResult", payload.c_str());

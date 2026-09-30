@@ -25,8 +25,8 @@ export type IdBrowserCategory = {
 // every known Form ID. The native browser searches the running game's loaded
 // forms, so it also works with DLC and the user's loaded mods.
 export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
-  { label: 'All Categories', value: 'all', detail: 'All built-in IDs and every matching loaded-game record.', recordType: '', builtInCategories: ['*'] },
-  { label: 'Common Items', value: 'common', detail: 'Credits, digipicks, med packs, and ship parts.', recordType: '', builtInCategories: ['Common'] },
+  { label: 'All Categories', value: 'all', detail: 'All included IDs and every matching loaded-game record.', recordType: '', builtInCategories: ['*'] },
+  { label: 'Common Items', value: 'common', detail: 'Credits, digipicks, and ship parts.', recordType: '', builtInCategories: ['Common'] },
   { label: 'Weapons', value: 'weapons', detail: 'Weapons and guns.', recordType: 'WEAP', builtInCategories: ['Weapons'] },
   { label: 'Armor / Apparel', value: 'armor', detail: 'Spacesuits, helmets, packs, and clothing.', recordType: 'ARMO', builtInCategories: ['Armor'] },
   { label: 'Ammo', value: 'ammo', detail: 'Ammunition records.', recordType: 'AMMO', builtInCategories: ['Ammo'] },
@@ -34,7 +34,7 @@ export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   { label: 'Resources / Miscellaneous', value: 'resources', detail: 'Resources, components, and miscellaneous items.', recordType: 'MISC', builtInCategories: ['Resources'] },
   { label: 'Perks / Skills / Traits', value: 'perks', detail: 'Skills, perks, backgrounds, and traits.', recordType: 'PERK', builtInCategories: ['Perks'] },
   { label: 'Spells / Powers', value: 'powers', detail: 'Powers, spells, and effect records.', recordType: 'SPEL', builtInCategories: [] },
-  { label: 'NPCs / Companions', value: 'npcs', detail: 'NPC base records and built-in companion references.', recordType: 'NPC_', builtInCategories: ['Companions'] },
+  { label: 'NPCs / Companions', value: 'npcs', detail: 'NPC base records and included companion references.', recordType: 'NPC_', builtInCategories: ['Companions'] },
   { label: 'Weapon / Armor Mods', value: 'mods', detail: 'Weapon and armor modifier records.', recordType: 'OMOD', builtInCategories: ['Mods'] },
   { label: 'Factions', value: 'factions', detail: 'Faction records.', recordType: 'FACT', builtInCategories: ['Factions'] },
   { label: 'Quests', value: 'quests', detail: 'Quest records.', recordType: 'QUST', builtInCategories: [] },
@@ -48,7 +48,6 @@ const BASE_CATALOG: IdCatalogEntry[] = [
   // COMMON
   { label: 'Credits', value: '0000000F', type: 'MISC', category: 'Common', detail: 'Currency', keywords: ['money'], action: 'additem' },
   { label: 'Digipick', value: '0000000A', type: 'MISC', category: 'Common', detail: 'Lockpick', keywords: ['lockpick'], action: 'additem' },
-  { label: 'Med Pack', value: '0000ABF9', type: 'ALCH', category: 'Common', detail: 'Healing aid', keywords: ['medpack', 'health'], action: 'additem' },
   { label: 'Ship Parts', value: '0003FB19', type: 'ALCH', category: 'Common', detail: 'Ship repair item', keywords: ['repair'], action: 'additem' },
 
   // WEAPONS — a useful starter set. Live Search can find the rest.
