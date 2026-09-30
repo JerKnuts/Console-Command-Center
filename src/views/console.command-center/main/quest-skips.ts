@@ -1,13 +1,13 @@
-export type QuestFixGroup = {
+export type QuestSkipGroup = {
   quest: string;
   questId: string;
   stages: number[];
 };
 
-// Curated quest/stage mappings used by CCC's guided repair browser.
+// Curated quest/stage mappings used by CCC's guided skip browser.
 // CCC executes the equivalent vanilla setstage commands directly.
 
-export const QUEST_FIXES: QuestFixGroup[] = [
+export const QUEST_SKIPS: QuestSkipGroup[] = [
   { quest: 'A Break at Dawn', questId: '00091CF5', stages: [100] },
   { quest: 'A Light In The Darkness', questId: '0029EF60', stages: [8100, 9000] },
   { quest: 'A New Narrative', questId: '002C2561', stages: [100, 300, 10000] },
@@ -89,4 +89,4 @@ export const QUEST_FIXES: QuestFixGroup[] = [
   { quest: 'Where Hope Is Built', questId: '0027AB1A', stages: [0, 100, 1000, 1400, 2000] },
 ];
 
-export const QUEST_FIX_STAGE_COUNT = QUEST_FIXES.reduce((total, quest) => total + quest.stages.length, 0);
+export const QUEST_SKIP_STAGE_COUNT = QUEST_SKIPS.reduce((total, quest) => total + quest.stages.length, 0);

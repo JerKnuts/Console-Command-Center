@@ -3,7 +3,7 @@ import { inflateSync } from 'node:zlib';
 import { resolve } from 'node:path';
 
 const projectRoot = resolve(import.meta.dirname, '..');
-const datasetPath = resolve(projectRoot, 'src/views/console.command-center/main/quest-fixes.ts');
+const datasetPath = resolve(projectRoot, 'src/views/console.command-center/main/quest-skips.ts');
 const esmPath = process.argv[2] || process.env.STARFIELD_ESM;
 
 if (!esmPath) {
@@ -20,7 +20,7 @@ for (const match of source.matchAll(entryPattern)) {
   stages.forEach((stage) => existing.add(stage));
   expected.set(id, existing);
 }
-if (expected.size === 0) throw new Error('No quest entries were parsed from quest-fixes.ts.');
+if (expected.size === 0) throw new Error('No quest entries were parsed from quest-skips.ts.');
 
 function signature(buffer, offset = 0) {
   return buffer.toString('ascii', offset, offset + 4);

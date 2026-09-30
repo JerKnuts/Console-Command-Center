@@ -10,7 +10,7 @@ The full-source archive is a separate complete project snapshot. Neither archive
 
 The user triggered a crash by running Inspect Reference Scale. The supplied Trainwreck log records an access violation at `Starfield.exe+0C16E22`, with two CCC frames immediately below it. This is consistent with the new native evaluator path being unsafe. The exact ABI mismatch has not been established; compiling the code did not establish runtime safety.
 
-All direct condition-evaluator calls added in test1 have been removed. **Scale, Open State, GetStage, and Quest Fixes Check Status return an unavailable error**. They have not been functionally repaired. Do not continue testing those features with the old test1 DLL. Health/actor values, position, rotation, inventory, and current ship use separate adapters.
+All direct condition-evaluator calls added in test1 have been removed. **Scale, Open State, GetStage, and Quest Skips Check Status return an unavailable error**. They have not been functionally repaired. Do not continue testing those features with the old test1 DLL. Health/actor values, position, rotation, inventory, and current ship use separate adapters.
 
 ## Other changes
 

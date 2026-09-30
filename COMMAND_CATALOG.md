@@ -1,10 +1,10 @@
 # Console Command Center — Command Catalog
 
-Version: 0.3.0
+Version: 0.3.2
 
-Curated commands: 141 (7 currently disabled)
+Curated commands: 141 (9 currently disabled)
 
-Guided quest repairs: 247 stage selections (245 unique setstage commands) across 79 named entries / 77 unique quest FormIDs
+Guided quest skips: 247 stage selections (245 unique setstage commands) across 79 named entries / 77 unique quest FormIDs
 
 Risk levels:
 - **Normal** — ordinary confirmation before execution.
@@ -56,9 +56,9 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Set Boostpack Initial Thrust Base | `player.setav BoostpackThrustInitial {value}` | Caution | Verified — base value stacks with modifiers |
 | Set Boostpack Initial Thrust Effective Total | calculated native setter | Caution | Verified |
 | Set Boostpack Sustained Thrust Base | `player.setav BoostpackThrustSustained {value}` | Caution | Verified — base value stacks with modifiers |
-| Set Boostpack Sustained Thrust Effective Total | calculated native setter | Caution | Untested in test8 |
+| Set Boostpack Sustained Thrust Effective Total | calculated native setter | Caution | Verified in v0.3.1 |
 | Set Boostpack Transition-Time Base | `player.setav BoostpackTimetoSustained {value}` | Caution | Verified — base value stacks with modifiers |
-| Set Boostpack Transition-Time Effective Total | calculated native setter | Caution | Untested in test8 |
+| Set Boostpack Transition-Time Effective Total | calculated native setter | Caution | Verified in v0.3.1 |
 
 
 **Full Character Creator warning:** `showlooksmenu player 1` resets the player's current appearance when it opens and enters the original character-creation flow. Treat it as a very dangerous command: make a manual save first and use **Open Appearance Editor** (`showlooksmenu player 2`) for safer appearance-only edits.
@@ -68,8 +68,8 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Show Player Inventory | `player.showinventory` | Normal | Verified |
-| Search Form IDs | `help "{search}" 4` | Normal | Needs adjustment — search works; Copy ID added for next build |
-| Search Form IDs by Type | `help "{search}" 4 {recordType}` | Normal | Needs adjustment — filtered search works; Copy ID added for next build |
+| Search Form IDs | `help "{search}" 4` | Normal | Failed repeatedly; disabled in v0.3.2 |
+| Search Form IDs by Type | `help "{search}" 4 {recordType}` | Normal | Failed repeatedly; disabled in v0.3.2 |
 | Add Credits | `player.additem 0000000F {amount}` | Caution | Verified |
 | Add Digipicks | `player.additem 0000000A {amount}` | Normal | Verified |
 | Add Med Packs | `player.additem 0000ABF9 {amount}` | Normal | Verified |
@@ -94,7 +94,7 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Grant All Powers | `psb` | Danger | Verified |
 | Set Star Power | `player.setav starpower {value}` | Caution | Verified |
 | Set Star Power Recharge Rate | `player.setav starpowerratemult {value}` | Caution | Verified |
-| Add Spell / Effect by Form ID | `player.addspell {formId}` | Danger | Verified |
+| Add Power / Spell by Form ID | `player.addspell {formId}` | Danger | Verified |
 | Remove Spell / Status Effect by Form ID | `player.removespell {formId}` | Caution | Verified |
 
 ## Camera (5)
@@ -164,7 +164,7 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Inspect Companion Anger Level | `{refId}.getav com_angerlevel` | Normal | Verified |
 | Set Companion Affinity | `{refId}.setav com_affinity {value}` | Danger | Verified |
 | Set Companion Relationship Level | `{refId}.setav com_affinitylevel {value}` | Danger | Verified |
-| Set Companion Anger Level | `{refId}.setav com_angerlevel {value}` | Danger | Untested |
+| Set Companion Anger Level | `{refId}.setav com_angerlevel {value}` | Danger | Verified in v0.3.1 |
 
 **Companion choices:** the affinity and anger commands use the compact ID field + **CHOOSE COMPANION** box for Sarah Morgan (`00005986`), Barrett (`00005788`), Sam Coe (`0029D488`), and Andreja (`000059A9`). These are the four core companions that use Starfield's affinity/relationship progression; other recruitable crew are intentionally not presented for these commands. Manual Reference ID entry remains available.
 
@@ -222,16 +222,16 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 
 ## ID Browser + Reference ID Picker
 
-v0.3.0 includes a standalone **ID Browser** with **340 included IDs** covering all base-game skills and traits, commonly published base-game weapons, ammunition, and aid, plus armor, resources, modifier IDs, factions, companions, and weather records. Search filters the catalog instantly by name, Form ID, type, category, and keywords. Every selected result offers **Copy ID**, with conservative quick actions for supported record types. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244. Expansion-only entries are labeled in their visible detail text.
+The current source includes a standalone **ID Browser** with **370 included IDs** covering all base-game skills and traits, all 24 Starborn powers, a conservative set of removable environmental effects, commonly published base-game weapons, ammunition, and aid, plus armor, resources, modifier IDs, factions, companions, and weather records. Search filters the catalog instantly by name, Form ID, type, category, and keywords. Every selected result offers **Copy ID**, with conservative quick actions for supported record types. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244. Expansion-only entries are labeled in their visible detail text.
 
 The browser supports record-type filtering (including WEAP, ARMO, AMMO, ALCH, MISC, PERK, SPEL, NPC_, OMOD, FACT, QUST, CELL, GBFM, and FURN), parses matching Form IDs into selectable rows, preserves raw console output if a result cannot be parsed, and exposes conservative quick actions such as **Add 1**, **Add Perk**, **Add Spell / Power**, or **Spawn 1** where the record type makes the action reasonably clear.
 
 The command cards continue to use the compact editable ID field + boxed **CHOOSE ...** control for known curated choices. Inline preset-button grids are intentionally avoided.
 
-## Quest Fixes (247 guided stage repairs)
+## Quest Skips (247 guided stage skips)
 
-Version 0.3.0 adds a dedicated **Quest Fixes** browser separate from the normal command catalog.
+Version 0.3.0 adds a dedicated **Quest Skips** browser separate from the normal command catalog.
 It contains 247 curated `setstage` targets whose Quest IDs and stage numbers are structurally validated against `Starfield.esm`.
 CCC executes the vanilla Starfield console command directly.
 
-Every guided quest repair is treated as **Danger** because `setstage` can skip dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save first and use these entries only to repair a quest that is already stuck.
+Every guided quest skip is treated as **Danger** because `setstage` can skip dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save first and use these entries only to get past a quest step that is already stuck.

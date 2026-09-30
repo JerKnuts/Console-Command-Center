@@ -1,30 +1,30 @@
-# v0.3.0 — Expanded safe ID catalog
+# v0.3.3 — Picker and compact-layout test checklist
 
 ## Install
 
-Close Starfield, extract the v0.3.0 patch into the current CCC project, run **npm run build**, deploy the resulting mod, and restart Starfield. The footer must show **v0.3.0**. The native DLL and interface both changed.
+Close Starfield, replace the existing CCC files with the v0.3.3 build, and restart the game. The footer and native connection message must both report **v0.3.3**.
 
 ## Priority checks
 
-1. Load the same save that passed with test9-hotfix1.
-2. Open ID Browser and confirm there are **340 included IDs**.
-3. Choose **Aid / Consumables** and search for `Trauma Pack`, `Emergency Kit`, and `Med Pack`.
-4. Choose **Perks / Skills / Traits** and search for `Boxing`, `Xenosociology`, `Aneutronic Fusion`, and `Wanted`.
-5. Choose **Weapons** and search for `Big Bang`, `Kraken`, and `Old Earth Shotgun`.
-6. Choose **Ammo** and search for `Heavy Particle Fuse` and `Caseless Shotgun Shell`.
-7. Select several results and confirm **Copy ID** works. Quick actions should still appear for items and perks.
-8. Search for `Shattered Space`; confirm its two faction entries visibly say **Shattered Space DLC bounty faction**.
-9. Confirm there is no **Search Loaded Game** or **Clear Game Results** control.
-10. Recheck one inventory inspection and one actor-value inspection as native regressions.
+1. Confirm CCC uses the tighter mouse-and-keyboard spacing and displays **Controller support is in development**.
+2. Open **Add Perk / Skill** and **Remove Perk / Skill**. Each should offer a searchable **Choose Perk** box, fill the Form ID after selection, and still accept a manually entered ID.
+3. Open **Add Power / Spell**. Confirm **Choose Power** contains 24 Starborn powers and selecting Anti-Gravity Field fills `002BACBA`.
+4. Open **Remove Spell / Status Effect**. Confirm **Choose Effect** includes the power list and known environmental repair effects such as Poor Air Quality (`00163FE7`).
+5. In ID Browser, choose **Powers / Effects** and confirm Powers and Effects appear as collapsed groups. Environmental effects must not offer an Add Spell quick action.
+6. Confirm an ID Browser item row shows its category beside its name and remains selectable across the full row.
+7. Verify Copy ID and search inside every new chooser.
+
+## Regression checks
+
+1. Run Inspect Player Health and confirm Results contains a number.
+2. Show Player Inventory and recheck search, collapsed groups, sorting, and Copy ID.
+3. Add an ordinary item from ID Browser with a quantity greater than one.
+4. Run two harmless Custom Command lines and confirm ordered execution plus separate Activity Log entries.
+5. Confirm Favorites and Activity Log survive closing and reopening CCC.
 
 ## Expected behavior
 
-- Search is immediate and reads only CCC's packaged catalog.
-- Search never walks Starfield's live form memory.
-- Base-game records require no expansion label.
-- Expansion-specific records identify their requirement in the selected result details.
-- The footer and native runtime report both show v0.3.0.
-
-## Versioning
-
-Future bug-fix releases increment the patch number: v0.3.1, v0.3.2, and so forth. A substantial new feature release increments the minor number to v0.4.0.
+- CCC is presented as a mouse-and-keyboard interface; custom controller navigation is absent.
+- Choice boxes fill the existing Form ID field and never prevent manual entry.
+- The packaged ID Browser reports 370 included IDs and contains no live game scanner.
+- Known-broken commands remain visibly unavailable.

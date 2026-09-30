@@ -1,12 +1,17 @@
 # ID Catalog Sources
 
-CCC v0.3.0 packages a static, searchable catalog instead of reading Starfield's live form map. The catalog contains 340 entries. IDs are normalized to eight uppercase hexadecimal characters and checked for duplicates during the build.
+CCC packages a static, searchable catalog instead of reading Starfield's live form map. The current source contains 370 entries. IDs are normalized to eight uppercase hexadecimal characters and checked for duplicates during the build.
 
 ## Base-game lists added for v0.3.0
 
 - All 82 skills and all 17 traits were cross-checked against the [PC Gamer Starfield console command list](https://www.pcgamer.com/starfield-console-commands-cheats/) and the [eXputer Starfield item ID list](https://exputer.com/guides/starfield-item-ids/).
 - The expanded weapon list, complete 22-entry ammunition list, and 52-entry aid list came from the same two published lists. Duplicate records already present in CCC were merged rather than repeated.
 - Existing armor, resources, object modifiers, factions, companions, and weather entries were retained from the previously tested catalog.
+
+## Power and environmental-effect additions
+
+- All 24 base-game Starborn power spell IDs were cross-checked against the Game8 power table and a second complete published command list.
+- The environmental-effect choices are deliberately limited to six commonly reported base-game hazard and stuck-weather records. They appear in the removal picker and do not receive an Add Spell quick action.
 
 These web lists are reference data, not proof that every quick action has been exercised in the current game runtime. The catalog should continue to record in-game results as entries are tested.
 

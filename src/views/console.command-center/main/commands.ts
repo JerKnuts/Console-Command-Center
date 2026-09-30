@@ -1,4 +1,5 @@
 import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, FORM_TYPE_PICKER, WEATHER_PICKER, PLAYER_ACTOR_VALUE_PICKER, REFERENCE_ACTOR_VALUE_PICKER, SHIP_ACTOR_VALUE_PICKER, GAME_SETTING_PICKER, POPULAR_LOCATION_PICKER, type ReferenceIdPicker } from './reference-ids';
+import { PERK_SKILL_PICKER, POWER_SPELL_PICKER, SPELL_EFFECT_PICKER } from './id-catalog';
 
 export type CommandCategory =
   | 'Gameplay'
@@ -376,7 +377,8 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     tags: ['help', 'form id', 'search', 'lookup', 'read only'],
     captureOutput: true,
-    testStatus: 'untested',
+    testStatus: 'failed',
+    unavailableReason: 'Disabled after repeated in-game tests timed out without returning complete console output. Use the included ID Browser instead.',
   },
   {
     id: 'search-form-ids-by-type',
@@ -390,7 +392,8 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     tags: ['help', 'form id', 'search', 'lookup', 'weapon', 'armor', 'npc', 'quest', 'read only'],
     captureOutput: true,
-    testStatus: 'untested',
+    testStatus: 'failed',
+    unavailableReason: 'Disabled after repeated in-game tests timed out without returning complete console output. Use the included ID Browser instead.',
   },
   {
     id: 'add-credits',
@@ -617,7 +620,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['boostpack', 'sustained thrust', 'effective total', 'actor value'],
     warning: 'Extreme thrust values can make movement difficult to control. Review CCC\'s calculated base before applying it.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
     effectiveTotal: true,
   },
   {
@@ -630,7 +633,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['boostpack', 'transition time', 'effective total', 'actor value'],
     warning: 'Large values can make boost behavior feel delayed or broken. Review CCC\'s calculated base before applying it.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
     effectiveTotal: true,
   },
 
@@ -656,7 +659,7 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Add a perk, skill, trait, or background by Form ID.',
     command: 'player.addperk {formId}',
     tags: ['perk', 'skill', 'trait', 'background', 'formid'],
-    inputs: [hexInput('formId', 'Form ID', '002C59D9')],
+    inputs: [{ ...hexInput('formId', 'Form ID', '002C59D9', 'Choose a perk or enter its Form ID.'), picker: PERK_SKILL_PICKER }],
     warning: 'Adding progression records without normal prerequisites may produce unusual progression states.',
     risk: 'caution',
     testStatus: 'verified',
@@ -668,7 +671,7 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Remove a perk, skill, trait, or background by Form ID.',
     command: 'player.removeperk {formId}',
     tags: ['perk', 'skill', 'trait', 'background', 'formid'],
-    inputs: [hexInput('formId', 'Form ID', '002C59D9')],
+    inputs: [{ ...hexInput('formId', 'Form ID', '002C59D9', 'Choose a perk or enter its Form ID.'), picker: PERK_SKILL_PICKER }],
     warning: 'Removing progression records can create inconsistent character progression. Make a save first.',
     risk: 'danger',
     testStatus: 'verified',
@@ -714,12 +717,12 @@ export const COMMANDS: CommandDefinition[] = [
   },
   {
     id: 'add-spell',
-    title: 'Add Spell / Effect by Form ID',
+    title: 'Add Power / Spell by Form ID',
     category: 'Skills',
-    description: 'Add a spell/effect record to the player by Form ID.',
+    description: 'Add a Starborn power or another known spell record to the player by Form ID.',
     command: 'player.addspell {formId}',
     tags: ['spell', 'effect', 'power', 'status'],
-    inputs: [hexInput('formId', 'Spell / Effect ID', '0008CB48')],
+    inputs: [{ ...hexInput('formId', 'Power / Spell ID', '002BACBA', 'Choose a Starborn power or enter a known spell Form ID.'), picker: POWER_SPELL_PICKER }],
     warning: 'Adding arbitrary effects can create persistent or unintended status effects. Only use IDs you understand.',
     risk: 'danger',
     testStatus: 'verified',
@@ -731,7 +734,7 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Remove a spell or stuck status-effect record from the player by Form ID.',
     command: 'player.removespell {formId}',
     tags: ['spell', 'status effect', 'weather bug', 'fix'],
-    inputs: [hexInput('formId', 'Spell / Effect ID', '00163FE7')],
+    inputs: [{ ...hexInput('formId', 'Power / Effect ID', '00163FE7', 'Choose a power or known removable effect, or enter its Form ID.'), picker: SPELL_EFFECT_PICKER }],
     warning: 'Removing the wrong effect can remove legitimate powers or scripted effects. Confirm the effect ID first.',
     risk: 'caution',
     testStatus: 'verified',
@@ -1150,7 +1153,7 @@ export const COMMANDS: CommandDefinition[] = [
     command: '{refId}.resetai',
     inputs: [hexInput('refId', 'Reference ID', '00000000')],
     tags: ['npc', 'actor', 'ai', 'resetai', 'fix', 'reference'],
-    warning: 'Resetting AI can interrupt scripted packages, scenes, or quest behavior. Use it as a repair tool, not casually on quest actors.',
+    warning: 'Resetting AI can interrupt scripted packages, scenes, or quest behavior. Use it as a skip tool, not casually on quest actors.',
     risk: 'caution',
     testStatus: 'verified',
   },
@@ -1427,7 +1430,7 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     warning: 'Direct anger-state changes can interfere with companion reactions, dialogue, and relationship progression. Use a backup save.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
 
   // QUESTS

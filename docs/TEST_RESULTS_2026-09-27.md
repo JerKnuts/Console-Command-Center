@@ -47,7 +47,7 @@ These results supersede the earlier outcomes for the features listed here.
 
 Requested follow-up: add an explicit Copy ID action for inventory entries when inventory output works; selectable text alone is not sufficient discoverability. Also allow reopening diagnostic errors from Activity Log and make the results footer accurate for failures.
 
-Next in-game batch: Escape from error Results; Inspect Player Actor Value (Health); reference position, rotation, scale and open state; companion affinity/relationship/anger; current ship ID and ship values; GetStage / Quest Fixes. Record each separately and retain exact errors. No new package has been built for this retest report.
+Next in-game batch: Escape from error Results; Inspect Player Actor Value (Health); reference position, rotation, scale and open state; companion affinity/relationship/anger; current ship ID and ship values; GetStage / Quest Skips. Record each separately and retain exact errors. No new package has been built for this retest report.
 
 ## v0.3.0-test1 — latest in-game retest, batch 2 / crash
 
@@ -146,7 +146,7 @@ Test5 adds native replacements for the two simple timed-out reads, a delayed wai
 - Boostpack Horizontal Effective Total passed. Example: current base `100`, effective `100.6`, modifier `0.6`, calculated base `99.4` for a requested total of `100`.
 - Boostpack Initial Thrust Effective Total passed.
 - Ship Cargo, Shielded Cargo, and Reactor Effective Total controls passed.
-- Quest Fix controls and footer/runtime reporting passed.
+- Quest Skip controls and footer/runtime reporting passed.
 - Inventory search/collapse/Copy ID and Results-window Escape behavior passed again as regression tests.
 - Native loaded-game searches failed cleanly. `Aid_MedPack` under ALCH and `npcfsarahmorgan` under NPC_ both returned “No loaded-game records matched that name or EditorID.”
 - Test9 replaces the per-type form-array scan with the global loaded-form map and reports the number of supported forms scanned.
@@ -157,3 +157,51 @@ Test5 adds native replacements for the two simple timed-out reads, a delayed wai
 - Searching the loaded game for Med Pack under ALCH crashed Starfield.
 - Crash log `2026-09-29-21-48-00.log` shows an access violation in `ConsoleCommandCenter.dll` during the `console.command-center.searchForms` bridge request, with `med pack` and `ALCH` present on the request stack.
 - Test9 is superseded. Hotfix1 removes the native scanner and request route, removes its two UI controls, and restores Med Pack to the safe included catalog.
+
+## v0.3.1 in-game interface pass
+
+All eight priority checks passed in game:
+
+- The footer reported v0.3.1 and the native backend connected normally.
+- The redundant Command Library sidebar heading was gone.
+- ID Browser categories started collapsed, expanded correctly, and opened matching groups while searching.
+- ID Browser quantity successfully added four Med Packs.
+- Copy ID worked.
+- The larger multiline Custom Command editor worked.
+- Multiple custom commands executed in order and appeared as separate Activity Log entries.
+- The simplified Activity Log, footer layout, and Quest Skips naming looked correct.
+
+One interface adjustment was requested for the next source revision: each ID Browser result button should fill the entire category width so the full visible row is selectable. The source now applies a full-width result button; this remains pending an in-game build and retest.
+
+### v0.3.1 follow-up round
+
+- Favorites persisted after closing and reopening CCC.
+- Recent commands updated correctly without duplicate entries.
+- Multiple open ID Browser categories stayed open while selecting results.
+- Quantity validation correctly rejected values outside the supported 1–999999 whole-number range, but the number control made clearing and replacing its current text awkward. The next source revision uses a freely editable numeric-text field and validates only when the action is requested.
+- Boostpack Sustained Thrust Effective Total passed.
+- Boostpack Transition-Time Effective Total passed.
+- Current Ship Reference ID remained copyable both from the live Results window and after reopening the saved result from Activity Log.
+- Disabled commands remained visibly unavailable and could not execute.
+
+### v0.3.1 final pre-v0.3.2 round
+
+- Set Companion Anger Level passed.
+- Search Form IDs failed again: `help "beowulf" 4` timed out without a verified result.
+- Search Form IDs by Type failed again: `help "beowulf" 4 WEAP` timed out without a verified result.
+- Controller navigation did not work anywhere in CCC. The next revision removes automatic Search focus and adds explicit directional focus movement for OSF UI's D-pad/left-stick arrow mapping.
+- Canceling confirmation with Escape passed without creating an Activity Log entry.
+- Picker Back/Escape behavior passed.
+- Full restart persistence, v0.3.1 reporting, and native reconnection passed.
+
+The two console-output `help` searches are disabled for v0.3.2. The packaged ID Browser remains the supported ID lookup path.
+
+### v0.3.2 in-game pass
+
+- Version, native connection, full-width ID Browser rows, quantity replacement, click-to-select value fields, numeric validation, disabled searches, and the full regression group passed.
+- Directional controller movement worked until focus reached a text field, where input became trapped and B closed CCC.
+- Controller A did not activate focused buttons or category headers.
+- ID Browser could receive directional focus but could not be opened with A; moving right jumped to an unrelated Inspect Player Actor Value field.
+- Custom controller navigation is removed from the next source revision. The interface now states that controller support is in development for the future.
+- Controller-sized spacing has been removed from the next source revision. The current layout is compact for mouse and keyboard; input-aware larger controls will be considered with the complete controller navigation, activation, and text-entry design.
+- The next source revision adds searchable choice boxes to Add/Remove Perk, Add Power/Spell, and Remove Spell/Status Effect. These picker controls and the 30 newly packaged power/effect IDs still require an in-game test build.

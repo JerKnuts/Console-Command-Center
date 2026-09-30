@@ -1,4 +1,4 @@
-import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, WEATHER_PICKER } from './reference-ids';
+import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, WEATHER_PICKER, type ReferenceIdPicker } from './reference-ids';
 
 export type IdCatalogAction = 'additem' | 'addperk' | 'addspell' | 'spawn';
 
@@ -32,7 +32,7 @@ export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   { label: 'Aid / Consumables', value: 'aid', detail: 'Medicine and consumable records.', recordType: 'ALCH', builtInCategories: ['Aid'] },
   { label: 'Resources / Miscellaneous', value: 'resources', detail: 'Resources, components, and miscellaneous items.', recordType: 'MISC', builtInCategories: ['Resources'] },
   { label: 'Perks / Skills / Traits', value: 'perks', detail: 'Skills, perks, backgrounds, and traits.', recordType: 'PERK', builtInCategories: ['Perks'] },
-  { label: 'Spells / Powers', value: 'powers', detail: 'Powers, spells, and effect records.', recordType: 'SPEL', builtInCategories: [] },
+  { label: 'Powers / Effects', value: 'powers', detail: 'Starborn powers and removable environmental effects.', recordType: 'SPEL', builtInCategories: ['Powers', 'Effects'] },
   { label: 'NPCs / Companions', value: 'npcs', detail: 'NPC base records and included companion references.', recordType: 'NPC_', builtInCategories: ['Companions'] },
   { label: 'Weapon / Armor Mods', value: 'mods', detail: 'Weapon and armor modifier records.', recordType: 'OMOD', builtInCategories: ['Mods'] },
   { label: 'Factions', value: 'factions', detail: 'Faction records.', recordType: 'FACT', builtInCategories: ['Factions'] },
@@ -282,6 +282,40 @@ const BASE_CATALOG: IdCatalogEntry[] = [
   { label: 'United Colonies Native', value: '00227FD4', type: 'PERK', category: 'Perks', detail: 'Trait', keywords: ['trait'], action: 'addperk' },
   { label: 'Wanted', value: '00227FDD', type: 'PERK', category: 'Perks', detail: 'Trait', keywords: ['trait'], action: 'addperk' },
 
+  // STARBORN POWERS — base game
+  { label: 'Anti-Gravity Field', value: '002BACBA', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Create Vacuum', value: '002C5390', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: "Creators' Peace", value: '002C538D', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Earthbound', value: '002BACB5', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Elemental Pull', value: '002C5391', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Alien Reanimation', value: '002C538F', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Eternal Harvest', value: '002BACB4', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Grav Dash', value: '002C538C', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Gravity Wave', value: '002BACB7', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Gravity Well', value: '002C5A62', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Inner Demon', value: '002C5399', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Life Forced', value: '002C538B', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Moon Form', value: '002C5A4E', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Parallel Self', value: '002C5A67', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Particle Beam', value: '002C5A66', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Personal Atmosphere', value: '002C5389', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Phased Time', value: '002C5A63', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Precognition', value: '002C538A', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Reactive Shield', value: '002BACB6', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Sense Star Stuff', value: '002C5A54', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Solar Flare', value: '002C5A59', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Sunless Space', value: '002C5388', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Supernova', value: '002C5387', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+  { label: 'Void Form', value: '002C5A53', type: 'SPEL', category: 'Powers', detail: 'Starborn power', action: 'addspell' },
+
+  // ENVIRONMENTAL EFFECTS — base game; removal choices only
+  { label: 'Extreme Ambient Heat', value: '0008CB48', type: 'SPEL', category: 'Effects', detail: 'Environmental effect; remove only when stuck', keywords: ['hazard', 'heat'] },
+  { label: 'Poor Air Quality', value: '00163FE7', type: 'SPEL', category: 'Effects', detail: 'Environmental effect; remove only when stuck', keywords: ['hazard', 'air'] },
+  { label: 'Incoming Hazardous Weather A', value: '001639EE', type: 'SPEL', category: 'Effects', detail: 'Weather-warning variant; remove only when stuck', keywords: ['hazard', 'weather', 'warning'] },
+  { label: 'Incoming Hazardous Weather B', value: '00163FE0', type: 'SPEL', category: 'Effects', detail: 'Weather-warning variant; remove only when stuck', keywords: ['hazard', 'weather', 'warning'] },
+  { label: 'Incoming Hazardous Weather C', value: '00281ECF', type: 'SPEL', category: 'Effects', detail: 'Weather-warning variant; remove only when stuck', keywords: ['hazard', 'weather', 'warning'] },
+  { label: 'Incoming Hazardous Weather D', value: '00281ED2', type: 'SPEL', category: 'Effects', detail: 'Weather-warning variant; remove only when stuck', keywords: ['hazard', 'weather', 'warning'] },
+
   // AMMO
   { label: '.27 Caliber', value: '002B559C', type: 'AMMO', category: 'Ammo', action: 'additem' },
   { label: '.43 MI Array', value: '002B559A', type: 'AMMO', category: 'Ammo', action: 'additem' },
@@ -381,6 +415,41 @@ const BASE_CATALOG: IdCatalogEntry[] = [
   { label: 'Refined (Weapon)', value: '0028F443', type: 'OMOD', category: 'Mods', detail: 'Weapon quality modifier' },
   { label: 'Advanced (Weapon)', value: '0028F444', type: 'OMOD', category: 'Mods', detail: 'Weapon quality modifier' },
 ];
+
+const pickerFromCatalog = (
+  title: string,
+  buttonLabel: string,
+  searchPlaceholder: string,
+  categories: string[],
+): ReferenceIdPicker => ({
+  title,
+  buttonLabel,
+  searchPlaceholder,
+  options: BASE_CATALOG
+    .filter((entry) => categories.includes(entry.category))
+    .map(({ label, value, detail, keywords }) => ({ label, value, detail, keywords })),
+});
+
+export const PERK_SKILL_PICKER = pickerFromCatalog(
+  'Choose Perk, Skill, or Trait',
+  'Choose Perk',
+  'Search perk, skill, trait, or Form ID...',
+  ['Perks'],
+);
+
+export const POWER_SPELL_PICKER = pickerFromCatalog(
+  'Choose Starborn Power',
+  'Choose Power',
+  'Search power name or Form ID...',
+  ['Powers'],
+);
+
+export const SPELL_EFFECT_PICKER = pickerFromCatalog(
+  'Choose Power or Effect',
+  'Choose Effect',
+  'Search power, environmental effect, or Form ID...',
+  ['Powers', 'Effects'],
+);
 
 const pickerEntries: IdCatalogEntry[] = [
   ...BOUNTY_FACTION_PICKER.options.map((option) => ({

@@ -10,7 +10,7 @@
 - Added explicit dark dropdown popup backgrounds and high-contrast text.
 - Added a dedicated Results window and Activity Log links to reopen output.
 - Replaced the main failed inspections with direct native reads; GetStage, scale, and open state use registered condition evaluators.
-- Quest Fixes can show a readable current stage while marking full history unavailable. SQS/SQT capture remains a known retest item.
+- Quest Skips can show a readable current stage while marking full history unavailable. SQS/SQT capture remains a known retest item.
 - Recorded the latest user test statuses without treating compilation as in-game verification.
 - Rebuilt the native DLL and frontend. See [TEST_BUILD_OUTPUT_FIXES.md](testing-history/TEST_BUILD_OUTPUT_FIXES.md) for installation, validation, limits, and retest order. Earlier release notes below describe previous iterations.
 
@@ -21,7 +21,7 @@
 
 ## Bottom utility bar and ID Browser divider cleanup
 
-- Moved **ID Browser**, **Quest Fixes**, **Custom Command**, and **Activity Log** out of the vertical sidebar into a dedicated four-button horizontal bar along the bottom of CCC.
+- Moved **ID Browser**, **Quest Skips**, **Custom Command**, and **Activity Log** out of the vertical sidebar into a dedicated four-button horizontal bar along the bottom of CCC.
 - **Recent** and **Favorites** remain stationary in the left sidebar and the normal Categories list remains independently scrollable.
 - Fixed the ID Browser result divider so the tricolor line sits below the matching/built-in counts instead of intersecting the count text.
 
@@ -86,17 +86,17 @@
 - Only the **Categories** list scrolls, so Recent/Favorites stay visible while browsing lower categories.
 - The category scroll position is preserved when the UI re-renders after switching views or updating search/results.
 
-## Major feature: Quest Fixes
+## Major feature: Quest Skips
 
-- Added a dedicated **Quest Fixes** browser.
+- Added a dedicated **Quest Skips** browser.
 - Added 248 guided quest-stage selections covering 80 named quest/objective entries and 78 unique Quest FormIDs.
-- Search Quest Fixes by quest name, FormID, or stage number.
+- Search Quest Skips by quest name, FormID, or stage number.
 - Added **Check Status** for live quest diagnostics before applying a fix.
 - Displays the quest's current/highest completed stage and completed-stage history.
-- Repair buttons are marked **DONE** or **CURRENT** when they match the live save.
+- Skip buttons are marked **DONE** or **CURRENT** when they match the live save.
 - Added **Full SQS** to print the complete stage-status table to Starfield's console.
 - Each stage shows a full danger confirmation before executing.
-- Quest fixes execute vanilla `setstage` commands directly through CCC.
+- Quest skips execute vanilla `setstage` commands directly through CCC.
 - Quest-fix executions are recorded in the Activity Log but are not inserted into the normal Recent command list.
 
 ## Native diagnostics
@@ -107,13 +107,13 @@
 
 ## Safety
 
-Quest repair is intentionally marked **Danger**. `setstage` can bypass dialogue, scripts, rewards, scenes, prerequisites, and other quest state. Make a manual save before using a quest fix.
+Quest skip is intentionally marked **Danger**. `setstage` can bypass dialogue, scripts, rewards, scenes, prerequisites, and other quest state. Make a manual save before using a quest skip.
 
 ## Existing command library
 
 The curated catalog now contains **134 commands**. Testing remains intentionally conservative; new additions are marked untested until confirmed in-game through CCC.
 
-- Moved **Quest Fixes** out of the Categories list into its own dedicated sidebar box below Categories. Sidebar utility order is now **Quest Fixes → Custom Command → Activity Log**.
+- Moved **Quest Skips** out of the Categories list into its own dedicated sidebar box below Categories. Sidebar utility order is now **Quest Skips → Custom Command → Activity Log**.
 
 ## Project maintenance
 
@@ -141,7 +141,7 @@ The curated catalog now contains **134 commands**. Testing remains intentionally
 ## Quest status delayed-capture hotfix
 
 - Search auto-focus remains verified working.
-- Reworked Quest Fixes `Check Status` capture again after in-game testing showed same-frame SFSE task re-queuing still timed out before Starfield emitted `GetStage` output.
+- Reworked Quest Skips `Check Status` capture again after in-game testing showed same-frame SFSE task re-queuing still timed out before Starfield emitted `GetStage` output.
 - Quest diagnostics now wait real elapsed time (50 ms for `getstage`, 75 ms between `sqs` reads) before returning to the game thread to inspect console output.
 - Keeps the safe console-command approach and does not call the unresolved `TESQuest::IsStageDone()` relocation.
 
@@ -182,7 +182,7 @@ The curated catalog now contains **134 commands**. Testing remains intentionally
 - Added the CCC tricolor identity stripe to popup dialogs so modal windows visually match the main command interface.
 - Added alternating subtle-orange rows to Reference ID Picker results, matching the alternating command-card treatment.
 
-- Compacted the Quest Fixes introduction into a slim safety strip so quest cards start much higher on screen. Duplicate dataset/count information was removed while retaining the Check Status, manual-save, and current-stage caveats.
+- Compacted the Quest Skips introduction into a slim safety strip so quest cards start much higher on screen. Duplicate dataset/count information was removed while retaining the Check Status, manual-save, and current-stage caveats.
 
 ## Test8 reliability and native-search update
 
@@ -191,7 +191,7 @@ The curated catalog now contains **134 commands**. Testing remains intentionally
 - Replaced the incorrect command-target grabbed-object lookup with Starfield grab/release event tracking.
 - Made query capture ownership atomic and removed detached polling threads. Delayed polls now stay on SFSE's task queue and report scheduling failure cleanly.
 - Disabled six known-broken cards with visible explanations: Wait Menu, Open State inspection, Scale inspection, and three quest-inspection commands.
-- Quest Fixes now contains **247 guided selections** covering **79 named entries** and **77 unique Quest FormIDs**. A local validator confirmed **245 unique Quest ID/stage pairs** exist structurally in `Starfield.esm`; this does not establish that every repair is semantically safe for every save.
+- Quest Skips now contains **247 guided selections** covering **79 named entries** and **77 unique Quest FormIDs**. A local validator confirmed **245 unique Quest ID/stage pairs** exist structurally in `Starfield.esm`; this does not establish that every skip is semantically safe for every save.
 - Added an explicit tested-runtime report for Starfield 1.16.244. On another runtime, CCC keeps its view available to explain the mismatch while withholding gameplay request handlers.
 - Added GPL-3.0-or-later licensing, CommonLibSF exceptions/source notices, and removed the private conversation identifier from the published test log.
 - The curated catalog now contains **141 commands**, including the six disabled entries.

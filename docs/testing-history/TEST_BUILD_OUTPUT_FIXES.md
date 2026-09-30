@@ -22,7 +22,7 @@ To rebuild from source, use the existing `npm install` (fresh source only), `npm
 - Inventory, position, rotation, actor values, and current spaceship use direct game reads instead of waiting for console text. Actor references use the game's RTTI cast so player/NPC subclasses are accepted. Rotation is converted from radians to degrees.
 - Inventory snapshots include base Form IDs, total stack counts, base names, and equipped markers. They do not expand custom instance names or modification details. A 512 KiB output cap is explicitly marked if reached.
 - Scale, open state, and GetStage use the game's registered condition evaluators, with signature checks. The pinned library's unmapped GetScale relocation is deliberately avoided.
-- Quest Fixes reads GetStage directly and still attempts SQS for full history. If the history capture times out, it shows the current stage with **history unavailable**, never a false empty-history claim.
+- Quest Skips reads GetStage directly and still attempts SQS for full history. If the history capture times out, it shows the current stage with **history unavailable**, never a false empty-history claim.
 - Remaining console captures reject overlapping CCC commands and avoid attributing unrelated old console history after buffer rollover. The existing Help search route is retained.
 - Activity history keeps at most 100 entries and drops oldest entries when result text exceeds one million characters, retaining the newest result. Local-storage failure still permits session use.
 - Command catalog and source statuses now reflect the latest user tests. Failed commands remain marked failed until an in-game retest passes. Stop Combat remains inconclusive and its command is unchanged.
@@ -42,7 +42,7 @@ Starfield was not launched, so the native adapter results and runtime compatibil
 3. Reference position X/Y/Z, rotation X/Y/Z, scale, and door open state: compare with values in Starfield's own console. Confirm invalid/Base IDs produce errors rather than invented values.
 4. Companion affinity, relationship level, and anger: compare each with the vanilla console. Include a legitimate zero value. Also inspect player and ship actor values.
 5. Get Current Ship ID: test aboard a ship and elsewhere. Verify the returned Reference ID manually; no ship available must be a readable message, not a timeout.
-6. GetStage and Quest Fixes Check Status: compare the current stage. If SQS is unavailable, verify that history is explicitly unknown. Retest SQS and SQT separately and report any remaining failures.
+6. GetStage and Quest Skips Check Status: compare the current stage. If SQS is unavailable, verify that history is explicitly unknown. Retest SQS and SQT separately and report any remaining failures.
 7. Close Results using Close and Escape; verify Escape does not close CCC too. Check Stop Combat separately on a disposable test save and report whether combat resumes immediately.
 
 Record new pass/fail results in `../TEST_RESULTS_2026-09-27.md`; compilation alone does not upgrade an in-game status.

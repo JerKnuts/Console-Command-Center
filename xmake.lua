@@ -1,5 +1,5 @@
 set_project("ConsoleCommandCenter")
-set_version("0.3.0")
+set_version("0.3.3")
 set_arch("x64")
 set_languages("c++23")
 add_requires("nlohmann_json")
