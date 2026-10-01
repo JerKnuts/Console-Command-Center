@@ -1,5 +1,4 @@
-import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, FORM_TYPE_PICKER, WEATHER_PICKER, PLAYER_ACTOR_VALUE_PICKER, REFERENCE_ACTOR_VALUE_PICKER, SHIP_ACTOR_VALUE_PICKER, GAME_SETTING_PICKER, POPULAR_LOCATION_PICKER, type ReferenceIdPicker } from './reference-ids';
-import { PERK_SKILL_PICKER, POWER_SPELL_PICKER, SPELL_EFFECT_PICKER } from './id-catalog';
+import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, FORM_TYPE_PICKER, WEATHER_PICKER, PLAYER_ACTOR_VALUE_PICKER, REFERENCE_ACTOR_VALUE_PICKER, SHIP_ACTOR_VALUE_PICKER, GAME_SETTING_PICKER, OPEN_STATE_PICKER, POPULAR_LOCATION_PICKER, type ReferenceIdPicker } from './reference-ids';
 
 export type CommandCategory =
   | 'Gameplay'
@@ -27,6 +26,13 @@ export type CommandInput = {
   pattern?: string;
   hint?: string;
   picker?: ReferenceIdPicker;
+  browserPicker?: {
+    browser: 'id' | 'quest';
+    buttonLabel: string;
+    allowedTypes?: string[];
+    allowedCategories?: string[];
+  };
+  questStageFor?: string;
 };
 
 export type CommandDefinition = {
@@ -45,6 +51,9 @@ export type CommandDefinition = {
   unavailableReason?: string;
   effectiveTotal?: boolean;
   verifyInGame?: boolean;
+  catalogSearch?: {
+    recordTypeInput?: string;
+  };
 };
 
 const HEX_ID_PATTERN = '^[0-9A-Fa-f]{1,8}$';
@@ -61,6 +70,20 @@ const hexInput = (key: string, label: string, placeholder = '0000000F', hint = '
   placeholder,
   pattern: HEX_ID_PATTERN,
   hint,
+});
+
+const itemFormIdInput = (hint = 'Choose an included item or enter its Form ID.'): CommandInput => ({
+  ...hexInput('formId', 'Form ID', '0000000F', hint),
+  browserPicker: {
+    browser: 'id',
+    buttonLabel: 'Browse Items',
+    allowedTypes: ['WEAP', 'ARMO', 'AMMO', 'ALCH', 'MISC', 'BOOK'],
+  },
+});
+
+const questIdInput = (): CommandInput => ({
+  ...hexInput('questId', 'Quest ID', '00003448', 'Choose a quest or enter its Form ID.'),
+  browserPicker: { browser: 'quest', buttonLabel: 'Choose Quest' },
 });
 
 // Command syntax is curated from current Starfield console-command references.
@@ -225,6 +248,21 @@ export const COMMANDS: CommandDefinition[] = [
     testStatus: 'verified',
   },
   {
+    id: 'set-carry-weight-total',
+    title: 'Set Carry Weight Effective Total',
+    category: 'Player',
+    description: 'Set the final carry-weight total while compensating for active equipment, perks, and other modifiers.',
+    command: 'ccc.seteffectivetotal player CarryWeight {value}',
+    inputs: [
+      { key: 'value', label: 'Effective Carry Weight', type: 'number', defaultValue: 250, min: 1, max: 1000000, step: 1, hint: 'CCC previews the calculated base before applying it.' },
+    ],
+    tags: ['carry', 'weight', 'actor value', 'effective total', 'modifier'],
+    warning: 'CCC calculates a base value from the modifiers active at execution time. Changing equipment, perks, or effects afterward can change the effective total again.',
+    risk: 'caution',
+    effectiveTotal: true,
+    testStatus: 'verified',
+  },
+  {
     id: 'player-scale',
     title: 'Change Player Size',
     category: 'Player',
@@ -371,30 +409,28 @@ export const COMMANDS: CommandDefinition[] = [
     id: 'search-form-ids',
     title: 'Search Form IDs',
     category: 'Inventory',
-    description: 'Search loaded game records by name and capture matching Form IDs.',
-    command: 'help "{search}" 4',
+    description: 'Search CCC’s included ID catalog by name, Editor ID, Form ID, category, or record type.',
+    command: 'ID Browser search: {search}',
     inputs: [
       { key: 'search', label: 'Search', type: 'text', placeholder: 'drum beat', pattern: HELP_SEARCH_PATTERN, hint: 'Name or partial name; quotes are not allowed.' },
     ],
-    tags: ['help', 'form id', 'search', 'lookup', 'read only'],
-    captureOutput: true,
-    testStatus: 'failed',
-    unavailableReason: 'Disabled after repeated in-game tests timed out without returning complete console output. Use the included ID Browser instead.',
+    tags: ['form id', 'search', 'lookup', 'id browser', 'read only'],
+    catalogSearch: {},
+    testStatus: 'untested',
   },
   {
     id: 'search-form-ids-by-type',
     title: 'Search Form IDs by Type',
     category: 'Inventory',
-    description: 'Search loaded records by name while filtering to a record type such as WEAP, ARMO, NPC_, PERK, or QUST.',
-    command: 'help "{search}" 4 {recordType}',
+    description: 'Search CCC’s included records by name while applying an exact type such as WEAP, ARMO, NPC_, PERK, or QUST.',
+    command: 'ID Browser search: {search} [{recordType}]',
     inputs: [
       { key: 'search', label: 'Search', type: 'text', placeholder: 'drum beat', pattern: HELP_SEARCH_PATTERN, hint: 'Name or partial name.' },
       { key: 'recordType', label: 'Record Type', type: 'text', defaultValue: 'WEAP', pattern: RECORD_TYPE_PATTERN, hint: 'Choose a type or enter its code.', picker: FORM_TYPE_PICKER },
     ],
-    tags: ['help', 'form id', 'search', 'lookup', 'weapon', 'armor', 'npc', 'quest', 'read only'],
-    captureOutput: true,
-    testStatus: 'failed',
-    unavailableReason: 'Disabled after repeated in-game tests timed out without returning complete console output. Use the included ID Browser instead.',
+    tags: ['form id', 'search', 'lookup', 'weapon', 'armor', 'npc', 'quest', 'id browser', 'read only'],
+    catalogSearch: { recordTypeInput: 'recordType' },
+    testStatus: 'untested',
   },
   {
     id: 'add-credits',
@@ -454,7 +490,7 @@ export const COMMANDS: CommandDefinition[] = [
     command: 'player.additem {formId} {amount}',
     tags: ['item', 'formid', 'inventory', 'advanced'],
     inputs: [
-      hexInput('formId', 'Form ID', '0000000F'),
+      itemFormIdInput(),
       { key: 'amount', label: 'Amount', type: 'number', defaultValue: 1, min: 1, step: 1 },
     ],
     warning: 'Use a valid Form ID. Invalid IDs or unusual quest/scripted items may have unintended results.',
@@ -469,7 +505,7 @@ export const COMMANDS: CommandDefinition[] = [
     command: 'player.removeitem {formId} {amount}',
     tags: ['item', 'remove', 'formid', 'inventory'],
     inputs: [
-      hexInput('formId', 'Form ID', '0000000F', 'Use player.showinventory to find Form IDs.'),
+      itemFormIdInput('Choose an included item or use Player Inventory to find its Form ID.'),
       { key: 'amount', label: 'Amount', type: 'number', defaultValue: 1, min: 1, step: 1 },
     ],
     warning: 'Removing quest items or scripted items can break quests or inventory scripts.',
@@ -483,7 +519,10 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Equip an item on the player. If the item is missing, the command may add it.',
     command: 'player.equipitem {formId}',
     tags: ['equip', 'item', 'weapon', 'armor'],
-    inputs: [hexInput('formId', 'Form ID', '00228829', 'Use player.showinventory to find Form IDs.')],
+    inputs: [{
+      ...hexInput('formId', 'Form ID', '00228829', 'Choose an included weapon or armor, or use Player Inventory.'),
+      browserPicker: { browser: 'id', buttonLabel: 'Browse Equipment', allowedTypes: ['WEAP', 'ARMO'] },
+    }],
     warning: 'Use an equippable item Form ID. Some unusual or scripted equipment can behave unexpectedly.',
     risk: 'caution',
     testStatus: 'verified',
@@ -495,7 +534,10 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Unequip a specific item from the player.',
     command: 'player.unequipitem {formId}',
     tags: ['unequip', 'item', 'weapon', 'armor'],
-    inputs: [hexInput('formId', 'Form ID', '00228829', 'Use player.showinventory to find Form IDs.')],
+    inputs: [{
+      ...hexInput('formId', 'Form ID', '00228829', 'Choose an included weapon or armor, or use Player Inventory.'),
+      browserPicker: { browser: 'id', buttonLabel: 'Browse Equipment', allowedTypes: ['WEAP', 'ARMO'] },
+    }],
     testStatus: 'verified',
   },
   {
@@ -506,7 +548,7 @@ export const COMMANDS: CommandDefinition[] = [
     command: 'player.drop {formId} {amount}',
     tags: ['drop', 'item', 'inventory'],
     inputs: [
-      hexInput('formId', 'Form ID', '0000000F', 'Use player.showinventory to find Form IDs.'),
+      itemFormIdInput('Choose an included item or use Player Inventory to find its Form ID.'),
       { key: 'amount', label: 'Amount', type: 'number', defaultValue: 1, min: 1, step: 1 },
     ],
     warning: 'Do not use this on quest items or items you cannot safely recover.',
@@ -521,7 +563,10 @@ export const COMMANDS: CommandDefinition[] = [
     command: 'player.placeatme {baseId} {amount}',
     tags: ['spawn', 'placeatme', 'base id', 'npc', 'object'],
     inputs: [
-      hexInput('baseId', 'Base ID', '0019121F'),
+      {
+        ...hexInput('baseId', 'Base ID', '0019121F', 'Browse included base records or enter a known Base ID.'),
+        browserPicker: { browser: 'id', buttonLabel: 'Browse Base IDs' },
+      },
       { key: 'amount', label: 'Amount', type: 'number', defaultValue: 1, min: 1, max: 100, step: 1 },
     ],
     warning: 'This creates new instances. Spawning unique NPCs can create duplicates and spawning many objects can destabilize or crash the game.',
@@ -660,7 +705,10 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Add a perk, skill, trait, or background by Form ID.',
     command: 'player.addperk {formId}',
     tags: ['perk', 'skill', 'trait', 'background', 'formid'],
-    inputs: [{ ...hexInput('formId', 'Form ID', '002C59D9', 'Choose a perk or enter its Form ID.'), picker: PERK_SKILL_PICKER }],
+    inputs: [{
+      ...hexInput('formId', 'Form ID', '002C59D9', 'Browse included perks, skills, traits, and backgrounds or enter a Form ID.'),
+      browserPicker: { browser: 'id', buttonLabel: 'Browse Perks', allowedTypes: ['PERK'], allowedCategories: ['Perks'] },
+    }],
     warning: 'Adding progression records without normal prerequisites may produce unusual progression states.',
     risk: 'caution',
     testStatus: 'verified',
@@ -672,7 +720,10 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Remove a perk, skill, trait, or background by Form ID.',
     command: 'player.removeperk {formId}',
     tags: ['perk', 'skill', 'trait', 'background', 'formid'],
-    inputs: [{ ...hexInput('formId', 'Form ID', '002C59D9', 'Choose a perk or enter its Form ID.'), picker: PERK_SKILL_PICKER }],
+    inputs: [{
+      ...hexInput('formId', 'Form ID', '002C59D9', 'Browse included perks, skills, traits, and backgrounds or enter a Form ID.'),
+      browserPicker: { browser: 'id', buttonLabel: 'Browse Perks', allowedTypes: ['PERK'], allowedCategories: ['Perks'] },
+    }],
     warning: 'Removing progression records can create inconsistent character progression. Make a save first.',
     risk: 'danger',
     testStatus: 'verified',
@@ -723,7 +774,10 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Add a Starborn power or another known spell record to the player by Form ID.',
     command: 'player.addspell {formId}',
     tags: ['spell', 'effect', 'power', 'status'],
-    inputs: [{ ...hexInput('formId', 'Power / Spell ID', '002BACBA', 'Choose a Starborn power or enter a known spell Form ID.'), picker: POWER_SPELL_PICKER }],
+    inputs: [{
+      ...hexInput('formId', 'Power / Spell ID', '002BACBA', 'Browse included Starborn powers or enter a known spell Form ID.'),
+      browserPicker: { browser: 'id', buttonLabel: 'Browse Powers', allowedTypes: ['SPEL'], allowedCategories: ['Powers'] },
+    }],
     warning: 'Adding arbitrary effects can create persistent or unintended status effects. Only use IDs you understand.',
     risk: 'danger',
     testStatus: 'verified',
@@ -735,7 +789,10 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Remove a spell or stuck status-effect record from the player by Form ID.',
     command: 'player.removespell {formId}',
     tags: ['spell', 'status effect', 'weather bug', 'fix'],
-    inputs: [{ ...hexInput('formId', 'Power / Effect ID', '00163FE7', 'Choose a power or known removable effect, or enter its Form ID.'), picker: SPELL_EFFECT_PICKER }],
+    inputs: [{
+      ...hexInput('formId', 'Power / Effect ID', '00163FE7', 'Browse included powers and removable effects or enter a Form ID.'),
+      browserPicker: { browser: 'id', buttonLabel: 'Browse Effects', allowedTypes: ['SPEL'], allowedCategories: ['Powers', 'Effects'] },
+    }],
     warning: 'Removing the wrong effect can remove legitimate powers or scripted effects. Confirm the effect ID first.',
     risk: 'caution',
     testStatus: 'verified',
@@ -821,26 +878,29 @@ export const COMMANDS: CommandDefinition[] = [
   },
   {
     id: 'pass-time',
-    title: 'Pass Time',
+    title: 'Wait Anywhere',
     category: 'World',
-    description: 'Advance the game by a chosen number of hours.',
+    description: 'Choose how many hours to wait without needing a bed or chair.',
     command: 'passtime {hours}',
-    tags: ['time', 'wait', 'hours'],
+    tags: ['time', 'wait', 'hours', 'wait anywhere'],
     inputs: [
-      { key: 'hours', label: 'Hours', type: 'number', defaultValue: 1, min: 1, max: 1000, step: 1 },
+      { key: 'hours', label: 'Hours', type: 'number', defaultValue: 1, min: 1, max: 24, step: 1, hint: 'Choose 1–24 hours.' },
     ],
     testStatus: 'verified',
   },
   {
-    id: 'open-wait-menu',
-    title: 'Open Wait Menu',
+    id: 'set-interior-gravity',
+    title: 'Set Interior Gravity',
     category: 'World',
-    description: "Open Starfield's sleep/wait menu directly without needing a bed or chair.",
-    command: 'showmenu sleepwaitmenu',
-    tags: ['wait', 'sleep', 'menu', 'time'],
-    closeBeforeExecute: true,
-    testStatus: 'failed',
-    unavailableReason: 'Starfield accepted the request but did not open the wait menu. This command is disabled until a verified native menu adapter is available.',
+    description: 'Set the gravity scale for the current interior cell. Use 1 to restore normal gravity.',
+    command: 'setgravityscale {value}',
+    inputs: [
+      { key: 'value', label: 'Gravity Scale', type: 'number', defaultValue: 1, min: 0, max: 10, step: 0.1, hint: 'Interior cells only. 0 removes gravity; 1 is normal.' },
+    ],
+    tags: ['gravity', 'zero g', 'interior', 'cell', 'setgravityscale'],
+    warning: 'This only works inside interior cells. Unusual values affect movement and physics in the current interior; use 1 to restore normal gravity before leaving.',
+    risk: 'caution',
+    testStatus: 'verified',
   },
   {
     id: 'set-scanner-range',
@@ -1171,42 +1231,31 @@ export const COMMANDS: CommandDefinition[] = [
     testStatus: 'verified',
   },
   {
-    id: 'inspect-open-state',
-    title: 'Inspect Reference Open State',
+    id: 'reevaluate-actor-package',
+    title: 'Reevaluate Actor Behavior',
     category: 'Targets',
-    description: 'Read whether a door or other openable reference is currently open or closed.',
-    command: '{refId}.getopenstate',
+    description: 'Force an NPC to reevaluate its current AI package, which can restart movement or end a stuck interaction.',
+    command: '{refId}.evp',
     inputs: [hexInput('refId', 'Reference ID', '00000000')],
-    tags: ['door', 'open', 'state', 'getopenstate', 'inspect', 'read only'],
-    captureOutput: true,
-    testStatus: 'failed',
-    unavailableReason: 'The previous native inspection adapter was disabled after the test1 crash. Set Open State remains available.',
+    tags: ['npc', 'actor', 'ai', 'package', 'evaluatepackage', 'evp', 'stuck', 'fix'],
+    warning: 'Reevaluating a quest actor can interrupt dialogue, scenes, or scripted movement. Use it for an actor that appears stuck and make a manual save first.',
+    risk: 'caution',
+    testStatus: 'verified',
   },
   {
     id: 'set-open-state',
-    title: 'Set Reference Open State',
+    title: 'Open or Close Reference',
     category: 'Targets',
-    description: 'Explicitly open or close a door or other openable reference.',
+    description: 'Open or close a door or other openable reference using an explicit state.',
     command: '{refId}.setopenstate {state}',
     inputs: [
       hexInput('refId', 'Reference ID', '00000000'),
-      { key: 'state', label: 'Open State', type: 'number', defaultValue: 1, min: 0, max: 1, step: 1, hint: '0 Closed, 1 Open' },
+      { key: 'state', label: 'Open State', type: 'number', defaultValue: 1, min: 0, max: 1, step: 1, hint: '0 Closed, 1 Open', picker: OPEN_STATE_PICKER },
     ],
     tags: ['door', 'open', 'close', 'setopenstate', 'reference'],
     warning: 'Forcing quest-controlled doors or activators open or closed can bypass triggers or interfere with scripted scenes.',
     risk: 'caution',
     testStatus: 'verified',
-  },
-  {
-    id: 'get-player-grabbed-ref',
-    title: 'Get Grabbed Object Reference ID',
-    category: 'Targets',
-    description: 'Read the Reference ID of the world object the player is currently holding/grabbing.',
-    command: 'getplayergrabbedref',
-    tags: ['reference id', 'object', 'grabbed', 'getplayergrabbedref', 'inspect', 'read only'],
-    captureOutput: true,
-    testStatus: 'failed',
-    unavailableReason: 'Disabled because CommonLibSF exposes the grab/release event source with unresolved Address Library ID 0 on Starfield 1.16.244.',
   },
   {
     id: 'inspect-ref-actor-value',
@@ -1315,7 +1364,10 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['weapon', 'armor', 'mod', 'amod', 'modifier'],
     inputs: [
       hexInput('refId', 'Item Reference ID', 'FF00BB78'),
-      hexInput('modId', 'Modifier / Mod ID', '002BDD72'),
+      {
+        ...hexInput('modId', 'Modifier / Mod ID', '002BDD72', 'Choose an included OMOD record or enter its Form ID.'),
+        browserPicker: { browser: 'id', buttonLabel: 'Browse Mods', allowedTypes: ['OMOD'] },
+      },
     ],
     warning: 'Many OMOD IDs are weapon- or armor-specific. The game may accept an incompatible modifier but produce janky or broken equipment. Confirm the exact mod ID for that item first.',
     risk: 'caution',
@@ -1330,7 +1382,10 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['weapon', 'armor', 'mod', 'rmod', 'modifier'],
     inputs: [
       hexInput('refId', 'Item Reference ID', 'FF00BB78'),
-      hexInput('modId', 'Modifier / Mod ID', '002BDD72'),
+      {
+        ...hexInput('modId', 'Modifier / Mod ID', '002BDD72', 'Choose an included OMOD record or enter its Form ID.'),
+        browserPicker: { browser: 'id', buttonLabel: 'Browse Mods', allowedTypes: ['OMOD'] },
+      },
     ],
     warning: 'Removing the wrong modifier can change item quality or remove an intended attachment.',
     risk: 'caution',
@@ -1452,7 +1507,7 @@ export const COMMANDS: CommandDefinition[] = [
     category: 'Quests',
     description: 'Read the current/highest completed stage reported for a quest before attempting a repair.',
     command: 'getstage {questId}',
-    inputs: [hexInput('questId', 'Quest ID', '00003448')],
+    inputs: [questIdInput()],
     tags: ['quest', 'stage', 'getstage', 'inspect', 'read only'],
     captureOutput: true,
     testStatus: 'failed',
@@ -1464,7 +1519,7 @@ export const COMMANDS: CommandDefinition[] = [
     category: 'Quests',
     description: 'List quest stages and whether each is done or not set. Results open in a scrollable window and can be reopened from Activity Log.',
     command: 'sqs {questId}',
-    inputs: [hexInput('questId', 'Quest ID', '00003448')],
+    inputs: [questIdInput()],
     tags: ['quest', 'stages', 'sqs', 'history', 'inspect', 'read only'],
     captureOutput: true,
     testStatus: 'failed',
@@ -1477,7 +1532,7 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Start a quest using its Quest ID.',
     command: 'startquest {questId}',
     tags: ['quest', 'start', 'repair'],
-    inputs: [hexInput('questId', 'Quest ID', '00003448')],
+    inputs: [questIdInput()],
     warning: 'Starting a quest outside its normal prerequisites can break dialogue, scenes, or linked quest progression.',
     risk: 'danger',
     testStatus: 'needs-adjustment',
@@ -1490,7 +1545,7 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Stop a quest using its Quest ID.',
     command: 'stopquest {questId}',
     tags: ['quest', 'stop', 'repair'],
-    inputs: [hexInput('questId', 'Quest ID', '00003448')],
+    inputs: [questIdInput()],
     warning: 'Stopping an active quest can leave scripts, scenes, NPC state, and linked quests in an inconsistent state.',
     risk: 'danger',
     testStatus: 'verified',
@@ -1504,8 +1559,8 @@ export const COMMANDS: CommandDefinition[] = [
     command: 'setstage {questId} {stage}',
     tags: ['quest', 'stage', 'repair', 'setstage'],
     inputs: [
-      hexInput('questId', 'Quest ID', '00003448'),
-      { key: 'stage', label: 'Stage', type: 'number', defaultValue: 100, min: 0, step: 1 },
+      questIdInput(),
+      { key: 'stage', label: 'Stage', type: 'number', defaultValue: 100, min: 0, step: 1, hint: 'Choose a recorded stage for the selected quest or enter one manually.', questStageFor: 'questId' },
     ],
     warning: 'SetStage can bypass required triggers and permanently break quest chains. Use only when you know the exact intended stage.',
     risk: 'danger',
@@ -1519,7 +1574,7 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Mark a quest complete using its Quest ID.',
     command: 'completequest {questId}',
     tags: ['quest', 'complete', 'repair'],
-    inputs: [hexInput('questId', 'Quest ID', '00003448')],
+    inputs: [questIdInput()],
     warning: 'This can mark a quest complete without running required scenes, rewards, scripts, or follow-up triggers.',
     risk: 'danger',
     testStatus: 'verified',
@@ -1532,7 +1587,7 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Clear a quest’s recorded stages and remove it from the quest log. This does not automatically restart the quest.',
     command: 'resetquest {questId}',
     tags: ['quest', 'reset', 'repair'],
-    inputs: [hexInput('questId', 'Quest ID', '00003448')],
+    inputs: [questIdInput()],
     warning: 'ResetQuest can conflict with NPC, scene, and world state that the quest already changed. Use only on a backup save.',
     risk: 'danger',
     testStatus: 'verified',
@@ -1545,7 +1600,7 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Teleport the player directly to the current target of a specified quest.',
     command: 'movetoqt {questId}',
     tags: ['quest', 'teleport', 'target', 'movetoqt'],
-    inputs: [hexInput('questId', 'Quest ID', '00003448')],
+    inputs: [questIdInput()],
     warning: 'This can place you directly into combat, hazardous terrain, interiors, or scripted areas and may trigger quest events immediately.',
     risk: 'caution',
     testStatus: 'verified',
@@ -1913,7 +1968,10 @@ export const COMMANDS: CommandDefinition[] = [
     description: 'Spawn a ship Base ID at the player location.',
     command: 'player.placeatme {baseId}',
     tags: ['ship', 'spawn', 'placeatme', 'base id'],
-    inputs: [hexInput('baseId', 'Ship Base ID', '000F31DB')],
+    inputs: [{
+      ...hexInput('baseId', 'Ship Base ID', '000F31DB', 'Choose an included ship/base-form record or enter its Base ID.'),
+      browserPicker: { browser: 'id', buttonLabel: 'Browse Ships', allowedTypes: ['GBFM'] },
+    }],
     warning: 'Spawning ships in unsuitable locations can cause collisions, inaccessible geometry, or save instability. Use in a large open area and on a backup save.',
     risk: 'danger',
     testStatus: 'untested',

@@ -1,8 +1,8 @@
 # Console Command Center — Command Catalog
 
-Version: 0.3.7 development build
+Version: 0.3.7
 
-Curated commands: 141 (9 currently disabled)
+Curated commands: 141 (4 currently disabled)
 
 Quest Browser: 2,318 quest records with 16,844 structurally recorded stages across the base game and Shattered Space
 
@@ -13,7 +13,7 @@ Risk levels:
 
 Testing status is intentionally conservative. Only commands confirmed through Console Command Center are marked **Verified**.
 
-Latest user test report: September 30, 2026. See `docs/TEST_RESULTS_2026-09-27.md` for the accumulated in-game record.
+Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` for the accumulated in-game record.
 
 ## Gameplay (11)
 
@@ -33,13 +33,14 @@ Latest user test report: September 30, 2026. See `docs/TEST_RESULTS_2026-09-27.m
 
 **Pay Bounty** uses the compact ID field + **CHOOSE FACTION** box layout. The choice list is intentionally limited to bounty-relevant faction records (including supported Shattered Space entries), while manual faction-ID entry remains available. Inline preset-button grids are not used. The command spends the player's credits; it does not erase the bounty for free.
 
-## Player (22)
+## Player (23)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Add Experience | `player.modav experience {amount}` | Caution | Verified |
 | Increase Player Level | `player.setlevel {level}` | Caution | Verified |
 | Adjust Carry Weight (+/-) | `player.modav carryweight {amount}` | Caution | Verified |
+| Set Carry Weight Effective Total | calculated native setter | Caution | Verified — compensates for active modifiers |
 | Change Player Size | `player.setscale {scale}` | Caution | Verified |
 | Set Movement Speed | `player.setav speedmult {value}` | Caution | Verified |
 | Set Max Health | `player.setav health {value}` | Caution | Verified |
@@ -68,8 +69,8 @@ Latest user test report: September 30, 2026. See `docs/TEST_RESULTS_2026-09-27.m
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Show Player Inventory | `player.showinventory` | Normal | Verified |
-| Search Form IDs | `help "{search}" 4` | Normal | Failed repeatedly; disabled in v0.3.2 |
-| Search Form IDs by Type | `help "{search}" 4 {recordType}` | Normal | Failed repeatedly; disabled in v0.3.2 |
+| Search Form IDs | Packaged ID Browser search | Normal | Verified in game |
+| Search Form IDs by Type | Packaged ID/Quest Browser search with exact record-type filter | Normal | Verified in game |
 | Add Credits | `player.additem 0000000F {amount}` | Caution | Verified |
 | Add Digipicks | `player.additem 0000000A {amount}` | Normal | Verified |
 | Add Med Packs | `player.additem 0000ABF9 {amount}` | Normal | Verified |
@@ -105,7 +106,7 @@ Latest user test report: September 30, 2026. See `docs/TEST_RESULTS_2026-09-27.m
 | Enter Free Camera + Freeze | `tfc 1` | Caution | Verified |
 | Toggle HUD / Interface | `tm` | Caution | Verified |
 | Set Free Camera Speed | `sucsm {speed}` | Normal | Verified |
-| Clear Screen Blood | `ClearScreenBlood` | Normal | Verified by user assumption |
+| Clear Screen Blood | `ClearScreenBlood` | Normal | Accepted in game; no active blood overlay was available for a visual check |
 
 ## World (12)
 
@@ -113,8 +114,8 @@ Latest user test report: September 30, 2026. See `docs/TEST_RESULTS_2026-09-27.m
 |---|---|---|---|
 | Toggle Game Pause | `tgp` | Normal | Verified |
 | Set Game Speed | `sgtm {value}` | Caution | Verified |
-| Pass Time | `passtime {hours}` | Normal | Verified |
-| Open Wait Menu | `showmenu sleepwaitmenu` | Normal | Unavailable — both tested adapters failed to open the menu |
+| Wait Anywhere | `passtime {hours}` | Normal | Verified; replaces the removed post-1.10.32 wait-menu command |
+| Set Interior Gravity | `setgravityscale {value}` | Caution | Verified — interior cells only; 1 restores normal gravity |
 | Set Scanner Scan Range | `setgs fHandScannerScanRange {value}` | Caution | Verified |
 | Set Scanner Base Range | `setgs fHandScannerBaseRange {value}` | Caution | Verified |
 | Set Scanner Social Range | `setgs fHandScannerSocialRange {value}` | Caution | Verified |
@@ -126,7 +127,7 @@ Latest user test report: September 30, 2026. See `docs/TEST_RESULTS_2026-09-27.m
 
 **Weather choices:** both weather commands use the same compact ID field + **CHOOSE WEATHER** box layout as the companion commands. Clear, Rain, Snow, Heavy Snow, Thunderstorm, Sandstorm, Dense Mist, Light Mist, and Burning Haze are available through the chooser, while manual Weather Form IDs remain supported. No inline weather-button grid is used.
 
-## Targets (35)
+## Targets (34)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -147,9 +148,8 @@ Latest user test report: September 30, 2026. See `docs/TEST_RESULTS_2026-09-27.m
 | Activate Reference | `{refId}.activate` | Caution | Verified |
 | Reset Actor AI | `{refId}.resetai` | Caution | Verified |
 | Force Actor Repath | `{refId}.forcerepath` | Caution | Verified |
-| Inspect Reference Open State | `{refId}.getopenstate` | Normal | Unavailable — unsafe adapter removed after test1 crash |
-| Set Reference Open State | `{refId}.setopenstate {state}` | Caution | Verified |
-| Get Grabbed Object Reference ID | `getplayergrabbedref` | Normal | Unavailable — CommonLibSF event source resolves to Address Library ID `0` |
+| Reevaluate Actor Behavior | `{refId}.evp` | Caution | Verified — resumed a stopped NPC's movement |
+| Open or Close Reference | `{refId}.setopenstate {state}` | Caution | Verified; includes Open/Closed chooser |
 | Inspect Reference Actor Value | `{refId}.getav {actorValue}` | Normal | Verified |
 | Mark Reference for Permanent Deletion | `{refId}.markfordelete` | Danger | Untested |
 | Set Exact Reference Position | `{refId}.setpos {axis} {value}` | Caution | Verified |
@@ -169,7 +169,7 @@ Latest user test report: September 30, 2026. See `docs/TEST_RESULTS_2026-09-27.m
 **Companion choices:** the affinity and anger commands use the compact ID field + **CHOOSE COMPANION** box for Sarah Morgan (`00005986`), Barrett (`00005788`), Sam Coe (`0029D488`), and Andreja (`000059A9`). These are the four core companions that use Starfield's affinity/relationship progression; other recruitable crew are intentionally not presented for these commands. Manual Reference ID entry remains available.
 
 
-**Read-only inspection:** CCC's native query bridge powers supported reference inspection, inventory listing, Game Setting inspection, player/ship actor-value inspection, and ship-ID lookup. Known-broken Scale, Open State, held-object, and quest inspections are displayed as unavailable and cannot be executed. Results are preserved in the Results window and Activity Log. This requires rebuilding `ConsoleCommandCenter.dll`.
+**Read-only inspection:** CCC's native query bridge powers supported reference inspection, inventory listing, Game Setting inspection, player/ship actor-value inspection, and ship-ID lookup. Known-broken Scale and quest inspections are displayed as unavailable and cannot be executed. Open-state inspection was removed because CommonLibSF does not expose a verified safe reader; the verified Open/Close action remains available. Held-object inspection was also removed because the native event source remains unresolved. Advanced users can hold an object and run `getplayergrabbedref` in Starfield's own console; testing confirmed it returns the held Reference ID and `00000000` after release. Results from supported CCC inspections are preserved in the Results window and Activity Log. This requires rebuilding `ConsoleCommandCenter.dll`.
 
 ## Quests (9)
 
@@ -222,7 +222,7 @@ Latest user test report: September 30, 2026. See `docs/TEST_RESULTS_2026-09-27.m
 
 ## ID Browser + Reference ID Picker
 
-The current source includes a standalone **ID Browser** with **16,518 included IDs** covering weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, named locations and cells, and weather. Search filters the catalog instantly by name, Form ID, type, category, and Editor ID. Location and cell selections expose separate Form ID and Editor ID copy actions. Large categories render 100 rows at a time. Every selected result offers **Copy ID**, with conservative quick actions for supported record types. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244. Shattered Space entries are labeled in their visible detail text and use cleaned Editor IDs when no verified localized name is available. Long descriptions, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded.
+The current source includes a standalone **ID Browser** with **16,528 included IDs** covering weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Search filters the catalog instantly by name, Form ID, type, category, and Editor ID. Location and cell selections expose separate Form ID and Editor ID copy actions. Large categories render 100 rows at a time. Every selected result offers **Copy ID**, with conservative quick actions for supported record types. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244. Shattered Space entries are labeled in their visible detail text and use cleaned Editor IDs when no verified localized name is available. Long descriptions, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded.
 
 The browser supports category filtering across its packaged records and exposes conservative quick actions such as **Add to Player**, **Add Perk**, **Add Spell / Power**, or **Spawn** where the record type makes the action reasonably clear. It does not query or scrape Starfield's live console output.
 

@@ -42,14 +42,13 @@ namespace CCC
         const auto operation = dot == std::string::npos ? verb : verb.substr(dot + 1);
         if (operation != "showinventory" && operation != "getpos" && operation != "getangle"
             && operation != "getscale" && operation != "getav" && operation != "getspaceship"
-            && operation != "getopenstate" && operation != "getgs"
-            && operation != "getplayergrabbedref") {
+            && operation != "getopenstate" && operation != "getgs") {
             return std::nullopt;
         }
         // test1 crashed inside the condition evaluator on Starfield 1.16.244.
         // Do not call ANY evaluator through the unverified shared ABI. Return
         // a normal error until a verified adapter replaces that entire path.
-        if (operation == "getscale" || operation == "getopenstate" || operation == "getplayergrabbedref") {
+        if (operation == "getscale" || operation == "getopenstate") {
             throw std::runtime_error("This inspection is disabled because its CommonLibSF adapter is unresolved or unsafe on Starfield 1.16.244.");
         }
         if (operation == "getgs") {

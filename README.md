@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current development version: v0.3.7 Beta. Current published release: v0.3.3.** The current build corrects generated ID labels, removes internal catalog records, and prevents Quest Browser inspections from invoking the unreliable console-output capture route. Follow [the current test checklist](TEST_BUILD_RESULT_ACTIONS.md). Historical build notes live under [`docs/`](docs/).
+**Current release: v0.3.7 Beta.** This release corrects generated ID labels, removes internal catalog records, prevents Quest Browser inspections from invoking the unreliable console-output capture route, and adds the latest commands verified in game. Follow [the release validation checklist](TEST_BUILD_RESULT_ACTIONS.md) when testing a fresh installation. Historical build notes live under [`docs/`](docs/).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -21,24 +21,27 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 - Searchable command library
 - Category browsing
 - Recent commands and favorites stay fixed at the top of the sidebar while the category list scrolls independently
-- Multiline custom-command batches that execute one command per line
+- Multiline custom-command batches that execute one command per line, with up to 10 named saved entries
 - Activity log
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
-- Standalone **ID Browser** with 16,518 included IDs, collapsed categories, selectable results, Copy ID, and conservative quick actions
-- Searchable choice boxes for packaged perks, skills, traits, Starborn powers, and known removable environmental effects
+- Standalone **ID Browser** with 16,528 included IDs, collapsed categories, selectable results, Copy ID, and conservative quick actions
+- Working **Search Form IDs** command cards that open the packaged ID Browser directly; typed `QUST` searches open Quest Browser
+- **Browse Items**, **Browse Equipment**, **Browse Base IDs**, **Browse Mods**, and **Browse Ships** controls that return packaged IDs directly to command fields without executing them
+- Filtered **ID Browser** controls for packaged perks, skills, traits, Starborn powers, and known removable environmental effects
 - Confirmation before execution
 - Caution and Danger warnings
 - Compact mouse-and-keyboard interface; controller support is in development
 - Compact Starfield-inspired OSF UI
 - Searchable **Quest Browser** with quest actions and recorded stage indexes
+- **Choose Quest** controls on every Quest ID field and a recorded-stage chooser for Set Quest Stage
 - Guided quest-stage skip choices with unavailable diagnostics clearly disabled
 - Curated ID choices use the same compact field + **CHOOSE ...** box used by the companion-affinity commands; manual ID entry remains available
 
 
 ## ID Browser and Reference ID Picker
 
-The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It searches **16,518 included IDs** instantly by name, Form ID, type, category, and Editor ID. The catalog covers weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, named locations and cells, and weather. Location and cell selections can copy either the Form ID or Editor ID. Shattered Space records display an expansion requirement and use cleaned Editor IDs where a verified localized display name is unavailable. Long descriptive labels, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded. Large categories load 100 rows at a time so browsing and searching stay responsive. Every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous.
+The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It searches **16,528 included IDs** instantly by name, Form ID, type, category, and Editor ID. The catalog covers weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Location and cell selections can copy either the Form ID or Editor ID. Shattered Space records display an expansion requirement and use cleaned Editor IDs where a verified localized display name is unavailable. Long descriptive labels, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded. Large categories load 100 rows at a time so browsing and searching stay responsive. Every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous.
 
 CCC does not scan Starfield's live form memory. That experimental path caused an access violation during test9 and was removed. Expansion-only records carry a visible requirement such as **Shattered Space DLC**.
 
@@ -62,7 +65,7 @@ See [`QUEST_BROWSER.md`](QUEST_BROWSER.md) for details.
 
 ## Command catalog
 
-The command library is deliberately curated instead of trying to expose every internal developer command. v0.3.7 contains **141 curated command entries** plus the standalone ID Browser and Quest Browser datasets. Nine known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The command library is deliberately curated instead of trying to expose every internal developer command. v0.3.7 contains **141 curated command entries** plus the standalone ID Browser and Quest Browser datasets. Four known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 

@@ -39,6 +39,17 @@ type ActiveIdPicker = {
   picker: ReferenceIdPicker;
 };
 
+type ActiveCatalogPicker = {
+  browser: 'id' | 'quest';
+  commandId: string;
+  inputKey: string;
+  allowedTypes: string[];
+  allowedCategories: string[];
+  returnView: ViewMode;
+  returnQuery: string;
+  values: Record<string, string>;
+};
+
 type ActivityEntry = {
   id: string;
   timestamp: number;
@@ -47,6 +58,13 @@ type ActivityEntry = {
   category: string;
   outcome: 'success' | 'error';
   message: string;
+};
+
+type SavedCustomCommand = {
+  id: string;
+  name: string;
+  commands: string;
+  updatedAt: number;
 };
 
 type PingReply = {
@@ -98,10 +116,13 @@ if (!(app instanceof HTMLElement)) throw new Error('Missing #app element');
 const STORAGE_FAVORITES = 'consoleCommandCenter.favorites';
 const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
+const STORAGE_CUSTOM_COMMANDS = 'consoleCommandCenter.customCommands';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
 const MAX_CUSTOM_BATCH_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_LENGTH = 1024;
+const MAX_SAVED_CUSTOM_COMMANDS = 10;
+const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const CONSOLE_COMMAND_CENTER_VERSION = '0.3.7';
 
 let activeView: ViewMode = 'recent';
@@ -109,8 +130,10 @@ let query = '';
 let favorites = readStringArray(STORAGE_FAVORITES);
 let recent = readStringArray(STORAGE_RECENT);
 let activityLog = readActivityLog();
+let savedCustomCommands = readSavedCustomCommands();
 let pendingExecution: PendingExecution | null = null;
 let activeIdPicker: ActiveIdPicker | null = null;
+let activeCatalogPicker: ActiveCatalogPicker | null = null;
 let nativeBackendReady = false;
 let idCatalog: IdCatalogEntry[] = CURATED_ID_CATALOG;
 let idCatalogLoaded = false;
@@ -119,6 +142,7 @@ let questBrowserEntries: QuestBrowserEntry[] = [];
 let questBrowserLoaded = false;
 let questBrowserLoading: Promise<void> | null = null;
 let idBrowserCategory = 'all';
+let idBrowserRecordTypeFilter = '';
 let idBrowserSelected: IdCatalogEntry | null = null;
 let idBrowserQuantity = 1;
 const idBrowserOpenCategories = new Set<string>();
@@ -440,6 +464,32 @@ function writeStringArray(key: string, values: string[]): void {
   }
 }
 
+function readSavedCustomCommands(): SavedCustomCommand[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_CUSTOM_COMMANDS) ?? '[]');
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((entry): entry is SavedCustomCommand => {
+      if (!entry || typeof entry !== 'object') return false;
+      const value = entry as Partial<SavedCustomCommand>;
+      return typeof value.id === 'string'
+        && typeof value.name === 'string'
+        && typeof value.commands === 'string'
+        && typeof value.updatedAt === 'number';
+    }).slice(0, MAX_SAVED_CUSTOM_COMMANDS);
+  } catch {
+    return [];
+  }
+}
+
+function writeSavedCustomCommands(): void {
+  try {
+    localStorage.setItem(STORAGE_CUSTOM_COMMANDS, JSON.stringify(savedCustomCommands));
+  } catch {
+    // Saved commands remain available for the current session if persistent
+    // storage is unavailable in the in-game webview.
+  }
+}
+
 
 function readActivityLog(): ActivityEntry[] {
   try {
@@ -582,9 +632,9 @@ function viewTitle(): string {
   return activeView;
 }
 
-function renderDatasetLoading(label: string): void {
-  resultCount.textContent = `Loading ${label}…`;
-  commandList.innerHTML = `<div class="empty-state"><strong>Loading ${escapeHtml(label)}…</strong><span>The catalog is loaded only when this screen is opened.</span></div>`;
+function clearForDatasetLoad(): void {
+  resultCount.textContent = '';
+  commandList.replaceChildren();
 }
 
 function ensureIdCatalogLoaded(): Promise<void> {
@@ -652,7 +702,7 @@ function render(): void {
     customPanel.hidden = true;
     commandList.hidden = false;
     if (!idCatalogLoaded) {
-      renderDatasetLoading('ID Browser');
+      clearForDatasetLoad();
       void ensureIdCatalogLoaded();
       return;
     }
@@ -666,7 +716,7 @@ function render(): void {
     customPanel.hidden = true;
     commandList.hidden = false;
     if (!questBrowserLoaded) {
-      renderDatasetLoading('Quest Browser');
+      clearForDatasetLoad();
       void ensureQuestBrowserLoaded();
       return;
     }
@@ -753,16 +803,19 @@ function renderQuestBrowserCard(entry: QuestBrowserEntry): string {
   const variant = variantLabel
     ? `<span class="quest-browser-variant">${escapeHtml(variantLabel)}</span>`
     : '';
+  const flags = requirement || internal || variant
+    ? `<span class="quest-browser-card-flags">${requirement}${internal}${variant}</span>`
+    : '';
 
   return `
     <details class="quest-browser-card" data-quest-card="${escapeHtml(entry.questId)}">
       <summary>
-        <span class="quest-browser-card-title"><strong>${escapeHtml(entry.quest)}</strong><small>${escapeHtml(entry.editorId)}</small></span>
+        <span class="quest-browser-card-title"><span class="quest-browser-card-heading"><strong>${escapeHtml(entry.quest)}</strong>${flags}</span><small>${escapeHtml(entry.editorId)}</small></span>
         <span class="quest-browser-card-id"><code>${escapeHtml(entry.questId)}</code><small>${entry.stages.length} stage${entry.stages.length === 1 ? '' : 's'}</small></span>
       </summary>
       <div class="quest-browser-card-body">
-        <div class="quest-browser-meta">${requirement}${internal}${variant}</div>
         <div class="quest-browser-actions">
+          ${activeCatalogPicker?.browser === 'quest' ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-quest-id="${escapeHtml(entry.questId)}" data-use-quest-title="${escapeHtml(entry.quest)}">Use This Quest</button>` : ''}
           <button class="osf-btn osf-btn--sm" type="button" disabled title="Unavailable until CCC has a verified native quest-state reader">Check Current Stage — Unavailable</button>
           <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" disabled title="Unavailable until CCC has a verified native quest-state reader">Show Stage History — Unavailable</button>
           <button class="osf-btn osf-btn--sm" type="button" data-quest-action="start" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Start Quest</button>
@@ -813,8 +866,12 @@ function renderQuestBrowser(): void {
     ? `${matches.length.toLocaleString()} matching quests / ${visibleStageCount.toLocaleString()} stages`
     : `${questBrowserEntries.length.toLocaleString()} quests / ${QUEST_BROWSER_STAGE_TOTAL.toLocaleString()} stages`;
 
+  const selectionBanner = activeCatalogPicker?.browser === 'quest'
+    ? `<section class="browser-selection-banner osf-card"><div><strong>CHOOSE A QUEST</strong><span>Select a quest below to fill the original command field. No quest command will run.</span></div><button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-cancel-catalog-picker>Cancel Selection</button></section>`
+    : '';
+
   if (matches.length === 0) {
-    commandList.innerHTML = `<div class="empty-state"><p class="osf-eyebrow">NO QUESTS</p><h3>No matching quest</h3><p>Try a quest name, Editor ID, Form ID, source, or stage number.</p></div>`;
+    commandList.innerHTML = selectionBanner + `<div class="empty-state"><p class="osf-eyebrow">NO QUESTS</p><h3>No matching quest</h3><p>Try a quest name, Editor ID, Form ID, source, or stage number.</p></div>`;
     return;
   }
 
@@ -837,12 +894,13 @@ function renderQuestBrowser(): void {
     const open = query ? true : openQuestBrowserGroup === key;
     return renderQuestBrowserGroup(key, entries, open);
   }).join('');
-  commandList.innerHTML = intro + `<div class="quest-browser-groups">${groups}</div>`;
+  commandList.innerHTML = selectionBanner + intro + `<div class="quest-browser-groups">${groups}</div>`;
 }
 
 function renderCommandCard(command: CommandDefinition): string {
   const isFavorite = favorites.includes(command.id);
   const unavailable = Boolean(command.unavailableReason);
+  const canRunWithoutNative = Boolean(command.catalogSearch);
   const inputs = (command.inputs ?? []).map((input) => renderInput(command, input)).join('');
   const riskLabel = command.risk === 'danger' ? 'DANGER' : 'CAUTION';
   const warningTag = command.warning
@@ -873,7 +931,7 @@ function renderCommandCard(command: CommandDefinition): string {
         <button class="favorite-button${isFavorite ? ' is-favorite' : ''}" type="button" data-favorite="${escapeHtml(command.id)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
           <span aria-hidden="true">${isFavorite ? '★' : '☆'}</span>
         </button>
-        <button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${nativeBackendReady && !unavailable ? '' : ' disabled'}>${unavailable ? 'Unavailable' : 'Execute'}</button>
+        <button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${(nativeBackendReady || canRunWithoutNative) && !unavailable ? '' : ' disabled'}>${unavailable ? 'Unavailable' : command.catalogSearch ? 'Search IDs' : 'Execute'}</button>
       </div>
     </article>
   `;
@@ -902,12 +960,16 @@ function renderInput(command: CommandDefinition, input: CommandInput): string {
   const hint = input.hint ? escapeHtml(input.hint) : '&nbsp;';
   const pickerButton = input.picker
     ? `<button class="input-picker-button" type="button" data-open-id-picker="${escapeHtml(command.id)}" data-input-key="${escapeHtml(input.key)}" aria-haspopup="dialog">${escapeHtml(input.picker.buttonLabel)}</button>`
+    : input.browserPicker
+      ? `<button class="input-picker-button" type="button" data-open-catalog-picker="${escapeHtml(command.id)}" data-input-key="${escapeHtml(input.key)}">${escapeHtml(input.browserPicker.buttonLabel)}</button>`
+      : input.questStageFor
+        ? `<button class="input-picker-button" type="button" data-open-quest-stage-picker="${escapeHtml(command.id)}" data-input-key="${escapeHtml(input.key)}" data-quest-input-key="${escapeHtml(input.questStageFor)}">Choose Stage</button>`
     : '';
   const control = pickerButton
     ? `<div class="input-control-row"><input ${attributes.join(' ')}>${pickerButton}</div>`
     : `<input ${attributes.join(' ')}>`;
 
-  return `<div class="input-field${input.picker ? ' input-field--picker' : ''}"><label class="input-label" for="${escapeHtml(id)}">${escapeHtml(input.label)}</label>${control}<small class="input-hint${input.hint ? '' : ' input-hint--empty'}">${hint}</small></div>`;
+  return `<div class="input-field${pickerButton ? ' input-field--picker' : ''}"><label class="input-label" for="${escapeHtml(id)}">${escapeHtml(input.label)}</label>${control}<small class="input-hint${input.hint ? '' : ' input-hint--empty'}">${hint}</small></div>`;
 }
 
 function buildCommand(command: CommandDefinition): string {
@@ -1301,9 +1363,14 @@ function idBrowserTextMatches(entry: IdCatalogEntry): boolean {
 
 function matchingBuiltInIds(): IdCatalogEntry[] {
   const categories = activeIdBrowserCategory().builtInCategories;
+  const pickerTypes = activeCatalogPicker?.browser === 'id' ? activeCatalogPicker.allowedTypes : [];
+  const pickerCategories = activeCatalogPicker?.browser === 'id' ? activeCatalogPicker.allowedCategories : [];
   return idCatalog.filter((entry) => {
     const categoryMatches = categories.includes('*') || categories.includes(entry.category);
-    return categoryMatches && idBrowserTextMatches(entry);
+    const recordTypeMatches = !idBrowserRecordTypeFilter || entry.type.toUpperCase() === idBrowserRecordTypeFilter;
+    const pickerTypeMatches = pickerTypes.length === 0 || pickerTypes.includes(entry.type.toUpperCase());
+    const pickerCategoryMatches = pickerCategories.length === 0 || pickerCategories.includes(entry.category);
+    return categoryMatches && recordTypeMatches && pickerTypeMatches && pickerCategoryMatches && idBrowserTextMatches(entry);
   });
 }
 
@@ -1362,6 +1429,7 @@ function renderIdBrowserSelection(): string {
       </div>
       <code>${escapeHtml(entry.value)}</code>
       <div class="id-browser-selection-actions">
+        ${activeCatalogPicker?.browser === 'id' ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-id-browser-selection>Use This ID</button>` : ''}
         <button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(entry.value)}">Copy ID</button>
         ${editorId ? `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(editorId)}">Copy Editor ID</button>` : ''}
         ${action === 'additem' ? `<label class="id-browser-quantity"><span class="osf-eyebrow">QUANTITY</span><input class="osf-input" id="id-browser-quantity" type="text" value="${idBrowserQuantity}" inputmode="numeric" autocomplete="off" aria-label="Item quantity from 1 to 999999"></label>` : ''}
@@ -1372,7 +1440,7 @@ function renderIdBrowserSelection(): string {
 
 function renderIdBrowserPanel(): void {
   const results = matchingBuiltInIds();
-  resultCount.textContent = `${results.length} shown / ${idCatalog.length} included IDs`;
+  resultCount.textContent = `${results.length} shown / ${idCatalog.length} included IDs${idBrowserRecordTypeFilter ? ` / ${idBrowserRecordTypeFilter}` : ''}`;
 
   const renderResultRow = (entry: IdCatalogEntry, index: number) => `
     <button class="id-browser-row${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
@@ -1383,7 +1451,7 @@ function renderIdBrowserPanel(): void {
       <span class="id-browser-row-meta"><span>${escapeHtml(entry.type)}</span><code>${escapeHtml(entry.value)}</code></span>
     </button>`;
   const resultGroups = groupedIdBrowserResults(results).map(([category, entries]) => {
-    const open = Boolean(query) || idBrowserOpenCategories.has(category);
+    const open = Boolean(query) || activeCatalogPicker?.browser === 'id' || idBrowserOpenCategories.has(category);
     const visibleCount = Math.min(entries.length, idBrowserVisibleCounts.get(category) ?? ID_BROWSER_PAGE_SIZE);
     const visibleEntries = open ? entries.slice(0, visibleCount) : [];
     return `
@@ -1397,7 +1465,8 @@ function renderIdBrowserPanel(): void {
   }).join('');
 
   customPanel.innerHTML = `
-    <section class="id-browser-panel">
+    <section class="id-browser-panel${activeCatalogPicker?.browser === 'id' ? ' is-selecting' : ''}">
+      ${activeCatalogPicker?.browser === 'id' ? `<section class="browser-selection-banner osf-card"><div><strong>CHOOSE AN ID</strong><span>Select a matching record, then choose Use This ID. No console command will run.</span></div><button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-cancel-catalog-picker>Cancel Selection</button></section>` : ''}
       <div class="id-browser-controls">
         <label>
           <span class="osf-eyebrow">CATEGORY</span>
@@ -1423,6 +1492,7 @@ function renderIdBrowserPanel(): void {
   if (categorySelect instanceof HTMLSelectElement) {
     categorySelect.addEventListener('change', () => {
       idBrowserCategory = categorySelect.value;
+      idBrowserRecordTypeFilter = '';
       idBrowserSelected = null;
       idBrowserQuantity = 1;
       idBrowserOpenCategories.clear();
@@ -1488,6 +1558,10 @@ function renderIdBrowserPanel(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-copy-id-browser-id]').forEach((button) => button.addEventListener('click', () => {
     if (button.dataset.copyIdBrowserId) void copyResultId(button.dataset.copyIdBrowserId);
   }));
+  document.querySelector<HTMLButtonElement>('[data-use-id-browser-selection]')?.addEventListener('click', () => {
+    if (idBrowserSelected) finishCatalogPicker(idBrowserSelected.value, idBrowserSelected.label);
+  });
+  document.querySelector<HTMLButtonElement>('[data-cancel-catalog-picker]')?.addEventListener('click', () => finishCatalogPicker());
 }
 
 function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): void {
@@ -1539,25 +1613,62 @@ function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): void 
   requestExecution({ command, definition, rememberRecent: false });
 }
 
-function renderCustomPanel(): void {
+function renderCustomPanel(draftName = '', draftCommands = ''): void {
+  const savedEntries = savedCustomCommands.map((entry) => {
+    const commands = parseCustomCommands(entry.commands);
+    return `
+      <article class="custom-saved-entry">
+        <div class="custom-saved-entry-copy">
+          <strong>${escapeHtml(entry.name)}</strong>
+          <span>${commands.length} command${commands.length === 1 ? '' : 's'}</span>
+        </div>
+        <div class="custom-saved-entry-actions">
+          <button class="osf-btn osf-btn--sm" type="button" data-custom-load="${escapeHtml(entry.id)}">Load</button>
+          <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-custom-delete="${escapeHtml(entry.id)}">Delete</button>
+        </div>
+      </article>`;
+  }).join('');
+
   customPanel.innerHTML = `
     <section class="custom-card osf-card">
-      <p class="osf-eyebrow">RAW CONSOLE COMMANDS</p>
-      <h3>Execute commands directly</h3>
-      <p>Enter one console command per line. CCC runs nonempty lines in order.</p>
-      <form id="custom-form" class="custom-form">
-        <label>
-          <span>Commands</span>
-          <textarea class="osf-input custom-command-input" id="custom-command" rows="8" autocomplete="off" spellcheck="false" placeholder="One command per line, for example:&#10;tgm&#10;player.additem 0000ABF9 4"></textarea>
-        </label>
-        <button class="osf-btn osf-btn--osf-accent" type="submit" ${nativeBackendReady ? '' : 'disabled'}>Review Commands</button>
-      </form>
-      <div class="custom-note"><strong>NOTE</strong><span>Up to ${MAX_CUSTOM_BATCH_COMMANDS} commands can run in one batch. The batch stops if a command reports an error. Save before experimenting with commands you do not recognize.</span></div>
+      <div class="custom-workspace">
+        <div class="custom-editor-pane">
+          <p class="osf-eyebrow">RAW CONSOLE COMMANDS</p>
+          <h3>Execute commands directly</h3>
+          <p>Enter one console command per line. CCC runs nonempty lines in order.</p>
+          <form id="custom-form" class="custom-form">
+            <label>
+              <span>Commands</span>
+              <textarea class="osf-input custom-command-input" id="custom-command" rows="8" autocomplete="off" spellcheck="false" placeholder="One command per line, for example:&#10;tgm&#10;player.additem 0000ABF9 4">${escapeHtml(draftCommands)}</textarea>
+            </label>
+            <button class="osf-btn osf-btn--osf-accent" type="submit" ${nativeBackendReady ? '' : 'disabled'}>Review Commands</button>
+          </form>
+          <div class="custom-note"><strong>NOTE</strong><span>Up to ${MAX_CUSTOM_BATCH_COMMANDS} commands can run in one batch. The batch stops if a command reports an error. Save before experimenting with commands you do not recognize.</span></div>
+        </div>
+        <aside class="custom-saved-panel" aria-label="Saved custom commands">
+          <div class="custom-saved-heading">
+            <div><p class="osf-eyebrow">SAVED COMMANDS</p><h4>Reusable entries</h4></div>
+            <span>${savedCustomCommands.length} / ${MAX_SAVED_CUSTOM_COMMANDS}</span>
+          </div>
+          <form id="custom-save-form" class="custom-save-form">
+            <label>
+              <span>Entry Name</span>
+              <input class="osf-input" id="custom-command-name" type="text" maxlength="${MAX_CUSTOM_COMMAND_NAME_LENGTH}" autocomplete="off" placeholder="Example: Photo mode setup" value="${escapeHtml(draftName)}">
+            </label>
+            <button class="osf-btn osf-btn--sm" type="submit">Save Current</button>
+          </form>
+          <div class="custom-saved-list">
+            ${savedEntries || '<div class="custom-saved-empty"><strong>No saved entries</strong><span>Name the current batch and save it here.</span></div>'}
+          </div>
+        </aside>
+      </div>
     </section>
   `;
 
-  const form = document.querySelector('#custom-form');
-  const input = document.querySelector('#custom-command');
+  const form = customPanel.querySelector('#custom-form');
+  const input = customPanel.querySelector('#custom-command');
+  const saveForm = customPanel.querySelector('#custom-save-form');
+  const nameInput = customPanel.querySelector('#custom-command-name');
   if (form instanceof HTMLFormElement && input instanceof HTMLTextAreaElement) {
     form.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -1585,13 +1696,222 @@ function renderCustomPanel(): void {
       );
     });
   }
+
+  if (saveForm instanceof HTMLFormElement && nameInput instanceof HTMLInputElement && input instanceof HTMLTextAreaElement) {
+    saveForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const name = nameInput.value.trim();
+      const commands = parseCustomCommands(input.value);
+      if (!name) {
+        setStatus('Enter a name for this saved command entry.', 'error');
+        nameInput.focus();
+        return;
+      }
+      if (commands.length === 0) {
+        setStatus('Enter at least one console command before saving.', 'error');
+        input.focus();
+        return;
+      }
+      if (commands.length > MAX_CUSTOM_BATCH_COMMANDS) {
+        setStatus(`A saved batch can contain up to ${MAX_CUSTOM_BATCH_COMMANDS} commands.`, 'error');
+        input.focus();
+        return;
+      }
+      const oversizedIndex = commands.findIndex((command) => command.length > MAX_CUSTOM_COMMAND_LENGTH);
+      if (oversizedIndex >= 0) {
+        setStatus(`Command ${oversizedIndex + 1} exceeds the ${MAX_CUSTOM_COMMAND_LENGTH}-character limit.`, 'error');
+        input.focus();
+        return;
+      }
+
+      const existingIndex = savedCustomCommands.findIndex((entry) => entry.name.toLowerCase() === name.toLowerCase());
+      if (existingIndex < 0 && savedCustomCommands.length >= MAX_SAVED_CUSTOM_COMMANDS) {
+        setStatus(`You can save up to ${MAX_SAVED_CUSTOM_COMMANDS} custom command entries. Delete one before adding another.`, 'error');
+        return;
+      }
+
+      const entry: SavedCustomCommand = {
+        id: existingIndex >= 0 ? savedCustomCommands[existingIndex].id : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name,
+        commands: commands.join('\n'),
+        updatedAt: Date.now(),
+      };
+      if (existingIndex >= 0) savedCustomCommands.splice(existingIndex, 1);
+      savedCustomCommands = [entry, ...savedCustomCommands].slice(0, MAX_SAVED_CUSTOM_COMMANDS);
+      writeSavedCustomCommands();
+      setStatus(`${existingIndex >= 0 ? 'Updated' : 'Saved'} custom command entry: ${name}.`, 'success');
+      renderCustomPanel('', input.value);
+    });
+  }
+
+  customPanel.querySelectorAll<HTMLButtonElement>('[data-custom-load]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const entry = savedCustomCommands.find((candidate) => candidate.id === button.dataset.customLoad);
+      if (!entry || !(input instanceof HTMLTextAreaElement) || !(nameInput instanceof HTMLInputElement)) return;
+      input.value = entry.commands;
+      nameInput.value = entry.name;
+      input.focus();
+      setStatus(`Loaded ${entry.name}. Review the commands before running them.`, 'success');
+    });
+  });
+
+  customPanel.querySelectorAll<HTMLButtonElement>('[data-custom-delete]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const entry = savedCustomCommands.find((candidate) => candidate.id === button.dataset.customDelete);
+      if (!entry) return;
+      const currentName = nameInput instanceof HTMLInputElement ? nameInput.value : '';
+      const currentCommands = input instanceof HTMLTextAreaElement ? input.value : '';
+      savedCustomCommands = savedCustomCommands.filter((candidate) => candidate.id !== entry.id);
+      writeSavedCustomCommands();
+      setStatus(`Deleted saved custom command entry: ${entry.name}.`, 'success');
+      renderCustomPanel(currentName, currentCommands);
+    });
+  });
+}
+
+function openPackagedFormSearch(definition: CommandDefinition): void {
+  const searchInput = document.getElementById(`${definition.id}-search`);
+  const searchText = searchInput instanceof HTMLInputElement ? searchInput.value.trim() : '';
+  const recordTypeKey = definition.catalogSearch?.recordTypeInput;
+  const recordTypeInput = recordTypeKey ? document.getElementById(`${definition.id}-${recordTypeKey}`) : null;
+  const recordType = recordTypeInput instanceof HTMLInputElement ? recordTypeInput.value.trim().toUpperCase() : '';
+
+  addRecent(definition.id);
+  query = searchText;
+  search.value = searchText;
+
+  if (recordType === 'QUST') {
+    activeView = 'quest-browser';
+    openQuestBrowserGroup = null;
+    idBrowserRecordTypeFilter = '';
+    render();
+    setStatus(`Showing included quest records matching “${searchText}”.`, 'success');
+    return;
+  }
+
+  activeView = 'id-browser';
+  idBrowserRecordTypeFilter = recordType;
+  idBrowserCategory = recordType
+    ? (ID_BROWSER_CATEGORIES.find((category) => category.recordType === recordType)?.value ?? 'all')
+    : 'all';
+  idBrowserSelected = null;
+  idBrowserQuantity = 1;
+  idBrowserOpenCategories.clear();
+  idBrowserVisibleCounts.clear();
+  render();
+  setStatus(recordType
+    ? `Showing included ${recordType} records matching “${searchText}”.`
+    : `Showing included IDs matching “${searchText}”.`, 'success');
+}
+
+function commandInputValues(command: CommandDefinition): Record<string, string> {
+  return Object.fromEntries((command.inputs ?? []).map((input) => {
+    const element = document.getElementById(`${command.id}-${input.key}`);
+    const fallback = input.defaultValue === undefined ? '' : String(input.defaultValue);
+    return [input.key, element instanceof HTMLInputElement ? element.value : fallback];
+  }));
+}
+
+function openCatalogPicker(command: CommandDefinition, input: CommandInput): void {
+  const browserPicker = input.browserPicker;
+  if (!browserPicker) return;
+  activeCatalogPicker = {
+    browser: browserPicker.browser,
+    commandId: command.id,
+    inputKey: input.key,
+    allowedTypes: (browserPicker.allowedTypes ?? []).map((type) => type.toUpperCase()),
+    allowedCategories: browserPicker.allowedCategories ?? [],
+    returnView: activeView,
+    returnQuery: query,
+    values: commandInputValues(command),
+  };
+
+  query = '';
+  search.value = '';
+  if (browserPicker.browser === 'quest') {
+    activeView = 'quest-browser';
+    openQuestBrowserGroup = null;
+    render();
+    setStatus('Choose a quest to fill the command field. No quest command will run.', 'normal');
+    return;
+  }
+
+  activeView = 'id-browser';
+  idBrowserRecordTypeFilter = '';
+  idBrowserCategory = activeCatalogPicker.allowedTypes.length === 1
+    ? (ID_BROWSER_CATEGORIES.find((category) => category.recordType === activeCatalogPicker?.allowedTypes[0])?.value ?? 'all')
+    : 'all';
+  idBrowserSelected = null;
+  idBrowserQuantity = 1;
+  idBrowserOpenCategories.clear();
+  idBrowserVisibleCounts.clear();
+  render();
+  setStatus('Choose an included record to fill the command field. No console command will run.', 'normal');
+}
+
+function finishCatalogPicker(value?: string, label?: string): void {
+  const picker = activeCatalogPicker;
+  if (!picker) return;
+  activeCatalogPicker = null;
+  activeView = picker.returnView;
+  query = picker.returnQuery;
+  search.value = picker.returnQuery;
+  idBrowserRecordTypeFilter = '';
+  idBrowserSelected = null;
+  idBrowserOpenCategories.clear();
+  idBrowserVisibleCounts.clear();
+  render();
+
+  for (const [inputKey, inputValue] of Object.entries(picker.values)) {
+    const element = document.getElementById(`${picker.commandId}-${inputKey}`);
+    if (element instanceof HTMLInputElement) element.value = inputValue;
+  }
+  const target = document.getElementById(`${picker.commandId}-${picker.inputKey}`);
+  if (target instanceof HTMLInputElement && value) {
+    target.value = value;
+    updatePreview(picker.commandId);
+    target.focus();
+    target.select();
+    setStatus(`Selected ${label ?? value}: ${value}`, 'success');
+  } else {
+    updatePreview(picker.commandId);
+    setStatus('Selection cancelled. Command values were preserved.', 'normal');
+  }
+}
+
+async function openQuestStagePicker(commandId: string, inputKey: string, questInputKey: string): Promise<void> {
+  const questInput = document.getElementById(`${commandId}-${questInputKey}`);
+  if (!(questInput instanceof HTMLInputElement)) return;
+  const questId = questInput.value.trim().toUpperCase().padStart(8, '0');
+  setStatus('Loading recorded quest stages...', 'working');
+  await ensureQuestBrowserLoaded();
+  const quest = questBrowserEntries.find((entry) => entry.questId.toUpperCase() === questId);
+  if (!quest) {
+    setStatus('That Quest ID is not in the packaged Quest Browser.', 'error');
+    questInput.focus();
+    questInput.select();
+    return;
+  }
+  if (quest.stages.length === 0) {
+    setStatus(`${quest.quest} has no recorded stage indexes to choose from.`, 'error');
+    return;
+  }
+  openIdPicker(commandId, inputKey, {
+    title: `Choose Stage — ${quest.quest}`,
+    buttonLabel: 'Choose Stage',
+    searchPlaceholder: 'Search stage number...',
+    options: quest.stages.map((stage) => ({ label: `Stage ${stage}`, value: String(stage), detail: quest.editorId })),
+  });
+  setStatus(`Choose one of ${quest.stages.length} recorded stages for ${quest.quest}.`, 'normal');
 }
 
 function switchView(view: string): void {
   const leavingIdBrowserSearch = activeView === 'id-browser' && Boolean(query);
   activeView = view;
+  activeCatalogPicker = null;
   query = '';
   search.value = '';
+  if (view === 'id-browser') idBrowserRecordTypeFilter = '';
   if (leavingIdBrowserSearch) {
     idBrowserOpenCategories.clear();
     idBrowserVisibleCounts.clear();
@@ -1632,6 +1952,36 @@ commandList.addEventListener('click', (event) => {
     const command = COMMANDS.find((entry) => entry.id === pickerButton.dataset.openIdPicker);
     const input = command?.inputs?.find((entry) => entry.key === pickerButton.dataset.inputKey);
     if (command && input?.picker) openIdPicker(command.id, input.key, input.picker);
+    return;
+  }
+
+  const catalogPickerButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-open-catalog-picker]');
+  if (catalogPickerButton?.dataset.openCatalogPicker && catalogPickerButton.dataset.inputKey) {
+    const command = COMMANDS.find((entry) => entry.id === catalogPickerButton.dataset.openCatalogPicker);
+    const input = command?.inputs?.find((entry) => entry.key === catalogPickerButton.dataset.inputKey);
+    if (command && input?.browserPicker) openCatalogPicker(command, input);
+    return;
+  }
+
+  const questStagePickerButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-open-quest-stage-picker]');
+  if (questStagePickerButton?.dataset.openQuestStagePicker && questStagePickerButton.dataset.inputKey && questStagePickerButton.dataset.questInputKey) {
+    void openQuestStagePicker(
+      questStagePickerButton.dataset.openQuestStagePicker,
+      questStagePickerButton.dataset.inputKey,
+      questStagePickerButton.dataset.questInputKey,
+    );
+    return;
+  }
+
+  const cancelCatalogPickerButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-cancel-catalog-picker]');
+  if (cancelCatalogPickerButton) {
+    finishCatalogPicker();
+    return;
+  }
+
+  const useQuestButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-use-quest-id]');
+  if (useQuestButton?.dataset.useQuestId) {
+    finishCatalogPicker(useQuestButton.dataset.useQuestId, useQuestButton.dataset.useQuestTitle);
     return;
   }
 
@@ -1747,6 +2097,10 @@ commandList.addEventListener('click', (event) => {
     return;
   }
   const builtCommand = buildCommand(command);
+  if (command.catalogSearch) {
+    openPackagedFormSearch(command);
+    return;
+  }
   if (command.effectiveTotal) {
     void prepareEffectiveTotalExecution(command, builtCommand);
     return;
@@ -1866,6 +2220,8 @@ document.addEventListener('keydown', (event) => {
       confirmBackdrop.hidden = true;
     } else if (openCaution) {
       closeCautionPopovers();
+    } else if (activeCatalogPicker) {
+      finishCatalogPicker();
     } else {
       void closeCurrentView();
     }

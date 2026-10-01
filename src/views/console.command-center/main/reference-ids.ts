@@ -40,6 +40,16 @@ export const REFERENCE_ACTOR_VALUE_PICKER: ReferenceIdPicker = {
   ],
 };
 
+export const OPEN_STATE_PICKER: ReferenceIdPicker = {
+  title: 'Choose Open State',
+  buttonLabel: 'Choose State',
+  searchPlaceholder: 'Search open or closed...',
+  options: [
+    { label: 'Open', value: '1', detail: 'Open the selected door or other openable reference' },
+    { label: 'Closed', value: '0', detail: 'Close the selected door or other openable reference', keywords: ['close'] },
+  ],
+};
+
 export const SHIP_ACTOR_VALUE_PICKER: ReferenceIdPicker = {
   title: 'Choose Ship Actor Value',
   buttonLabel: 'Choose Value',

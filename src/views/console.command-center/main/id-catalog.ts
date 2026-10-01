@@ -1,4 +1,4 @@
-import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, WEATHER_PICKER, type ReferenceIdPicker } from './reference-ids';
+import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, WEATHER_PICKER } from './reference-ids';
 import type { GeneratedIdCatalogEntry } from './id-browser-data';
 
 export type IdCatalogAction = 'additem' | 'addperk' | 'addspell' | 'spawn';
@@ -40,7 +40,7 @@ export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   { label: 'Factions', value: 'factions', detail: 'Faction records.', recordType: 'FACT', builtInCategories: ['Factions'] },
   { label: 'Quests', value: 'quests', detail: 'Quest records.', recordType: 'QUST', builtInCategories: [] },
   { label: 'Locations / Cells', value: 'locations', detail: 'Named location and cell records with searchable Editor IDs.', recordType: 'CELL', builtInCategories: ['Locations', 'Cells'] },
-  { label: 'Ships / Base Forms', value: 'ships', detail: 'Ships and generic base-form records.', recordType: 'GBFM', builtInCategories: [] },
+  { label: 'Ships / Base Forms', value: 'ships', detail: 'Ships and generic base-form records.', recordType: 'GBFM', builtInCategories: ['Ships & Base Forms'] },
   { label: 'Furniture', value: 'furniture', detail: 'Furniture and animation-marker records.', recordType: 'FURN', builtInCategories: [] },
   { label: 'Weather', value: 'weather', detail: 'Weather records.', recordType: 'WTHR', builtInCategories: ['Weather'] },
 ];
@@ -50,6 +50,18 @@ const BASE_CATALOG: IdCatalogEntry[] = [
   { label: 'Credits', value: '0000000F', type: 'MISC', category: 'Common', detail: 'Currency', keywords: ['money'], action: 'additem' },
   { label: 'Digipick', value: '0000000A', type: 'MISC', category: 'Common', detail: 'Lockpick', keywords: ['lockpick'], action: 'additem' },
   { label: 'Ship Parts', value: '0003FB19', type: 'ALCH', category: 'Common', detail: 'Ship repair item', keywords: ['repair'], action: 'additem' },
+
+  // SHIPS / GENERIC BASE FORMS
+  { label: 'Abyss Trekker', value: '000F31DB', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
+  { label: 'Aegis', value: '000F3078', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
+  { label: 'Discovery', value: '002E7461', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
+  { label: 'Frontier', value: '0000B730', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
+  { label: 'Gladius', value: '00147C8D', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
+  { label: 'Longsword', value: '0021C44B', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
+  { label: 'Mako', value: '001EB556', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
+  { label: 'Pterosaur', value: '000FAFDE', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
+  { label: 'Sunsail', value: '00058886', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
+  { label: 'Vagabond', value: '000F31CE', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
 
   // AID — base game
   { label: 'Med Pack', value: '0000ABF9', type: 'ALCH', category: 'Aid', detail: 'Restores health', keywords: ['medpack', 'medicine', 'healing'], action: 'additem' },
@@ -417,41 +429,6 @@ const BASE_CATALOG: IdCatalogEntry[] = [
   { label: 'Refined (Weapon)', value: '0028F443', type: 'OMOD', category: 'Mods', detail: 'Weapon quality modifier' },
   { label: 'Advanced (Weapon)', value: '0028F444', type: 'OMOD', category: 'Mods', detail: 'Weapon quality modifier' },
 ];
-
-const pickerFromCatalog = (
-  title: string,
-  buttonLabel: string,
-  searchPlaceholder: string,
-  categories: string[],
-): ReferenceIdPicker => ({
-  title,
-  buttonLabel,
-  searchPlaceholder,
-  options: BASE_CATALOG
-    .filter((entry) => categories.includes(entry.category))
-    .map(({ label, value, detail, keywords }) => ({ label, value, detail, keywords })),
-});
-
-export const PERK_SKILL_PICKER = pickerFromCatalog(
-  'Choose Perk, Skill, or Trait',
-  'Choose Perk',
-  'Search perk, skill, trait, or Form ID...',
-  ['Perks'],
-);
-
-export const POWER_SPELL_PICKER = pickerFromCatalog(
-  'Choose Starborn Power',
-  'Choose Power',
-  'Search power name or Form ID...',
-  ['Powers'],
-);
-
-export const SPELL_EFFECT_PICKER = pickerFromCatalog(
-  'Choose Power or Effect',
-  'Choose Effect',
-  'Search power, environmental effect, or Form ID...',
-  ['Powers', 'Effects'],
-);
 
 const pickerEntries: IdCatalogEntry[] = [
   ...BOUNTY_FACTION_PICKER.options.map((option) => ({

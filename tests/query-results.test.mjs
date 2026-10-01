@@ -137,13 +137,19 @@ test('ordinary commands retain the execution route and do not open results', asy
 });
 
 test('commands that need the game UI request close-before-execute handoff', async () => {
-  const h = harness({ ok: true, command: 'showmenu sleepwaitmenu' });
+  const h = harness({ ok: true, command: 'showmenu photomodemenu' });
   await h.sandbox.executeConsole({
-    command: 'showmenu sleepwaitmenu',
-    definition: { id: 'open-wait-menu', title: 'Open Wait Menu', closeBeforeExecute: true },
+    command: 'showmenu photomodemenu',
+    definition: { id: 'open-photo-mode', title: 'Open Photo Mode', closeBeforeExecute: true },
   });
   assert.equal(h.calls[0], 'console.command-center.execute');
   assert.equal(h.payloads[0].closeBeforeExecute, true);
+});
+
+test('Wait Anywhere replaces the broken native wait-menu commands', () => {
+  assert.match(commandSource, /id: 'pass-time',[\s\S]*?title: 'Wait Anywhere'[\s\S]*?command: 'passtime \{hours\}'[\s\S]*?max: 24/);
+  assert.doesNotMatch(commandSource, /showmenu (?:sleepwaitmenu|sitwaitmenu)/i);
+  assert.doesNotMatch(commandSource, /id: 'open-wait-menu'/);
 });
 
 test('saved output is reopened as text without repeating the game command', () => {
@@ -179,6 +185,19 @@ test('Custom Command uses a multiline batch editor and the sidebar has no redund
     'tgm',
     'player.additem 0000ABF9 4',
   ]);
+});
+
+test('Custom Command can persist, load, update, and delete up to ten named entries', () => {
+  assert.match(source, /STORAGE_CUSTOM_COMMANDS = 'consoleCommandCenter\.customCommands'/);
+  assert.match(source, /MAX_SAVED_CUSTOM_COMMANDS = 10/);
+  assert.match(source, /data-custom-load=/);
+  assert.match(source, /data-custom-delete=/);
+  assert.match(source, /input\.value = entry\.commands/);
+  assert.match(source, /entry\.name\.toLowerCase\(\) === name\.toLowerCase\(\)/);
+  assert.match(source, /writeSavedCustomCommands\(\)/);
+  assert.match(styleSource, /\.custom-workspace \{ display: grid; grid-template-columns: minmax\(0, 3fr\) minmax\(320px, 2fr\);/);
+  assert.match(styleSource, /\.custom-saved-entry-actions \{ display: flex;/);
+  assert.doesNotMatch(source, /const preview = commands\[0\]/);
 });
 
 test('Custom Command batches execute one line at a time', async () => {
@@ -265,15 +284,16 @@ test('expanded packaged catalog has normalized unique IDs and labeled expansion 
     referenceIdSource.length,
   );
   const pickerIds = [...pickerCatalog.matchAll(/value: '([0-9A-F]{8})'/g)].map((match) => match[1]);
-  assert.equal(ids.length, 345);
+  assert.equal(ids.length, 355);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(pickerIds.length, 25);
-  assert.equal(new Set([...ids, ...pickerIds]).size, 370);
+  assert.equal(new Set([...ids, ...pickerIds]).size, 380);
   assert.match(idCatalogSource, /label: 'Trauma Pack', value: '0029A847'/);
   assert.match(idCatalogSource, /label: 'Boxing', value: '002C59DF'/);
   assert.match(idCatalogSource, /label: 'Heavy Particle Fuse', value: '002B558B'/);
   assert.match(referenceIdSource, /Dazra Ship Services[\s\S]*?Shattered Space DLC bounty faction/);
   assert.match(referenceIdSource, /House Va'ruun — Shattered Space[\s\S]*?Shattered Space DLC bounty faction/);
+  assert.match(idCatalogSource, /label: 'Abyss Trekker', value: '000F31DB', type: 'GBFM'/);
 
   const generatedJson = generatedIdSource.match(/String\.raw`([\s\S]+)`\) as/)?.[1];
   assert.ok(generatedJson, 'Generated catalog payload must be present');
@@ -295,14 +315,29 @@ test('large browser datasets load only when their screens are opened', () => {
   assert.doesNotMatch(source, /^import \{[^\n]*QUEST_BROWSER_ENTRIES/m);
   assert.match(source, /import\('\.\/id-browser-data'\)/);
   assert.match(source, /import\('\.\/quest-browser'\)/);
-  assert.match(source, /The catalog is loaded only when this screen is opened/);
+  assert.match(source, /function clearForDatasetLoad\(\): void/);
+  assert.match(source, /commandList\.replaceChildren\(\)/);
+  assert.doesNotMatch(source, /Loading \$\{escapeHtml\(label\)\}/);
 });
 
-test('perk, power, and effect commands use searchable packaged pickers', () => {
-  assert.match(commandSource, /picker: PERK_SKILL_PICKER/g);
-  assert.equal((commandSource.match(/picker: PERK_SKILL_PICKER/g) ?? []).length, 2);
-  assert.match(commandSource, /picker: POWER_SPELL_PICKER/);
-  assert.match(commandSource, /picker: SPELL_EFFECT_PICKER/);
+test('command inputs and picker buttons use the same control height', () => {
+  assert.match(styleSource, /\.input-field\s*\{[\s\S]*?grid-template-rows:\s*12px 40px auto;/);
+  assert.match(styleSource, /\.input-field \.osf-input\s*\{[\s\S]*?height:\s*40px;/);
+  assert.match(styleSource, /\.input-picker-button\s*\{[\s\S]*?height:\s*40px;/);
+});
+
+test('perk, power, and effect commands use filtered ID Browser selection', () => {
+  assert.equal((commandSource.match(/buttonLabel: 'Browse Perks'/g) ?? []).length, 2);
+  assert.match(commandSource, /buttonLabel: 'Browse Perks', allowedTypes: \['PERK'\], allowedCategories: \['Perks'\]/);
+  assert.match(commandSource, /buttonLabel: 'Browse Powers', allowedTypes: \['SPEL'\], allowedCategories: \['Powers'\]/);
+  assert.match(commandSource, /buttonLabel: 'Browse Effects', allowedTypes: \['SPEL'\], allowedCategories: \['Powers', 'Effects'\]/);
+  assert.doesNotMatch(commandSource, /PERK_SKILL_PICKER|POWER_SPELL_PICKER|SPELL_EFFECT_PICKER/);
+  assert.doesNotMatch(idCatalogSource, /PERK_SKILL_PICKER|POWER_SPELL_PICKER|SPELL_EFFECT_PICKER/);
+  assert.match(source, /pickerCategories = activeCatalogPicker\?\.browser === 'id' \? activeCatalogPicker\.allowedCategories : \[\]/);
+  assert.match(source, /pickerCategories\.includes\(entry\.category\)/);
+  assert.match(source, /activeCatalogPicker\?\.browser === 'id' \|\| idBrowserOpenCategories\.has\(category\)/);
+  assert.match(source, /id-browser-panel\$\{activeCatalogPicker\?\.browser === 'id' \? ' is-selecting' : ''\}/);
+  assert.match(styleSource, /\.id-browser-panel\.is-selecting\s*\{[\s\S]*?grid-template-rows:\s*auto auto auto auto 2px minmax\(0, 1fr\);/);
   assert.equal((idCatalogSource.match(/category: 'Powers'/g) ?? []).length, 24);
   assert.equal((idCatalogSource.match(/category: 'Effects'/g) ?? []).length, 6);
   assert.match(idCatalogSource, /label: 'Anti-Gravity Field', value: '002BACBA'/);
@@ -316,7 +351,7 @@ test('perk, power, and effect commands use searchable packaged pickers', () => {
 
 test('ID Browser groups results in collapsed categories and opens matches while searching', () => {
   assert.match(source, /<details class="inventory-type-group id-browser-category-group"/);
-  assert.match(source, /const open = Boolean\(query\) \|\| idBrowserOpenCategories\.has\(category\)/);
+  assert.match(source, /const open = Boolean\(query\) \|\| activeCatalogPicker\?\.browser === 'id' \|\| idBrowserOpenCategories\.has\(category\)/);
   assert.match(source, /group\.addEventListener\('toggle'/);
   assert.match(source, /idBrowserOpenCategories\.clear\(\)/);
   assert.match(source, /if \(previousQuery && !query\) idBrowserOpenCategories\.clear\(\)/);
@@ -358,17 +393,64 @@ test('ID Browser item action accepts a validated quantity and defaults to one', 
 });
 
 test('known-broken command cards are unavailable at both render and execution boundaries', () => {
-  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 9);
+  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 4);
   assert.match(source, /const unavailable = Boolean\(command\.unavailableReason\)/);
   assert.match(source, /if \(execution\.definition\?\.unavailableReason\)/);
 });
 
+test('held-object inspection does not restore the unresolved native event adapter', () => {
+  assert.doesNotMatch(commandSource, /id: 'get-player-grabbed-ref'/);
+  assert.doesNotMatch(directQuerySource, /operation != "getplayergrabbedref"/);
+  assert.doesNotMatch(nativeSource, /TESGrabReleaseEvent|GrabbedObjectTracker/);
+});
+
+test('open-state control uses the verified setter with a compact state chooser', () => {
+  assert.doesNotMatch(commandSource, /id: 'inspect-open-state'/);
+  assert.match(commandSource, /id: 'set-open-state',[\s\S]*?title: 'Open or Close Reference'/);
+  assert.match(commandSource, /key: 'state'[\s\S]*?picker: OPEN_STATE_PICKER/);
+  assert.match(referenceIdSource, /export const OPEN_STATE_PICKER:[\s\S]*?label: 'Open', value: '1'[\s\S]*?label: 'Closed', value: '0'/);
+});
+
+test('Form ID search commands open packaged browsers without native capture or scanning', () => {
+  assert.match(commandSource, /id: 'search-form-ids',[\s\S]*?catalogSearch: \{\}/);
+  assert.match(commandSource, /id: 'search-form-ids-by-type',[\s\S]*?catalogSearch: \{ recordTypeInput: 'recordType' \}/);
+  assert.doesNotMatch(commandSource, /id: 'search-form-ids',[\s\S]*?captureOutput: true[\s\S]*?id: 'search-form-ids-by-type'/);
+  assert.match(source, /function openPackagedFormSearch\(definition: CommandDefinition\)/);
+  assert.match(source, /if \(recordType === 'QUST'\)/);
+  assert.match(source, /entry\.type\.toUpperCase\(\) === idBrowserRecordTypeFilter/);
+  assert.match(source, /command\.catalogSearch \? 'Search IDs' : 'Execute'/);
+});
+
+test('command fields can choose packaged item, base, mod, ship, quest, and stage IDs', () => {
+  assert.match(commandSource, /const itemFormIdInput =/);
+  assert.match(commandSource, /buttonLabel: 'Browse Equipment'/);
+  assert.match(commandSource, /buttonLabel: 'Browse Base IDs'/);
+  assert.match(commandSource, /buttonLabel: 'Browse Mods'/);
+  assert.match(commandSource, /buttonLabel: 'Browse Ships'/);
+  assert.equal((commandSource.match(/questIdInput\(\)/g) ?? []).length, 8);
+  assert.match(commandSource, /questStageFor: 'questId'/);
+  assert.match(source, /function openCatalogPicker\(command: CommandDefinition, input: CommandInput\)/);
+  assert.match(source, /function finishCatalogPicker\(value\?: string, label\?: string\)/);
+  assert.match(source, /async function openQuestStagePicker\(/);
+  assert.match(source, /data-use-id-browser-selection/);
+  assert.match(source, /data-use-quest-id=/);
+  assert.match(source, /No console command will run\./);
+  assert.match(source, /else if \(activeCatalogPicker\) \{\s*finishCatalogPicker\(\);/);
+  assert.doesNotMatch(commandSource, /id: 'teleport-player-to-ref',[\s\S]*?browserPicker[\s\S]*?id: 'set-player-position-axis'/);
+});
+
 test('effective-total commands use the native preview-and-apply route', () => {
-  assert.equal((commandSource.match(/effectiveTotal: true/g) ?? []).length, 7);
+  assert.equal((commandSource.match(/effectiveTotal: true/g) ?? []).length, 8);
   assert.match(source, /apply: false/);
   assert.match(source, /apply: true/);
   assert.match(source, /console\.command-center\.setEffectiveActorValue/);
   assert.match(nativeSource, /calculatedBase = \*desiredTotal - modifierContribution/);
+});
+
+test('newly verified carry weight, interior gravity, and actor behavior controls remain available', () => {
+  assert.match(commandSource, /id: 'set-carry-weight-total',[\s\S]*?ccc\.seteffectivetotal player CarryWeight \{value\}[\s\S]*?effectiveTotal: true/);
+  assert.match(commandSource, /id: 'set-interior-gravity',[\s\S]*?command: 'setgravityscale \{value\}'[\s\S]*?Interior cells only/);
+  assert.match(commandSource, /id: 'reevaluate-actor-package',[\s\S]*?command: '\{refId\}\.evp'[\s\S]*?testStatus: 'verified'/);
 });
 
 test('Quest Browser contains every extracted base-game and Shattered Space quest stage', () => {
@@ -387,6 +469,10 @@ test('Quest Browser contains every extracted base-game and Shattered Space quest
 
 test('Quest Browser disables unreliable inspections and exposes confirmed state-changing actions', () => {
   assert.match(source, /data-view="quest-browser"/);
+  assert.match(source, /quest-browser-card-heading[\s\S]*?<strong>\$\{escapeHtml\(entry\.quest\)\}<\/strong>\$\{flags\}/);
+  assert.match(styleSource, /\.quest-browser-card-heading\s*\{[\s\S]*?display:\s*flex;/);
+  assert.match(styleSource, /\.quest-browser-card-flags\s*\{[\s\S]*?display:\s*flex;/);
+  assert.doesNotMatch(source, /quest-browser-card-body">\s*<div class="quest-browser-meta"/);
   assert.match(source, /Check Current Stage — Unavailable/);
   assert.match(source, /Show Stage History — Unavailable/);
   assert.doesNotMatch(source, /data-quest-inspect=/);

@@ -1,32 +1,8 @@
-# Starfield Console Command Center — latest in-game test results
+# Starfield Console Command Center — historical in-game test record
 
-Source: user testing reported during the September 27, 2026 development session.
+This file preserves user-reported testing from September 27 through October 1, 2026. Entries are chronological, and later sections supersede earlier failures or pending notes. The current release behavior is summarized in [`RELEASE_NOTES_v0.3.7.md`](RELEASE_NOTES_v0.3.7.md), [`../COMMAND_CATALOG.md`](../COMMAND_CATALOG.md), and [`../TEST_BUILD_RESULT_ACTIONS.md`](../TEST_BUILD_RESULT_ACTIONS.md).
 
-These are user-reported results, not independently reproduced. The previous conversation describes the output failures as timeouts; screenshots have not yet been inspected. This test build replaces the main inspections with direct game reads and adds a results window. Fixes have not been verified in game; the table preserves the last user-reported results.
-
-| Feature | Latest status | Notes / next test |
-| --- | --- | --- |
-| ID Browser built-in search, filtering, selection and quick actions | Passed | User reported all of test group 1 works. |
-| ID Browser Search Game / WEAP search | Passed | Preserve the working live-search path when repairing other queries. |
-| Dropdown readability | Needs adjustment | Menu colors are nearly unreadable. |
-| Show Player Inventory | Failed | Output capture reported as timing out; consider a dedicated scrollable results window. |
-| Reference position / rotation / scale inspection | Failed (group report) | Retest each command separately after output handling is repaired. |
-| Quest getstage / sqs / targets diagnostics | Failed (group report) | Retest each command separately. |
-| Restore Player Health | Passed | User verified in game. |
-| Add Skill Points | Passed | User verified in game. |
-| Restore Actor Health | Passed | User verified in game. |
-| Reset AI | Passed | User verified in game. |
-| Force Repath | Passed | User verified in game. |
-| Stop Combat | Inconclusive / appears ineffective | User: “Doesnt seem to work.” Investigate separately from read-only output. |
-| Companion affinity / relationship / anger inspection | Failed (group report) | Output capture reported as timing out. |
-| Activate Reference | Passed | User verified in game. |
-| Get Open State | Failed | Output capture reported as timing out. |
-| Open / Close Reference | Passed | User verified in game. |
-| Set Exact Position | Passed | User verified in game. |
-| Set Exact Rotation | Passed | User verified in game. |
-| Get Current Ship ID | Failed | Output capture reported as timing out. |
-| Ship actor-value inspection | Not tested | Follow-up ship tests were left blank. |
-| Automatic current-ship handling | Not tested / future work | Depends on reliable current-ship output. |
+These results were reported from in-game testing rather than independently reproduced. Earlier test-build failures remain here because they explain why unsafe native adapters and unreliable console-output capture paths were removed.
 
 ## Source baseline
 
@@ -217,3 +193,40 @@ The two console-output `help` searches are disabled for v0.3.2. The packaged ID 
 - Complete Quest did not finish Vlad's Home but successfully completed another active quest. Generic completion is verified with a quest-specific limitation.
 - Stop Quest was verified on Vlad's Home: `sqs` reported MQMisc01 as Stopped.
 - Reset Quest removed Vlad's Home from the quest log and cleared both recorded stages 10 and 100. `sqs` continued to report the quest as Stopped, confirming that Reset clears its state without automatically restarting it.
+
+## v0.3.7 catalog and quest-safety pass — September 30, 2026
+
+- Footer and native connection reported v0.3.7.
+- ID Browser and Quest Browser both opened immediately on their first and subsequent openings; no visible loading message was needed.
+- ID Browser search opened matching categories and clearing the search collapsed every category.
+- The three reported collision IDs were absent, cleaned weapon results looked correct, and sampled Shattered Space labels no longer displayed dialogue subtitles.
+- Quest Browser search, category grouping, paging, Copy Quest ID, disabled inspection controls, and new Start/Reset guidance passed.
+- Player Health, Player Inventory, adding two Med Packs, and a harmless two-line Custom Command batch passed as regressions.
+- The adjacent value fields and **Choose** buttons had mismatched heights. The next source revision standardized both controls at 40 CSS pixels, and the later in-game retest passed.
+- The following ten-check regression round passed in full, including the standardized value-field and **Choose** control sizing.
+- The next source revision added up to 10 persistent named entries to the Custom Command screen; the later in-game build and retest passed.
+
+### v0.3.7 saved Custom Command pass
+
+- The 60/40 Custom Command layout, top-aligned Saved Commands panel, compact saved rows, and side-by-side **Load** / **Delete** controls passed.
+- Saving one-line and multiline entries, loading without automatic execution, updating an existing name without duplication, and deleting while preserving the editor passed.
+- Saved entries persisted after closing and reopening CCC.
+- A loaded multiline entry executed in order and produced separate Activity Log records.
+- Value fields and their adjacent **Choose** buttons now match in height in game.
+- Empty-name and empty-command validation, case-insensitive saved-entry updates, the 10-entry limit, freeing a slot, click-to-select, and persistence all passed.
+- ID Browser quantity/search-collapse, inventory search/sort/Copy ID, Results-window Escape, unavailable quest inspections, and cancelled quest execution all passed as regressions.
+- **Search Form IDs** and **Search Form IDs by Type** were reworked to use packaged browser data; both passed the later in-game release-candidate retest.
+
+## Final v0.3.7 release-candidate pass — October 1, 2026
+
+- Packaged Search Form IDs and Search Form IDs by Type passed in game without invoking the removed live scanner or unreliable console-output capture path.
+- All browser-backed item, equipment, NPC, modifier, ship, quest, perk, power, and effect fields returned the selected ID without executing the command.
+- Filtered ID Browser selection placed the permitted category at the top, expanded it automatically, and removed unrelated categories.
+- Quest badges remained visible in collapsed rows, including the compact New Game Plus variant tag beside the quest title.
+- Wait Anywhere advanced time without opening the broken WAIT/B prompt.
+- Open or Close Reference worked with the Open/Closed chooser.
+- Starfield's manual `getplayergrabbedref` console command returned the held Reference ID and `00000000` after release. CCC's unavailable held-object card was removed because its native event source remains unresolved.
+- Set Interior Gravity worked inside a building: `0` removed gravity and `1` restored normal gravity. The command did not apply outdoors, so the UI states the interior-only limitation.
+- Direct `player.setav carryweight 500` produced an effective value of 508 due to an active +8 modifier. CCC therefore exposes a modifier-aware Set Carry Weight Effective Total control instead of describing SetAV as an exact total.
+- Reevaluate Actor Behavior (`{refId}.evp`) released an NPC from a stopped interaction and made him resume walking.
+- Release Weather Override, Reset Reference 3D State, Set Actor Alert State, and Reference-ID Force Bleedout were rejected after they produced no dependable result or could not be parsed.
