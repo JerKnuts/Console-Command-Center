@@ -1,4 +1,5 @@
 import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, WEATHER_PICKER, type ReferenceIdPicker } from './reference-ids';
+import type { GeneratedIdCatalogEntry } from './id-browser-data';
 
 export type IdCatalogAction = 'additem' | 'addperk' | 'addspell' | 'spawn';
 
@@ -10,7 +11,7 @@ export type IdCatalogEntry = {
   detail?: string;
   keywords?: string[];
   action?: IdCatalogAction;
-  source?: 'built-in';
+  source?: 'built-in' | 'Base Game' | 'Shattered Space';
 };
 
 export type IdBrowserCategory = {
@@ -27,17 +28,18 @@ export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   { label: 'All Categories', value: 'all', detail: 'Every ID included with CCC.', recordType: '', builtInCategories: ['*'] },
   { label: 'Common Items', value: 'common', detail: 'Credits, digipicks, and ship parts.', recordType: '', builtInCategories: ['Common'] },
   { label: 'Weapons', value: 'weapons', detail: 'Weapons and guns.', recordType: 'WEAP', builtInCategories: ['Weapons'] },
-  { label: 'Armor / Apparel', value: 'armor', detail: 'Spacesuits, helmets, packs, and clothing.', recordType: 'ARMO', builtInCategories: ['Armor'] },
+  { label: 'Armor / Apparel', value: 'armor', detail: 'Spacesuits, helmets, packs, and clothing.', recordType: 'ARMO', builtInCategories: ['Armor', 'Apparel', 'Helmets', 'Packs', 'Spacesuits'] },
   { label: 'Ammo', value: 'ammo', detail: 'Ammunition records.', recordType: 'AMMO', builtInCategories: ['Ammo'] },
   { label: 'Aid / Consumables', value: 'aid', detail: 'Medicine and consumable records.', recordType: 'ALCH', builtInCategories: ['Aid'] },
-  { label: 'Resources / Miscellaneous', value: 'resources', detail: 'Resources, components, and miscellaneous items.', recordType: 'MISC', builtInCategories: ['Resources'] },
+  { label: 'Resources / Miscellaneous', value: 'resources', detail: 'Resources, components, and miscellaneous items.', recordType: 'MISC', builtInCategories: ['Resources', 'Resources & Miscellaneous'] },
+  { label: 'Books / Notes', value: 'books', detail: 'Books, magazines, slates, and notes.', recordType: 'BOOK', builtInCategories: ['Books & Notes'] },
   { label: 'Perks / Skills / Traits', value: 'perks', detail: 'Skills, perks, backgrounds, and traits.', recordType: 'PERK', builtInCategories: ['Perks'] },
   { label: 'Powers / Effects', value: 'powers', detail: 'Starborn powers and removable environmental effects.', recordType: 'SPEL', builtInCategories: ['Powers', 'Effects'] },
-  { label: 'NPCs / Companions', value: 'npcs', detail: 'NPC base records and included companion references.', recordType: 'NPC_', builtInCategories: ['Companions'] },
+  { label: 'NPCs / Companions', value: 'npcs', detail: 'NPC base records and included companion references.', recordType: 'NPC_', builtInCategories: ['Companions', 'NPCs'] },
   { label: 'Weapon / Armor Mods', value: 'mods', detail: 'Weapon and armor modifier records.', recordType: 'OMOD', builtInCategories: ['Mods'] },
   { label: 'Factions', value: 'factions', detail: 'Faction records.', recordType: 'FACT', builtInCategories: ['Factions'] },
   { label: 'Quests', value: 'quests', detail: 'Quest records.', recordType: 'QUST', builtInCategories: [] },
-  { label: 'Locations / Cells', value: 'locations', detail: 'Location and cell records.', recordType: 'CELL', builtInCategories: [] },
+  { label: 'Locations / Cells', value: 'locations', detail: 'Named location and cell records with searchable Editor IDs.', recordType: 'CELL', builtInCategories: ['Locations', 'Cells'] },
   { label: 'Ships / Base Forms', value: 'ships', detail: 'Ships and generic base-form records.', recordType: 'GBFM', builtInCategories: [] },
   { label: 'Furniture', value: 'furniture', detail: 'Furniture and animation-marker records.', recordType: 'FURN', builtInCategories: [] },
   { label: 'Weather', value: 'weather', detail: 'Weather records.', recordType: 'WTHR', builtInCategories: ['Weather'] },
@@ -478,6 +480,22 @@ const pickerEntries: IdCatalogEntry[] = [
   })),
 ];
 
-export const ID_CATALOG: IdCatalogEntry[] = [...BASE_CATALOG, ...pickerEntries]
-  .map((entry) => ({ ...entry, source: 'built-in' as const }))
+const curatedCatalog = [...BASE_CATALOG, ...pickerEntries]
+  .map((entry) => ({ ...entry, source: 'built-in' as const }));
+const curatedIds = new Set(curatedCatalog.map((entry) => entry.value));
+
+export const CURATED_ID_CATALOG: IdCatalogEntry[] = [...curatedCatalog]
   .sort((a, b) => a.label.localeCompare(b.label));
+
+export function mergeGeneratedIdCatalog(generated: GeneratedIdCatalogEntry[]): IdCatalogEntry[] {
+  return [
+    ...curatedCatalog,
+    ...generated
+    .filter((entry) => !curatedIds.has(entry.value))
+    .map((entry) => ({
+      ...entry,
+      detail: entry.detail ?? undefined,
+      action: entry.action ?? undefined,
+    })),
+  ].sort((a, b) => a.label.localeCompare(b.label));
+}

@@ -1,10 +1,10 @@
 # Console Command Center — Command Catalog
 
-Version: 0.3.2
+Version: 0.3.7 development build
 
 Curated commands: 141 (9 currently disabled)
 
-Guided quest skips: 247 stage selections (245 unique setstage commands) across 79 named entries / 77 unique quest FormIDs
+Quest Browser: 2,318 quest records with 16,844 structurally recorded stages across the base game and Shattered Space
 
 Risk levels:
 - **Normal** — ordinary confirmation before execution.
@@ -13,7 +13,7 @@ Risk levels:
 
 Testing status is intentionally conservative. Only commands confirmed through Console Command Center are marked **Verified**.
 
-Latest user test report: September 28, 2026. ID Browser passed as a feature group; this does not separately verify every search card. See `docs/TEST_RESULTS_2026-09-27.md`.
+Latest user test report: September 30, 2026. See `docs/TEST_RESULTS_2026-09-27.md` for the accumulated in-game record.
 
 ## Gameplay (11)
 
@@ -176,13 +176,13 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Show Current Quest Targets | `sqt` | Normal | Unavailable — console capture was unreliable |
-| Get Current Quest Stage | `getstage {questId}` | Normal | Unavailable — previous native adapter was unsafe |
-| Show Quest Stage History | `sqs {questId}` | Normal | Unavailable — console capture was unreliable |
-| Start Quest by ID | `startquest {questId}` | Danger | Untested |
-| Stop Quest by ID | `stopquest {questId}` | Danger | Untested |
-| Set Quest Stage | `setstage {questId} {stage}` | Danger | Untested |
-| Complete Quest by ID | `completequest {questId}` | Danger | Untested |
-| Reset Quest by ID | `resetquest {questId}` | Danger | Untested |
+| Get Current Quest Stage | `getstage {questId}` | Normal | Failed — command works manually; CCC console capture times out |
+| Show Quest Stage History | `sqs {questId}` | Normal | Failed — command works manually; CCC console capture times out |
+| Start Quest by ID | `startquest {questId}` | Danger | Needs adjustment — command was sent, but some quests need a stage before visible activation |
+| Stop Quest by ID | `stopquest {questId}` | Danger | Verified — quest changed to Stopped |
+| Set Quest Stage | `setstage {questId} {stage}` | Danger | Verified — activated the selected quest stage |
+| Complete Quest by ID | `completequest {questId}` | Danger | Verified on an ordinary active quest; not every quest accepts generic completion |
+| Reset Quest by ID | `resetquest {questId}` | Danger | Verified — cleared recorded stages and removed the quest from the log; quest remained Stopped |
 | Teleport to Quest Target | `movetoqt {questId}` | Caution | Verified |
 
 ## Ship (26)
@@ -222,16 +222,16 @@ Latest user test report: September 28, 2026. ID Browser passed as a feature grou
 
 ## ID Browser + Reference ID Picker
 
-The current source includes a standalone **ID Browser** with **370 included IDs** covering all base-game skills and traits, all 24 Starborn powers, a conservative set of removable environmental effects, commonly published base-game weapons, ammunition, and aid, plus armor, resources, modifier IDs, factions, companions, and weather records. Search filters the catalog instantly by name, Form ID, type, category, and keywords. Every selected result offers **Copy ID**, with conservative quick actions for supported record types. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244. Expansion-only entries are labeled in their visible detail text.
+The current source includes a standalone **ID Browser** with **16,518 included IDs** covering weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, named locations and cells, and weather. Search filters the catalog instantly by name, Form ID, type, category, and Editor ID. Location and cell selections expose separate Form ID and Editor ID copy actions. Large categories render 100 rows at a time. Every selected result offers **Copy ID**, with conservative quick actions for supported record types. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244. Shattered Space entries are labeled in their visible detail text and use cleaned Editor IDs when no verified localized name is available. Long descriptions, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded.
 
-The browser supports record-type filtering (including WEAP, ARMO, AMMO, ALCH, MISC, PERK, SPEL, NPC_, OMOD, FACT, QUST, CELL, GBFM, and FURN), parses matching Form IDs into selectable rows, preserves raw console output if a result cannot be parsed, and exposes conservative quick actions such as **Add 1**, **Add Perk**, **Add Spell / Power**, or **Spawn 1** where the record type makes the action reasonably clear.
+The browser supports category filtering across its packaged records and exposes conservative quick actions such as **Add to Player**, **Add Perk**, **Add Spell / Power**, or **Spawn** where the record type makes the action reasonably clear. It does not query or scrape Starfield's live console output.
 
 The command cards continue to use the compact editable ID field + boxed **CHOOSE ...** control for known curated choices. Inline preset-button grids are intentionally avoided.
 
-## Quest Skips (247 guided stage skips)
+## Quest Browser (2,318 quests / 16,844 recorded stages)
 
-Version 0.3.0 adds a dedicated **Quest Skips** browser separate from the normal command catalog.
+Quest Browser is separate from the normal command catalog and groups base-game and Shattered Space records into collapsible, paginated categories.
 It contains 247 curated `setstage` targets whose Quest IDs and stage numbers are structurally validated against `Starfield.esm`.
 CCC executes the vanilla Starfield console command directly.
 
-Every guided quest skip is treated as **Danger** because `setstage` can skip dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save first and use these entries only to get past a quest step that is already stuck.
+Quest Browser offers confirmed `startquest`, `stopquest`, `completequest`, `resetquest`, and `setstage` actions. Every state-changing action is treated as **Danger** because it can skip dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save first. Current-stage and stage-history inspections are unavailable until CCC has a verified native quest-state reader.

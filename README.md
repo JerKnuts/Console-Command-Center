@@ -6,13 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current development version: v0.3.3 Beta**
-
-**Current release: v0.3.3.** This update removes the unsuccessful controller experiment, compacts the mouse-and-keyboard interface, tightens ID Browser rows, and adds searchable perk, power, spell, and effect choices. Follow [the v0.3.3 checks](TEST_BUILD_RESULT_ACTIONS.md).
-
-**Previous hotfix: v0.3.0-test2.** Test1 crashed during scale inspection. The shared evaluator calls remain removed, and Scale/Open State/GetStage/Quest Status remain temporarily disabled. Test2 verified Escape handling, inventory, companion readouts, and ship readouts in game.
-
-**Historical test1 notes:** Test1 introduced dropdown contrast, direct inspection reads, and the dedicated Results window. Its unsafe Scale adapter must not be used; test2 and test3 contain the crash guard.
+**Current development version: v0.3.7 Beta. Current published release: v0.3.3.** The current build corrects generated ID labels, removes internal catalog records, and prevents Quest Browser inspections from invoking the unreliable console-output capture route. Follow [the current test checklist](TEST_BUILD_RESULT_ACTIONS.md). Historical build notes live under [`docs/`](docs/).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -23,7 +17,7 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 ## Features
 
 - Native Starfield console-command execution
-- Read-only console-output capture for reference inspection commands
+- Native read-only results for supported inventory, reference, actor-value, Game Setting, and ship inspections
 - Searchable command library
 - Category browsing
 - Recent commands and favorites stay fixed at the top of the sidebar while the category list scrolls independently
@@ -31,42 +25,44 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 - Activity log
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
-- Standalone **ID Browser** with 370 included IDs, categories, selectable results, Copy ID, and conservative quick actions
+- Standalone **ID Browser** with 16,518 included IDs, collapsed categories, selectable results, Copy ID, and conservative quick actions
 - Searchable choice boxes for packaged perks, skills, traits, Starborn powers, and known removable environmental effects
 - Confirmation before execution
 - Caution and Danger warnings
 - Compact mouse-and-keyboard interface; controller support is in development
 - Compact Starfield-inspired OSF UI
-- Guided **Quest Skips** browser
+- Searchable **Quest Browser** with quest actions and recorded stage indexes
 - Guided quest-stage skip choices with unavailable diagnostics clearly disabled
 - Curated ID choices use the same compact field + **CHOOSE ...** box used by the companion-affinity commands; manual ID entry remains available
 
 
 ## ID Browser and Reference ID Picker
 
-The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It searches **370 included IDs** instantly by name, Form ID, type, category, and keywords. The catalog covers all base-game skills and traits, all 24 Starborn powers, a conservative set of removable environmental effects, the commonly published base-game weapon, ammunition, and aid lists, plus the existing armor, resources, modifiers, factions, companions, and weather records. Every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous.
+The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It searches **16,518 included IDs** instantly by name, Form ID, type, category, and Editor ID. The catalog covers weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, named locations and cells, and weather. Location and cell selections can copy either the Form ID or Editor ID. Shattered Space records display an expansion requirement and use cleaned Editor IDs where a verified localized display name is unavailable. Long descriptive labels, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded. Large categories load 100 rows at a time so browsing and searching stay responsive. Every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous.
 
 CCC does not scan Starfield's live form memory. That experimental path caused an access violation during test9 and was removed. Expansion-only records carry a visible requirement such as **Shattered Space DLC**.
 
 The reusable Reference ID Picker remains the compact command-specific chooser. **Pay Bounty** opens bounty-relevant factions, companion affinity commands open Sarah Morgan, Barrett, Sam Coe, and Andreja, and weather commands open common weather records. Selecting an entry fills the normal command input; users can still type any valid hexadecimal ID manually. Inline preset-button grids are intentionally avoided.
 
-## Quest Skips
+## Quest Browser
 
-ID Browser, Quest Skips, Custom Command, and Activity Log live in a dedicated horizontal utility bar along the bottom of CCC. Recent and Favorites remain fixed in the left sidebar while Categories scroll independently.
+ID Browser, Quest Browser, Custom Command, and Activity Log live in a dedicated horizontal utility bar along the bottom of CCC. Recent and Favorites remain fixed in the left sidebar while Categories scroll independently.
 
-v0.3.0 includes 247 guided quest-stage selections for skipping past known quest-progression blocks. Every listed Quest ID and stage number is structurally validated against `Starfield.esm`. Console Command Center uses those mappings to execute vanilla commands such as:
+Quest Browser includes recorded quest-stage selections for inspecting or advancing quest state. Every packaged Quest ID and stage number is structurally validated against its installed master file. Console Command Center uses those mappings to execute vanilla commands such as:
 
 ```text
 setstage <QuestFormID> <Stage>
 ```
 
-Live quest diagnostics are currently disabled while a safe native adapter is developed. Quest skipping is intentionally marked **Danger** because forcing a stage can skip dialogue, scripts, rewards, scenes, prerequisites, or other quest state. Treat every listed stage as unverified until its Quest ID and stage table have been checked against the game data.
+Quest changes are intentionally marked **Danger** because starting, completing, or forcing a stage can skip dialogue, scripts, rewards, scenes, prerequisites, or other quest state. Use these actions on a backup or disposable save. Some quests do not appear in the mission log until a stage is activated. Reset clears recorded stages and removes the quest from the log without restarting it.
 
-See [`QUEST_SKIPS.md`](QUEST_SKIPS.md) for details.
+Quest Browser contains 2,318 base-game and Shattered Space quest records with 16,844 recorded stage indexes. It supports searching by quest name, Editor ID, Form ID, source, and stage, plus confirmed Start, Stop, Complete, Reset, and Set Stage actions. Shattered Space entries are labeled in the interface. **Check Current Stage** and **Show Stage History** are visibly unavailable until CCC has a verified native quest-state reader; they do not use the unreliable console-capture fallback.
+
+See [`QUEST_BROWSER.md`](QUEST_BROWSER.md) for details.
 
 ## Command catalog
 
-The command library is deliberately curated instead of trying to expose every internal developer command. v0.3.3 contains **141 curated command entries** plus the standalone ID Browser and the separate guided Quest Skips dataset. Nine known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The command library is deliberately curated instead of trying to expose every internal developer command. v0.3.7 contains **141 curated command entries** plus the standalone ID Browser and Quest Browser datasets. Nine known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 
@@ -122,6 +118,7 @@ The following are local/generated and should not be committed or included in sou
 - `build/`
 - `dist/`
 - `mod/`
+- `artifacts/`
 - `.xmake/`
 - `.osfui/`
 
@@ -134,4 +131,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI checks.
 
-Release-specific changes are recorded in [`docs/RELEASE_NOTES_v0.3.3.md`](docs/RELEASE_NOTES_v0.3.3.md).
+Release-specific changes are recorded in [`docs/RELEASE_NOTES_v0.3.7.md`](docs/RELEASE_NOTES_v0.3.7.md).

@@ -8,7 +8,7 @@
   --ccc-orange-hover: rgba(var(--ccc-orange-rgb), 0.105);
   --ccc-danger: #ff5f61;
   --ccc-danger-rgb: 255, 95, 97;
-  --ccc-surface: rgba(10, 13, 18, 0.985);
+  --ccc-surface: #0a0d12;
   --ccc-surface-raised: #111922;
   --ccc-surface-inset: #080d13;
   --ccc-surface-row: rgba(242, 239, 233, 0.018);
@@ -20,6 +20,7 @@
 body {
   min-height: 100vh;
   overflow: hidden;
+  background: #05070a;
 }
 
 button { -webkit-user-select: none; user-select: none; }
@@ -145,8 +146,7 @@ select.osf-input:focus-visible {
   min-height: 560px;
   display: grid;
   grid-template-rows: 56px 2px minmax(0, 1fr) 44px 34px;
-  background:
-    linear-gradient(90deg, rgba(5, 7, 10, 0.97) 0, rgba(10, 13, 18, 0.94) 38%, rgba(10, 13, 18, 0.9) 100%);
+  background: linear-gradient(90deg, #05070a 0, #0a0d12 38%, #0a0d12 100%);
   border: 1px solid var(--osf-line-strong);
   box-shadow: var(--osf-shadow);
 }
@@ -856,8 +856,8 @@ select.osf-input:focus-visible {
   .search-wrap { width: 320px; }
 }
 
-/* Quest Skips */
-.quest-skip-intro {
+/* Quest Browser */
+.quest-browser-intro {
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -869,17 +869,12 @@ select.osf-input:focus-visible {
   font-size: 10px;
   line-height: 1.35;
 }
-.quest-skip-intro strong {
+.quest-browser-intro strong {
   flex: 0 0 auto;
   color: var(--osf-text-bright);
   font-family: var(--osf-font-display);
   font-size: 11px;
   letter-spacing: 0.03em;
-}
-.quest-skip-intro code,
-.quest-skip-id code {
-  font-family: var(--ccc-console-font);
-  color: var(--osf-text-bright);
 }
 .quest-stage-caveat {
   margin-left: auto;
@@ -887,7 +882,7 @@ select.osf-input:focus-visible {
   white-space: nowrap;
 }
 @media (max-width: 1180px) {
-  .quest-skip-intro {
+  .quest-browser-intro {
     align-items: flex-start;
     flex-wrap: wrap;
   }
@@ -897,57 +892,106 @@ select.osf-input:focus-visible {
     white-space: normal;
   }
 }
-.quest-skip-card {
-  padding: 10px 12px 12px 14px;
-  border-top: 1px solid var(--osf-line);
-  border-left: 2px solid transparent;
-  transition: background var(--osf-dur-fast), border-color var(--osf-dur-fast);
+.quest-browser-groups { display: grid; gap: 7px; }
+.quest-browser-group {
+  overflow: hidden;
+  border: 1px solid var(--ccc-line);
+  background: var(--ccc-surface-inset);
 }
-.quest-skip-card:nth-child(even) { background: var(--ccc-orange-soft); }
-.quest-skip-card:last-child { border-bottom: 1px solid var(--osf-line); }
-.quest-skip-card:hover,
-.quest-skip-card:focus-within {
-  background: var(--ccc-orange-hover);
-  border-left-color: var(--ccc-orange);
-}
-.quest-skip-heading {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-.quest-skip-heading h3 {
-  margin: 0 0 3px;
-  font-size: 16px;
-  letter-spacing: 0.025em;
-}
-.quest-skip-id {
-  display: flex;
+.quest-browser-group-heading {
+  width: 100%;
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 7px;
-  color: var(--osf-text-faint);
-  font-family: var(--osf-font-mono);
-  font-size: 9px;
-  letter-spacing: 0.08em;
+  gap: 10px;
+  padding: 7px 12px;
+  color: var(--osf-text-body);
+  background: var(--ccc-surface-raised);
+  border: 0;
+  cursor: pointer;
+  text-align: left;
 }
-.quest-skip-id code {
-  font-size: 11px;
-  letter-spacing: 0.03em;
+.quest-browser-group-heading:hover,
+.quest-browser-group-heading:focus-visible { background: var(--ccc-orange-hover); outline: none; }
+.quest-browser-group-heading > span:nth-child(2) { display: grid; gap: 2px; }
+.quest-browser-group-heading strong { color: var(--osf-text-bright); letter-spacing: .04em; }
+.quest-browser-group-heading small,
+.quest-browser-group-heading > span:last-child { color: var(--osf-text-faint); font-size: 10px; }
+.quest-browser-group-arrow { color: var(--ccc-orange); font-size: 10px; transition: transform .12s ease; }
+.quest-browser-group.is-open .quest-browser-group-arrow { transform: rotate(90deg); }
+.quest-browser-group-content { padding: 7px; }
+.quest-browser-card { border: 1px solid var(--ccc-line); border-bottom: 0; background: #0a0d12; }
+.quest-browser-card:last-of-type { border-bottom: 1px solid var(--ccc-line); }
+.quest-browser-card > summary {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  cursor: pointer;
+  list-style: none;
 }
-.quest-skip-count {
-  flex: none;
-  padding-top: 2px;
-  color: var(--osf-text-faint);
-  font-family: var(--osf-font-mono);
+.quest-browser-card > summary::-webkit-details-marker { display: none; }
+.quest-browser-card > summary:hover,
+.quest-browser-card > summary:focus-visible { background: var(--ccc-orange-hover); outline: none; }
+.quest-browser-card > summary::before { content: '▶'; color: var(--ccc-orange); font-size: 9px; margin-right: 8px; }
+.quest-browser-card[open] > summary::before { transform: rotate(90deg); }
+.quest-browser-card > summary { grid-template-columns: auto minmax(0, 1fr) auto; }
+.quest-browser-card-title,
+.quest-browser-card-id { display: grid; gap: 2px; }
+.quest-browser-card-title strong { color: var(--osf-text-bright); font-size: 14px; }
+.quest-browser-card-title small,
+.quest-browser-card-id small { color: var(--osf-text-faint); font-size: 9px; }
+.quest-browser-card-id { justify-items: end; }
+.quest-browser-card-id code { color: var(--ccc-orange); font-family: var(--ccc-console-font); }
+.quest-browser-card-body { display: grid; gap: 9px; padding: 9px 11px 12px; border-top: 1px solid var(--ccc-line); }
+.quest-browser-meta { display: flex; flex-wrap: wrap; gap: 7px; }
+.quest-browser-requirement,
+.quest-browser-internal,
+.quest-browser-variant {
+  padding: 3px 6px;
+  color: var(--osf-text-muted);
+  background: var(--ccc-surface-raised);
+  border-left: 2px solid var(--ccc-orange);
   font-size: 9px;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.quest-browser-internal { border-left-color: var(--ccc-danger); }
+.quest-browser-variant { border-left-color: var(--osf-signal-warn); }
+.quest-browser-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.quest-browser-action-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  padding: 7px 9px;
+  color: var(--osf-text-faint);
+  background: var(--ccc-surface-inset);
+  border-left: 2px solid var(--osf-signal-warn);
+  font-size: 9px;
+  line-height: 1.45;
+}
+.quest-browser-action-note strong { color: var(--osf-signal-warn); letter-spacing: .08em; }
+.quest-browser-stage-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--osf-text-faint);
+  font-size: 9px;
 }
 .quest-stage-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+.quest-browser-no-stages {
+  width: 100%;
+  padding: 9px 10px;
+  color: var(--osf-text-faint);
+  background: var(--ccc-surface-inset);
+  border: 1px solid var(--ccc-line);
+  font-size: 10px;
 }
 .quest-stage-button {
   min-width: 86px;
@@ -991,113 +1035,15 @@ select.osf-input:focus-visible {
   opacity: 0.42;
   cursor: not-allowed;
 }
-
-/* Quest diagnostics */
-.quest-diagnostic-row {
+.quest-browser-pagination {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: stretch;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.quest-current-stage {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  column-gap: 10px;
-  row-gap: 1px;
-  min-height: 40px;
-  padding: 7px 10px;
-  background: rgba(5, 7, 10, 0.30);
-  border: 1px solid var(--osf-line);
-  border-left: 2px solid var(--osf-text-faint);
-}
-.quest-current-stage.is-ready { border-left-color: var(--ccc-orange); }
-.quest-current-stage.is-error { border-left-color: var(--ccc-danger); }
-.quest-current-stage > span { grid-column: 1; grid-row: 1; }
-.quest-current-stage > strong {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  justify-self: end;
-  color: var(--osf-text-bright);
-  font-family: var(--ccc-console-font);
-  font-size: 18px;
-  font-weight: 500;
-  letter-spacing: 0.025em;
-}
-.quest-current-stage > small {
-  grid-column: 1;
-  grid-row: 2;
-  color: var(--osf-text-faint);
-  font-size: 9px;
-}
-.quest-diagnostic-actions {
-  display: flex;
-  align-items: stretch;
-  gap: 6px;
-}
-.quest-diagnostic-actions .osf-btn { min-width: 94px; }
-.quest-stage-history {
-  display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
-  gap: 8px;
-  align-items: start;
-  margin: 0 0 9px;
-  padding: 7px 9px;
-  background: rgba(5, 7, 10, 0.22);
-  border: 1px solid rgba(255,255,255,0.05);
-}
-.quest-stage-history > span {
-  padding-top: 3px;
-  color: var(--osf-text-faint);
-  font-family: var(--osf-font-mono);
-  font-size: 8px;
-  letter-spacing: 0.08em;
-}
-.quest-stage-history > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.quest-stage-history code {
-  padding: 2px 5px;
-  color: var(--osf-text-muted);
-  background: rgba(255,255,255,0.035);
-  border: 1px solid var(--osf-line);
-  font-family: var(--ccc-console-font);
-  font-size: 10px;
-}
-.quest-stage-history .quest-stage-history-empty {
-  color: var(--osf-text-faint);
-  font-size: 10px;
-}
-.quest-skip-stage-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
   gap: 10px;
-  margin: 0 0 5px;
+  margin-top: 8px;
   color: var(--osf-text-faint);
-  font-size: 9px;
-}
-.quest-stage-button.is-completed {
-  border-color: rgba(var(--ccc-orange-rgb), 0.42);
-  background: rgba(var(--ccc-orange-rgb), 0.065);
-}
-.quest-stage-button.is-completed > span { color: var(--ccc-orange); }
-.quest-stage-button.is-current {
-  border-color: var(--ccc-orange);
-  border-left-width: 3px;
-  background: rgba(var(--ccc-orange-rgb), 0.15);
-  box-shadow: inset 0 0 0 1px rgba(var(--ccc-orange-rgb), 0.10);
-}
-.quest-stage-button.is-current > span,
-.quest-stage-button.is-current > strong { color: var(--ccc-orange); }
-
-@media (max-width: 980px) {
-  .quest-diagnostic-row { grid-template-columns: 1fr; }
-  .quest-diagnostic-actions { justify-content: flex-start; }
-  .quest-stage-history { grid-template-columns: 1fr; }
+  font-size: 10px;
+  text-align: center;
 }
 
 /* Reusable Reference ID picker */
@@ -1405,6 +1351,11 @@ select.osf-input:focus-visible {
 }
 .id-browser-category-group { margin: 0; }
 .id-browser-category-contents .id-browser-row:last-child { border-bottom-color: transparent; }
+.id-browser-more {
+  display: block;
+  width: calc(100% - 24px);
+  margin: 10px 12px;
+}
 .id-browser-row {
   width: 100%;
   min-height: 38px;

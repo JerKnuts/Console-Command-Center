@@ -42,14 +42,14 @@ namespace CCC
         const auto operation = dot == std::string::npos ? verb : verb.substr(dot + 1);
         if (operation != "showinventory" && operation != "getpos" && operation != "getangle"
             && operation != "getscale" && operation != "getav" && operation != "getspaceship"
-            && operation != "getopenstate" && operation != "getstage" && operation != "getgs"
+            && operation != "getopenstate" && operation != "getgs"
             && operation != "getplayergrabbedref") {
             return std::nullopt;
         }
         // test1 crashed inside the condition evaluator on Starfield 1.16.244.
         // Do not call ANY evaluator through the unverified shared ABI. Return
         // a normal error until a verified adapter replaces that entire path.
-        if (operation == "getscale" || operation == "getopenstate" || operation == "getstage" || operation == "getplayergrabbedref") {
+        if (operation == "getscale" || operation == "getopenstate" || operation == "getplayergrabbedref") {
             throw std::runtime_error("This inspection is disabled because its CommonLibSF adapter is unresolved or unsafe on Starfield 1.16.244.");
         }
         if (operation == "getgs") {
@@ -68,7 +68,7 @@ namespace CCC
             default: throw std::runtime_error("This Game Setting type cannot be displayed safely.");
             }
         }
-        const bool needsArgument = operation == "getpos" || operation == "getangle" || operation == "getav" || operation == "getstage";
+        const bool needsArgument = operation == "getpos" || operation == "getangle" || operation == "getav";
         if (!extra.empty() || (needsArgument ? argument.empty() : !argument.empty())) {
             throw std::runtime_error("Invalid inspection arguments; run one inspection at a time.");
         }
@@ -80,16 +80,13 @@ namespace CCC
             }
             return id;
         };
-        RE::TESObjectREFR* reference = nullptr;
-        if (operation != "getstage") {
-            if (dot == std::string::npos) throw std::runtime_error("This inspection requires a Reference ID or player prefix.");
-            const auto target = verb.substr(0, dot);
-            auto* form = RE::TESForm::LookupByID(target == "player" ? 0x14 : parseID(target));
-            // As<TESObjectREFR>() compares exact form types and misses Actor
-            // subclasses (including the player); use the game's RTTI cast.
-            reference = form ? starfield_cast<RE::TESObjectREFR*>(form) : nullptr;
-            if (!reference) throw std::runtime_error("Reference not found. Use a placed Reference ID, not a Base ID.");
-        }
+        if (dot == std::string::npos) throw std::runtime_error("This inspection requires a Reference ID or player prefix.");
+        const auto target = verb.substr(0, dot);
+        auto* form = RE::TESForm::LookupByID(target == "player" ? 0x14 : parseID(target));
+        // As<TESObjectREFR>() compares exact form types and misses Actor
+        // subclasses (including the player); use the game's RTTI cast.
+        auto* reference = form ? starfield_cast<RE::TESObjectREFR*>(form) : nullptr;
+        if (!reference) throw std::runtime_error("Reference not found. Use a placed Reference ID, not a Base ID.");
         if (operation == "getpos" || operation == "getangle") {
             if (argument.size() != 1) throw std::runtime_error("Axis must be X, Y, or Z.");
             const auto axis = static_cast<char>(std::tolower(static_cast<unsigned char>(argument[0])));

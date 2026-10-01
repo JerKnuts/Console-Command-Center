@@ -1,23 +1,16 @@
 # ID Catalog Sources
 
-CCC packages a static, searchable catalog instead of reading Starfield's live form map. The current source contains 370 entries. IDs are normalized to eight uppercase hexadecimal characters and checked for duplicates during the build.
+CCC packages a static, searchable catalog instead of reading Starfield's live form map. The current source contains 16,518 unique entries: 16,358 generated records plus 160 additional reviewed records whose IDs are not already present in the generated set. IDs are normalized to eight uppercase hexadecimal characters and checked for duplicates during validation.
 
-## Base-game lists added for v0.3.0
+## Catalog generation
 
-- All 82 skills and all 17 traits were cross-checked against the [PC Gamer Starfield console command list](https://www.pcgamer.com/starfield-console-commands-cheats/) and the [eXputer Starfield item ID list](https://exputer.com/guides/starfield-item-ids/).
-- The expanded weapon list, complete 22-entry ammunition list, and 52-entry aid list came from the same two published lists. Duplicate records already present in CCC were merged rather than repeated.
-- Existing armor, resources, object modifiers, factions, companions, and weather entries were retained from the previously tested catalog.
+The large catalog is generated from the installed base-game and Shattered Space master files. Base-game display names resolve only through the main English `STRINGS` table; dialogue and interface tables are kept separate because they reuse numeric keys. Shattered Space records use cleaned Editor IDs because this installation does not expose a separate verified localization table that can be safely paired with its records. Internal test, debug, template, placeholder, dummy, long-description faction, creature-attack, sentence-like subtitle collision, and engine-only records are excluded. Visible labels are capped at 72 characters. The smaller hand-reviewed catalog remains authoritative when a generated record has the same Form ID.
 
-## Power and environmental-effect additions
-
-- All 24 base-game Starborn power spell IDs were cross-checked against the Game8 power table and a second complete published command list.
-- The environmental-effect choices are deliberately limited to six commonly reported base-game hazard and stuck-weather records. They appear in the removal picker and do not receive an Add Spell quick action.
-
-These web lists are reference data, not proof that every quick action has been exercised in the current game runtime. The catalog should continue to record in-game results as entries are tested.
+The generated data covers player-facing weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, object mods, factions, NPCs, named locations and cells, and weather. The existing hand-reviewed entries continue to cover skills, traits, powers, environmental effects, common utility IDs, companions, and frequently used records.
 
 ## Expansion labeling
 
-An expansion-only entry must name its requirement in `detail`, where it is visible in the selected-result panel. The current catalog includes two Shattered Space faction records, each labeled **Shattered Space DLC bounty faction**. The v0.3.0 expansion adds base-game records only.
+An expansion-only entry must name its requirement in `detail`, where it is visible in the selected-result panel. Generated Shattered Space records are labeled **Requires the Shattered Space expansion.**
 
 ## Safety rules
 

@@ -1,6 +1,6 @@
 {
   "name": "console-command-center",
-  "version": "0.3.3",
+  "version": "0.3.7",
   "private": true,
   "license": "GPL-3.0-or-later",
   "type": "module",
@@ -14,7 +14,7 @@
     "package": "npm run build:native && osfui package",
     "doctor": "osfui doctor",
     "setup:deps": "node native/setup-deps.mjs",
-    "validate:quests": "node scripts/validate-quest-skips.mjs",
+    "validate:quests": "node scripts/validate-quest-browser.mjs",
     "build:native": "node native/build.mjs"
   },
   "devDependencies": {

@@ -6,6 +6,7 @@ build/
 dist/
 mod/
 release/
+artifacts/
 
 # OSF UI / XMake local caches
 .osfui/
@@ -23,6 +24,7 @@ native/lib/commonlibsf/
 *.zip
 *.rar
 *.7z
+.id-records*.json
 
 # Windows / macOS junk
 Thumbs.db

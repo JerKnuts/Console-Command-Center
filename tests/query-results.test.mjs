@@ -11,8 +11,11 @@ const commandSource = readFileSync(new URL('../src/views/console.command-center/
 const nativeSource = readFileSync(new URL('../native/src/main.cpp', import.meta.url), 'utf8');
 const styleSource = readFileSync(new URL('../src/views/console.command-center/main/style.css', import.meta.url), 'utf8');
 const idCatalogSource = readFileSync(new URL('../src/views/console.command-center/main/id-catalog.ts', import.meta.url), 'utf8');
+const generatedIdSource = readFileSync(new URL('../src/views/console.command-center/main/id-browser-data.ts', import.meta.url), 'utf8');
 const referenceIdSource = readFileSync(new URL('../src/views/console.command-center/main/reference-ids.ts', import.meta.url), 'utf8');
-const names = new Set(['executeConsole', 'executeCustomBatch', 'showResults', 'extractResultIds', 'parseInventoryResults', 'renderInventoryResults', 'describe', 'escapeHtml', 'renderActivityPanel', 'parseCustomCommands']);
+const questBrowserSource = readFileSync(new URL('../src/views/console.command-center/main/quest-browser.ts', import.meta.url), 'utf8');
+const directQuerySource = readFileSync(new URL('../native/include/DirectQuery.h', import.meta.url), 'utf8');
+const names = new Set(['executeConsole', 'executeCustomBatch', 'showResults', 'extractResultIds', 'parseInventoryResults', 'renderInventoryResults', 'describe', 'escapeHtml', 'renderActivityPanel', 'parseCustomCommands', 'readStringArray']);
 const functions = [...source.matchAll(/^(?:async )?function (\w+)\b[\s\S]*?^}/gm)]
   .filter(match => names.has(match[1])).map(match => match[0]);
 assert.equal(functions.length, names.size, 'All production handlers must be included');
@@ -29,6 +32,7 @@ function harness(reply, rejection) {
   const payloads = [];
   const sandbox = {
     ...elements, Error, console,
+    localStorage: { getItem() { return null; }, setItem() {} },
     resultsDialog: { open: false, showModal() { this.open = true; } },
     window: { osfui: { async call(route, payload) { calls.push(route); payloads.push(payload); if (rejection) throw new Error(rejection); return typeof reply === 'function' ? reply(route, payload, calls.length) : reply; } } },
     nativeBackendReady: true, executionCount: 0, lastCommand: '', activeView: 'Targets',
@@ -208,6 +212,22 @@ test('controller support is visibly deferred without custom spatial navigation',
   assert.doesNotMatch(styleSource, /controller-friendly targets/);
 });
 
+test('saved command lists discard duplicates and ID choosers support arrow-key navigation', () => {
+  const h = harness(null);
+  h.sandbox.localStorage.getItem = () => JSON.stringify(['inspect-health', 'inspect-health', 'show-inventory']);
+  assert.deepEqual([...h.sandbox.readStringArray('recent')], ['inspect-health', 'show-inventory']);
+  assert.match(source, /idPickerSearch\.addEventListener\('keydown'/);
+  assert.match(source, /event\.key === 'ArrowDown' \? 'first' : 'last'/);
+  assert.match(source, /if \(event\.key === 'Home'\) nextIndex = 0/);
+  assert.match(source, /if \(event\.key === 'End'\) nextIndex = options\.length - 1/);
+});
+
+test('main view and popup surfaces are opaque', () => {
+  assert.match(styleSource, /--ccc-surface: #0a0d12/);
+  assert.match(styleSource, /body \{[\s\S]*?background: #05070a/);
+  assert.match(styleSource, /\.command-center-shell \{[\s\S]*?background: linear-gradient\(90deg, #05070a 0, #0a0d12 38%, #0a0d12 100%\)/);
+});
+
 test('all editable value inputs select their contents on click', () => {
   assert.match(source, /document\.addEventListener\('click',[\s\S]*?closest<HTMLInputElement>\('input\.osf-input'\)[\s\S]*?input\.select\(\)/);
   assert.match(source, /input\.type === 'number' \? 'text' : input\.type/);
@@ -254,6 +274,28 @@ test('expanded packaged catalog has normalized unique IDs and labeled expansion 
   assert.match(idCatalogSource, /label: 'Heavy Particle Fuse', value: '002B558B'/);
   assert.match(referenceIdSource, /Dazra Ship Services[\s\S]*?Shattered Space DLC bounty faction/);
   assert.match(referenceIdSource, /House Va'ruun — Shattered Space[\s\S]*?Shattered Space DLC bounty faction/);
+
+  const generatedJson = generatedIdSource.match(/String\.raw`([\s\S]+)`\) as/)?.[1];
+  assert.ok(generatedJson, 'Generated catalog payload must be present');
+  const generated = JSON.parse(generatedJson);
+  assert.equal(generated.length, 16358);
+  assert.equal(new Set(generated.map((entry) => entry.value)).size, generated.length);
+  assert.ok(generated.filter((entry) => entry.source === 'Shattered Space').length > 900);
+  assert.ok(generated.every((entry) => /^[0-9A-F]{8}$/.test(entry.value)));
+  assert.ok(generated.every((entry) => !/\b(?:pretentious|conversation|deep space and back|Getting Kaiser back)\b/i.test(entry.label)));
+  assert.ok(generated.every((entry) => !entry.label.includes('�')));
+  assert.ok(generated.every((entry) => entry.label.length <= 72));
+  assert.ok(generated.every((entry) => !/creature.*attack|companion only|not playable/i.test(entry.label)));
+  assert.ok(!generated.some((entry) => ['010CA4BE', '010CA4BC', '01007540'].includes(entry.value)));
+  assert.match(idCatalogSource, /\.filter\(\(entry\) => !curatedIds\.has\(entry\.value\)\)/);
+});
+
+test('large browser datasets load only when their screens are opened', () => {
+  assert.doesNotMatch(source, /^import \{[^\n]*GENERATED_ID_CATALOG/m);
+  assert.doesNotMatch(source, /^import \{[^\n]*QUEST_BROWSER_ENTRIES/m);
+  assert.match(source, /import\('\.\/id-browser-data'\)/);
+  assert.match(source, /import\('\.\/quest-browser'\)/);
+  assert.match(source, /The catalog is loaded only when this screen is opened/);
 });
 
 test('perk, power, and effect commands use searchable packaged pickers', () => {
@@ -274,9 +316,16 @@ test('perk, power, and effect commands use searchable packaged pickers', () => {
 
 test('ID Browser groups results in collapsed categories and opens matches while searching', () => {
   assert.match(source, /<details class="inventory-type-group id-browser-category-group"/);
-  assert.match(source, /\$\{query \|\| idBrowserOpenCategories\.has\(category\) \? ' open' : ''\}/);
+  assert.match(source, /const open = Boolean\(query\) \|\| idBrowserOpenCategories\.has\(category\)/);
   assert.match(source, /group\.addEventListener\('toggle'/);
   assert.match(source, /idBrowserOpenCategories\.clear\(\)/);
+  assert.match(source, /if \(previousQuery && !query\) idBrowserOpenCategories\.clear\(\)/);
+  assert.match(source, /const leavingIdBrowserSearch = activeView === 'id-browser' && Boolean\(query\)/);
+  assert.match(source, /const ID_BROWSER_PAGE_SIZE = 100/);
+  assert.match(source, /entries\.slice\(0, visibleCount\)/);
+  assert.match(source, /data-id-browser-more/);
+  assert.match(source, /Copy Editor ID/);
+  assert.match(source, /\['CELL', 'LCTN'\]\.includes/);
 });
 
 test('ID Browser result buttons fill the category width', () => {
@@ -320,4 +369,47 @@ test('effective-total commands use the native preview-and-apply route', () => {
   assert.match(source, /apply: true/);
   assert.match(source, /console\.command-center\.setEffectiveActorValue/);
   assert.match(nativeSource, /calculatedBase = \*desiredTotal - modifierContribution/);
+});
+
+test('Quest Browser contains every extracted base-game and Shattered Space quest stage', () => {
+  const entries = [...questBrowserSource.matchAll(/"questId":\s*"([0-9A-F]{8})",\s*"stages":\s*\[([\s\S]*?)\],\s*"source":\s*"([^"]+)"/g)]
+    .map((match) => ({
+      id: match[1],
+      stages: match[2].split(',').map((value) => value.trim()).filter(Boolean).map(Number).filter(Number.isInteger),
+      source: match[3],
+    }));
+  assert.equal(entries.length, 2318);
+  assert.equal(entries.reduce((total, entry) => total + entry.stages.length, 0), 16844);
+  assert.equal(entries.filter((entry) => entry.source === 'Base Game').length, 2077);
+  assert.equal(entries.filter((entry) => entry.source === 'Shattered Space').length, 241);
+  assert.equal(new Set(entries.map((entry) => `${entry.source}:${entry.id}`)).size, entries.length);
+});
+
+test('Quest Browser disables unreliable inspections and exposes confirmed state-changing actions', () => {
+  assert.match(source, /data-view="quest-browser"/);
+  assert.match(source, /Check Current Stage — Unavailable/);
+  assert.match(source, /Show Stage History — Unavailable/);
+  assert.doesNotMatch(source, /data-quest-inspect=/);
+  assert.match(source, /data-quest-action="start"/);
+  assert.match(source, /data-quest-action="stop"/);
+  assert.match(source, /data-quest-action="complete"/);
+  assert.match(source, /data-quest-action="reset"/);
+  assert.match(source, /verb: 'startquest'/);
+  assert.match(source, /verb: 'stopquest'/);
+  assert.match(source, /verb: 'completequest'/);
+  assert.match(source, /verb: 'resetquest'/);
+  assert.match(source, /risk: 'danger'/);
+  assert.match(source, /QUEST_BROWSER_PAGE_SIZE = 50/);
+  assert.match(source, /ORIGINAL STORY QUEST/);
+  assert.match(source, /NEW GAME PLUS VARIANT/);
+  assert.match(source, /Command sent:/);
+  assert.match(source, /verifyInGame: true/);
+});
+
+test('Quest Browser does not route GetStage or SQS through unreliable console capture', () => {
+  const recognizedOperations = directQuerySource.match(/if \(operation != "showinventory"([\s\S]*?)\) \{/m)?.[1] ?? '';
+  assert.doesNotMatch(recognizedOperations, /getstage/);
+  assert.doesNotMatch(source, /data-quest-inspect=/);
+  assert.doesNotMatch(source, /history \? 'sqs' : 'getstage'/);
+  assert.match(source, /Start may not add a visible mission until a stage is activated/);
 });

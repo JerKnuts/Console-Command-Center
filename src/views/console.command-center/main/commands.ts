@@ -44,6 +44,7 @@ export type CommandDefinition = {
   closeBeforeExecute?: boolean;
   unavailableReason?: string;
   effectiveTotal?: boolean;
+  verifyInGame?: boolean;
 };
 
 const HEX_ID_PATTERN = '^[0-9A-Fa-f]{1,8}$';
@@ -1455,7 +1456,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['quest', 'stage', 'getstage', 'inspect', 'read only'],
     captureOutput: true,
     testStatus: 'failed',
-    unavailableReason: 'The previous native GetStage adapter was disabled after the test1 crash.',
+    unavailableReason: 'The command works in Starfield’s console, but CCC cannot capture its printed result reliably.',
   },
   {
     id: 'show-quest-stages',
@@ -1467,7 +1468,7 @@ export const COMMANDS: CommandDefinition[] = [
     tags: ['quest', 'stages', 'sqs', 'history', 'inspect', 'read only'],
     captureOutput: true,
     testStatus: 'failed',
-    unavailableReason: 'This command depends on long console-output capture, which is not reliable enough to expose as a supported diagnostic.',
+    unavailableReason: 'The command works in Starfield’s console, but CCC cannot capture its printed stage list reliably.',
   },
   {
     id: 'start-quest',
@@ -1479,7 +1480,8 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('questId', 'Quest ID', '00003448')],
     warning: 'Starting a quest outside its normal prerequisites can break dialogue, scenes, or linked quest progression.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'needs-adjustment',
+    verifyInGame: true,
   },
   {
     id: 'stop-quest',
@@ -1491,7 +1493,8 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('questId', 'Quest ID', '00003448')],
     warning: 'Stopping an active quest can leave scripts, scenes, NPC state, and linked quests in an inconsistent state.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
+    verifyInGame: true,
   },
   {
     id: 'set-quest-stage',
@@ -1506,7 +1509,8 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     warning: 'SetStage can bypass required triggers and permanently break quest chains. Use only when you know the exact intended stage.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
+    verifyInGame: true,
   },
   {
     id: 'complete-quest',
@@ -1518,19 +1522,21 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [hexInput('questId', 'Quest ID', '00003448')],
     warning: 'This can mark a quest complete without running required scenes, rewards, scripts, or follow-up triggers.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
+    verifyInGame: true,
   },
   {
     id: 'reset-quest',
     title: 'Reset Quest by ID',
     category: 'Quests',
-    description: 'Reset all stages of a quest back to their initial state.',
+    description: 'Clear a quest’s recorded stages and remove it from the quest log. This does not automatically restart the quest.',
     command: 'resetquest {questId}',
     tags: ['quest', 'reset', 'repair'],
     inputs: [hexInput('questId', 'Quest ID', '00003448')],
     warning: 'ResetQuest can conflict with NPC, scene, and world state that the quest already changed. Use only on a backup save.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'verified',
+    verifyInGame: true,
   },
   {
     id: 'move-to-quest-target',

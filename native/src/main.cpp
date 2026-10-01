@@ -25,7 +25,7 @@ namespace
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "0.3.3";
+    constexpr const char* kBuildId = "0.3.7";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -233,11 +233,6 @@ namespace
         } catch (...) {
             return false;
         }
-    }
-
-    void OnQuestStatus(const OSFUI::API::Request& raw, void*) noexcept
-    {
-        raw.Reject("inspection-disabled", "Quest Status is temporarily disabled after a native crash in the shared test1 evaluator. Scale, Open State, and GetStage need a verified replacement adapter.");
     }
 
     struct ConsoleQueryCapture
@@ -495,7 +490,6 @@ namespace
         g_ui.RegisterRequest("console.command-center.execute", &OnExecute, nullptr);
         g_ui.RegisterRequest("console.command-center.query", &OnQuery, nullptr);
         g_ui.RegisterRequest("console.command-center.setEffectiveActorValue", &OnSetEffectiveActorValue, nullptr);
-        g_ui.RegisterRequest("console.command-center.questStatus", &OnQuestStatus, nullptr);
     }
 }
 

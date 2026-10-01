@@ -205,3 +205,15 @@ The two console-output `help` searches are disabled for v0.3.2. The packaged ID 
 - Custom controller navigation is removed from the next source revision. The interface now states that controller support is in development for the future.
 - Controller-sized spacing has been removed from the next source revision. The current layout is compact for mouse and keyboard; input-aware larger controls will be considered with the complete controller navigation, activation, and text-entry design.
 - The next source revision adds searchable choice boxes to Add/Remove Perk, Add Power/Spell, and Remove Spell/Status Effect. These picker controls and the 30 newly packaged power/effect IDs still require an in-game test build.
+
+## v0.3.4 Quest Browser in-game pass — September 30, 2026
+
+- Version display, opaque surfaces, searchable-picker keyboard controls, Quest Browser grouping, pagination, search, labels, and Copy Quest ID passed.
+- Repeated executions correctly remained as separate Activity Log records.
+- `getstage` and `sqs` executed through CCC but returned `query-timeout`; no result was verified in CCC. Running the same commands manually in Starfield's console succeeded: FC08 reported Running, current stage 220; `getstage` returned 220.00 and `sqs` displayed the expected done/not-set stage list. The defect was isolated to CCC's console-output capture.
+- The packaged data includes the original One Small Step quest (`MQ101`, `00003448`) plus ten legitimate New Game Plus variants (`MQ401a` through `MQ401j`). The interface labels these roles explicitly.
+- Start, Complete, and Set Stage confirmation cancellation passed; cancelled commands did not execute.
+- Start Quest submitted successfully for Vlad's Home but did not create a visible quest objective by itself. Setting stage 10 activated the quest, confirming the stage action works.
+- Complete Quest did not finish Vlad's Home but successfully completed another active quest. Generic completion is verified with a quest-specific limitation.
+- Stop Quest was verified on Vlad's Home: `sqs` reported MQMisc01 as Stopped.
+- Reset Quest removed Vlad's Home from the quest log and cleared both recorded stages 10 and 100. `sqs` continued to report the quest as Stopped, confirming that Reset clears its state without automatically restarting it.
