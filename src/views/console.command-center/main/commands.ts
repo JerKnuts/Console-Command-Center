@@ -1,4 +1,5 @@
 import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, FORM_TYPE_PICKER, WEATHER_PICKER, PLAYER_ACTOR_VALUE_PICKER, REFERENCE_ACTOR_VALUE_PICKER, SHIP_ACTOR_VALUE_PICKER, GAME_SETTING_PICKER, OPEN_STATE_PICKER, POPULAR_LOCATION_PICKER, type ReferenceIdPicker } from './reference-ids';
+import { UNTESTED_COMMANDS } from './untested-commands';
 
 export type CommandCategory =
   | 'Gameplay'
@@ -9,7 +10,8 @@ export type CommandCategory =
   | 'World'
   | 'Targets'
   | 'Quests'
-  | 'Ship';
+  | 'Ship'
+  | 'Untested';
 
 export type CommandRisk = 'caution' | 'danger';
 export type CommandTestStatus = 'verified' | 'untested' | 'failed' | 'needs-adjustment';
@@ -33,6 +35,7 @@ export type CommandInput = {
     allowedCategories?: string[];
   };
   questStageFor?: string;
+  optional?: boolean;
 };
 
 export type CommandDefinition = {
@@ -54,6 +57,7 @@ export type CommandDefinition = {
   catalogSearch?: {
     recordTypeInput?: string;
   };
+  intakeGroup?: 'Ready to Test' | 'Engine Console Commands' | 'Script Functions';
 };
 
 const HEX_ID_PATTERN = '^[0-9A-Fa-f]{1,8}$';
@@ -889,6 +893,24 @@ export const COMMANDS: CommandDefinition[] = [
     testStatus: 'verified',
   },
   {
+    id: 'toggle-grass',
+    title: 'Toggle Grass',
+    category: 'World',
+    description: 'Show or hide grass rendering. Run it again to restore the previous state.',
+    command: 'ToggleGrass',
+    tags: ['grass', 'rendering', 'world', 'togglegrass'],
+    testStatus: 'verified',
+  },
+  {
+    id: 'toggle-sky',
+    title: 'Toggle Sky',
+    category: 'World',
+    description: 'Show or hide sky rendering. Run it again to restore the previous state.',
+    command: 'ts',
+    tags: ['sky', 'rendering', 'world', 'toggle sky', 'togglesky'],
+    testStatus: 'verified',
+  },
+  {
     id: 'set-interior-gravity',
     title: 'Set Interior Gravity',
     category: 'World',
@@ -1014,6 +1036,15 @@ export const COMMANDS: CommandDefinition[] = [
   },
 
   // TARGETS (NPCs / OBJECTS / WORLD REFERENCES)
+  {
+    id: 'select-closest-actor',
+    title: 'Select Closest Actor',
+    category: 'Targets',
+    description: 'Set the console selection to the actor closest to the player.',
+    command: 'PickClosestActor',
+    tags: ['actor', 'select', 'console', 'target'],
+    testStatus: 'verified',
+  },
   {
     id: 'move-ref-to-player',
     title: 'Move Reference to Player',
@@ -1505,25 +1536,21 @@ export const COMMANDS: CommandDefinition[] = [
     id: 'get-quest-stage',
     title: 'Get Current Quest Stage',
     category: 'Quests',
-    description: 'Read the current/highest completed stage reported for a quest before attempting a repair.',
+    description: 'Read the current/highest completed stage and quest state directly from Starfield before attempting a repair.',
     command: 'getstage {questId}',
     inputs: [questIdInput()],
     tags: ['quest', 'stage', 'getstage', 'inspect', 'read only'],
-    captureOutput: true,
-    testStatus: 'failed',
-    unavailableReason: 'The command works in Starfield’s console, but CCC cannot capture its printed result reliably.',
+    testStatus: 'verified',
   },
   {
     id: 'show-quest-stages',
     title: 'Show Quest Stage History',
     category: 'Quests',
-    description: 'List quest stages and whether each is done or not set. Results open in a scrollable window and can be reopened from Activity Log.',
+    description: 'Read every packaged stage directly from Starfield and list whether it is done or not set. Results open in a scrollable window and can be reopened from Activity Log.',
     command: 'sqs {questId}',
     inputs: [questIdInput()],
     tags: ['quest', 'stages', 'sqs', 'history', 'inspect', 'read only'],
-    captureOutput: true,
-    testStatus: 'failed',
-    unavailableReason: 'The command works in Starfield’s console, but CCC cannot capture its printed stage list reliably.',
+    testStatus: 'verified',
   },
   {
     id: 'start-quest',
@@ -1972,10 +1999,12 @@ export const COMMANDS: CommandDefinition[] = [
       ...hexInput('baseId', 'Ship Base ID', '000F31DB', 'Choose an included ship/base-form record or enter its Base ID.'),
       browserPicker: { browser: 'id', buttonLabel: 'Browse Ships', allowedTypes: ['GBFM'] },
     }],
-    warning: 'Spawning ships in unsuitable locations can cause collisions, inaccessible geometry, or save instability. Use in a large open area and on a backup save.',
+    warning: 'PlaceAtMe spawned the ship directly on the player with its boarding ramp buried underground.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'failed',
+    unavailableReason: 'Disabled after in-game testing: the ship spawned on the player and partly underground, leaving its boarding ramp inaccessible.',
   },
+  ...UNTESTED_COMMANDS,
 ];
 
 export const CATEGORY_ORDER: CommandCategory[] = [
@@ -1988,4 +2017,5 @@ export const CATEGORY_ORDER: CommandCategory[] = [
   'Targets',
   'Quests',
   'Ship',
+  'Untested',
 ];

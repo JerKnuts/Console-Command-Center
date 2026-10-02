@@ -1,5 +1,6 @@
 #include <SFSE/SFSE.h>
 #include <RE/Starfield.h>
+#include <RE/B/BSScriptUtil.h>
 
 #include <algorithm>
 #include <atomic>
@@ -13,6 +14,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -25,7 +27,7 @@ namespace
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "0.3.7";
+    constexpr const char* kBuildId = "4.0";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -363,6 +365,155 @@ namespace
         }
     }
 
+    enum class QuestReadKind
+    {
+        currentStage,
+        running,
+        completed,
+        stageDone
+    };
+
+    struct QuestReadCallback final : RE::BSScript::IStackCallbackFunctor
+    {
+        QuestReadCallback(
+            OSFUI::API::Request a_request,
+            std::string a_operation,
+            std::uint32_t a_questID,
+            std::optional<std::uint32_t> a_stage,
+            QuestReadKind a_kind) :
+            request(std::move(a_request)),
+            operation(std::move(a_operation)),
+            questID(a_questID),
+            stage(a_stage),
+            kind(a_kind)
+        {}
+
+        void CallQueued() override {}
+
+        void CallCanceled() override
+        {
+            if (!finished.exchange(true, std::memory_order_acq_rel)) {
+                request.Reject("quest-read-canceled", "Starfield canceled the quest-state read before returning a value.");
+            }
+        }
+
+        void StartMultiDispatch() override {}
+        void EndMultiDispatch() override {}
+
+        void operator()(RE::BSScript::Variable value) override
+        {
+            if (finished.exchange(true, std::memory_order_acq_rel)) return;
+
+            try {
+                OSFUI::API::Json payload{
+                    { "ok", true },
+                    { "questId", std::format("{:08X}", questID) },
+                    { "operation", operation }
+                };
+                if (stage) payload["stage"] = *stage;
+
+                if (kind == QuestReadKind::currentStage) {
+                    if (!value.is<std::int32_t>()) {
+                        throw std::runtime_error("Starfield returned an unexpected current-stage value.");
+                    }
+                    payload["value"] = RE::BSScript::UnpackVariable<std::int32_t>(value);
+                } else {
+                    if (!value.is<bool>()) {
+                        throw std::runtime_error("Starfield returned an unexpected quest-state value.");
+                    }
+                    payload["value"] = RE::BSScript::UnpackVariable<bool>(value);
+                }
+
+                const auto serialized = payload.dump();
+                request.Respond("console.command-center.questReadResult", serialized.c_str());
+            } catch (const std::exception& error) {
+                request.Reject("quest-read-failed", error.what());
+            } catch (...) {
+                request.Reject("quest-read-failed", "Could not return the quest-state value.");
+            }
+        }
+
+        OSFUI::API::Request request{};
+        std::string operation;
+        std::uint32_t questID{ 0 };
+        std::optional<std::uint32_t> stage;
+        QuestReadKind kind{ QuestReadKind::currentStage };
+        std::atomic_bool finished{ false };
+    };
+
+    void OnQuestRead(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+
+        const auto questText = request.Get<std::string>("questId");
+        const auto operation = request.Get<std::string>("operation");
+        if (!questText || !operation) {
+            request.Reject("invalid-quest-read", "Quest ID and read operation are required.");
+            return;
+        }
+
+        try {
+            std::uint32_t questID = 0;
+            const auto [end, error] = std::from_chars(questText->data(), questText->data() + questText->size(), questID, 16);
+            if (questText->empty() || questText->size() > 8 || error != std::errc{} || end != questText->data() + questText->size() || questID == 0) {
+                throw std::runtime_error("Enter a valid 1-8 digit hexadecimal Quest ID.");
+            }
+
+            QuestReadKind kind{};
+            const char* functionName = nullptr;
+            std::optional<std::uint32_t> stage;
+            if (*operation == "currentStage") {
+                kind = QuestReadKind::currentStage;
+                functionName = "GetCurrentStageID";
+            } else if (*operation == "isRunning") {
+                kind = QuestReadKind::running;
+                functionName = "IsRunning";
+            } else if (*operation == "isCompleted") {
+                kind = QuestReadKind::completed;
+                functionName = "IsCompleted";
+            } else if (*operation == "isStageDone") {
+                kind = QuestReadKind::stageDone;
+                functionName = "IsStageDone";
+                stage = request.Get<std::uint32_t>("stage");
+                if (!stage || *stage > 65535) {
+                    throw std::runtime_error("A quest stage from 0 through 65535 is required.");
+                }
+            } else {
+                throw std::runtime_error("Unsupported quest-state read operation.");
+            }
+
+            auto* form = RE::TESForm::LookupByID(questID);
+            auto* quest = form ? starfield_cast<RE::TESQuest*>(form) : nullptr;
+            if (!quest) throw std::runtime_error("Quest not found. Check the Form ID and installed game content.");
+
+            auto* gameVM = RE::GameVM::GetSingleton();
+            auto* vm = gameVM ? gameVM->GetVM() : nullptr;
+            if (!vm) throw std::runtime_error("Starfield's scripting interface is not available yet.");
+
+            auto& handles = vm->GetObjectHandlePolicy();
+            const auto handle = handles.GetHandleForObject(RE::BSScript::GetVMTypeID<RE::TESQuest>(), quest);
+            if (handle == handles.EmptyHandle()) throw std::runtime_error("Could not bind the selected quest to Starfield's scripting interface.");
+
+            auto callback = RE::make_smart<QuestReadCallback>(raw, *operation, questID, stage, kind);
+            const auto arguments = [stage](RE::BSScrapArray<RE::BSScript::Variable>& values) {
+                if (stage) {
+                    RE::BSScript::Variable value;
+                    RE::BSScript::PackVariable(value, *stage);
+                    values.push_back(std::move(value));
+                }
+                return true;
+            };
+            if (!vm->DispatchMethodCall(handle, "Quest", functionName, arguments, callback, 0)) {
+                throw std::runtime_error("Starfield could not queue the quest-state read.");
+            }
+        } catch (const std::exception& error) {
+            request.Reject("quest-read-failed", error.what());
+        } catch (...) {
+            request.Reject("quest-read-failed", "Could not start the quest-state read.");
+        }
+    }
+
     void OnSetEffectiveActorValue(const OSFUI::API::Request& raw, void*) noexcept
     {
         OSFUI::API::JsonRequest request{ raw };
@@ -489,6 +640,7 @@ namespace
         }
         g_ui.RegisterRequest("console.command-center.execute", &OnExecute, nullptr);
         g_ui.RegisterRequest("console.command-center.query", &OnQuery, nullptr);
+        g_ui.RegisterRequest("console.command-center.questRead", &OnQuestRead, nullptr);
         g_ui.RegisterRequest("console.command-center.setEffectiveActorValue", &OnSetEffectiveActorValue, nullptr);
     }
 }

@@ -8,6 +8,9 @@ import { stripTypeScriptTypes } from 'node:module';
 // engine values, focus trapping, and scrolling still need a browser/game test.
 const source = readFileSync(new URL('../src/views/console.command-center/main/main.ts', import.meta.url), 'utf8');
 const commandSource = readFileSync(new URL('../src/views/console.command-center/main/commands.ts', import.meta.url), 'utf8');
+const untestedCommandSource = readFileSync(new URL('../src/views/console.command-center/main/untested-commands.ts', import.meta.url), 'utf8');
+const engineCommandSource = readFileSync(new URL('../src/views/console.command-center/main/engine-command-library.ts', import.meta.url), 'utf8');
+const engineCommandGeneratorSource = readFileSync(new URL('../scripts/build-engine-command-library.mjs', import.meta.url), 'utf8');
 const nativeSource = readFileSync(new URL('../native/src/main.cpp', import.meta.url), 'utf8');
 const styleSource = readFileSync(new URL('../src/views/console.command-center/main/style.css', import.meta.url), 'utf8');
 const idCatalogSource = readFileSync(new URL('../src/views/console.command-center/main/id-catalog.ts', import.meta.url), 'utf8');
@@ -187,17 +190,93 @@ test('Custom Command uses a multiline batch editor and the sidebar has no redund
   ]);
 });
 
-test('Custom Command can persist, load, update, and delete up to ten named entries', () => {
+test('Custom Command can persist, load, update, and delete up to 100 named entries', () => {
   assert.match(source, /STORAGE_CUSTOM_COMMANDS = 'consoleCommandCenter\.customCommands'/);
-  assert.match(source, /MAX_SAVED_CUSTOM_COMMANDS = 10/);
+  assert.match(source, /MAX_SAVED_CUSTOM_COMMANDS = 100/);
+  assert.match(source, /\$\{savedCustomCommands\.length\} \/ \$\{MAX_SAVED_CUSTOM_COMMANDS\}/);
   assert.match(source, /data-custom-load=/);
   assert.match(source, /data-custom-delete=/);
   assert.match(source, /input\.value = entry\.commands/);
   assert.match(source, /entry\.name\.toLowerCase\(\) === name\.toLowerCase\(\)/);
   assert.match(source, /writeSavedCustomCommands\(\)/);
+  assert.match(source, /data-custom-delete-all/);
+  assert.match(source, /deleteAllInput\.value !== 'Delete'/);
+  assert.match(source, /savedCustomCommands = \[\]/);
   assert.match(styleSource, /\.custom-workspace \{ display: grid; grid-template-columns: minmax\(0, 3fr\) minmax\(320px, 2fr\);/);
   assert.match(styleSource, /\.custom-saved-entry-actions \{ display: flex;/);
   assert.doesNotMatch(source, /const preview = commands\[0\]/);
+});
+
+test('newly discovered commands remain isolated in the Untested intake category', () => {
+  assert.match(commandSource, /import \{ UNTESTED_COMMANDS \} from '\.\/untested-commands'/);
+  assert.match(commandSource, /\| 'Untested'/);
+  assert.match(commandSource, /\.\.\.UNTESTED_COMMANDS/);
+  assert.match(commandSource, /'Ship',\s*'Untested'/);
+  assert.match(source, /UNTESTED COMMAND INTAKE/);
+  assert.match(source, /command\.testStatus === 'untested'/);
+  assert.match(styleSource, /\.command-test-tag/);
+  assert.match(untestedCommandSource, /id: 'untested-start-all-quests'/);
+  assert.match(untestedCommandSource, /id: 'untested-camera-fov'/);
+  assert.match(untestedCommandSource, /id: 'untested-nearest-door'/);
+  assert.match(untestedCommandSource, /id: 'untested-save-game'/);
+  assert.doesNotMatch(untestedCommandSource, /testStatus: 'verified'/);
+  assert.match(untestedCommandSource, /testStatus: 'failed'/);
+});
+
+test('established command views use a compact grid while Recent remains a row list', () => {
+  assert.match(source, /commandList\.classList\.toggle\('is-command-grid', commandGridView\)/);
+  assert.match(source, /&& activeView !== 'recent'/);
+  assert.match(styleSource, /\.command-list\.is-command-grid \{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(styleSource, /\.command-list\.is-command-grid > \.command-card/);
+  assert.doesNotMatch(styleSource, /\.command-list\.is-command-grid[\s\S]{0,240}height: 100%/);
+  assert.match(styleSource, /\.untested-group \{[\s\S]*?overflow: visible/);
+  assert.match(styleSource, /@media \(max-width: 1180px\)[\s\S]*?\.command-list\.is-command-grid,[\s\S]*?grid-template-columns: minmax\(0, 1fr\)/);
+});
+
+test('the complete engine command reference is lazy-loaded into grouped Untested pages', () => {
+  const recordMatch = engineCommandSource.match(/const ENGINE_COMMAND_RECORDS = JSON\.parse\(String\.raw`([\s\S]*?)`\) as EngineCommandRecord\[\];/);
+  assert.ok(recordMatch, 'generated engine command records must remain readable');
+  const records = JSON.parse(recordMatch[1]);
+  assert.equal(records.length, 1513);
+  assert.equal(records.filter((entry) => entry.group === 'Console Commands').length, 565);
+  assert.equal(records.filter((entry) => entry.group === 'Script Functions').length, 948);
+  assert.equal(new Set(records.map((entry) => `${entry.group}:${entry.name.toLowerCase()}`)).size, 1513);
+
+  assert.match(source, /const ENGINE_COMMAND_LIBRARY_TOTAL = 1513/);
+  assert.match(source, /import\('\.\/engine-command-library'\)/);
+  assert.match(source, /const UNTESTED_COMMAND_PAGE_SIZE = 100/);
+  assert.match(source, /'Ready to Test', 'Engine Console Commands', 'Script Functions'/);
+  assert.match(source, /ENGINE_COMMAND_LIBRARY_TOTAL/);
+  assert.match(engineCommandSource, /category: 'Untested'/);
+  assert.match(engineCommandSource, /testStatus: 'untested'/);
+  assert.match(engineCommandSource, /label: 'Optional Arguments'/);
+  assert.match(engineCommandSource, /label: 'Optional Target \/ Prefix'/);
+  assert.match(engineCommandSource, /unavailableReason: requiresCredentials/);
+  assert.match(engineCommandGeneratorSource, /section !== 'Console Commands' && section !== 'Script Functions'/);
+  assert.doesNotMatch(commandSource, /from '\.\/engine-command-library'/);
+});
+
+test('main and Untested command searches are isolated from one another', () => {
+  assert.match(source, /let untestedQuery = ''/);
+  assert.match(source, /command\.category !== 'Untested' && commandMatches\(command\)/);
+  assert.match(source, /command\.category === 'Untested'/);
+  assert.match(source, /commandMatches\(command, untestedQuery\)/);
+  assert.match(source, /if \(activeView === 'Untested'\) \{[\s\S]*?untestedQuery = search\.value/);
+  assert.match(source, /search\.value = view === 'Untested' \? untestedQuery : ''/);
+  assert.match(source, /activeView === 'Untested'[\s\S]*?'Search untested name, command, or description\.\.\.'/);
+  assert.doesNotMatch(source, /data-untested-search|data-clear-untested-search/);
+  assert.doesNotMatch(source, /searchWrap\.hidden = [^;]*activeView === 'Untested'/);
+  assert.match(source, /if \(activeView === 'Untested' && !engineCommandLibraryLoaded\)/);
+  assert.match(source, /renderUntestedCommandGroups\(\[\]\) \+ emptyState/);
+  assert.doesNotMatch(source, /\(activeView === 'Untested' \|\| query\) && !engineCommandLibraryLoaded/);
+  assert.doesNotMatch(styleSource, /\.untested-search-wrap/);
+});
+
+test('optional engine arguments may be blank without leaving command placeholders', () => {
+  assert.match(commandSource, /optional\?: boolean/);
+  assert.match(source, /value \|\| \(input\.optional \? '' : `\{\$\{input\.key\}\}`\)/);
+  assert.match(source, /return output\.replace\(\/\\s\+\/g, ' '\)\.trim\(\)/);
+  assert.match(source, /if \(input\.optional\) continue/);
 });
 
 test('Custom Command batches execute one line at a time', async () => {
@@ -321,9 +400,9 @@ test('large browser datasets load only when their screens are opened', () => {
 });
 
 test('command inputs and picker buttons use the same control height', () => {
-  assert.match(styleSource, /\.input-field\s*\{[\s\S]*?grid-template-rows:\s*12px 40px auto;/);
-  assert.match(styleSource, /\.input-field \.osf-input\s*\{[\s\S]*?height:\s*40px;/);
-  assert.match(styleSource, /\.input-picker-button\s*\{[\s\S]*?height:\s*40px;/);
+  assert.match(styleSource, /\.input-field\s*\{[\s\S]*?grid-template-rows:\s*12px 36px auto;/);
+  assert.match(styleSource, /\.input-field \.osf-input\s*\{[\s\S]*?height:\s*36px;/);
+  assert.match(styleSource, /\.input-picker-button\s*\{[\s\S]*?height:\s*36px;/);
 });
 
 test('perk, power, and effect commands use filtered ID Browser selection', () => {
@@ -337,7 +416,7 @@ test('perk, power, and effect commands use filtered ID Browser selection', () =>
   assert.match(source, /pickerCategories\.includes\(entry\.category\)/);
   assert.match(source, /activeCatalogPicker\?\.browser === 'id' \|\| idBrowserOpenCategories\.has\(category\)/);
   assert.match(source, /id-browser-panel\$\{activeCatalogPicker\?\.browser === 'id' \? ' is-selecting' : ''\}/);
-  assert.match(styleSource, /\.id-browser-panel\.is-selecting\s*\{[\s\S]*?grid-template-rows:\s*auto auto auto auto 2px minmax\(0, 1fr\);/);
+  assert.match(styleSource, /\.id-browser-panel\.is-selecting\s*\{[\s\S]*?grid-template-rows:\s*auto auto auto 2px minmax\(0, 1fr\);/);
   assert.equal((idCatalogSource.match(/category: 'Powers'/g) ?? []).length, 24);
   assert.equal((idCatalogSource.match(/category: 'Effects'/g) ?? []).length, 6);
   assert.match(idCatalogSource, /label: 'Anti-Gravity Field', value: '002BACBA'/);
@@ -354,7 +433,7 @@ test('ID Browser groups results in collapsed categories and opens matches while 
   assert.match(source, /const open = Boolean\(query\) \|\| activeCatalogPicker\?\.browser === 'id' \|\| idBrowserOpenCategories\.has\(category\)/);
   assert.match(source, /group\.addEventListener\('toggle'/);
   assert.match(source, /idBrowserOpenCategories\.clear\(\)/);
-  assert.match(source, /if \(previousQuery && !query\) idBrowserOpenCategories\.clear\(\)/);
+  assert.match(source, /if \(previousQuery && !query\) \{[\s\S]*?idBrowserOpenCategories\.clear\(\);[\s\S]*?idBrowserCategory = 'all';[\s\S]*?idBrowserRecordTypeFilter = '';/);
   assert.match(source, /const leavingIdBrowserSearch = activeView === 'id-browser' && Boolean\(query\)/);
   assert.match(source, /const ID_BROWSER_PAGE_SIZE = 100/);
   assert.match(source, /entries\.slice\(0, visibleCount\)/);
@@ -363,17 +442,45 @@ test('ID Browser groups results in collapsed categories and opens matches while 
   assert.match(source, /\['CELL', 'LCTN'\]\.includes/);
 });
 
-test('ID Browser result buttons fill the category width', () => {
-  assert.match(styleSource, /\.id-browser-row\s*\{[\s\S]*?width:\s*100%;/);
+test('ID Browser categories act as an accordion and interactions preserve scroll', () => {
+  assert.match(source, /idBrowserOpenCategories\.clear\(\);\s*idBrowserOpenCategories\.add\(category\);/);
+  assert.match(source, /if \(otherGroup !== group\) otherGroup\.open = false;/);
+  assert.match(source, /const scrollTop = resultsElement\.scrollTop;/);
+  assert.equal((source.match(/replacement\.scrollTop = scrollTop/g) ?? []).length, 3);
 });
 
-test('ID Browser keeps category labels inline with item names for compact rows', () => {
-  assert.match(source, /class="id-browser-row-title"><strong>[\s\S]*?<small>\$\{escapeHtml\(entry\.category\)\}<\/small>/);
-  assert.match(styleSource, /\.id-browser-row-title\s*\{[\s\S]*?display:\s*flex;/);
-  assert.match(styleSource, /\.id-browser-row\s*\{[\s\S]*?min-height:\s*38px;/);
+test('ID Browser uses responsive compact tile grids', () => {
+  assert.match(styleSource, /\.id-browser-category-contents\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\);/);
+  assert.match(styleSource, /@media \(max-width: 1550px\)[\s\S]*?repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.match(styleSource, /@media \(max-width: 1180px\)[\s\S]*?repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(styleSource, /\.id-browser-row\s*\{[\s\S]*?min-height:\s*50px;/);
 });
 
-test('ID Browser item action accepts a validated quantity and defaults to one', () => {
+test('ID Browser tiles keep the name, type, detail, and Form ID visible', () => {
+  assert.match(source, /<strong title="\$\{escapeHtml\(entry\.label\)\}">/);
+  assert.match(source, /class="id-browser-row-detail"/);
+  assert.match(source, /<code>\$\{escapeHtml\(entry\.value\)\}<\/code>/);
+  assert.match(styleSource, /\.id-browser-row-main strong\s*\{[\s\S]*?text-overflow:\s*ellipsis;/);
+});
+
+test('search fields expose clear buttons and ID Browser relies on category accordions', () => {
+  assert.equal((source.match(/class="search-clear"/g) ?? []).length, 3);
+  assert.match(source, /function clearSearchInput\(input: HTMLInputElement\)/);
+  assert.match(source, /input\.dispatchEvent\(new Event\('input', \{ bubbles: true \}\)\)/);
+  assert.match(styleSource, /\.search-clear\[hidden\]\s*\{\s*display:\s*none;/);
+  assert.match(source, /if \(!activeCatalogPicker\) \{\s*idBrowserCategory = 'all';\s*idBrowserRecordTypeFilter = '';/);
+  assert.doesNotMatch(source, /id="id-browser-category"/);
+  assert.doesNotMatch(styleSource, /\.id-browser-controls/);
+});
+
+test('main command cards hide raw syntax while review and history retain it', () => {
+  assert.doesNotMatch(source, /command-heading-preview|data-preview=/);
+  assert.doesNotMatch(source, /function updatePreview/);
+  assert.match(source, /class="confirm-command"/);
+  assert.match(source, /class="activity-command"/);
+});
+
+test('ID Browser quick actions build item, weather, and cell commands', () => {
   const quickActionFunctions = [...source.matchAll(/^(?:async )?function (\w+)\b[\s\S]*?^}/gm)]
     .filter((match) => ['idBrowserAction', 'requestIdBrowserQuickAction'].includes(match[1]))
     .map((match) => match[0]);
@@ -383,17 +490,37 @@ test('ID Browser item action accepts a validated quantity and defaults to one', 
   vm.createContext(sandbox);
   vm.runInContext(stripTypeScriptTypes(quickActionFunctions.join('\n')), sandbox);
   const medPack = { label: 'Med Pack', value: '0000ABF9', type: 'ALCH', category: 'Aid', action: 'additem' };
+  const ship = { label: 'Abyss Trekker', value: '000F31DB', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' };
+  const weather = { label: 'Clear', value: '0002B07E', type: 'WTHR', category: 'Weather' };
+  const cell = { label: 'The Rock', value: '00016758', type: 'CELL', category: 'Cells', keywords: ['CityAkilaTheRock01'] };
+  const location = { label: 'Akila City', value: '00001226', type: 'LCTN', category: 'Locations', keywords: ['CityAkilaLocation'] };
+  assert.equal(sandbox.idBrowserAction(ship), null);
   sandbox.requestIdBrowserQuickAction(medPack);
   assert.equal(requested.command, 'player.additem 0000ABF9 1');
   sandbox.requestIdBrowserQuickAction(medPack, 4);
   assert.equal(requested.command, 'player.additem 0000ABF9 4');
   assert.match(requested.definition.description, /Add 4 Med Pack/);
+  sandbox.requestIdBrowserQuickAction(weather);
+  assert.equal(requested.command, 'fw 0002B07E');
+  assert.equal(requested.definition.category, 'World');
+  assert.equal(requested.definition.testStatus, 'verified');
+  assert.equal(sandbox.idBrowserAction(cell), 'teleport');
+  sandbox.requestIdBrowserQuickAction(cell);
+  assert.equal(requested.command, 'coc CityAkilaTheRock01');
+  assert.equal(requested.definition.category, 'World');
+  assert.equal(requested.definition.testStatus, 'verified');
+  assert.equal(requested.definition.risk, 'danger');
+  assert.equal(sandbox.idBrowserAction(location), 'findcell');
+  assert.match(source, /\? 'Change Weather'/);
+  assert.match(source, /\? 'Teleport Here'/);
+  assert.match(source, /\? 'Find Teleportable Cell'/);
+  assert.match(source, /idBrowserRecordTypeFilter = 'CELL'/);
   assert.match(source, /id="id-browser-quantity" type="text"/);
   assert.match(source, /Number\.isInteger\(quantity\) && quantity >= 1 && quantity <= 999999/);
 });
 
 test('known-broken command cards are unavailable at both render and execution boundaries', () => {
-  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 4);
+  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 3);
   assert.match(source, /const unavailable = Boolean\(command\.unavailableReason\)/);
   assert.match(source, /if \(execution\.definition\?\.unavailableReason\)/);
 });
@@ -467,15 +594,16 @@ test('Quest Browser contains every extracted base-game and Shattered Space quest
   assert.equal(new Set(entries.map((entry) => `${entry.source}:${entry.id}`)).size, entries.length);
 });
 
-test('Quest Browser disables unreliable inspections and exposes confirmed state-changing actions', () => {
+test('Quest Browser exposes native inspections and confirmed state-changing actions', () => {
   assert.match(source, /data-view="quest-browser"/);
   assert.match(source, /quest-browser-card-heading[\s\S]*?<strong>\$\{escapeHtml\(entry\.quest\)\}<\/strong>\$\{flags\}/);
   assert.match(styleSource, /\.quest-browser-card-heading\s*\{[\s\S]*?display:\s*flex;/);
   assert.match(styleSource, /\.quest-browser-card-flags\s*\{[\s\S]*?display:\s*flex;/);
   assert.doesNotMatch(source, /quest-browser-card-body">\s*<div class="quest-browser-meta"/);
-  assert.match(source, /Check Current Stage — Unavailable/);
-  assert.match(source, /Show Stage History — Unavailable/);
-  assert.doesNotMatch(source, /data-quest-inspect=/);
+  assert.match(source, /data-quest-inspect="stage"/);
+  assert.match(source, /data-quest-inspect="history"/);
+  assert.match(source, />Check Current Stage<\/button>/);
+  assert.match(source, />Show Stage History<\/button>/);
   assert.match(source, /data-quest-action="start"/);
   assert.match(source, /data-quest-action="stop"/);
   assert.match(source, /data-quest-action="complete"/);
@@ -492,10 +620,52 @@ test('Quest Browser disables unreliable inspections and exposes confirmed state-
   assert.match(source, /verifyInGame: true/);
 });
 
-test('Quest Browser does not route GetStage or SQS through unreliable console capture', () => {
+test('Quest Browser routes GetStage and SQS through the native Papyrus quest reader', () => {
   const recognizedOperations = directQuerySource.match(/if \(operation != "showinventory"([\s\S]*?)\) \{/m)?.[1] ?? '';
   assert.doesNotMatch(recognizedOperations, /getstage/);
-  assert.doesNotMatch(source, /data-quest-inspect=/);
-  assert.doesNotMatch(source, /history \? 'sqs' : 'getstage'/);
+  assert.match(source, /console\.command-center\.questRead/);
+  assert.match(source, /readQuestValue\(questId, 'currentStage'\)/);
+  assert.match(source, /readQuestValue\(questId, 'isStageDone', stage\)/);
+  assert.match(nativeSource, /functionName = "GetCurrentStageID"/);
+  assert.match(nativeSource, /functionName = "IsStageDone"/);
+  assert.match(nativeSource, /DispatchMethodCall\(handle, "Quest", functionName/);
+  assert.doesNotMatch(commandSource, /id: 'get-quest-stage',[\s\S]*?captureOutput: true[\s\S]*?id: 'show-quest-stages'/);
   assert.match(source, /Start may not add a visible mission until a stage is activated/);
+  assert.match(source, /const openQuestBrowserCards = new Set/);
+  assert.match(source, /openQuestBrowserCards\.add\(normalizedQuestId\(questInspectButton\.dataset\.questId\)\)/);
+  assert.match(source, /commandList\.scrollTop = preserveScrollTop/);
+});
+
+test('grass is promoted after verification and failed wireframe paths are unavailable', () => {
+  assert.match(commandSource, /id: 'toggle-grass',[\s\S]*?category: 'World',[\s\S]*?testStatus: 'verified'/);
+  assert.doesNotMatch(untestedCommandSource, /\['toggle-grass'/);
+  assert.match(untestedCommandSource, /\['toggle-wireframe', 'toggle-collision-geometry'\]\.includes\(id as string\) \? 'failed' : 'untested'/);
+  assert.match(engineCommandSource, /togglewireframe: 'In-game v0\.3\.11 testing produced no visible wireframe effect\.'/);
+});
+
+test('verified sky and closest-actor commands leave prepared intake', () => {
+  assert.match(commandSource, /id: 'toggle-sky',[\s\S]*?command: 'ts',[\s\S]*?testStatus: 'verified'/);
+  assert.match(commandSource, /id: 'select-closest-actor',[\s\S]*?command: 'PickClosestActor',[\s\S]*?testStatus: 'verified'/);
+  assert.doesNotMatch(untestedCommandSource, /\['toggle-sky'/);
+  assert.doesNotMatch(untestedCommandSource, /id: 'untested-pick-closest-actor'/);
+  assert.match(engineCommandSource, /togglecollisiongeometry: 'In-game v0\.3\.11 testing produced no visible collision-geometry overlay\.'/);
+  assert.match(engineCommandSource, /setcamerafov: 'In-game v0\.3\.11 testing at 90 and 75 degrees produced no visible field-of-view change\.'/);
+  assert.match(engineCommandSource, /showsubtitle: 'In-game v0\.3\.11 testing produced no visible subtitle override\.'/);
+});
+
+test('Quest stage history marks completed, current, and unset stage buttons', () => {
+  assert.match(source, /const questProgressSnapshots = new Map/);
+  assert.match(source, /questProgressSnapshots\.set\(questId, \{ currentStage, completedStages \}\)/);
+  assert.match(source, /quest-stage-button--current/);
+  assert.match(source, /quest-stage-button--done/);
+  assert.match(source, /quest-stage-button--unset/);
+  assert.match(styleSource, /\.quest-stage-button--current/);
+  assert.match(styleSource, /\.quest-stage-button--done/);
+});
+
+test('verified quest reads remain available and unusable ship spawning is disabled', () => {
+  assert.match(commandSource, /id: 'get-quest-stage',[\s\S]*?testStatus: 'verified'/);
+  assert.match(commandSource, /id: 'show-quest-stages',[\s\S]*?testStatus: 'verified'/);
+  assert.match(commandSource, /id: 'spawn-ship',[\s\S]*?testStatus: 'failed'[\s\S]*?unavailableReason:/);
+  assert.match(commandSource, /boarding ramp inaccessible/);
 });

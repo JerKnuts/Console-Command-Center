@@ -6,13 +6,27 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current release: v0.3.7 Beta.** This release corrects generated ID labels, removes internal catalog records, prevents Quest Browser inspections from invoking the unreliable console-output capture route, and adds the latest commands verified in game. Follow [the release validation checklist](TEST_BUILD_RESULT_ACTIONS.md) when testing a fresh installation. Historical build notes live under [`docs/`](docs/).
+**Current release: v4.0.** This is the first public Nexus release. It combines the tested command interface with the packaged ID and Quest browsers, saved custom-command batches, native inspection results, and a separate catalog for commands that still need in-game verification. See the [release notes](docs/RELEASE_NOTES_v4.0.md) and [release validation checklist](RELEASE_VALIDATION.md). Historical development notes remain under [`docs/`](docs/).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
 Commands that rely on known curated IDs use a reusable searchable Reference ID Picker instead of crowded preset-button grids. A separate **ID Browser** searches the catalog packaged with CCC.
 
 Some commands can affect achievements, progression, quests, save-game state, NPCs, ships, or world objects. Make a manual save before using commands that modify important game state.
+
+## Requirements and compatibility
+
+- Starfield runtime **1.16.244**
+- [Starfield Script Extender (SFSE)](https://sfse.silverlock.org/)
+- OSF UI
+
+The native plugin enables its gameplay handlers only on the tested Starfield runtime. A different game version will leave CCC unavailable rather than attempting incompatible native calls. Shattered Space is optional; records from the expansion are clearly labeled and require the expansion when used.
+
+## Installation
+
+Install the release archive with a Starfield mod manager, or copy its `SFSE` folder into the game's `Data` folder. Keep the archive's folder structure intact. Launch the game through SFSE and confirm the CCC footer reports **v4.0** and **NATIVE READY**.
+
+To update, replace the existing CCC files with the files from the new archive. To uninstall, remove `Data/SFSE/Plugins/ConsoleCommandCenter.dll` and `Data/SFSE/Plugins/OSFUI/views/console.command-center/`.
 
 ## Features
 
@@ -21,7 +35,8 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 - Searchable command library
 - Category browsing
 - Recent commands and favorites stay fixed at the top of the sidebar while the category list scrolls independently
-- Multiline custom-command batches that execute one command per line, with up to 10 named saved entries
+- Multiline custom-command batches that execute one command per line, with up to 100 named saved entries, a visible usage counter, and typed confirmation before deleting every saved entry
+- Separate **Untested** intake category with 34 prepared test cards and a lazily loaded library of 1,513 engine commands and script functions; verified entries move into their permanent categories
 - Activity log
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
@@ -41,7 +56,7 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 
 ## ID Browser and Reference ID Picker
 
-The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It searches **16,528 included IDs** instantly by name, Form ID, type, category, and Editor ID. The catalog covers weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Location and cell selections can copy either the Form ID or Editor ID. Shattered Space records display an expansion requirement and use cleaned Editor IDs where a verified localized display name is unavailable. Long descriptive labels, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded. Large categories load 100 rows at a time so browsing and searching stay responsive. Every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous.
+The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It searches **16,528 included IDs** instantly by name, Form ID, type, category, and Editor ID. The catalog covers weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Location and cell selections can copy either the Form ID or Editor ID. Weather records can be applied immediately, Cell records can teleport through their Editor ID, and Location records can narrow the browser to matching teleportable Cells. Shattered Space records display an expansion requirement and use cleaned Editor IDs where a verified localized display name is unavailable. Long descriptive labels, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded. Large categories load 100 tiles at a time so browsing and searching stay responsive. Every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous.
 
 CCC does not scan Starfield's live form memory. That experimental path caused an access violation during test9 and was removed. Expansion-only records carry a visible requirement such as **Shattered Space DLC**.
 
@@ -59,13 +74,13 @@ setstage <QuestFormID> <Stage>
 
 Quest changes are intentionally marked **Danger** because starting, completing, or forcing a stage can skip dialogue, scripts, rewards, scenes, prerequisites, or other quest state. Use these actions on a backup or disposable save. Some quests do not appear in the mission log until a stage is activated. Reset clears recorded stages and removes the quest from the log without restarting it.
 
-Quest Browser contains 2,318 base-game and Shattered Space quest records with 16,844 recorded stage indexes. It supports searching by quest name, Editor ID, Form ID, source, and stage, plus confirmed Start, Stop, Complete, Reset, and Set Stage actions. Shattered Space entries are labeled in the interface. **Check Current Stage** and **Show Stage History** are visibly unavailable until CCC has a verified native quest-state reader; they do not use the unreliable console-capture fallback.
+Quest Browser contains 2,318 base-game and Shattered Space quest records with 16,844 recorded stage indexes. It supports searching by quest name, Editor ID, Form ID, source, and stage, plus confirmed Start, Stop, Complete, Reset, and Set Stage actions. Shattered Space entries are labeled in the interface. **Check Current Stage** and **Show Stage History** use Starfield's quest scripting interface rather than unreliable console-output capture and are verified in game.
 
 See [`QUEST_BROWSER.md`](QUEST_BROWSER.md) for details.
 
 ## Command catalog
 
-The command library is deliberately curated instead of trying to expose every internal developer command. v0.3.7 contains **141 curated command entries** plus the standalone ID Browser and Quest Browser datasets. Four known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The established command library remains curated, while newly discovered commands enter through a separate **Untested** category for gradual in-game verification. v4.0 contains **144 established command entries** plus **1,547 untested entries**: 34 prepared test cards, 565 engine console commands, and 948 script functions. The top-right search covers only established commands on normal command screens and automatically switches to Untested-only search inside Untested. The raw engine library loads only when Untested is opened, and each group displays 100 entries at a time. Known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 
@@ -81,7 +96,7 @@ Starfield native console executor
 Console command
 ```
 
-The native plugin exposes direct game reads for inventory, supported reference inspection, player/companion/ship actor values, current spaceship, and Game Settings. Unsupported inspections are visibly unavailable instead of executing a known-broken adapter. Results open in a dedicated window and can be reopened from Activity Log.
+The native plugin exposes direct game reads for inventory, supported reference inspection, player/companion/ship actor values, current spaceship, Game Settings, and quest state. Unsupported inspections are visibly unavailable instead of executing a known-broken adapter. Results open in a dedicated window and can be reopened from Activity Log.
 
 ## Source setup
 
@@ -134,4 +149,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI checks.
 
-Release-specific changes are recorded in [`docs/RELEASE_NOTES_v0.3.7.md`](docs/RELEASE_NOTES_v0.3.7.md).
+Release-specific changes are recorded in [`docs/RELEASE_NOTES_v4.0.md`](docs/RELEASE_NOTES_v4.0.md).

@@ -1,7 +1,7 @@
 import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, WEATHER_PICKER } from './reference-ids';
 import type { GeneratedIdCatalogEntry } from './id-browser-data';
 
-export type IdCatalogAction = 'additem' | 'addperk' | 'addspell' | 'spawn';
+export type IdCatalogAction = 'additem' | 'addperk' | 'addspell' | 'spawn' | 'forceweather' | 'teleport' | 'findcell';
 
 export type IdCatalogEntry = {
   label: string;

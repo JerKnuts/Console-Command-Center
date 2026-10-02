@@ -1,12 +1,22 @@
-# v0.3.7 release validation checklist
+# v4.0 release validation checklist
 
 ## Install
 
-Close Starfield, replace the existing CCC files with the v0.3.7 build, and restart the game. The footer and native connection message must both report **v0.3.7**.
+Close Starfield, replace the existing CCC files with the v4.0 build, and restart the game. The footer and native connection message must both report **v4.0**.
+
+## v4.0 interaction checks
+
+1. In ID Browser, select Location **The Lodge**, choose **Find Teleportable Cell**, then clear the search with the X. Confirm all ID categories return rather than only Locations and Cells.
+2. Run several harmless established commands, open **Recent**, and confirm its entries display as full-width rows rather than a grid.
+3. Save two disposable Custom Command entries, choose **Delete All**, and confirm the action remains disabled until the field contains exactly `Delete`. Cancel once, then confirm deletion.
+4. In Quest Browser, expand a category and quest, run **Check Current Stage**, and close Results. Confirm the same category and quest remain open at the same scroll position. Repeat with **Show Stage History**.
+5. Find **Toggle Grass** and **Toggle Sky** under World and confirm each still toggles off and back on.
+6. In Untested, confirm the failed FOV, Wireframe, Collision Geometry, and Subtitle entries and their raw duplicates are disabled with explanations.
+7. Confirm **Select Closest Actor** now appears under Targets.
 
 ## Safe priority checks
 
-1. Confirm the footer and native connection both report v0.3.7.
+1. Confirm the footer and native connection both report v4.0.
 2. Open **ID Browser**. It should report **16,528 included IDs**.
 3. Confirm all result categories begin collapsed and clicking the full category row opens it.
 4. Open NPCs, Mods, and Locations. Each large group should initially show 100 rows and offer **Show 100 more**.
@@ -51,8 +61,8 @@ Close Starfield, replace the existing CCC files with the v0.3.7 build, and resta
 
 ## Quest Browser safety checks
 
-1. Confirm **Check Current Stage — Unavailable** is visible and cannot be activated.
-2. Confirm **Show Stage History — Unavailable** is visible and cannot be activated.
+1. Confirm **Check Current Stage** reports the quest state through the native reader.
+2. Confirm **Show Stage History** reports recorded stages through the native reader.
 3. Confirm each expanded quest explains that Start may need a stage before appearing in the mission log and Reset does not restart the quest.
 4. On the first Quest Browser open, allow the brief loading state to finish; close and reopen it and confirm the quest list appears immediately.
 5. Find an original-story quest, New Game Plus variant, expansion quest, and internal/system quest. Confirm each applicable badge is visible before expanding the quest row.

@@ -1,8 +1,10 @@
 # Console Command Center — Command Catalog
 
-Version: 0.3.7
+Version: 4.0
 
-Curated commands: 141 (4 currently disabled)
+Curated commands: 144 (4 currently disabled)
+
+Untested command intake: 1,547 (34 prepared cards, 565 engine console commands, 948 script functions)
 
 Quest Browser: 2,318 quest records with 16,844 structurally recorded stages across the base game and Shattered Space
 
@@ -108,13 +110,15 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 | Set Free Camera Speed | `sucsm {speed}` | Normal | Verified |
 | Clear Screen Blood | `ClearScreenBlood` | Normal | Accepted in game; no active blood overlay was available for a visual check |
 
-## World (12)
+## World (14)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Toggle Game Pause | `tgp` | Normal | Verified |
 | Set Game Speed | `sgtm {value}` | Caution | Verified |
 | Wait Anywhere | `passtime {hours}` | Normal | Verified; replaces the removed post-1.10.32 wait-menu command |
+| Toggle Grass | `ToggleGrass` | Normal | Verified |
+| Toggle Sky | `ts` | Normal | Verified; `ts` is the short alias for the raw engine command `ToggleSky` |
 | Set Interior Gravity | `setgravityscale {value}` | Caution | Verified — interior cells only; 1 restores normal gravity |
 | Set Scanner Scan Range | `setgs fHandScannerScanRange {value}` | Caution | Verified |
 | Set Scanner Base Range | `setgs fHandScannerBaseRange {value}` | Caution | Verified |
@@ -127,10 +131,11 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 
 **Weather choices:** both weather commands use the same compact ID field + **CHOOSE WEATHER** box layout as the companion commands. Clear, Rain, Snow, Heavy Snow, Thunderstorm, Sandstorm, Dense Mist, Light Mist, and Burning Haze are available through the chooser, while manual Weather Form IDs remain supported. No inline weather-button grid is used.
 
-## Targets (34)
+## Targets (35)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
+| Select Closest Actor | `PickClosestActor` | Normal | Verified |
 | Move Reference to Player | `{refId}.moveto player` | Caution | Verified |
 | Kill Actor by Reference ID | `{refId}.kill` | Danger | Verified |
 | Resurrect Actor by Reference ID | `{refId}.resurrect` | Danger | Verified |
@@ -176,8 +181,8 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Show Current Quest Targets | `sqt` | Normal | Unavailable — console capture was unreliable |
-| Get Current Quest Stage | `getstage {questId}` | Normal | Failed — command works manually; CCC console capture times out |
-| Show Quest Stage History | `sqs {questId}` | Normal | Failed — command works manually; CCC console capture times out |
+| Get Current Quest Stage | `getstage {questId}` | Normal | Verified — native quest read returned the running quest's current stage immediately |
+| Show Quest Stage History | `sqs {questId}` | Normal | Verified — native stage checks returned the full done/not-set history without console capture |
 | Start Quest by ID | `startquest {questId}` | Danger | Needs adjustment — command was sent, but some quests need a stage before visible activation |
 | Stop Quest by ID | `stopquest {questId}` | Danger | Verified — quest changed to Stopped |
 | Set Quest Stage | `setstage {questId} {stage}` | Danger | Verified — activated the selected quest stage |
@@ -214,24 +219,40 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 | Set Ship Builder Module Limit | `setgs uSpaceshipBuilderMaxModules {value}` | Caution | Verified |
 | Set Ship Builder Module Hard Limit | `setgs uSpaceshipBuilderModuleHardLimit {value}` | Caution | Verified |
 | Refuel Player Spaceship | `RefuelSpaceship` | Normal | Verified |
-| Spawn Ship by Base ID | `player.placeatme {baseId}` | Danger | Untested |
+| Spawn Ship by Base ID | `player.placeatme {baseId}` | Danger | Unavailable — ship spawned directly on the player and partly underground, leaving the boarding ramp inaccessible |
 
 **Ship workflow:** run **Get Current Ship Reference ID** while aboard the ship, then use that Reference ID with the ship actor-value commands. Use **Inspect Ship Actor Value** before changing a stat so you can record its existing value. Game Setting commands (owned-ship limit, docking/looting/transfer distance, and builder module limits) normally reset when Starfield restarts. The documented vanilla values used in CCC hints are 10 owned ships, 500 docking distance, 500 looting distance, and 130 for both ship-builder module limits; the transfer-distance default is less consistently documented, so inspect it first if exact restoration matters.
+
+## Untested command intake (1,547)
+
+Newly discovered commands enter this isolated category before they can appear alongside verified everyday, cheat, repair, or developer tools. Every card carries an **UNTESTED** label. Commands with destructive or uncertain effects also retain Caution or Danger confirmation. Test them on a disposable save; successful commands can then move into their permanent category with an accurate description and warning.
+
+The category is split into three collapsible groups: **Ready to Test** contains 34 commands with prepared controls and warnings, **Engine Console Commands** contains 565 reference entries, and **Script Functions** contains 948 reference entries. The 1,513-entry engine library loads only when Untested is opened or searched. Open groups render 100 cards at a time. Raw engine cards accept optional arguments, and script-function cards also accept an optional target or prefix. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Failed prepared commands and their raw duplicates remain visible but disabled with their in-game result.
+
+The first intake includes:
+
+- Speech failure overrides, player body-type switching, player death, Start All Quests, and Complete All Quest Stages
+- Camera FOV plus sky, wireframe, collision-geometry, motion-blur, TAA, FSR2, VRS, rain-occlusion, lens-flare, and marker toggles
+- Subtitle overrides, one-frame advancement, nearest teleport-door use, projectile cleanup, and weather/climate reloads
+- Workshop entry, ship takeoff, planetary-marker landing, and console target selection
+- Returning a reference to its start position, forcing combat, resetting dialogue flags, screenshots, and named save/load commands
+
+The syntax and descriptions were imported from and cross-checked against the game-help-derived [SFSE console-command list](https://gist.github.com/eacpereira/25f00410b1940d04a24f8a49b0b1bf44) and public Starfield command references. Inclusion means “available for controlled testing,” not “verified.” The complete reference is included even when required parameters are unclear; those entries use optional raw argument fields and remain isolated from the established catalog.
 
 
 
 ## ID Browser + Reference ID Picker
 
-The current source includes a standalone **ID Browser** with **16,528 included IDs** covering weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Search filters the catalog instantly by name, Form ID, type, category, and Editor ID. Location and cell selections expose separate Form ID and Editor ID copy actions. Large categories render 100 rows at a time. Every selected result offers **Copy ID**, with conservative quick actions for supported record types. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244. Shattered Space entries are labeled in their visible detail text and use cleaned Editor IDs when no verified localized name is available. Long descriptions, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded.
+The current source includes a standalone **ID Browser** with **16,528 included IDs** covering weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Search filters the catalog instantly by name, Form ID, type, category, and Editor ID. Location and cell selections expose separate Form ID and Editor ID copy actions. Large categories render 100 tiles at a time. Every selected result offers **Copy ID**, with conservative quick actions for supported record types, including **Change Weather** for Weather records and **Teleport Here** for Cell records. Location records can narrow the browser to matching teleportable Cells because the console's `coc` command requires a Cell Editor ID rather than a Location Form ID. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244. Shattered Space entries are labeled in their visible detail text and use cleaned Editor IDs when no verified localized name is available. Long descriptions, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded.
 
-The browser supports category filtering across its packaged records and exposes conservative quick actions such as **Add to Player**, **Add Perk**, **Add Spell / Power**, or **Spawn** where the record type makes the action reasonably clear. It does not query or scrape Starfield's live console output.
+The browser supports category filtering across its packaged records and exposes conservative quick actions such as **Add to Player**, **Add Perk**, **Add Spell / Power**, **Spawn**, **Change Weather**, and **Teleport Here** where the record type makes the action reasonably clear. It does not query or scrape Starfield's live console output.
 
 The command cards continue to use the compact editable ID field + boxed **CHOOSE ...** control for known curated choices. Inline preset-button grids are intentionally avoided.
 
 ## Quest Browser (2,318 quests / 16,844 recorded stages)
 
 Quest Browser is separate from the normal command catalog and groups base-game and Shattered Space records into collapsible, paginated categories.
-It contains 247 curated `setstage` targets whose Quest IDs and stage numbers are structurally validated against `Starfield.esm`.
+Its packaged Quest IDs and 16,844 recorded stage indexes are structurally validated against `Starfield.esm` and `ShatteredSpace.esm`.
 CCC executes the vanilla Starfield console command directly.
 
-Quest Browser offers confirmed `startquest`, `stopquest`, `completequest`, `resetquest`, and `setstage` actions. Every state-changing action is treated as **Danger** because it can skip dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save first. Current-stage and stage-history inspections are unavailable until CCC has a verified native quest-state reader.
+Quest Browser offers confirmed `startquest`, `stopquest`, `completequest`, `resetquest`, and `setstage` actions. Every state-changing action is treated as **Danger** because it can skip dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save first. Current-stage and stage-history inspections use the verified native quest-state reader and do not depend on console-output capture.

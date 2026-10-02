@@ -16,3 +16,9 @@ npm run setup:deps
 That command clones the repository, checks out the pinned revision, and restores its recursive submodules. The pin lives in `native/setup-deps.mjs` so a released binary can be matched to its dependency source.
 
 The full GPL text is included in `LICENSE`, and the additional CommonLibSF terms are included in `EXCEPTIONS`.
+
+## Starfield console-command reference
+
+The generated Untested engine-command library is derived from the game-help-based
+[Starfield SFSE console-command list](https://gist.github.com/eacpereira/25f00410b1940d04a24f8a49b0b1bf44).
+Console Command Center preserves these entries as unverified reference data; inclusion does not mean that a command is safe, supported by the current game runtime, or known to CCC's maintainers.

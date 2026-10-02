@@ -10,8 +10,8 @@ The browser supports search by quest name, Editor ID, Form ID, source, category,
 
 Each quest provides:
 
-- **Check Current Stage** — visibly unavailable until CCC has a verified native quest-state reader.
-- **Show Stage History** — visibly unavailable until CCC has a verified native quest-state reader.
+- **Check Current Stage** — reads the current/highest completed stage plus running/completed state through Starfield's quest scripting interface.
+- **Show Stage History** — checks every packaged stage through the same native scripting path and reports each as done or not set.
 - **Start Quest** — runs `startquest` after a Danger confirmation.
 - **Stop Quest** — runs `stopquest` after a Danger confirmation.
 - **Complete Quest** — runs `completequest` after a Danger confirmation.
