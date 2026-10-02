@@ -132,6 +132,7 @@ const STORAGE_FAVORITES = 'consoleCommandCenter.favorites';
 const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const STORAGE_CUSTOM_COMMANDS = 'consoleCommandCenter.customCommands';
+const STORAGE_WELCOME_SEEN = 'consoleCommandCenter.welcomeSeen.v1';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
 const MAX_CUSTOM_BATCH_COMMANDS = 100;
@@ -140,7 +141,7 @@ const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1513;
 const UNTESTED_COMMAND_PAGE_SIZE = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.0';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.0.1';
 
 let activeView: ViewMode = 'recent';
 let query = '';
@@ -184,6 +185,7 @@ app.innerHTML = `
         <h1>Console Command Center</h1>
       </div>
       <div class="topbar-actions">
+        <button class="osf-btn osf-btn--sm osf-btn--ghost" id="open-welcome" type="button">Help</button>
         <button class="osf-btn osf-btn--sm osf-btn--ghost" id="close-view" type="button">Close</button>
       </div>
     </header>
@@ -269,6 +271,26 @@ app.innerHTML = `
       <div class="id-picker-footer">
         <span>Choose an entry to fill the command field. Manual ID entry remains available.</span>
         <button class="osf-btn" id="id-picker-cancel" type="button">Cancel</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="welcome-backdrop" id="welcome-backdrop" hidden>
+    <section class="welcome-dialog osf-card" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+      <div class="osf-tricolor popup-stripe" aria-hidden="true"></div>
+      <p class="osf-eyebrow">WELCOME TO CCC</p>
+      <h2 id="welcome-title">Console commands, made easier</h2>
+      <p class="welcome-intro">Find and run Starfield console commands without memorizing their syntax.</p>
+      <div class="welcome-features">
+        <article><strong>SEARCH COMMANDS</strong><span>Find everyday fixes, cheats, and player, world, target, or ship tools.</span></article>
+        <article><strong>BROWSE IDS</strong><span>Find items, perks, powers, NPCs, weather, cells, and locations.</span></article>
+        <article><strong>INSPECT QUESTS</strong><span>Read quest progress and carefully repair stuck stages.</span></article>
+        <article><strong>SAVE WORKFLOWS</strong><span>Reuse favorites, recent actions, and saved custom command batches.</span></article>
+      </div>
+      <p class="welcome-save-note"><strong>Before changing quests or important game state:</strong> make a manual save.</p>
+      <div class="welcome-actions">
+        <span>You can reopen this guide with Help.</span>
+        <button class="osf-btn osf-btn--osf-accent" id="welcome-start" type="button">Start Exploring</button>
       </div>
     </section>
   </div>
@@ -470,6 +492,9 @@ const footerOsfVersion = requiredElement('#footer-osf-version', HTMLElement);
 const footerStarfieldVersion = requiredElement('#footer-starfield-version', HTMLElement);
 const footerNativeStatus = requiredElement('#footer-native-status', HTMLElement);
 const closeView = requiredElement('#close-view', HTMLButtonElement);
+const openWelcomeButton = requiredElement('#open-welcome', HTMLButtonElement);
+const welcomeBackdrop = requiredElement('#welcome-backdrop', HTMLElement);
+const welcomeStart = requiredElement('#welcome-start', HTMLButtonElement);
 const idPickerBackdrop = requiredElement('#id-picker-backdrop', HTMLElement);
 const idPickerTitle = requiredElement('#id-picker-title', HTMLElement);
 const idPickerSearch = requiredElement('#id-picker-search', HTMLInputElement);
@@ -947,8 +972,7 @@ function renderQuestBrowserCard(entry: QuestBrowserEntry): string {
       <div class="quest-browser-card-body">
         <div class="quest-browser-actions">
           ${activeCatalogPicker?.browser === 'quest' ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-quest-id="${escapeHtml(entry.questId)}" data-use-quest-title="${escapeHtml(entry.quest)}">Use This Quest</button>` : ''}
-          <button class="osf-btn osf-btn--sm" type="button" data-quest-inspect="stage" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Check Current Stage</button>
-          <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-quest-inspect="history" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Show Stage History</button>
+          <button class="osf-btn osf-btn--sm" type="button" data-quest-inspect="history" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Inspect Quest State</button>
           <button class="osf-btn osf-btn--sm" type="button" data-quest-action="start" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Start Quest</button>
           <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-quest-action="stop" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Stop Quest</button>
           <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-quest-action="complete" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Complete Quest</button>
@@ -1017,7 +1041,7 @@ function renderQuestBrowser(): void {
   const intro = `
     <section class="quest-browser-intro osf-card">
       <strong>Quest Browser uses quest records and every stage index found in the installed Bethesda masters.</strong>
-      <span>Check Current Stage and Show Stage History are read-only. Start, Stop, Complete, Reset, and stage buttons change save-game state and always require confirmation.</span>
+      <span>Inspect Quest State is read-only and marks the current and completed stages. Start, Stop, Complete, Reset, and stage buttons change save-game state and always require confirmation.</span>
       <span class="quest-stage-caveat">Internal/system quests are included for completeness. Avoid changing them unless you know exactly what the record controls.</span>
     </section>`;
 
@@ -2521,6 +2545,35 @@ closeView.addEventListener('click', () => {
   void closeCurrentView();
 });
 
+function welcomeHasBeenSeen(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_WELCOME_SEEN) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function openWelcome(): void {
+  welcomeBackdrop.hidden = false;
+  welcomeStart.focus();
+}
+
+function closeWelcome(): void {
+  welcomeBackdrop.hidden = true;
+  try {
+    localStorage.setItem(STORAGE_WELCOME_SEEN, '1');
+  } catch {
+    // The guide can still be closed for the current session when persistence is unavailable.
+  }
+  openWelcomeButton.focus();
+}
+
+openWelcomeButton.addEventListener('click', openWelcome);
+welcomeStart.addEventListener('click', closeWelcome);
+welcomeBackdrop.addEventListener('click', (event) => {
+  if (event.target === welcomeBackdrop) closeWelcome();
+});
+
 confirmCancel.addEventListener('click', () => {
   pendingExecution = null;
   confirmBackdrop.hidden = true;
@@ -2552,7 +2605,9 @@ document.addEventListener('keydown', (event) => {
   }
   if (event.key === 'Escape') {
     const openCaution = commandList.querySelector<HTMLElement>('.caution-wrap.is-open');
-    if (!idPickerBackdrop.hidden) {
+    if (!welcomeBackdrop.hidden) {
+      closeWelcome();
+    } else if (!idPickerBackdrop.hidden) {
       closeIdPicker();
     } else if (!confirmBackdrop.hidden) {
       pendingExecution = null;
@@ -2587,6 +2642,7 @@ document.addEventListener('keydown', (event) => {
     && activeView !== 'activity'
     && confirmBackdrop.hidden
     && idPickerBackdrop.hidden
+    && welcomeBackdrop.hidden
     && !isEditable
   ) {
     event.preventDefault();
@@ -2652,3 +2708,4 @@ if (ready) {
 }
 
 render();
+if (!welcomeHasBeenSeen()) openWelcome();

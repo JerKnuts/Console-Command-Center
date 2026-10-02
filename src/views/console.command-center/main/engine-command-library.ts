@@ -60,15 +60,15 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
       },
     ],
     tags: [name, record.name, record.group, 'engine command', 'developer'],
-    warning: danger
+    warning: failedInGameReason
+      ? `${failedInGameReason} This raw duplicate remains available for advanced testing. Run it only on a disposable save.`
+      : danger
       ? 'This unverified engine function may destroy state, terminate or stall the game, alter files, or make irreversible changes. Use only on a disposable save and review the final command carefully.'
       : 'This engine function has not been verified through CCC and may require undocumented arguments or developer context. Use a disposable save.',
     risk: danger ? 'danger' : 'caution',
     testStatus: 'untested',
     unavailableReason: requiresCredentials
       ? 'Reference only. CCC does not run this command because account credentials would be saved in command history and the Activity Log.'
-      : failedInGameReason
-        ? `${failedInGameReason} This is the raw duplicate of CCC's failed prepared test command.`
-        : undefined,
+      : undefined,
   };
 });

@@ -47,7 +47,8 @@ select.osf-input:focus-visible {
 
 .results-dialog,
 .id-picker-dialog,
-.confirm-dialog {
+.confirm-dialog,
+.welcome-dialog {
   box-sizing: border-box;
   overflow: hidden;
   color: var(--osf-text-body, #d9e1e7);
@@ -59,7 +60,8 @@ select.osf-input:focus-visible {
 
 .results-dialog::backdrop,
 .id-picker-backdrop,
-.confirm-backdrop { background: rgba(5, 7, 10, 0.84); }
+.confirm-backdrop,
+.welcome-backdrop { background: rgba(5, 7, 10, 0.84); }
 
 .results-dialog {
   width: min(1000px, 92vw);
@@ -886,7 +888,8 @@ select.osf-input:focus-visible {
 }
 .activity-empty { margin-top: 0; }
 
-.confirm-backdrop {
+.confirm-backdrop,
+.welcome-backdrop {
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -895,7 +898,8 @@ select.osf-input:focus-visible {
   padding: 18px;
   background: rgba(5, 7, 10, 0.84);
 }
-.confirm-backdrop[hidden] { display: none; }
+.confirm-backdrop[hidden],
+.welcome-backdrop[hidden] { display: none; }
 .confirm-dialog { width: min(560px, 90vw); padding: 20px; box-shadow: var(--osf-shadow); overflow: hidden; }
 .confirm-dialog h2 { margin: 3px 0 8px; font-size: var(--osf-text-2xl); }
 .confirm-dialog > p:not(.osf-eyebrow) { margin: 0; color: var(--osf-text-muted); }
@@ -907,11 +911,23 @@ select.osf-input:focus-visible {
 .confirm-command code { overflow-wrap: anywhere; color: var(--ccc-orange); font-family: var(--ccc-console-font); font-weight: 600; letter-spacing: 0.025em; }
 .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
+.welcome-dialog { width: min(760px, 92vw); padding: 22px; box-shadow: var(--osf-shadow); overflow: hidden; }
+.welcome-dialog h2 { margin: 4px 0 7px; font-size: var(--osf-text-2xl); }
+.welcome-intro { margin: 0; color: var(--osf-text-muted); }
+.welcome-features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 18px 0 12px; }
+.welcome-features article { display: grid; gap: 5px; padding: 12px; border: 1px solid var(--ccc-line); background: var(--ccc-surface-inset); }
+.welcome-features strong { color: var(--ccc-orange); font-family: var(--osf-font-mono); font-size: 10px; letter-spacing: 0.1em; }
+.welcome-features span { color: var(--osf-text-muted); line-height: 1.45; }
+.welcome-save-note { margin: 0; padding: 10px 12px; border-left: 2px solid var(--osf-signal-warn); color: var(--osf-text-muted); background: rgba(255, 190, 58, 0.04); }
+.welcome-save-note strong { color: var(--osf-signal-warn); }
+.welcome-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; color: var(--osf-text-faint); font-size: 10px; }
+
 @media (max-width: 980px) {
   .workspace { grid-template-columns: 195px minmax(0, 1fr); }
   .sidebar { padding-left: 8px; padding-right: 8px; }
   .content { padding-left: 18px; padding-right: 18px; }
   .search-wrap { width: 340px; }
+  .welcome-features { grid-template-columns: 1fr; }
 }
 
 

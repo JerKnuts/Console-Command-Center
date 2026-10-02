@@ -600,10 +600,9 @@ test('Quest Browser exposes native inspections and confirmed state-changing acti
   assert.match(styleSource, /\.quest-browser-card-heading\s*\{[\s\S]*?display:\s*flex;/);
   assert.match(styleSource, /\.quest-browser-card-flags\s*\{[\s\S]*?display:\s*flex;/);
   assert.doesNotMatch(source, /quest-browser-card-body">\s*<div class="quest-browser-meta"/);
-  assert.match(source, /data-quest-inspect="stage"/);
   assert.match(source, /data-quest-inspect="history"/);
-  assert.match(source, />Check Current Stage<\/button>/);
-  assert.match(source, />Show Stage History<\/button>/);
+  assert.doesNotMatch(source, /data-quest-inspect="stage"/);
+  assert.match(source, />Inspect Quest State<\/button>/);
   assert.match(source, /data-quest-action="start"/);
   assert.match(source, /data-quest-action="stop"/);
   assert.match(source, /data-quest-action="complete"/);
@@ -636,11 +635,25 @@ test('Quest Browser routes GetStage and SQS through the native Papyrus quest rea
   assert.match(source, /commandList\.scrollTop = preserveScrollTop/);
 });
 
-test('grass is promoted after verification and failed wireframe paths are unavailable', () => {
+test('failed visual commands remain available with their test result visible', () => {
   assert.match(commandSource, /id: 'toggle-grass',[\s\S]*?category: 'World',[\s\S]*?testStatus: 'verified'/);
   assert.doesNotMatch(untestedCommandSource, /\['toggle-grass'/);
   assert.match(untestedCommandSource, /\['toggle-wireframe', 'toggle-collision-geometry'\]\.includes\(id as string\) \? 'failed' : 'untested'/);
   assert.match(engineCommandSource, /togglewireframe: 'In-game v0\.3\.11 testing produced no visible wireframe effect\.'/);
+  assert.doesNotMatch(untestedCommandSource, /unavailableReason:/);
+  assert.match(engineCommandSource, /This raw duplicate remains available for advanced testing/);
+});
+
+test('first-run welcome guide is persistent and can be reopened from Help', () => {
+  assert.match(source, /STORAGE_WELCOME_SEEN/);
+  assert.match(source, /id="open-welcome"[^>]*>Help<\/button>/);
+  assert.match(source, /id="welcome-backdrop"/);
+  assert.match(source, /id="welcome-start"[^>]*>Start Exploring<\/button>/);
+  assert.match(source, /if \(!welcomeHasBeenSeen\(\)\) openWelcome\(\)/);
+});
+
+test('searching health discovers the player actor-value inspector', () => {
+  assert.match(commandSource, /id: 'inspect-player-actor-value',[\s\S]*?tags: \[[^\]]*'health'/);
 });
 
 test('verified sky and closest-actor commands leave prepared intake', () => {

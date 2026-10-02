@@ -80,14 +80,13 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     id: 'untested-camera-fov',
     title: 'Set Camera Field of View',
     category: 'Untested',
-    description: 'Set the camera field of view in degrees.',
+    description: 'Set the camera field of view in degrees. Previous in-game testing produced no visible change.',
     command: 'SetCameraFOV {degrees}',
     inputs: [{ key: 'degrees', label: 'Field of View', type: 'number', defaultValue: 75, min: 30, max: 160, step: 1, hint: 'Reported default: 75' }],
     tags: ['camera', 'fov', 'field of view'],
     warning: 'Extreme field-of-view values can distort the image or make menus and weapons appear incorrect.',
     risk: 'caution',
     testStatus: 'failed',
-    unavailableReason: 'In-game v0.3.11 testing at 90 and 75 degrees produced no visible field-of-view change.',
   },
   ...[
     ['toggle-wireframe', 'Toggle Wireframe', 'ToggleWireframe', 'Toggle wireframe rendering.', ['wireframe', 'rendering']],
@@ -103,27 +102,23 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     id: `untested-${id as string}`,
     title: title as string,
     category: 'Untested' as const,
-    description: description as string,
+    description: ['toggle-wireframe', 'toggle-collision-geometry'].includes(id as string)
+      ? `${description as string} Previous in-game testing produced no visible change.`
+      : description as string,
     command: command as string,
     tags: tags as string[],
     warning: 'This is an unverified rendering or debug toggle. Run it again to attempt to restore the previous state.',
     risk: 'caution' as const,
     testStatus: (['toggle-wireframe', 'toggle-collision-geometry'].includes(id as string) ? 'failed' : 'untested') as 'failed' | 'untested',
-    unavailableReason: id === 'toggle-wireframe'
-      ? 'In-game v0.3.11 testing produced no visible wireframe effect. The raw engine-library duplicate uses the same command.'
-      : id === 'toggle-collision-geometry'
-        ? 'In-game v0.3.11 testing produced no visible collision-geometry overlay.'
-      : undefined,
   })),
   {
     id: 'untested-show-subtitles',
     title: 'Always Show Subtitles',
     category: 'Untested',
-    description: 'Attempt to force all dialogue subtitles to display.',
+    description: 'Attempt to force all dialogue subtitles to display. Previous in-game testing produced no visible override.',
     command: 'ShowSubtitle 1',
     tags: ['subtitle', 'dialogue', 'accessibility'],
     testStatus: 'failed',
-    unavailableReason: 'In-game v0.3.11 testing produced no visible subtitle override.',
   },
   {
     id: 'untested-restore-subtitles',

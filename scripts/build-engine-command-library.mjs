@@ -55,6 +55,13 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
   const scriptFunction = record.group === 'Script Functions';
   const danger = severeCommand.test(\`\${record.name} \${record.description}\`);
   const requiresCredentials = /^LinkFullAccount$/i.test(name);
+  const failedInGameReasons: Record<string, string> = {
+    togglewireframe: 'In-game v0.3.11 testing produced no visible wireframe effect.',
+    togglecollisiongeometry: 'In-game v0.3.11 testing produced no visible collision-geometry overlay.',
+    setcamerafov: 'In-game v0.3.11 testing at 90 and 75 degrees produced no visible field-of-view change.',
+    showsubtitle: 'In-game v0.3.11 testing produced no visible subtitle override.',
+  };
+  const failedInGameReason = failedInGameReasons[name.toLowerCase()];
   return {
     id: commandId(record.name, index),
     title: record.name,
@@ -83,7 +90,9 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
       },
     ],
     tags: [name, record.name, record.group, 'engine command', 'developer'],
-    warning: danger
+    warning: failedInGameReason
+      ? \`\${failedInGameReason} This raw duplicate remains available for advanced testing. Run it only on a disposable save.\`
+      : danger
       ? 'This unverified engine function may destroy state, terminate or stall the game, alter files, or make irreversible changes. Use only on a disposable save and review the final command carefully.'
       : 'This engine function has not been verified through CCC and may require undocumented arguments or developer context. Use a disposable save.',
     risk: danger ? 'danger' : 'caution',

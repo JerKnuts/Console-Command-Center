@@ -326,7 +326,7 @@ export const COMMANDS: CommandDefinition[] = [
     inputs: [
       { key: 'actorValue', label: 'Actor Value', type: 'text', defaultValue: 'Health', pattern: ACTOR_VALUE_PATTERN, hint: 'Choose a common value or enter a name manually.', picker: PLAYER_ACTOR_VALUE_PICKER },
     ],
-    tags: ['inspect', 'player', 'actor value', 'getav', 'read only'],
+    tags: ['inspect', 'player', 'actor value', 'getav', 'health', 'carry weight', 'speed', 'read only'],
     captureOutput: true,
     testStatus: 'verified',
   },

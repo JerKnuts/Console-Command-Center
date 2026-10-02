@@ -1,32 +1,33 @@
-# v1.0 release validation checklist
+# v1.0.1 validation checklist
 
 ## Install
 
-Close Starfield, replace the existing CCC files with the v1.0 build, and restart the game. The footer and native connection message must both report **v1.0**.
+Close Starfield, replace the existing CCC files with the v1.0.1 build, and restart the game. The footer and native connection message must both report **v1.0.1**.
 
-## v1.0 interaction checks
+## v1.0.1 interaction checks
 
 1. In ID Browser, select Location **The Lodge**, choose **Find Teleportable Cell**, then clear the search with the X. Confirm all ID categories return rather than only Locations and Cells.
 2. Run several harmless established commands, open **Recent**, and confirm its entries display as full-width rows rather than a grid.
 3. Save two disposable Custom Command entries, choose **Delete All**, and confirm the action remains disabled until the field contains exactly `Delete`. Cancel once, then confirm deletion.
-4. In Quest Browser, expand a category and quest, run **Check Current Stage**, and close Results. Confirm the same category and quest remain open at the same scroll position. Repeat with **Show Stage History**.
+4. In Quest Browser, expand a category and quest, run **Inspect Quest State**, and close Results. Confirm the current and completed stages are marked while the same category and quest remain open at the same scroll position.
 5. Find **Toggle Grass** and **Toggle Sky** under World and confirm each still toggles off and back on.
-6. In Untested, confirm the failed FOV, Wireframe, Collision Geometry, and Subtitle entries and their raw duplicates are disabled with explanations.
+6. In Untested, confirm the failed FOV, Wireframe, Collision Geometry, and Subtitle entries and their raw duplicates retain their prior test notes but can still be executed after confirmation.
 7. Confirm **Select Closest Actor** now appears under Targets.
 
 ## Safe priority checks
 
-1. Confirm the footer and native connection both report v1.0.
-2. Open **ID Browser**. It should report **16,528 included IDs**.
-3. Confirm all result categories begin collapsed and clicking the full category row opens it.
-4. Open NPCs, Mods, and Locations. Each large group should initially show 100 rows and offer **Show 100 more**.
-5. Search for **Med Pack**, **Beowulf**, an Editor ID, and a hexadecimal Form ID. Search should include collapsed groups automatically.
-6. Select a normal inventory item, copy its Form ID, then add a quantity greater than one.
-7. Select a cell and a location. Each should show both **Copy ID** and **Copy Editor ID**.
-8. Select a Shattered Space record and confirm its expansion requirement is visible.
-9. Confirm internal test, template, dummy, and creature-attack records do not dominate the results.
-10. Clear the search and confirm every category returns to its collapsed state, including categories that were open before searching.
-11. On the first ID Browser open, allow the brief loading state to finish; close and reopen it and confirm the catalog appears immediately.
+1. Confirm the first launch opens the welcome guide, **Start Exploring** closes it, and **Help** reopens it.
+2. Confirm the footer and native connection both report v1.0.1.
+3. Open **ID Browser**. It should report **16,528 included IDs**.
+4. Confirm all result categories begin collapsed and clicking the full category row opens it.
+5. Open NPCs, Mods, and Locations. Each large group should initially show 100 rows and offer **Show 100 more**.
+6. Search for **Med Pack**, **Beowulf**, an Editor ID, and a hexadecimal Form ID. Search should include collapsed groups automatically.
+7. Select a normal inventory item, copy its Form ID, then add a quantity greater than one.
+8. Select a cell and a location. Each should show both **Copy ID** and **Copy Editor ID**.
+9. Select a Shattered Space record and confirm its expansion requirement is visible.
+10. Confirm internal test, template, dummy, and creature-attack records do not dominate the results.
+11. Clear the search and confirm every category returns to its collapsed state, including categories that were open before searching.
+12. On the first ID Browser open, allow the brief loading state to finish; close and reopen it and confirm the catalog appears immediately.
 
 ## Form ID command searches
 
@@ -61,11 +62,10 @@ Close Starfield, replace the existing CCC files with the v1.0 build, and restart
 
 ## Quest Browser safety checks
 
-1. Confirm **Check Current Stage** reports the quest state through the native reader.
-2. Confirm **Show Stage History** reports recorded stages through the native reader.
-3. Confirm each expanded quest explains that Start may need a stage before appearing in the mission log and Reset does not restart the quest.
-4. On the first Quest Browser open, allow the brief loading state to finish; close and reopen it and confirm the quest list appears immediately.
-5. Find an original-story quest, New Game Plus variant, expansion quest, and internal/system quest. Confirm each applicable badge is visible before expanding the quest row.
+1. Confirm **Inspect Quest State** reports the current stage and marks completed stages through the native reader.
+2. Confirm each expanded quest explains that Start may need a stage before appearing in the mission log and Reset does not restart the quest.
+3. On the first Quest Browser open, allow the brief loading state to finish; close and reopen it and confirm the quest list appears immediately.
+4. Find an original-story quest, New Game Plus variant, expansion quest, and internal/system quest. Confirm each applicable badge is visible before expanding the quest row.
 
 ## Disposable-save quest checks
 

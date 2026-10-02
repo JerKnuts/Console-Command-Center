@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current release: v1.0.** This is the first public Nexus release. It combines the tested command interface with the packaged ID and Quest browsers, saved custom-command batches, native inspection results, and a separate catalog for commands that still need in-game verification. See the [release notes](docs/RELEASE_NOTES_v1.0.md) and [release validation checklist](RELEASE_VALIDATION.md). Historical development notes remain under [`docs/`](docs/).
+**Current development version: v1.0.1.** The v1.0 release is the first public Nexus build. v1.0.1 adds first-run guidance and usability fixes discovered during fresh-user testing. See the [v1.0.1 notes](docs/RELEASE_NOTES_v1.0.1.md), [v1.0 release notes](docs/RELEASE_NOTES_v1.0.md), and [validation checklist](RELEASE_VALIDATION.md). Historical development notes remain under [`docs/`](docs/).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -24,7 +24,7 @@ The native plugin enables its gameplay handlers only on the tested Starfield run
 
 ## Installation
 
-Install the release archive with a Starfield mod manager, or copy its `SFSE` folder into the game's `Data` folder. Keep the archive's folder structure intact. Launch the game through SFSE and confirm the CCC footer reports **v1.0** and **NATIVE READY**.
+Install the release archive with a Starfield mod manager, or copy its `SFSE` folder into the game's `Data` folder. Keep the archive's folder structure intact. Launch the game through SFSE and confirm the CCC footer reports the installed version and **NATIVE READY**.
 
 To update, replace the existing CCC files with the files from the new archive. To uninstall, remove `Data/SFSE/Plugins/ConsoleCommandCenter.dll` and `Data/SFSE/Plugins/OSFUI/views/console.command-center/`.
 
@@ -74,13 +74,13 @@ setstage <QuestFormID> <Stage>
 
 Quest changes are intentionally marked **Danger** because starting, completing, or forcing a stage can skip dialogue, scripts, rewards, scenes, prerequisites, or other quest state. Use these actions on a backup or disposable save. Some quests do not appear in the mission log until a stage is activated. Reset clears recorded stages and removes the quest from the log without restarting it.
 
-Quest Browser contains 2,318 base-game and Shattered Space quest records with 16,844 recorded stage indexes. It supports searching by quest name, Editor ID, Form ID, source, and stage, plus confirmed Start, Stop, Complete, Reset, and Set Stage actions. Shattered Space entries are labeled in the interface. **Check Current Stage** and **Show Stage History** use Starfield's quest scripting interface rather than unreliable console-output capture and are verified in game.
+Quest Browser contains 2,318 base-game and Shattered Space quest records with 16,844 recorded stage indexes. It supports searching by quest name, Editor ID, Form ID, source, and stage, plus confirmed Start, Stop, Complete, Reset, and Set Stage actions. Shattered Space entries are labeled in the interface. **Inspect Quest State** reads the current stage and completed-stage history through Starfield's quest scripting interface, then marks that progress directly on the stage list.
 
 See [`QUEST_BROWSER.md`](QUEST_BROWSER.md) for details.
 
 ## Command catalog
 
-The established command library remains curated, while newly discovered commands enter through a separate **Untested** category for gradual in-game verification. v1.0 contains **144 established command entries** plus **1,547 untested entries**: 34 prepared test cards, 565 engine console commands, and 948 script functions. The top-right search covers only established commands on normal command screens and automatically switches to Untested-only search inside Untested. The raw engine library loads only when Untested is opened, and each group displays 100 entries at a time. Known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The established command library remains curated, while newly discovered commands enter through a separate **Untested** category for gradual in-game verification. CCC contains **144 established command entries** plus **1,547 untested entries**: 34 prepared test cards, 565 engine console commands, and 948 script functions. The top-right search covers only established commands on normal command screens and automatically switches to Untested-only search inside Untested. The raw engine library loads only when Untested is opened, and each group displays 100 entries at a time. Commands that previously produced no visible effect remain executable with their test result shown; known crash paths and credential-handling commands remain unavailable. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 
@@ -149,4 +149,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI checks.
 
-Release-specific changes are recorded in [`docs/RELEASE_NOTES_v1.0.md`](docs/RELEASE_NOTES_v1.0.md).
+Release-specific changes are recorded in [`docs/RELEASE_NOTES_v1.0.1.md`](docs/RELEASE_NOTES_v1.0.1.md) and [`docs/RELEASE_NOTES_v1.0.md`](docs/RELEASE_NOTES_v1.0.md).
