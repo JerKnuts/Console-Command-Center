@@ -1,6 +1,6 @@
-# Console Command Center v4.0
+# Console Command Center v1.0
 
-Version 4.0 is the first public Nexus release of Console Command Center. It brings the tested work from the 0.3 development series into one mouse-and-keyboard interface for everyday fixes, cheats, quest work, and advanced console access.
+Version 1.0 is the first public Nexus release of Console Command Center. It brings the tested work from the 0.3 development series into one mouse-and-keyboard interface for everyday fixes, cheats, quest work, and advanced console access.
 
 ## Command interface
 

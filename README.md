@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current release: v4.0.** This is the first public Nexus release. It combines the tested command interface with the packaged ID and Quest browsers, saved custom-command batches, native inspection results, and a separate catalog for commands that still need in-game verification. See the [release notes](docs/RELEASE_NOTES_v4.0.md) and [release validation checklist](RELEASE_VALIDATION.md). Historical development notes remain under [`docs/`](docs/).
+**Current release: v1.0.** This is the first public Nexus release. It combines the tested command interface with the packaged ID and Quest browsers, saved custom-command batches, native inspection results, and a separate catalog for commands that still need in-game verification. See the [release notes](docs/RELEASE_NOTES_v1.0.md) and [release validation checklist](RELEASE_VALIDATION.md). Historical development notes remain under [`docs/`](docs/).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -24,7 +24,7 @@ The native plugin enables its gameplay handlers only on the tested Starfield run
 
 ## Installation
 
-Install the release archive with a Starfield mod manager, or copy its `SFSE` folder into the game's `Data` folder. Keep the archive's folder structure intact. Launch the game through SFSE and confirm the CCC footer reports **v4.0** and **NATIVE READY**.
+Install the release archive with a Starfield mod manager, or copy its `SFSE` folder into the game's `Data` folder. Keep the archive's folder structure intact. Launch the game through SFSE and confirm the CCC footer reports **v1.0** and **NATIVE READY**.
 
 To update, replace the existing CCC files with the files from the new archive. To uninstall, remove `Data/SFSE/Plugins/ConsoleCommandCenter.dll` and `Data/SFSE/Plugins/OSFUI/views/console.command-center/`.
 
@@ -80,7 +80,7 @@ See [`QUEST_BROWSER.md`](QUEST_BROWSER.md) for details.
 
 ## Command catalog
 
-The established command library remains curated, while newly discovered commands enter through a separate **Untested** category for gradual in-game verification. v4.0 contains **144 established command entries** plus **1,547 untested entries**: 34 prepared test cards, 565 engine console commands, and 948 script functions. The top-right search covers only established commands on normal command screens and automatically switches to Untested-only search inside Untested. The raw engine library loads only when Untested is opened, and each group displays 100 entries at a time. Known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The established command library remains curated, while newly discovered commands enter through a separate **Untested** category for gradual in-game verification. v1.0 contains **144 established command entries** plus **1,547 untested entries**: 34 prepared test cards, 565 engine console commands, and 948 script functions. The top-right search covers only established commands on normal command screens and automatically switches to Untested-only search inside Untested. The raw engine library loads only when Untested is opened, and each group displays 100 entries at a time. Known-broken entries remain visible but disabled with an explanation. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 
@@ -149,4 +149,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI checks.
 
-Release-specific changes are recorded in [`docs/RELEASE_NOTES_v4.0.md`](docs/RELEASE_NOTES_v4.0.md).
+Release-specific changes are recorded in [`docs/RELEASE_NOTES_v1.0.md`](docs/RELEASE_NOTES_v1.0.md).

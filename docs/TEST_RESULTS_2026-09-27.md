@@ -1,6 +1,6 @@
 # Starfield Console Command Center — historical in-game test record
 
-This file preserves user-reported testing from September 27 through October 1, 2026. Entries are chronological, and later sections supersede earlier failures or pending notes. The current release behavior is summarized in [`RELEASE_NOTES_v4.0.md`](RELEASE_NOTES_v4.0.md), [`../COMMAND_CATALOG.md`](../COMMAND_CATALOG.md), and [`../RELEASE_VALIDATION.md`](../RELEASE_VALIDATION.md).
+This file preserves user-reported testing from September 27 through October 1, 2026. Entries are chronological, and later sections supersede earlier failures or pending notes. The current release behavior is summarized in [`RELEASE_NOTES_v1.0.md`](RELEASE_NOTES_v1.0.md), [`../COMMAND_CATALOG.md`](../COMMAND_CATALOG.md), and [`../RELEASE_VALIDATION.md`](../RELEASE_VALIDATION.md).
 
 These results were reported from in-game testing rather than independently reproduced. Earlier test-build failures remain here because they explain why unsafe native adapters and unreliable console-output capture paths were removed.
 

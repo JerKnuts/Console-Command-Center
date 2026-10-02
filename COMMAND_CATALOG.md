@@ -1,6 +1,6 @@
 # Console Command Center — Command Catalog
 
-Version: 4.0
+Version: 1.0
 
 Curated commands: 144 (4 currently disabled)
 

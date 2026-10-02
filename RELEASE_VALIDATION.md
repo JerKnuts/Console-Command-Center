@@ -1,10 +1,10 @@
-# v4.0 release validation checklist
+# v1.0 release validation checklist
 
 ## Install
 
-Close Starfield, replace the existing CCC files with the v4.0 build, and restart the game. The footer and native connection message must both report **v4.0**.
+Close Starfield, replace the existing CCC files with the v1.0 build, and restart the game. The footer and native connection message must both report **v1.0**.
 
-## v4.0 interaction checks
+## v1.0 interaction checks
 
 1. In ID Browser, select Location **The Lodge**, choose **Find Teleportable Cell**, then clear the search with the X. Confirm all ID categories return rather than only Locations and Cells.
 2. Run several harmless established commands, open **Recent**, and confirm its entries display as full-width rows rather than a grid.
@@ -16,7 +16,7 @@ Close Starfield, replace the existing CCC files with the v4.0 build, and restart
 
 ## Safe priority checks
 
-1. Confirm the footer and native connection both report v4.0.
+1. Confirm the footer and native connection both report v1.0.
 2. Open **ID Browser**. It should report **16,528 included IDs**.
 3. Confirm all result categories begin collapsed and clicking the full category row opens it.
 4. Open NPCs, Mods, and Locations. Each large group should initially show 100 rows and offer **Show 100 more**.
