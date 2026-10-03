@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current development version: v1.0.1.** The v1.0 release is the first public Nexus build. v1.0.1 adds first-run guidance and usability fixes discovered during fresh-user testing. See the [v1.0.1 notes](docs/RELEASE_NOTES_v1.0.1.md), [v1.0 release notes](docs/RELEASE_NOTES_v1.0.md), and [validation checklist](RELEASE_VALIDATION.md). Historical development notes remain under [`docs/`](docs/).
+**Current development version: v1.0.2.** The v1.0 release is the first public Nexus build. v1.0.2 includes the first-run improvements from v1.0.1 and fixes command-specific ID Browser filters persisting after selection. See the [v1.0.2 notes](docs/RELEASE_NOTES_v1.0.2.md), [v1.0.1 notes](docs/RELEASE_NOTES_v1.0.1.md), and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -18,9 +18,14 @@ Some commands can affect achievements, progression, quests, save-game state, NPC
 
 - Starfield runtime **1.16.244**
 - [Starfield Script Extender (SFSE)](https://sfse.silverlock.org/)
-- OSF UI
+- Address Library for SFSE Plugins
+- OSF Settings **1.0.0 or newer**
+- OSF UI **2.0.0 or newer**
+- Microsoft Edge WebView2 Runtime
 
 The native plugin enables its gameplay handlers only on the tested Starfield runtime. A different game version will leave CCC unavailable rather than attempting incompatible native calls. Shattered Space is optional; records from the expansion are clearly labeled and require the expansion when used.
+
+In OSF Settings, bind **Open Mod Settings** to a key such as F10. Use that key in game, open **Launcher**, and select **Console Command Center**. The opening key may be unbound after installing or updating OSF Settings.
 
 ## Installation
 
@@ -149,4 +154,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI checks.
 
-Release-specific changes are recorded in [`docs/RELEASE_NOTES_v1.0.1.md`](docs/RELEASE_NOTES_v1.0.1.md) and [`docs/RELEASE_NOTES_v1.0.md`](docs/RELEASE_NOTES_v1.0.md).
+Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.2.md`](docs/RELEASE_NOTES_v1.0.2.md).

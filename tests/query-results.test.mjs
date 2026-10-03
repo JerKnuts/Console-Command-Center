@@ -428,6 +428,11 @@ test('perk, power, and effect commands use filtered ID Browser selection', () =>
   assert.doesNotMatch(effects, /action: 'addspell'/);
 });
 
+test('command-specific browser filters never leak into the standalone ID Browser', () => {
+  assert.match(source, /function finishCatalogPicker[\s\S]*?idBrowserCategory = 'all';[\s\S]*?idBrowserRecordTypeFilter = '';/);
+  assert.match(source, /if \(view === 'id-browser'\) \{\s*idBrowserCategory = 'all';\s*idBrowserRecordTypeFilter = '';/);
+});
+
 test('ID Browser groups results in collapsed categories and opens matches while searching', () => {
   assert.match(source, /<details class="inventory-type-group id-browser-category-group"/);
   assert.match(source, /const open = Boolean\(query\) \|\| activeCatalogPicker\?\.browser === 'id' \|\| idBrowserOpenCategories\.has\(category\)/);

@@ -141,7 +141,7 @@ const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1513;
 const UNTESTED_COMMAND_PAGE_SIZE = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.0.1';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.0.2';
 
 let activeView: ViewMode = 'recent';
 let query = '';
@@ -2181,6 +2181,7 @@ function finishCatalogPicker(value?: string, label?: string): void {
   activeView = picker.returnView;
   query = picker.returnQuery;
   search.value = picker.returnQuery;
+  idBrowserCategory = 'all';
   idBrowserRecordTypeFilter = '';
   idBrowserSelected = null;
   idBrowserOpenCategories.clear();
@@ -2234,7 +2235,10 @@ function switchView(view: string): void {
   activeCatalogPicker = null;
   query = '';
   search.value = view === 'Untested' ? untestedQuery : '';
-  if (view === 'id-browser') idBrowserRecordTypeFilter = '';
+  if (view === 'id-browser') {
+    idBrowserCategory = 'all';
+    idBrowserRecordTypeFilter = '';
+  }
   if (leavingIdBrowserSearch) {
     idBrowserOpenCategories.clear();
     idBrowserVisibleCounts.clear();

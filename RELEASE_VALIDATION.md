@@ -1,10 +1,10 @@
-# v1.0.1 validation checklist
+# v1.0.2 validation checklist
 
 ## Install
 
-Close Starfield, replace the existing CCC files with the v1.0.1 build, and restart the game. The footer and native connection message must both report **v1.0.1**.
+Close Starfield, replace the existing CCC files with the v1.0.2 build, and restart the game. The footer and native connection message must both report **v1.0.2**.
 
-## v1.0.1 interaction checks
+## v1.0.2 interaction checks
 
 1. In ID Browser, select Location **The Lodge**, choose **Find Teleportable Cell**, then clear the search with the X. Confirm all ID categories return rather than only Locations and Cells.
 2. Run several harmless established commands, open **Recent**, and confirm its entries display as full-width rows rather than a grid.
@@ -13,11 +13,12 @@ Close Starfield, replace the existing CCC files with the v1.0.1 build, and resta
 5. Find **Toggle Grass** and **Toggle Sky** under World and confirm each still toggles off and back on.
 6. In Untested, confirm the failed FOV, Wireframe, Collision Geometry, and Subtitle entries and their raw duplicates retain their prior test notes but can still be executed after confirmation.
 7. Confirm **Select Closest Actor** now appears under Targets.
+8. Browse a Perk or Power from a command, use the selected ID, then open the standalone ID Browser. Confirm every category is available.
 
 ## Safe priority checks
 
 1. Confirm the first launch opens the welcome guide, **Start Exploring** closes it, and **Help** reopens it.
-2. Confirm the footer and native connection both report v1.0.1.
+2. Confirm the footer and native connection both report v1.0.2.
 3. Open **ID Browser**. It should report **16,528 included IDs**.
 4. Confirm all result categories begin collapsed and clicking the full category row opens it.
 5. Open NPCs, Mods, and Locations. Each large group should initially show 100 rows and offer **Show 100 more**.
