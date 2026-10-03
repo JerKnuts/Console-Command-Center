@@ -225,7 +225,10 @@ test('commands under investigation remain isolated in the user-facing WIP catego
   assert.match(untestedCommandSource, /id: 'untested-camera-fov'/);
   assert.match(untestedCommandSource, /id: 'untested-nearest-door'/);
   assert.match(untestedCommandSource, /id: 'untested-save-game'/);
-  assert.doesNotMatch(untestedCommandSource, /testStatus: 'verified'/);
+  assert.match(untestedCommandSource, /id: 'toggle-game-pause',[\s\S]*?category: 'World',[\s\S]*?testStatus: 'verified'/);
+  assert.match(untestedCommandSource, /id: 'toggle-first-person-hands',[\s\S]*?category: 'Camera',[\s\S]*?testStatus: 'verified'/);
+  assert.match(untestedCommandSource, /id: 'untested-nearest-door',[\s\S]*?category: 'World',[\s\S]*?testStatus: 'verified'/);
+  assert.match(untestedCommandSource, /id: 'untested-pick-ref',[\s\S]*?category: 'Targets',[\s\S]*?testStatus: 'verified'/);
   assert.match(untestedCommandSource, /testStatus: 'failed'/);
   assert.match(untestedCommandSource, /intakeGroup: 'Executed — Effect Unconfirmed'/);
   assert.match(untestedCommandSource, /id: 'untested-reload-climate'[\s\S]*?unavailableReason:[\s\S]*?intakeGroup: 'Blocked — Known Crash'/);
@@ -253,17 +256,18 @@ test('the complete engine command reference is lazy-loaded into grouped Untested
   assert.equal(records.filter((entry) => entry.group === 'Script Functions').length, 948);
   assert.equal(new Set(records.map((entry) => `${entry.group}:${entry.name.toLowerCase()}`)).size, 1513);
 
-  assert.match(source, /const ENGINE_COMMAND_LIBRARY_TOTAL = 1513/);
+  assert.match(source, /const ENGINE_COMMAND_LIBRARY_TOTAL = 1509/);
   assert.match(source, /import\('\.\/engine-command-library'\)/);
   assert.match(source, /const UNTESTED_COMMAND_PAGE_SIZE = 100/);
   assert.match(source, /'Ready to Test'[\s\S]*'Executed — Effect Unconfirmed'[\s\S]*'Blocked — Known Crash'[\s\S]*'Engine Console Commands'[\s\S]*'Script Functions'/);
   assert.match(source, /ENGINE_COMMAND_LIBRARY_TOTAL/);
   assert.match(engineCommandSource, /category: 'Untested'/);
-  assert.match(engineCommandSource, /testStatus: knownClimateCrash \? 'failed' : effectUnconfirmedReason \? 'inconclusive' : 'untested'/);
+  assert.match(engineCommandSource, /const PROMOTED_ENGINE_COMMANDS = new Set\([\s\S]*?'pickrefbyid'[\s\S]*?'togglegamepause'[\s\S]*?'togglehandsculled'[\s\S]*?'usenearestteleportdoor'/);
+  assert.match(engineCommandSource, /testStatus: knownCrashReason \? 'failed' : effectUnconfirmedReason \? 'inconclusive' : 'untested'/);
   assert.match(engineCommandSource, /toggleborders:[\s\S]*?togglematerialgeometry:[\s\S]*?togglevolumegeometry:/);
   assert.match(engineCommandSource, /label: 'Optional Arguments'/);
   assert.match(engineCommandSource, /label: 'Optional Target \/ Prefix'/);
-  assert.match(engineCommandSource, /unavailableReason: knownClimateCrash[\s\S]*?: requiresCredentials/);
+  assert.match(engineCommandSource, /unavailableReason: knownCrashReason[\s\S]*?: requiresCredentials/);
   assert.match(engineCommandGeneratorSource, /section !== 'Console Commands' && section !== 'Script Functions'/);
   assert.doesNotMatch(commandSource, /from '\.\/engine-command-library'/);
 });
@@ -685,8 +689,9 @@ test('inconclusive visual commands remain available while known crash paths are 
   assert.match(engineCommandSource, /togglewireframe: 'In-game v0\.3\.11 testing produced no visible wireframe effect\.'/);
   assert.match(untestedCommandSource, /id: 'untested-reload-climate',[\s\S]*?unavailableReason:/);
   assert.match(engineCommandSource, /This raw duplicate remains available for advanced testing/);
-  assert.match(engineCommandSource, /const knownClimateCrash = \/\^ReloadCurrentClimate\$\//);
-  assert.match(engineCommandSource, /unavailableReason: knownClimateCrash/);
+  assert.match(engineCommandSource, /reloadcurrentclimate:[\s\S]*?toggledecalrendering:/);
+  assert.match(engineCommandSource, /DX12 render graph and sky-occlusion render passes/);
+  assert.match(engineCommandSource, /unavailableReason: knownCrashReason/);
 });
 
 test('first-run welcome guide is persistent and can be reopened from Help', () => {

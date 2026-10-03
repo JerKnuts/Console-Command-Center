@@ -2,9 +2,9 @@
 
 Version: 1.0
 
-Curated commands: 144 (4 currently disabled)
+Established commands: 145
 
-WIP command intake: 1,550 (37 prepared cards, 565 engine console commands, 948 script functions)
+WIP command intake: 1,544 (35 prepared cards, 561 engine console commands, 948 script functions)
 
 Quest Browser: 2,318 quest records with 16,844 structurally recorded stages across the base game and Shattered Space
 
@@ -15,7 +15,7 @@ Risk levels:
 
 Testing status is intentionally conservative. Only commands confirmed through Console Command Center are marked **Verified**.
 
-Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` for the accumulated in-game record.
+Latest user test report: October 2, 2026. See `docs/TEST_RESULTS_2026-09-27.md` for the accumulated in-game record.
 
 ## Gameplay (11)
 
@@ -100,7 +100,7 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 | Add Power / Spell by Form ID | `player.addspell {formId}` | Danger | Verified |
 | Remove Spell / Status Effect by Form ID | `player.removespell {formId}` | Caution | Verified |
 
-## Camera (5)
+## Camera (6)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -109,12 +109,14 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 | Toggle HUD / Interface | `tm` | Caution | Verified |
 | Set Free Camera Speed | `sucsm {speed}` | Normal | Verified |
 | Clear Screen Blood | `ClearScreenBlood` | Normal | Accepted in game; no active blood overlay was available for a visual check |
+| Toggle First-Person Hands | `ToggleHandsCulled` | Caution | Verified — hid the held weapon/first-person hands |
 
-## World (14)
+## World (16)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Toggle Game Pause | `tgp` | Normal | Verified |
+| Use Nearest Teleport Door | `UseNearestTeleportDoor` | Caution | Verified — moved the player through the nearest door |
 | Set Game Speed | `sgtm {value}` | Caution | Verified |
 | Wait Anywhere | `passtime {hours}` | Normal | Verified; replaces the removed post-1.10.32 wait-menu command |
 | Toggle Grass | `ToggleGrass` | Normal | Verified |
@@ -131,11 +133,12 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 
 **Weather choices:** both weather commands use the same compact ID field + **CHOOSE WEATHER** box layout as the companion commands. Clear, Rain, Snow, Heavy Snow, Thunderstorm, Sandstorm, Dense Mist, Light Mist, and Burning Haze are available through the chooser, while manual Weather Form IDs remain supported. No inline weather-button grid is used.
 
-## Targets (35)
+## Targets (36)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Select Closest Actor | `PickClosestActor` | Normal | Verified |
+| Select Console Reference by ID | `PickRefByID {refId}` | Normal | Verified — requested object appeared selected when the console reopened |
 | Move Reference to Player | `{refId}.moveto player` | Caution | Verified |
 | Kill Actor by Reference ID | `{refId}.kill` | Danger | Verified |
 | Resurrect Actor by Reference ID | `{refId}.resurrect` | Danger | Verified |
@@ -223,18 +226,18 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 
 **Ship workflow:** run **Get Current Ship Reference ID** while aboard the ship, then use that Reference ID with the ship actor-value commands. Use **Inspect Ship Actor Value** before changing a stat so you can record its existing value. Game Setting commands (owned-ship limit, docking/looting/transfer distance, and builder module limits) normally reset when Starfield restarts. The documented vanilla values used in CCC hints are 10 owned ships, 500 docking distance, 500 looting distance, and 130 for both ship-builder module limits; the transfer-distance default is less consistently documented, so inspect it first if exact restoration matters.
 
-## Work in Progress command intake (1,550)
+## Work in Progress command intake (1,544)
 
 Newly discovered commands enter this isolated category before they can appear alongside verified everyday, cheat, repair, or developer tools. Commands with destructive or uncertain effects retain Caution or Danger confirmation. Test them on a disposable save; successful commands can then move into their permanent category with an accurate description and warning.
 
-Prepared cards are split into four result groups: **Ready to Test** contains commands awaiting a useful in-game result, **Executed — Effect Unconfirmed** keeps commands that ran without errors but produced no observable effect, **Executed — Issues** keeps commands with confirmed usability problems, and **Blocked — Known Crash** keeps dangerous crash paths visible without allowing execution. **Engine Console Commands** contains 565 reference entries, and **Script Functions** contains 948 reference entries. The 1,513-entry engine library loads only when WIP is opened or searched. Open groups render 100 cards at a time. Raw engine cards accept optional arguments, and script-function cards also accept an optional target or prefix. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing an Unavailable badge reveals the underlying console syntax for advanced manual use.
+Prepared cards are split into four result groups: **Ready to Test** contains commands awaiting a useful in-game result, **Executed — Effect Unconfirmed** keeps commands that ran without errors but produced no observable effect, **Executed — Issues** keeps commands with confirmed usability problems, and **Blocked — Known Crash** keeps dangerous crash paths visible without allowing execution. **Engine Console Commands** contains 561 reference entries, and **Script Functions** contains 948 reference entries. The 1,509-entry engine library loads only when WIP is opened or searched. Open groups render 100 cards at a time. Raw engine cards accept optional arguments, and script-function cards also accept an optional target or prefix. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing the large disabled Unavailable action reveals the underlying console syntax for advanced manual use.
 
 The first intake includes:
 
 - Speech failure overrides, player body-type switching, player death, Start All Quests, and Complete All Quest Stages
 - Camera FOV plus sky, wireframe, collision-geometry, motion-blur, TAA, FSR2, VRS, rain-occlusion, lens-flare, and marker toggles
-- Subtitle overrides, one-frame advancement, nearest teleport-door use, projectile cleanup, and weather/climate reloads
-- Workshop entry, ship takeoff, planetary-marker landing, and console target selection
+- Subtitle overrides, one-frame advancement, projectile cleanup, and weather/climate reloads
+- Workshop entry, ship takeoff, and planetary-marker landing
 - Returning a reference to its start position, forcing combat, resetting dialogue flags, screenshots, and named save/load commands
 
 The syntax and descriptions were imported from and cross-checked against the game-help-derived [SFSE console-command list](https://gist.github.com/eacpereira/25f00410b1940d04a24f8a49b0b1bf44) and public Starfield command references. Inclusion means “available for controlled testing,” not “verified.” The complete reference is included even when required parameters are unclear; those entries use optional raw argument fields and remain isolated from the established catalog.

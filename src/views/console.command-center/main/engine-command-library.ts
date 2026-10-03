@@ -18,14 +18,27 @@ function commandId(label: string, index: number): string {
   return `engine-${slug}-${index + 1}`;
 }
 
-export const ENGINE_COMMAND_LIBRARY_TOTAL = ENGINE_COMMAND_RECORDS.length;
+const PROMOTED_ENGINE_COMMANDS = new Set([
+  'pickrefbyid',
+  'togglegamepause',
+  'togglehandsculled',
+  'usenearestteleportdoor',
+]);
 
-export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORDS.map((record, index) => {
+export const ENGINE_COMMAND_LIBRARY_TOTAL = ENGINE_COMMAND_RECORDS.filter((record) => !PROMOTED_ENGINE_COMMANDS.has(commandName(record.name).toLowerCase())).length;
+
+export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORDS
+  .filter((record) => !PROMOTED_ENGINE_COMMANDS.has(commandName(record.name).toLowerCase()))
+  .map((record, index) => {
   const name = commandName(record.name);
   const scriptFunction = record.group === 'Script Functions';
   const danger = severeCommand.test(`${record.name} ${record.description}`);
   const requiresCredentials = /^LinkFullAccount$/i.test(name);
-  const knownClimateCrash = /^ReloadCurrentClimate$/i.test(name);
+  const knownCrashReasons: Record<string, string> = {
+    reloadcurrentclimate: 'In-game v1.0 testing on Starfield 1.16.244 caused an access violation in sky and weather processing.',
+    toggledecalrendering: 'In-game v1.0.6 testing on Starfield 1.16.244 caused an access violation in the DX12 render graph and sky-occlusion render passes.',
+  };
+  const knownCrashReason = knownCrashReasons[name.toLowerCase()];
   const failedInGameReasons: Record<string, string> = {
     togglewireframe: 'In-game v0.3.11 testing produced no visible wireframe effect.',
     togglecollisiongeometry: 'In-game v0.3.11 testing produced no visible collision-geometry overlay.',
@@ -33,8 +46,15 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
     showsubtitle: 'In-game v0.3.11 testing produced no visible subtitle override.',
   };
   const effectUnconfirmedReasons: Record<string, string> = {
+    showlightbounds: 'In-game v1.0.6 testing executed without an error but showed no visible light-bound overlay.',
     toggleborders: 'In-game v1.0.5 testing executed without an error but showed no visible cell borders.',
+    toggledebugtext: 'In-game v1.0.6 testing executed without an error but showed no visible debug text.',
+    togglelitebrite: 'In-game v1.0.6 testing executed without an error but showed no visible lighting change.',
     togglematerialgeometry: 'In-game v1.0.5 testing executed without an error but showed no visible material-geometry overlay.',
+    togglenavmesh: 'In-game v1.0.6 testing executed without an error but showed no visible navigation mesh.',
+    togglenavmeshinfo: 'In-game v1.0.6 testing executed without an error but showed no visible navigation information.',
+    togglepathline: 'In-game v1.0.6 testing executed without an error but showed no visible path line.',
+    toggleprimitives: 'In-game v1.0.6 testing executed without an error but showed no visible primitive overlay.',
     togglevolumegeometry: 'In-game v1.0.5 testing executed without an error but showed no visible volume-geometry overlay.',
   };
   const failedInGameReason = failedInGameReasons[name.toLowerCase()];
@@ -71,17 +91,17 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
       },
     ],
     tags: [name, record.name, record.group, 'engine command', 'developer'],
-    warning: knownClimateCrash
-      ? 'In-game v1.0 testing on Starfield 1.16.244 caused an access violation in sky and weather processing.'
+    warning: knownCrashReason
+      ? knownCrashReason
       : failedInGameReason
       ? `${failedInGameReason} This raw duplicate remains available for advanced testing. Run it only on a disposable save.`
       : danger
       ? 'This unverified engine function may destroy state, terminate or stall the game, alter files, or make irreversible changes. Use only on a disposable save and review the final command carefully.'
       : 'This engine function has not been verified through CCC and may require undocumented arguments or developer context. Use a disposable save.',
-    risk: danger || knownClimateCrash ? 'danger' : 'caution',
-    testStatus: knownClimateCrash ? 'failed' : effectUnconfirmedReason ? 'inconclusive' : 'untested',
-    unavailableReason: knownClimateCrash
-      ? 'Disabled after an in-game v1.0 test crashed Starfield 1.16.244 in sky and weather processing.'
+    risk: danger || knownCrashReason ? 'danger' : 'caution',
+    testStatus: knownCrashReason ? 'failed' : effectUnconfirmedReason ? 'inconclusive' : 'untested',
+    unavailableReason: knownCrashReason
+      ? `Disabled after testing crashed Starfield 1.16.244. ${knownCrashReason}`
       : requiresCredentials
       ? 'Reference only. CCC does not run this command because account credentials would be saved in command history and the Activity Log.'
       : undefined,

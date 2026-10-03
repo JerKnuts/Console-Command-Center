@@ -25,6 +25,28 @@ const EFFECT_UNCONFIRMED_TOGGLE_IDS = [
 // behavior. Moving a command into its normal category is part of verification.
 export const UNTESTED_COMMANDS: CommandDefinition[] = [
   {
+    id: 'toggle-game-pause',
+    title: 'Toggle Game Pause',
+    category: 'World',
+    description: 'Pause or resume the game simulation.',
+    command: 'ToggleGamePause',
+    tags: ['pause', 'resume', 'simulation', 'toggle'],
+    warning: 'Run this command again to resume the game if it is currently paused.',
+    risk: 'caution',
+    testStatus: 'verified',
+  },
+  {
+    id: 'toggle-first-person-hands',
+    title: 'Toggle First-Person Hands',
+    category: 'Camera',
+    description: 'Hide or restore the first-person hands and held weapon.',
+    command: 'ToggleHandsCulled',
+    tags: ['camera', 'first person', 'hands', 'weapon', 'toggle'],
+    warning: 'Run this command again to restore the first-person hands and held weapon.',
+    risk: 'caution',
+    testStatus: 'verified',
+  },
+  {
     id: 'untested-force-speech-fail',
     title: 'Always Fail Speech Challenges',
     category: 'Untested',
@@ -157,13 +179,13 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
   {
     id: 'untested-nearest-door',
     title: 'Use Nearest Teleport Door',
-    category: 'Untested',
+    category: 'World',
     description: 'Use the teleport door nearest to the player.',
     command: 'UseNearestTeleportDoor',
     tags: ['door', 'teleport', 'stuck'],
     warning: 'This may move the player through an unintended transition or bypass a scripted trigger.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'untested-kill-projectiles',
@@ -238,12 +260,12 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
   {
     id: 'untested-pick-ref',
     title: 'Select Console Reference by ID',
-    category: 'Untested',
+    category: 'Targets',
     description: 'Set the console selection to a specific Reference ID.',
     command: 'PickRefByID {refId}',
     inputs: [referenceInput('refId', 'Reference ID')],
     tags: ['reference', 'select', 'console', 'target'],
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'untested-pick-closest-ship',

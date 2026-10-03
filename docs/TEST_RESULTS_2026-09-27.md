@@ -247,3 +247,12 @@ The two console-output `help` searches are disabled for v0.3.2. The packaged ID 
 - Select Closest Ship executed inside and outside the player ship without a confirmed selection.
 - Toggle Volume Geometry, Toggle Material Geometry, and Toggle Borders executed without a visible overlay.
 - The next WIP round was interrupted by the reference-scale crash before its remaining commands were tested.
+
+## v1.0.6 WIP renderer pass — October 2, 2026
+
+- Toggle Debug Text executed without an error but displayed no visible debug text.
+- Toggle NavMesh and Toggle NavMesh Info executed without errors but displayed no visible navigation overlay.
+- Toggle Path Line, Toggle Primitives, Show Light Bounds, and Toggle Lite Brite executed without errors but produced no confirmed visible change.
+- Toggle First-Person Hands visibly put away the held weapon. It is promoted to Camera as a verified reversible visual control.
+- Toggle Decal Rendering crashed Starfield before the remaining tests could run.
+- Crash log `2026-10-02-23-49-44.log` reports `EXCEPTION_ACCESS_VIOLATION` at `Starfield.exe+2A5FDB9`. The probable call stack stays within Starfield's renderer; `SkyOcclusionMaskRenderPass`, `SkyOcclusionRenderPass`, `RenderSceneSubGraph`, and the DX12 pipeline appear in the captured state. No CCC frame appears in the probable call stack. The command is blocked because its execution triggered this renderer crash path.
