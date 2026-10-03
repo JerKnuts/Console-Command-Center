@@ -14,7 +14,7 @@ export type CommandCategory =
   | 'Untested';
 
 export type CommandRisk = 'caution' | 'danger';
-export type CommandTestStatus = 'verified' | 'untested' | 'failed' | 'needs-adjustment';
+export type CommandTestStatus = 'verified' | 'untested' | 'inconclusive' | 'failed' | 'needs-adjustment';
 
 export type CommandInput = {
   key: string;
@@ -57,7 +57,12 @@ export type CommandDefinition = {
   catalogSearch?: {
     recordTypeInput?: string;
   };
-  intakeGroup?: 'Ready to Test' | 'Engine Console Commands' | 'Script Functions';
+  intakeGroup?:
+    | 'Ready to Test'
+    | 'Executed — Effect Unconfirmed'
+    | 'Blocked — Known Crash'
+    | 'Engine Console Commands'
+    | 'Script Functions';
 };
 
 const HEX_ID_PATTERN = '^[0-9A-Fa-f]{1,8}$';

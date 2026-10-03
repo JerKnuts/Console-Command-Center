@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current development version: v1.0.2.** The v1.0 release is the first public Nexus build. v1.0.2 includes the first-run improvements from v1.0.1 and fixes command-specific ID Browser filters persisting after selection. See the [v1.0.2 notes](docs/RELEASE_NOTES_v1.0.2.md), [v1.0.1 notes](docs/RELEASE_NOTES_v1.0.1.md), and [validation checklist](RELEASE_VALIDATION.md).
+**Current development version: v1.0.3.** The v1.0 release is the first public Nexus build. v1.0.3 separates commands that execute without an observable result and blocks Reload Current Climate after an in-game crash. It also includes the v1.0.1 welcome improvements and the v1.0.2 ID Browser filter fix. See the [v1.0.3 notes](docs/RELEASE_NOTES_v1.0.3.md) and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -41,7 +41,7 @@ To update, replace the existing CCC files with the files from the new archive. T
 - Category browsing
 - Recent commands and favorites stay fixed at the top of the sidebar while the category list scrolls independently
 - Multiline custom-command batches that execute one command per line, with up to 100 named saved entries, a visible usage counter, and typed confirmation before deleting every saved entry
-- Separate **Untested** intake category with 34 prepared test cards and a lazily loaded library of 1,513 engine commands and script functions; verified entries move into their permanent categories
+- Separate **Untested** intake category with 34 prepared cards grouped by test result and a lazily loaded library of 1,513 engine commands and script functions
 - Activity log
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
@@ -85,7 +85,7 @@ See [`QUEST_BROWSER.md`](QUEST_BROWSER.md) for details.
 
 ## Command catalog
 
-The established command library remains curated, while newly discovered commands enter through a separate **Untested** category for gradual in-game verification. CCC contains **144 established command entries** plus **1,547 untested entries**: 34 prepared test cards, 565 engine console commands, and 948 script functions. The top-right search covers only established commands on normal command screens and automatically switches to Untested-only search inside Untested. The raw engine library loads only when Untested is opened, and each group displays 100 entries at a time. Commands that previously produced no visible effect remain executable with their test result shown; known crash paths and credential-handling commands remain unavailable. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The established command library remains curated, while newly discovered commands enter through a separate **Untested** category for gradual in-game verification. CCC contains **144 established command entries** plus **1,547 untested entries**: 34 prepared test cards, 565 engine console commands, and 948 script functions. Prepared cards are separated into Ready to Test, Executed — Effect Unconfirmed, and Blocked — Known Crash groups. The top-right search covers only established commands on normal command screens and automatically switches to Untested-only search inside Untested. The raw engine library loads only when Untested is opened, and each group displays 100 entries at a time. Commands with an inconclusive visual result remain executable for advanced users; known crash paths and credential-handling commands remain unavailable. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 
@@ -154,4 +154,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI checks.
 
-Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.2.md`](docs/RELEASE_NOTES_v1.0.2.md).
+Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.3.md`](docs/RELEASE_NOTES_v1.0.3.md).

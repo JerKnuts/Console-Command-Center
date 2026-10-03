@@ -141,7 +141,7 @@ const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1513;
 const UNTESTED_COMMAND_PAGE_SIZE = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.0.2';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.0.3';
 
 let activeView: ViewMode = 'recent';
 let query = '';
@@ -770,7 +770,13 @@ function ensureEngineCommandLibraryLoaded(): Promise<void> {
 }
 
 function renderUntestedCommandGroups(commands: CommandDefinition[]): string {
-  const groupOrder = ['Ready to Test', 'Engine Console Commands', 'Script Functions'];
+  const groupOrder = [
+    'Ready to Test',
+    'Executed — Effect Unconfirmed',
+    'Blocked — Known Crash',
+    'Engine Console Commands',
+    'Script Functions',
+  ];
   const groups = new Map<string, CommandDefinition[]>();
   for (const command of commands) {
     const group = command.intakeGroup ?? 'Ready to Test';
@@ -794,7 +800,7 @@ function renderUntestedCommandGroups(commands: CommandDefinition[]): string {
 
   const intro = activeView === 'Untested'
     ? `<section class="untested-intro osf-card">
-        <div class="untested-intro-copy"><strong>UNTESTED COMMAND INTAKE</strong><span>Every documented engine command is searchable here. The first group has prepared inputs; the engine groups use optional raw arguments and remain isolated until verified. Test on a disposable save.</span></div>
+        <div class="untested-intro-copy"><strong>UNTESTED COMMAND INTAKE</strong><span>Prepared commands are separated by test result. Commands that executed without an observable effect remain available under Effect Unconfirmed. Known crash paths stay visible but blocked. The engine groups use optional raw arguments. Test on a disposable save.</span></div>
       </section>`
     : '';
   return intro + content;
@@ -1058,7 +1064,13 @@ function renderCommandCard(command: CommandDefinition): string {
   const canRunWithoutNative = Boolean(command.catalogSearch);
   const inputs = (command.inputs ?? []).map((input) => renderInput(command, input)).join('');
   const riskLabel = command.risk === 'danger' ? 'DANGER' : 'CAUTION';
-  const testTag = command.testStatus === 'untested' ? '<span class="command-test-tag">UNTESTED</span>' : '';
+  const testTag = command.testStatus === 'untested'
+    ? '<span class="command-test-tag">UNTESTED</span>'
+    : command.testStatus === 'inconclusive'
+      ? '<span class="command-test-tag">EFFECT UNCONFIRMED</span>'
+      : command.testStatus === 'failed'
+        ? '<span class="command-test-tag">FAILED</span>'
+        : '';
   const warningTag = command.warning
     ? `<span class="caution-wrap">
         <button class="command-warning-tag${command.risk === 'danger' ? ' is-danger' : ''}" type="button" data-caution="${escapeHtml(command.id)}" aria-expanded="false" aria-controls="caution-${escapeHtml(command.id)}">${riskLabel}</button>

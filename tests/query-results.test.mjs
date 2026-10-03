@@ -214,6 +214,8 @@ test('newly discovered commands remain isolated in the Untested intake category'
   assert.match(commandSource, /'Ship',\s*'Untested'/);
   assert.match(source, /UNTESTED COMMAND INTAKE/);
   assert.match(source, /command\.testStatus === 'untested'/);
+  assert.match(source, /command\.testStatus === 'inconclusive'/);
+  assert.match(source, /EFFECT UNCONFIRMED/);
   assert.match(styleSource, /\.command-test-tag/);
   assert.match(untestedCommandSource, /id: 'untested-start-all-quests'/);
   assert.match(untestedCommandSource, /id: 'untested-camera-fov'/);
@@ -221,6 +223,8 @@ test('newly discovered commands remain isolated in the Untested intake category'
   assert.match(untestedCommandSource, /id: 'untested-save-game'/);
   assert.doesNotMatch(untestedCommandSource, /testStatus: 'verified'/);
   assert.match(untestedCommandSource, /testStatus: 'failed'/);
+  assert.match(untestedCommandSource, /intakeGroup: 'Executed — Effect Unconfirmed'/);
+  assert.match(untestedCommandSource, /id: 'untested-reload-climate'[\s\S]*?unavailableReason:[\s\S]*?intakeGroup: 'Blocked — Known Crash'/);
 });
 
 test('established command views use a compact grid while Recent remains a row list', () => {
@@ -245,13 +249,13 @@ test('the complete engine command reference is lazy-loaded into grouped Untested
   assert.match(source, /const ENGINE_COMMAND_LIBRARY_TOTAL = 1513/);
   assert.match(source, /import\('\.\/engine-command-library'\)/);
   assert.match(source, /const UNTESTED_COMMAND_PAGE_SIZE = 100/);
-  assert.match(source, /'Ready to Test', 'Engine Console Commands', 'Script Functions'/);
+  assert.match(source, /'Ready to Test'[\s\S]*'Executed — Effect Unconfirmed'[\s\S]*'Blocked — Known Crash'[\s\S]*'Engine Console Commands'[\s\S]*'Script Functions'/);
   assert.match(source, /ENGINE_COMMAND_LIBRARY_TOTAL/);
   assert.match(engineCommandSource, /category: 'Untested'/);
-  assert.match(engineCommandSource, /testStatus: 'untested'/);
+  assert.match(engineCommandSource, /testStatus: knownClimateCrash \? 'failed' : 'untested'/);
   assert.match(engineCommandSource, /label: 'Optional Arguments'/);
   assert.match(engineCommandSource, /label: 'Optional Target \/ Prefix'/);
-  assert.match(engineCommandSource, /unavailableReason: requiresCredentials/);
+  assert.match(engineCommandSource, /unavailableReason: knownClimateCrash[\s\S]*?: requiresCredentials/);
   assert.match(engineCommandGeneratorSource, /section !== 'Console Commands' && section !== 'Script Functions'/);
   assert.doesNotMatch(commandSource, /from '\.\/engine-command-library'/);
 });
@@ -640,13 +644,16 @@ test('Quest Browser routes GetStage and SQS through the native Papyrus quest rea
   assert.match(source, /commandList\.scrollTop = preserveScrollTop/);
 });
 
-test('failed visual commands remain available with their test result visible', () => {
+test('inconclusive visual commands remain available while known crash paths are blocked', () => {
   assert.match(commandSource, /id: 'toggle-grass',[\s\S]*?category: 'World',[\s\S]*?testStatus: 'verified'/);
   assert.doesNotMatch(untestedCommandSource, /\['toggle-grass'/);
-  assert.match(untestedCommandSource, /\['toggle-wireframe', 'toggle-collision-geometry'\]\.includes\(id as string\) \? 'failed' : 'untested'/);
+  assert.match(untestedCommandSource, /const EFFECT_UNCONFIRMED_TOGGLE_IDS = \[[\s\S]*?'toggle-wireframe'[\s\S]*?'toggle-markers'/);
+  assert.match(untestedCommandSource, /EFFECT_UNCONFIRMED_TOGGLE_IDS\.includes\(id as string\) \? 'inconclusive' : 'untested'/);
   assert.match(engineCommandSource, /togglewireframe: 'In-game v0\.3\.11 testing produced no visible wireframe effect\.'/);
-  assert.doesNotMatch(untestedCommandSource, /unavailableReason:/);
+  assert.match(untestedCommandSource, /id: 'untested-reload-climate',[\s\S]*?unavailableReason:/);
   assert.match(engineCommandSource, /This raw duplicate remains available for advanced testing/);
+  assert.match(engineCommandSource, /const knownClimateCrash = \/\^ReloadCurrentClimate\$\//);
+  assert.match(engineCommandSource, /unavailableReason: knownClimateCrash/);
 });
 
 test('first-run welcome guide is persistent and can be reopened from Help', () => {

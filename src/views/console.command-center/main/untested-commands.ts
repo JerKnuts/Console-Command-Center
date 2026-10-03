@@ -9,6 +9,18 @@ const referenceInput = (key: string, label: string): NonNullable<CommandDefiniti
   hint: '1–8 hexadecimal characters',
 });
 
+const EFFECT_UNCONFIRMED_TOGGLE_IDS = [
+  'toggle-wireframe',
+  'toggle-collision-geometry',
+  'toggle-motion-blur',
+  'toggle-taa',
+  'toggle-fsr2',
+  'toggle-vrs',
+  'toggle-rain-occlusion',
+  'toggle-lens-flare',
+  'toggle-markers',
+];
+
 // Newly discovered commands stay here until an in-game test establishes their
 // behavior. Moving a command into its normal category is part of verification.
 export const UNTESTED_COMMANDS: CommandDefinition[] = [
@@ -86,7 +98,8 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     tags: ['camera', 'fov', 'field of view'],
     warning: 'Extreme field-of-view values can distort the image or make menus and weapons appear incorrect.',
     risk: 'caution',
-    testStatus: 'failed',
+    testStatus: 'inconclusive',
+    intakeGroup: 'Executed — Effect Unconfirmed',
   },
   ...[
     ['toggle-wireframe', 'Toggle Wireframe', 'ToggleWireframe', 'Toggle wireframe rendering.', ['wireframe', 'rendering']],
@@ -102,14 +115,15 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     id: `untested-${id as string}`,
     title: title as string,
     category: 'Untested' as const,
-    description: ['toggle-wireframe', 'toggle-collision-geometry'].includes(id as string)
-      ? `${description as string} Previous in-game testing produced no visible change.`
+    description: EFFECT_UNCONFIRMED_TOGGLE_IDS.includes(id as string)
+      ? `${description as string} In-game testing executed without an error, but produced no confirmed visible change.`
       : description as string,
     command: command as string,
     tags: tags as string[],
     warning: 'This is an unverified rendering or debug toggle. Run it again to attempt to restore the previous state.',
     risk: 'caution' as const,
-    testStatus: (['toggle-wireframe', 'toggle-collision-geometry'].includes(id as string) ? 'failed' : 'untested') as 'failed' | 'untested',
+    testStatus: (EFFECT_UNCONFIRMED_TOGGLE_IDS.includes(id as string) ? 'inconclusive' : 'untested') as 'inconclusive' | 'untested',
+    intakeGroup: (EFFECT_UNCONFIRMED_TOGGLE_IDS.includes(id as string) ? 'Executed — Effect Unconfirmed' : 'Ready to Test') as NonNullable<CommandDefinition['intakeGroup']>,
   })),
   {
     id: 'untested-show-subtitles',
@@ -118,7 +132,8 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     description: 'Attempt to force all dialogue subtitles to display. Previous in-game testing produced no visible override.',
     command: 'ShowSubtitle 1',
     tags: ['subtitle', 'dialogue', 'accessibility'],
-    testStatus: 'failed',
+    testStatus: 'inconclusive',
+    intakeGroup: 'Executed — Effect Unconfirmed',
   },
   {
     id: 'untested-restore-subtitles',
@@ -164,19 +179,24 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     id: 'untested-reload-weather',
     title: 'Reload Current Weather',
     category: 'Untested',
-    description: 'Reload the currently active weather data.',
+    description: 'Reload the currently active weather data. In-game testing executed without an error, but produced no confirmed visible change.',
     command: 'ReloadCurrentWeather',
     tags: ['weather', 'reload', 'visual'],
-    testStatus: 'untested',
+    testStatus: 'inconclusive',
+    intakeGroup: 'Executed — Effect Unconfirmed',
   },
   {
     id: 'untested-reload-climate',
     title: 'Reload Current Climate',
     category: 'Untested',
-    description: 'Reload the current climate data.',
+    description: 'Reload the current climate data. In-game testing on Starfield 1.16.244 crashed during sky and weather processing.',
     command: 'ReloadCurrentClimate',
     tags: ['climate', 'weather', 'reload'],
-    testStatus: 'untested',
+    warning: 'This command caused a repeatable-risk game crash path in Starfield sky and weather processing.',
+    risk: 'danger',
+    testStatus: 'failed',
+    unavailableReason: 'Disabled after an in-game v1.0 test crashed Starfield 1.16.244. The crash log shows an access violation in sky and weather processing.',
+    intakeGroup: 'Blocked — Known Crash',
   },
   {
     id: 'untested-workshop',

@@ -1,24 +1,21 @@
-# v1.0.2 validation checklist
+# v1.0.3 validation checklist
 
 ## Install
 
-Close Starfield, replace the existing CCC files with the v1.0.2 build, and restart the game. The footer and native connection message must both report **v1.0.2**.
+Close Starfield, replace the existing CCC files with the v1.0.3 build, and restart the game. The footer and native connection message must both report **v1.0.3**.
 
-## v1.0.2 interaction checks
+## v1.0.3 interaction checks
 
-1. In ID Browser, select Location **The Lodge**, choose **Find Teleportable Cell**, then clear the search with the X. Confirm all ID categories return rather than only Locations and Cells.
-2. Run several harmless established commands, open **Recent**, and confirm its entries display as full-width rows rather than a grid.
-3. Save two disposable Custom Command entries, choose **Delete All**, and confirm the action remains disabled until the field contains exactly `Delete`. Cancel once, then confirm deletion.
-4. In Quest Browser, expand a category and quest, run **Inspect Quest State**, and close Results. Confirm the current and completed stages are marked while the same category and quest remain open at the same scroll position.
-5. Find **Toggle Grass** and **Toggle Sky** under World and confirm each still toggles off and back on.
-6. In Untested, confirm the failed FOV, Wireframe, Collision Geometry, and Subtitle entries and their raw duplicates retain their prior test notes but can still be executed after confirmation.
-7. Confirm **Select Closest Actor** now appears under Targets.
-8. Browse a Perk or Power from a command, use the selected ID, then open the standalone ID Browser. Confirm every category is available.
+1. In Untested, confirm **Executed — Effect Unconfirmed** is separate from **Ready to Test** and contains the visual toggles that ran without a confirmed effect.
+2. Confirm cards in that group display **EFFECT UNCONFIRMED** and remain executable.
+3. Confirm **Reload Current Climate** appears under **Blocked — Known Crash**, explains the Starfield 1.16.244 sky/weather crash, and cannot be executed.
+4. Browse a Perk or Power from a command, use the selected ID, then open the standalone ID Browser. Confirm every category is available.
+5. In ID Browser, select Location **The Lodge**, choose **Find Teleportable Cell**, then clear the search with the X. Confirm all ID categories return rather than only Locations and Cells.
 
 ## Safe priority checks
 
 1. Confirm the first launch opens the welcome guide, **Start Exploring** closes it, and **Help** reopens it.
-2. Confirm the footer and native connection both report v1.0.2.
+2. Confirm the footer and native connection both report v1.0.3.
 3. Open **ID Browser**. It should report **16,528 included IDs**.
 4. Confirm all result categories begin collapsed and clicking the full category row opens it.
 5. Open NPCs, Mods, and Locations. Each large group should initially show 100 rows and offer **Show 100 more**.
