@@ -141,7 +141,7 @@ const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1513;
 const UNTESTED_COMMAND_PAGE_SIZE = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.0.4';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.0.5';
 
 let activeView: ViewMode = 'recent';
 let query = '';
@@ -1094,7 +1094,7 @@ function renderCommandCard(command: CommandDefinition): string {
   const availabilityTag = command.unavailableReason
     ? `<span class="availability-wrap" tabindex="0">
         <span class="command-availability-tag">UNAVAILABLE</span>
-        <span class="availability-popover" role="tooltip">
+        <span class="availability-popover is-danger" role="tooltip">
           <strong>CONSOLE COMMAND</strong>
           <code>${escapeHtml(command.command)}</code>
           <span>CCC blocks this card, but advanced users can enter the command manually in Starfield’s console.</span>

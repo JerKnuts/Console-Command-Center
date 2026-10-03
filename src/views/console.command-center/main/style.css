@@ -454,16 +454,16 @@ select.osf-input:focus-visible {
   z-index: 35;
   top: calc(100% + 8px);
   right: 0;
-  width: min(430px, calc(100vw - 64px));
+  width: min(370px, calc(100vw - 64px));
   padding: 12px 14px;
   color: var(--osf-text-muted);
   background: rgba(8, 10, 14, 0.98);
   border: 1px solid var(--osf-line-strong);
-  border-top: 2px solid var(--ccc-orange);
+  border-top: 2px solid var(--osf-signal-warn);
   box-shadow: var(--osf-shadow);
   font-family: var(--osf-font-body);
   font-size: var(--osf-text-xs);
-  line-height: 1.35;
+  line-height: 1.3;
   letter-spacing: 0;
   text-transform: none;
   opacity: 0;
@@ -471,6 +471,18 @@ select.osf-input:focus-visible {
   pointer-events: none;
   transform: translateY(-2px);
   transition: opacity var(--osf-dur-fast), transform var(--osf-dur-fast), visibility var(--osf-dur-fast);
+}
+.availability-popover::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 18px;
+  width: 10px;
+  height: 10px;
+  background: rgba(8, 10, 14, 0.98);
+  border-top: 1px solid var(--osf-signal-warn);
+  border-left: 1px solid var(--osf-signal-warn);
+  transform: rotate(45deg);
 }
 .availability-wrap:hover .availability-popover,
 .availability-wrap:focus-within .availability-popover {
@@ -483,12 +495,15 @@ select.osf-input:focus-visible {
 .availability-popover code,
 .availability-popover > span { display: block; }
 .availability-popover strong {
-  margin-bottom: 6px;
-  color: var(--ccc-orange);
+  margin-bottom: 5px;
+  color: var(--osf-signal-warn);
   font-family: var(--osf-font-mono);
   font-size: 9px;
   letter-spacing: 0.1em;
 }
+.availability-popover.is-danger { border-top-color: var(--ccc-danger); }
+.availability-popover.is-danger::before { border-top-color: var(--ccc-danger); border-left-color: var(--ccc-danger); }
+.availability-popover.is-danger strong { color: var(--ccc-danger); }
 .availability-popover code {
   margin-bottom: 7px;
   padding: 7px 8px;

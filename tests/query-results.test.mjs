@@ -537,9 +537,11 @@ test('known-broken command cards are unavailable at both render and execution bo
   assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 1);
   assert.match(source, /const unavailable = Boolean\(command\.unavailableReason\)/);
   assert.match(source, /if \(execution\.definition\?\.unavailableReason\)/);
-  assert.match(source, /class="availability-popover" role="tooltip"/);
+  assert.match(source, /class="availability-popover is-danger" role="tooltip"/);
   assert.match(source, /<code>\$\{escapeHtml\(command\.command\)\}<\/code>/);
   assert.match(styleSource, /\.availability-wrap:hover \.availability-popover/);
+  assert.match(styleSource, /\.availability-popover::before/);
+  assert.match(styleSource, /\.availability-popover\.is-danger \{ border-top-color: var\(--ccc-danger\); \}/);
 });
 
 test('reference scale uses the direct getter instead of the crashed condition evaluator', () => {
