@@ -225,13 +225,20 @@ test('commands under investigation remain isolated in the user-facing WIP catego
   assert.match(untestedCommandSource, /id: 'untested-camera-fov'/);
   assert.match(untestedCommandSource, /id: 'untested-nearest-door'/);
   assert.match(untestedCommandSource, /id: 'untested-save-game'/);
-  assert.match(untestedCommandSource, /id: 'toggle-game-pause',[\s\S]*?category: 'World',[\s\S]*?testStatus: 'verified'/);
+  assert.doesNotMatch(untestedCommandSource, /id: 'toggle-game-pause'/);
+  assert.equal((commandSource.match(/title: 'Toggle Game Pause'/g) ?? []).length, 1);
   assert.match(untestedCommandSource, /id: 'toggle-first-person-hands',[\s\S]*?category: 'Camera',[\s\S]*?testStatus: 'verified'/);
+  assert.match(untestedCommandSource, /id: 'show-first-person-model',[\s\S]*?category: 'Camera',[\s\S]*?testStatus: 'verified'/);
+  assert.match(untestedCommandSource, /id: 'toggle-all-animations',[\s\S]*?category: 'World',[\s\S]*?testStatus: 'verified'/);
+  assert.match(untestedCommandSource, /id: 'select-next-actor',[\s\S]*?category: 'Targets',[\s\S]*?testStatus: 'verified'/);
+  assert.match(untestedCommandSource, /id: 'select-next-reference',[\s\S]*?category: 'Targets',[\s\S]*?testStatus: 'verified'/);
   assert.match(untestedCommandSource, /id: 'untested-nearest-door',[\s\S]*?category: 'World',[\s\S]*?testStatus: 'verified'/);
   assert.match(untestedCommandSource, /id: 'untested-pick-ref',[\s\S]*?category: 'Targets',[\s\S]*?testStatus: 'verified'/);
   assert.match(untestedCommandSource, /testStatus: 'failed'/);
   assert.match(untestedCommandSource, /intakeGroup: 'Executed — Effect Unconfirmed'/);
   assert.match(untestedCommandSource, /id: 'untested-reload-climate'[\s\S]*?unavailableReason:[\s\S]*?intakeGroup: 'Blocked — Known Crash'/);
+  assert.match(untestedCommandSource, /id: 'untested-save-game'[\s\S]*?testStatus: 'failed'[\s\S]*?unavailableReason:[\s\S]*?intakeGroup: 'Executed — Issues'/);
+  assert.match(untestedCommandSource, /id: 'untested-load-game'[\s\S]*?testStatus: 'failed'[\s\S]*?unavailableReason:[\s\S]*?intakeGroup: 'Executed — Issues'/);
 });
 
 test('established command views use a compact grid while Recent remains a row list', () => {
@@ -256,13 +263,13 @@ test('the complete engine command reference is lazy-loaded into grouped Untested
   assert.equal(records.filter((entry) => entry.group === 'Script Functions').length, 948);
   assert.equal(new Set(records.map((entry) => `${entry.group}:${entry.name.toLowerCase()}`)).size, 1513);
 
-  assert.match(source, /const ENGINE_COMMAND_LIBRARY_TOTAL = 1509/);
+  assert.match(source, /const ENGINE_COMMAND_LIBRARY_TOTAL = 1505/);
   assert.match(source, /import\('\.\/engine-command-library'\)/);
   assert.match(source, /const UNTESTED_COMMAND_PAGE_SIZE = 100/);
   assert.match(source, /'Ready to Test'[\s\S]*'Executed — Effect Unconfirmed'[\s\S]*'Blocked — Known Crash'[\s\S]*'Engine Console Commands'[\s\S]*'Script Functions'/);
   assert.match(source, /ENGINE_COMMAND_LIBRARY_TOTAL/);
   assert.match(engineCommandSource, /category: 'Untested'/);
-  assert.match(engineCommandSource, /const PROMOTED_ENGINE_COMMANDS = new Set\([\s\S]*?'pickrefbyid'[\s\S]*?'togglegamepause'[\s\S]*?'togglehandsculled'[\s\S]*?'usenearestteleportdoor'/);
+  assert.match(engineCommandSource, /const PROMOTED_ENGINE_COMMANDS = new Set\([\s\S]*?'picknextactor'[\s\S]*?'picknextref'[\s\S]*?'pickrefbyid'[\s\S]*?'show1stperson'[\s\S]*?'toggleanimations'[\s\S]*?'togglegamepause'[\s\S]*?'togglehandsculled'[\s\S]*?'usenearestteleportdoor'/);
   assert.match(engineCommandSource, /testStatus: knownCrashReason \? 'failed' : effectUnconfirmedReason \? 'inconclusive' : 'untested'/);
   assert.match(engineCommandSource, /toggleborders:[\s\S]*?togglematerialgeometry:[\s\S]*?togglevolumegeometry:/);
   assert.match(engineCommandSource, /label: 'Optional Arguments'/);

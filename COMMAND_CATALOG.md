@@ -2,9 +2,9 @@
 
 Version: 1.0
 
-Established commands: 145
+Established commands: 148
 
-WIP command intake: 1,544 (35 prepared cards, 561 engine console commands, 948 script functions)
+WIP command intake: 1,540 (35 prepared cards, 557 engine console commands, 948 script functions)
 
 Quest Browser: 2,318 quest records with 16,844 structurally recorded stages across the base game and Shattered Space
 
@@ -15,7 +15,7 @@ Risk levels:
 
 Testing status is intentionally conservative. Only commands confirmed through Console Command Center are marked **Verified**.
 
-Latest user test report: October 2, 2026. See `docs/TEST_RESULTS_2026-09-27.md` for the accumulated in-game record.
+Latest user test report: October 3, 2026. See `docs/TEST_RESULTS_2026-09-27.md` for the accumulated in-game record.
 
 ## Gameplay (11)
 
@@ -100,7 +100,7 @@ Latest user test report: October 2, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 | Add Power / Spell by Form ID | `player.addspell {formId}` | Danger | Verified |
 | Remove Spell / Status Effect by Form ID | `player.removespell {formId}` | Caution | Verified |
 
-## Camera (6)
+## Camera (7)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -110,12 +110,14 @@ Latest user test report: October 2, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 | Set Free Camera Speed | `sucsm {speed}` | Normal | Verified |
 | Clear Screen Blood | `ClearScreenBlood` | Normal | Accepted in game; no active blood overlay was available for a visual check |
 | Toggle First-Person Hands | `ToggleHandsCulled` | Caution | Verified — hid the held weapon/first-person hands |
+| Show First-Person Model in Third Person | `Show1stPerson` | Caution | Verified — displayed the first-person arms beside the third-person character |
 
 ## World (16)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Toggle Game Pause | `tgp` | Normal | Verified |
+| Toggle All Actor Animations | `ToggleAnimations` | Caution | Verified — froze nearby actor animations; run again to restore them |
 | Use Nearest Teleport Door | `UseNearestTeleportDoor` | Caution | Verified — moved the player through the nearest door |
 | Set Game Speed | `sgtm {value}` | Caution | Verified |
 | Wait Anywhere | `passtime {hours}` | Normal | Verified; replaces the removed post-1.10.32 wait-menu command |
@@ -133,12 +135,14 @@ Latest user test report: October 2, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 
 **Weather choices:** both weather commands use the same compact ID field + **CHOOSE WEATHER** box layout as the companion commands. Clear, Rain, Snow, Heavy Snow, Thunderstorm, Sandstorm, Dense Mist, Light Mist, and Burning Haze are available through the chooser, while manual Weather Form IDs remain supported. No inline weather-button grid is used.
 
-## Targets (36)
+## Targets (38)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | Select Closest Actor | `PickClosestActor` | Normal | Verified |
 | Select Console Reference by ID | `PickRefByID {refId}` | Normal | Verified — requested object appeared selected when the console reopened |
+| Select Next Actor | `PickNextActor` | Normal | Verified — selected the actor near the center of the screen |
+| Select Next Reference | `PickNextRef` | Normal | Verified — selected the reference near the center of the screen |
 | Move Reference to Player | `{refId}.moveto player` | Caution | Verified |
 | Kill Actor by Reference ID | `{refId}.kill` | Danger | Verified |
 | Resurrect Actor by Reference ID | `{refId}.resurrect` | Danger | Verified |
@@ -226,11 +230,11 @@ Latest user test report: October 2, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 
 **Ship workflow:** run **Get Current Ship Reference ID** while aboard the ship, then use that Reference ID with the ship actor-value commands. Use **Inspect Ship Actor Value** before changing a stat so you can record its existing value. Game Setting commands (owned-ship limit, docking/looting/transfer distance, and builder module limits) normally reset when Starfield restarts. The documented vanilla values used in CCC hints are 10 owned ships, 500 docking distance, 500 looting distance, and 130 for both ship-builder module limits; the transfer-distance default is less consistently documented, so inspect it first if exact restoration matters.
 
-## Work in Progress command intake (1,544)
+## Work in Progress command intake (1,540)
 
 Newly discovered commands enter this isolated category before they can appear alongside verified everyday, cheat, repair, or developer tools. Commands with destructive or uncertain effects retain Caution or Danger confirmation. Test them on a disposable save; successful commands can then move into their permanent category with an accurate description and warning.
 
-Prepared cards are split into four result groups: **Ready to Test** contains commands awaiting a useful in-game result, **Executed — Effect Unconfirmed** keeps commands that ran without errors but produced no observable effect, **Executed — Issues** keeps commands with confirmed usability problems, and **Blocked — Known Crash** keeps dangerous crash paths visible without allowing execution. **Engine Console Commands** contains 561 reference entries, and **Script Functions** contains 948 reference entries. The 1,509-entry engine library loads only when WIP is opened or searched. Open groups render 100 cards at a time. Raw engine cards accept optional arguments, and script-function cards also accept an optional target or prefix. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing the large disabled Unavailable action reveals the underlying console syntax for advanced manual use.
+Prepared cards are split into four result groups: **Ready to Test** contains commands awaiting a useful in-game result, **Executed — Effect Unconfirmed** keeps commands that ran without errors but produced no observable effect, **Executed — Issues** keeps commands with confirmed usability problems, and **Blocked — Known Crash** keeps dangerous crash paths visible without allowing execution. **Engine Console Commands** contains 557 reference entries, and **Script Functions** contains 948 reference entries. The 1,505-entry engine library loads only when WIP is opened or searched. Open groups render 100 cards at a time. Raw engine cards accept optional arguments, and script-function cards also accept an optional target or prefix. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing the large disabled Unavailable action reveals the underlying console syntax for advanced manual use.
 
 The first intake includes:
 

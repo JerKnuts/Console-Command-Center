@@ -1,10 +1,10 @@
-# v1.0.7 validation checklist
+# v1.0.8 validation checklist
 
 ## Install
 
-Close Starfield, replace the existing CCC files with the v1.0.7 build, and restart the game. The footer and native connection message must both report **v1.0.7**.
+Close Starfield, replace the existing CCC files with the v1.0.8 build, and restart the game. The footer and native connection message must both report **v1.0.8**.
 
-## v1.0.7 interaction checks
+## v1.0.8 interaction checks
 
 1. Open WIP and confirm every category starts collapsed.
 2. Confirm blocked cards no longer show a small Unavailable badge beside their status. Hover or focus the large disabled **Unavailable** action and confirm the command appears in the anchored warning panel.
@@ -14,12 +14,15 @@ Close Starfield, replace the existing CCC files with the v1.0.7 build, and resta
 6. Confirm Spawn Ship by Base ID appears under **Executed — Issues** with the buried-ramp result and remains unavailable through CCC.
 7. Browse a Perk or Power from a command, use the selected ID, then open the standalone ID Browser. Confirm every category is available.
 8. Confirm Toggle Decal Rendering appears under **Blocked — Known Crash** and cannot execute through CCC.
-9. Confirm Toggle Game Pause, Toggle First-Person Hands, Use Nearest Teleport Door, and Select Console Reference by ID appear in their established categories rather than WIP.
+9. Search for Toggle Game Pause and confirm exactly one established result appears.
+10. Confirm Show First-Person Model in Third Person, Toggle All Actor Animations, Select Next Actor, and Select Next Reference appear in their established categories rather than WIP.
+11. Confirm Save Game by Name and Load Game by Name appear under Executed — Issues and cannot execute through CCC.
+12. Confirm PrintMessage, ToggleMovement, ToggleFullScreenMotionBlur, ToggleBoundVisGeom, and ToggleDetectionStats appear under Executed — Effect Unconfirmed.
 
 ## Safe priority checks
 
 1. Confirm the first launch opens the welcome guide, **Start Exploring** closes it, and **Help** reopens it.
-2. Confirm the footer and native connection both report v1.0.7.
+2. Confirm the footer and native connection both report v1.0.8.
 3. Open **ID Browser**. It should report **16,528 included IDs**.
 4. Confirm all result categories begin collapsed and clicking the full category row opens it.
 5. Open NPCs, Mods, and Locations. Each large group should initially show 100 rows and offer **Show 100 more**.

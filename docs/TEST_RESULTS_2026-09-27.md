@@ -256,3 +256,16 @@ The two console-output `help` searches are disabled for v0.3.2. The packaged ID 
 - Toggle First-Person Hands visibly put away the held weapon. It is promoted to Camera as a verified reversible visual control.
 - Toggle Decal Rendering crashed Starfield before the remaining tests could run.
 - Crash log `2026-10-02-23-49-44.log` reports `EXCEPTION_ACCESS_VIOLATION` at `Starfield.exe+2A5FDB9`. The probable call stack stays within Starfield's renderer; `SkyOcclusionMaskRenderPass`, `SkyOcclusionRenderPass`, `RenderSceneSubGraph`, and the DX12 pipeline appear in the captured state. No CCC frame appears in the probable call stack. The command is blocked because its execution triggered this renderer crash path.
+
+## v1.0.7 WIP practical-command pass — October 3, 2026
+
+- Toggle Full Screen Motion Blur, Toggle Bound Visualization Geometry, and Toggle Detection Stats executed without errors but produced no confirmed visible effect.
+- Save Game by Name failed again with “The Game Cannot Be Saved Now” even though quicksave and the normal full-save control worked in the same location. The prepared action is now unavailable under Executed — Issues.
+- Load Game by Name closed CCC but did not load the existing displayed save name `Jemison - New Atlantis`. The prepared action is now unavailable under Executed — Issues; Starfield may require an internal filename rather than its displayed save label.
+- PrintMessage executed with visible-message arguments but displayed nothing.
+- Show1stPerson worked and displayed the first-person arms and weapon model beside the third-person character. It is promoted to Camera with a warning that the overlapping models intentionally look incorrect.
+- ToggleMovement executed, but nearby NPCs continued walking normally.
+- ToggleAnimations worked and froze nearby actors' animations. It is promoted to World with instructions to run it again to resume animations.
+- PickNextActor and PickNextRef both worked; opening Starfield's console afterward showed the expected actor or reference selected. Both are promoted to Targets.
+- Search displayed two Toggle Game Pause cards because the original established `tgp` entry and a separately promoted intake entry were both present. The duplicate intake entry is removed in v1.0.8.
+- Testing ended after item 8; the remaining proposed commands were not run.

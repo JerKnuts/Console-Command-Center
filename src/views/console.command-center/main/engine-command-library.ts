@@ -19,7 +19,11 @@ function commandId(label: string, index: number): string {
 }
 
 const PROMOTED_ENGINE_COMMANDS = new Set([
+  'picknextactor',
+  'picknextref',
   'pickrefbyid',
+  'show1stperson',
+  'toggleanimations',
   'togglegamepause',
   'togglehandsculled',
   'usenearestteleportdoor',
@@ -46,11 +50,16 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
     showsubtitle: 'In-game v0.3.11 testing produced no visible subtitle override.',
   };
   const effectUnconfirmedReasons: Record<string, string> = {
+    printmessage: 'In-game v1.0.7 testing with visible-message arguments executed without an error but displayed no message.',
     showlightbounds: 'In-game v1.0.6 testing executed without an error but showed no visible light-bound overlay.',
+    toggleboundvisgeom: 'In-game v1.0.7 testing executed without an error but showed no visible bound-geometry overlay.',
     toggleborders: 'In-game v1.0.5 testing executed without an error but showed no visible cell borders.',
     toggledebugtext: 'In-game v1.0.6 testing executed without an error but showed no visible debug text.',
+    toggledetectionstats: 'In-game v1.0.7 testing executed without an error but showed no visible detection statistics.',
+    togglefullscreenmotionblur: 'In-game v1.0.7 testing executed without an error but produced no confirmed visible change.',
     togglelitebrite: 'In-game v1.0.6 testing executed without an error but showed no visible lighting change.',
     togglematerialgeometry: 'In-game v1.0.5 testing executed without an error but showed no visible material-geometry overlay.',
+    togglemovement: 'In-game v1.0.7 testing executed without an error, but nearby NPCs continued walking normally.',
     togglenavmesh: 'In-game v1.0.6 testing executed without an error but showed no visible navigation mesh.',
     togglenavmeshinfo: 'In-game v1.0.6 testing executed without an error but showed no visible navigation information.',
     togglepathline: 'In-game v1.0.6 testing executed without an error but showed no visible path line.',
