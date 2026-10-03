@@ -207,12 +207,14 @@ test('Custom Command can persist, load, update, and delete up to 100 named entri
   assert.doesNotMatch(source, /const preview = commands\[0\]/);
 });
 
-test('newly discovered commands remain isolated in the Untested intake category', () => {
+test('commands under investigation remain isolated in the user-facing WIP category', () => {
   assert.match(commandSource, /import \{ UNTESTED_COMMANDS \} from '\.\/untested-commands'/);
   assert.match(commandSource, /\| 'Untested'/);
   assert.match(commandSource, /\.\.\.UNTESTED_COMMANDS/);
   assert.match(commandSource, /'Ship',\s*'Untested'/);
-  assert.match(source, /UNTESTED COMMAND INTAKE/);
+  assert.match(source, /WORK IN PROGRESS/);
+  assert.match(source, /label: category === 'Untested' \? 'WIP' : category/);
+  assert.match(source, /if \(activeView === 'Untested'\) return 'Work in Progress'/);
   assert.match(source, /command\.testStatus === 'untested'/);
   assert.match(source, /command\.testStatus === 'inconclusive'/);
   assert.match(source, /EFFECT UNCONFIRMED/);
@@ -235,6 +237,9 @@ test('established command views use a compact grid while Recent remains a row li
   assert.doesNotMatch(styleSource, /\.command-list\.is-command-grid[\s\S]{0,240}height: 100%/);
   assert.match(styleSource, /\.untested-group \{[\s\S]*?overflow: visible/);
   assert.match(styleSource, /@media \(max-width: 1180px\)[\s\S]*?\.command-list\.is-command-grid,[\s\S]*?grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(source, /data-clear-recent/);
+  assert.match(source, /recent = \[\][\s\S]*?writeStringArray\(STORAGE_RECENT, recent\)/);
+  assert.match(styleSource, /\.recent-toolbar/);
 });
 
 test('the complete engine command reference is lazy-loaded into grouped Untested pages', () => {
@@ -267,7 +272,7 @@ test('main and Untested command searches are isolated from one another', () => {
   assert.match(source, /commandMatches\(command, untestedQuery\)/);
   assert.match(source, /if \(activeView === 'Untested'\) \{[\s\S]*?untestedQuery = search\.value/);
   assert.match(source, /search\.value = view === 'Untested' \? untestedQuery : ''/);
-  assert.match(source, /activeView === 'Untested'[\s\S]*?'Search untested name, command, or description\.\.\.'/);
+  assert.match(source, /activeView === 'Untested'[\s\S]*?'Search WIP name, command, or description\.\.\.'/);
   assert.doesNotMatch(source, /data-untested-search|data-clear-untested-search/);
   assert.doesNotMatch(source, /searchWrap\.hidden = [^;]*activeView === 'Untested'/);
   assert.match(source, /if \(activeView === 'Untested' && !engineCommandLibraryLoaded\)/);
@@ -529,9 +534,32 @@ test('ID Browser quick actions build item, weather, and cell commands', () => {
 });
 
 test('known-broken command cards are unavailable at both render and execution boundaries', () => {
-  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 3);
+  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 1);
   assert.match(source, /const unavailable = Boolean\(command\.unavailableReason\)/);
   assert.match(source, /if \(execution\.definition\?\.unavailableReason\)/);
+  assert.match(source, /class="availability-popover" role="tooltip"/);
+  assert.match(source, /<code>\$\{escapeHtml\(command\.command\)\}<\/code>/);
+  assert.match(styleSource, /\.availability-wrap:hover \.availability-popover/);
+});
+
+test('reference scale uses the direct getter instead of the crashed condition evaluator', () => {
+  const start = commandSource.indexOf("id: 'inspect-ref-scale'");
+  const end = commandSource.indexOf("\n  {\n    id:", start);
+  const commandBlock = commandSource.slice(start, end);
+  assert.match(commandBlock, /category: 'Untested',[\s\S]*?captureOutput: true,[\s\S]*?intakeGroup: 'Ready to Test'/);
+  assert.doesNotMatch(commandBlock, /unavailableReason:/);
+  assert.match(directQuerySource, /if \(operation == "getopenstate"\)/);
+  assert.doesNotMatch(directQuerySource, /operation == "getscale" \|\| operation == "getopenstate"/);
+  assert.match(directQuerySource, /if \(operation == "getscale"\)[\s\S]*?reference->GetScale\(\)/);
+});
+
+test('current quest targets run through Starfield console history without capture', () => {
+  const start = commandSource.indexOf("id: 'show-current-quest-targets'");
+  const end = commandSource.indexOf("\n  {\n    id:", start);
+  const commandBlock = commandSource.slice(start, end);
+  assert.match(commandBlock, /category: 'Untested',[\s\S]*?command: 'sqt',[\s\S]*?closeBeforeExecute: true,[\s\S]*?intakeGroup: 'Ready to Test'/);
+  assert.doesNotMatch(commandBlock, /captureOutput: true/);
+  assert.doesNotMatch(commandBlock, /unavailableReason:/);
 });
 
 test('held-object inspection does not restore the unresolved native event adapter', () => {
@@ -691,6 +719,6 @@ test('Quest stage history marks completed, current, and unset stage buttons', ()
 test('verified quest reads remain available and unusable ship spawning is disabled', () => {
   assert.match(commandSource, /id: 'get-quest-stage',[\s\S]*?testStatus: 'verified'/);
   assert.match(commandSource, /id: 'show-quest-stages',[\s\S]*?testStatus: 'verified'/);
-  assert.match(commandSource, /id: 'spawn-ship',[\s\S]*?testStatus: 'failed'[\s\S]*?unavailableReason:/);
+  assert.match(commandSource, /id: 'spawn-ship',[\s\S]*?category: 'Untested'[\s\S]*?testStatus: 'failed'[\s\S]*?unavailableReason:[\s\S]*?intakeGroup: 'Executed — Issues'/);
   assert.match(commandSource, /boarding ramp inaccessible/);
 });

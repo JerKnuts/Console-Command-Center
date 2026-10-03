@@ -141,7 +141,7 @@ const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1513;
 const UNTESTED_COMMAND_PAGE_SIZE = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.0.3';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.0.4';
 
 let activeView: ViewMode = 'recent';
 let query = '';
@@ -633,7 +633,7 @@ function renderNavigation(): void {
 
   const categories = CATEGORY_ORDER.map((category) => ({
     id: category,
-    label: category,
+    label: category === 'Untested' ? 'WIP' : category,
     count: categoryCount(category),
   }));
 
@@ -704,6 +704,7 @@ function viewTitle(): string {
   if (activeView === 'id-browser') return 'ID Browser';
   if (activeView === 'activity') return 'Activity Log';
   if (activeView === 'custom') return 'Custom Command';
+  if (activeView === 'Untested') return 'Work in Progress';
   return activeView;
 }
 
@@ -773,6 +774,7 @@ function renderUntestedCommandGroups(commands: CommandDefinition[]): string {
   const groupOrder = [
     'Ready to Test',
     'Executed — Effect Unconfirmed',
+    'Executed — Issues',
     'Blocked — Known Crash',
     'Engine Console Commands',
     'Script Functions',
@@ -800,10 +802,17 @@ function renderUntestedCommandGroups(commands: CommandDefinition[]): string {
 
   const intro = activeView === 'Untested'
     ? `<section class="untested-intro osf-card">
-        <div class="untested-intro-copy"><strong>UNTESTED COMMAND INTAKE</strong><span>Prepared commands are separated by test result. Commands that executed without an observable effect remain available under Effect Unconfirmed. Known crash paths stay visible but blocked. The engine groups use optional raw arguments. Test on a disposable save.</span></div>
+        <div class="untested-intro-copy"><strong>WORK IN PROGRESS</strong><span>Prepared commands are separated by test result. Commands with uncertain effects or known issues remain available for research, while known crash paths stay visible but blocked. The engine groups use optional raw arguments. Test on a disposable save.</span></div>
       </section>`
     : '';
   return intro + content;
+}
+
+function renderRecentToolbar(): string {
+  return `<section class="recent-toolbar">
+    <span>Recently executed command cards</span>
+    <button class="osf-btn osf-btn--sm" type="button" data-clear-recent${recent.length ? '' : ' disabled'}>Clear Recent</button>
+  </section>`;
 }
 
 function render(): void {
@@ -837,7 +846,7 @@ function render(): void {
     : activeView === 'id-browser'
       ? 'Search included IDs by name, Form ID, or type...'
       : activeView === 'Untested'
-        ? 'Search untested name, command, or description...'
+        ? 'Search WIP name, command, or description...'
       : 'Search name, command, tag...';
 
   if (activeView === 'id-browser') {
@@ -892,12 +901,12 @@ function render(): void {
   commandList.hidden = false;
   const commands = activeCommands();
   resultCount.textContent = activeView === 'Untested' && untestedQuery.trim()
-    ? `${commands.length.toLocaleString()} matching untested commands / ${categoryCount('Untested').toLocaleString()} total`
+    ? `${commands.length.toLocaleString()} matching WIP commands / ${categoryCount('Untested').toLocaleString()} total`
     : `${commands.length.toLocaleString()} command${commands.length === 1 ? '' : 's'}`;
 
   if (commands.length === 0) {
     const message = activeView === 'Untested' && untestedQuery.trim()
-      ? 'No Untested commands match this search.'
+      ? 'No WIP commands match this search.'
       : query
       ? 'No commands match your search.'
       : activeView === 'favorites'
@@ -908,13 +917,15 @@ function render(): void {
     const emptyState = `<div class="empty-state"><p class="osf-eyebrow">NO RESULTS</p><h3>Nothing to show</h3><p>${escapeHtml(message)}</p></div>`;
     commandList.innerHTML = activeView === 'Untested'
       ? renderUntestedCommandGroups([]) + emptyState
-      : emptyState;
+      : activeView === 'recent'
+        ? renderRecentToolbar() + emptyState
+        : emptyState;
     return;
   }
 
   commandList.innerHTML = activeView === 'Untested'
     ? renderUntestedCommandGroups(commands)
-    : commands.map(renderCommandCard).join('');
+    : `${activeView === 'recent' ? renderRecentToolbar() : ''}${commands.map(renderCommandCard).join('')}`;
 }
 
 function questBrowserMatches(entry: QuestBrowserEntry): boolean {
@@ -1080,6 +1091,16 @@ function renderCommandCard(command: CommandDefinition): string {
         </span>
       </span>`
     : '';
+  const availabilityTag = command.unavailableReason
+    ? `<span class="availability-wrap" tabindex="0">
+        <span class="command-availability-tag">UNAVAILABLE</span>
+        <span class="availability-popover" role="tooltip">
+          <strong>CONSOLE COMMAND</strong>
+          <code>${escapeHtml(command.command)}</code>
+          <span>CCC blocks this card, but advanced users can enter the command manually in Starfield’s console.</span>
+        </span>
+      </span>`
+    : '';
 
   return `
     <article class="command-card" data-command-id="${escapeHtml(command.id)}">
@@ -1088,7 +1109,7 @@ function renderCommandCard(command: CommandDefinition): string {
           <div class="command-heading-main">
             <h3>${escapeHtml(command.title)}</h3>
           </div>
-          <span class="command-heading-tags">${testTag}${command.unavailableReason ? '<span class="command-availability-tag">UNAVAILABLE</span>' : ''}${warningTag}</span>
+          <span class="command-heading-tags">${testTag}${availabilityTag}${warningTag}</span>
         </div>
         <p class="command-description">${escapeHtml(command.description)}</p>
         ${command.unavailableReason ? `<p class="command-unavailable-reason">${escapeHtml(command.unavailableReason)}</p>` : ''}
@@ -1098,7 +1119,7 @@ function renderCommandCard(command: CommandDefinition): string {
         <button class="favorite-button${isFavorite ? ' is-favorite' : ''}" type="button" data-favorite="${escapeHtml(command.id)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
           <span aria-hidden="true">${isFavorite ? '★' : '☆'}</span>
         </button>
-        <button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${(nativeBackendReady || canRunWithoutNative) && !unavailable ? '' : ' disabled'}>${unavailable ? 'Unavailable' : command.catalogSearch ? 'Search IDs' : 'Execute'}</button>
+        <button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${unavailable ? ` title="Command: ${escapeHtml(command.command)}"` : ''}${(nativeBackendReady || canRunWithoutNative) && !unavailable ? '' : ' disabled'}>${unavailable ? 'Unavailable' : command.catalogSearch ? 'Search IDs' : 'Execute'}</button>
       </div>
     </article>
   `;
@@ -2300,6 +2321,15 @@ document.addEventListener('click', (event) => {
 });
 
 commandList.addEventListener('click', (event) => {
+  const clearRecentButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-clear-recent]');
+  if (clearRecentButton) {
+    recent = [];
+    writeStringArray(STORAGE_RECENT, recent);
+    render();
+    setStatus('Recent commands cleared.', 'success');
+    return;
+  }
+
   const untestedGroupButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-untested-group]');
   if (untestedGroupButton?.dataset.untestedGroup && !untestedQuery.trim()) {
     openUntestedGroup = openUntestedGroup === untestedGroupButton.dataset.untestedGroup

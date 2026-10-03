@@ -45,10 +45,11 @@ namespace CCC
             && operation != "getopenstate" && operation != "getgs") {
             return std::nullopt;
         }
-        // test1 crashed inside the condition evaluator on Starfield 1.16.244.
-        // Do not call ANY evaluator through the unverified shared ABI. Return
-        // a normal error until a verified adapter replaces that entire path.
-        if (operation == "getscale" || operation == "getopenstate") {
+        // test1 crashed inside the shared condition evaluator on Starfield
+        // 1.16.244. GetOpenState still has no verified direct replacement.
+        // GetScale is handled below through TESObjectREFR::GetScale instead of
+        // returning to that evaluator ABI.
+        if (operation == "getopenstate") {
             throw std::runtime_error("This inspection is disabled because its CommonLibSF adapter is unresolved or unsafe on Starfield 1.16.244.");
         }
         if (operation == "getgs") {
@@ -99,6 +100,11 @@ namespace CCC
             auto* info = RE::TESForm::LookupByEditorID<RE::ActorValueInfo>(RE::BSFixedString(argument.c_str()));
             if (!info) throw std::runtime_error("Actor value not found: " + argument);
             return std::format("{} >> {:.6f}", argument, reference->GetActorValue(*info));
+        }
+        if (operation == "getscale") {
+            const double value = reference->GetScale();
+            if (!std::isfinite(value)) throw std::runtime_error("Starfield returned an invalid reference scale.");
+            return std::format("Reference scale >> {:.6f}", value);
         }
         if (operation == "getspaceship") {
             auto* ship = reference->GetSpaceship();

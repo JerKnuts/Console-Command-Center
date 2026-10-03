@@ -60,6 +60,7 @@ export type CommandDefinition = {
   intakeGroup?:
     | 'Ready to Test'
     | 'Executed — Effect Unconfirmed'
+    | 'Executed — Issues'
     | 'Blocked — Known Crash'
     | 'Engine Console Commands'
     | 'Script Functions';
@@ -1382,14 +1383,14 @@ export const COMMANDS: CommandDefinition[] = [
   {
     id: 'inspect-ref-scale',
     title: 'Inspect Reference Scale',
-    category: 'Targets',
-    description: 'Read a reference scale and display the console result in CCC.',
+    category: 'Untested',
+    description: 'Read a reference scale through the new direct TESObjectREFR scale adapter and display the result in CCC.',
     command: '{refId}.getscale',
     tags: ['inspect', 'scale', 'getscale', 'reference', 'read only'],
     inputs: [hexInput('refId', 'Reference ID', '00000000')],
     captureOutput: true,
-    testStatus: 'failed',
-    unavailableReason: 'Scale inspection is disabled because the previous native adapter crashed Starfield during test1.',
+    testStatus: 'untested',
+    intakeGroup: 'Ready to Test',
   },
   {
     id: 'add-item-mod',
@@ -1529,13 +1530,13 @@ export const COMMANDS: CommandDefinition[] = [
   {
     id: 'show-current-quest-targets',
     title: 'Show Current Quest Targets',
-    category: 'Quests',
-    description: 'List current quest targets and capture the console output for troubleshooting.',
+    category: 'Untested',
+    description: 'Run SQT without CCC console capture. CCC closes first; open Starfield’s console afterward to read the command output in its history.',
     command: 'sqt',
     tags: ['quest', 'targets', 'sqt', 'inspect', 'read only'],
-    captureOutput: true,
-    testStatus: 'failed',
-    unavailableReason: 'This command depends on console-output capture, which is being replaced with a reliable native diagnostic path.',
+    closeBeforeExecute: true,
+    testStatus: 'untested',
+    intakeGroup: 'Ready to Test',
   },
   {
     id: 'get-quest-stage',
@@ -1996,7 +1997,7 @@ export const COMMANDS: CommandDefinition[] = [
   {
     id: 'spawn-ship',
     title: 'Spawn Ship by Base ID',
-    category: 'Ship',
+    category: 'Untested',
     description: 'Spawn a ship Base ID at the player location.',
     command: 'player.placeatme {baseId}',
     tags: ['ship', 'spawn', 'placeatme', 'base id'],
@@ -2008,6 +2009,7 @@ export const COMMANDS: CommandDefinition[] = [
     risk: 'danger',
     testStatus: 'failed',
     unavailableReason: 'Disabled after in-game testing: the ship spawned on the player and partly underground, leaving its boarding ramp inaccessible.',
+    intakeGroup: 'Executed — Issues',
   },
   ...UNTESTED_COMMANDS,
 ];

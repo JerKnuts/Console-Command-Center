@@ -4,7 +4,7 @@ Version: 1.0
 
 Curated commands: 144 (4 currently disabled)
 
-Untested command intake: 1,547 (34 prepared cards, 565 engine console commands, 948 script functions)
+WIP command intake: 1,550 (37 prepared cards, 565 engine console commands, 948 script functions)
 
 Quest Browser: 2,318 quest records with 16,844 structurally recorded stages across the base game and Shattered Space
 
@@ -161,7 +161,7 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 | Set Exact Reference Rotation | `{refId}.setangle {axis} {degrees}` | Caution | Verified |
 | Inspect Reference Position | `{refId}.getpos {axis}` | Normal | Verified |
 | Inspect Reference Rotation | `{refId}.getangle {axis}` | Normal | Verified |
-| Inspect Reference Scale | `{refId}.getscale` | Normal | CRASH in test1; disabled in test2 |
+| Inspect Reference Scale | `{refId}.getscale` | Normal | Ready to retest with direct `TESObjectREFR::GetScale()` adapter |
 | Attach Weapon / Armor Mod | `{refId}.amod {modId}` | Caution | Untested |
 | Remove Weapon / Armor Mod | `{refId}.rmod {modId}` | Caution | Untested |
 | Inspect Companion Affinity | `{refId}.getav com_affinity` | Normal | Verified |
@@ -180,7 +180,7 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
-| Show Current Quest Targets | `sqt` | Normal | Unavailable — console capture was unreliable |
+| Show Current Quest Targets | `sqt` | Normal | Ready to retest without CCC capture; results remain in Starfield console history |
 | Get Current Quest Stage | `getstage {questId}` | Normal | Verified — native quest read returned the running quest's current stage immediately |
 | Show Quest Stage History | `sqs {questId}` | Normal | Verified — native stage checks returned the full done/not-set history without console capture |
 | Start Quest by ID | `startquest {questId}` | Danger | Needs adjustment — command was sent, but some quests need a stage before visible activation |
@@ -219,15 +219,15 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 | Set Ship Builder Module Limit | `setgs uSpaceshipBuilderMaxModules {value}` | Caution | Verified |
 | Set Ship Builder Module Hard Limit | `setgs uSpaceshipBuilderModuleHardLimit {value}` | Caution | Verified |
 | Refuel Player Spaceship | `RefuelSpaceship` | Normal | Verified |
-| Spawn Ship by Base ID | `player.placeatme {baseId}` | Danger | Unavailable — ship spawned directly on the player and partly underground, leaving the boarding ramp inaccessible |
+| Spawn Ship by Base ID | `player.placeatme {baseId}` | Danger | WIP Executed — Issues; ship spawned directly on the player and partly underground, leaving the boarding ramp inaccessible |
 
 **Ship workflow:** run **Get Current Ship Reference ID** while aboard the ship, then use that Reference ID with the ship actor-value commands. Use **Inspect Ship Actor Value** before changing a stat so you can record its existing value. Game Setting commands (owned-ship limit, docking/looting/transfer distance, and builder module limits) normally reset when Starfield restarts. The documented vanilla values used in CCC hints are 10 owned ships, 500 docking distance, 500 looting distance, and 130 for both ship-builder module limits; the transfer-distance default is less consistently documented, so inspect it first if exact restoration matters.
 
-## Untested command intake (1,547)
+## Work in Progress command intake (1,550)
 
 Newly discovered commands enter this isolated category before they can appear alongside verified everyday, cheat, repair, or developer tools. Commands with destructive or uncertain effects retain Caution or Danger confirmation. Test them on a disposable save; successful commands can then move into their permanent category with an accurate description and warning.
 
-Prepared cards are split into three result groups: **Ready to Test** contains commands awaiting a useful in-game result, **Executed — Effect Unconfirmed** keeps commands that ran without errors but produced no observable effect, and **Blocked — Known Crash** keeps dangerous crash paths visible without allowing execution. **Engine Console Commands** contains 565 reference entries, and **Script Functions** contains 948 reference entries. The 1,513-entry engine library loads only when Untested is opened or searched. Open groups render 100 cards at a time. Raw engine cards accept optional arguments, and script-function cards also accept an optional target or prefix. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history.
+Prepared cards are split into four result groups: **Ready to Test** contains commands awaiting a useful in-game result, **Executed — Effect Unconfirmed** keeps commands that ran without errors but produced no observable effect, **Executed — Issues** keeps commands with confirmed usability problems, and **Blocked — Known Crash** keeps dangerous crash paths visible without allowing execution. **Engine Console Commands** contains 565 reference entries, and **Script Functions** contains 948 reference entries. The 1,513-entry engine library loads only when WIP is opened or searched. Open groups render 100 cards at a time. Raw engine cards accept optional arguments, and script-function cards also accept an optional target or prefix. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing an Unavailable badge reveals the underlying console syntax for advanced manual use.
 
 The first intake includes:
 
