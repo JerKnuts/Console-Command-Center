@@ -217,7 +217,9 @@ test('commands under investigation remain isolated in the user-facing WIP catego
   assert.match(source, /if \(activeView === 'Untested'\) return 'Work in Progress'/);
   assert.match(source, /command\.testStatus === 'untested'/);
   assert.match(source, /command\.testStatus === 'inconclusive'/);
+  assert.match(source, /command\.testStatus === 'needs-adjustment'[\s\S]*?ISSUE/);
   assert.match(source, /EFFECT UNCONFIRMED/);
+  assert.match(source, /let openUntestedGroup: string \| null = null/);
   assert.match(styleSource, /\.command-test-tag/);
   assert.match(untestedCommandSource, /id: 'untested-start-all-quests'/);
   assert.match(untestedCommandSource, /id: 'untested-camera-fov'/);
@@ -257,7 +259,8 @@ test('the complete engine command reference is lazy-loaded into grouped Untested
   assert.match(source, /'Ready to Test'[\s\S]*'Executed — Effect Unconfirmed'[\s\S]*'Blocked — Known Crash'[\s\S]*'Engine Console Commands'[\s\S]*'Script Functions'/);
   assert.match(source, /ENGINE_COMMAND_LIBRARY_TOTAL/);
   assert.match(engineCommandSource, /category: 'Untested'/);
-  assert.match(engineCommandSource, /testStatus: knownClimateCrash \? 'failed' : 'untested'/);
+  assert.match(engineCommandSource, /testStatus: knownClimateCrash \? 'failed' : effectUnconfirmedReason \? 'inconclusive' : 'untested'/);
+  assert.match(engineCommandSource, /toggleborders:[\s\S]*?togglematerialgeometry:[\s\S]*?togglevolumegeometry:/);
   assert.match(engineCommandSource, /label: 'Optional Arguments'/);
   assert.match(engineCommandSource, /label: 'Optional Target \/ Prefix'/);
   assert.match(engineCommandSource, /unavailableReason: knownClimateCrash[\s\S]*?: requiresCredentials/);
@@ -534,34 +537,34 @@ test('ID Browser quick actions build item, weather, and cell commands', () => {
 });
 
 test('known-broken command cards are unavailable at both render and execution boundaries', () => {
-  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 1);
+  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 3);
   assert.match(source, /const unavailable = Boolean\(command\.unavailableReason\)/);
   assert.match(source, /if \(execution\.definition\?\.unavailableReason\)/);
   assert.match(source, /class="availability-popover is-danger" role="tooltip"/);
   assert.match(source, /<code>\$\{escapeHtml\(command\.command\)\}<\/code>/);
+  assert.match(source, /const executeControl = unavailable[\s\S]*?<button class="osf-btn osf-btn--osf-accent execute-button" type="button" disabled>Unavailable<\/button>/);
+  assert.match(source, /<span class="command-heading-tags">\$\{testTag\}\$\{warningTag\}<\/span>/);
+  assert.doesNotMatch(source, /command-availability-tag">UNAVAILABLE/);
   assert.match(styleSource, /\.availability-wrap:hover \.availability-popover/);
   assert.match(styleSource, /\.availability-popover::before/);
   assert.match(styleSource, /\.availability-popover\.is-danger \{ border-top-color: var\(--ccc-danger\); \}/);
 });
 
-test('reference scale uses the direct getter instead of the crashed condition evaluator', () => {
+test('reference scale blocks both native adapters after the direct getter also crashed', () => {
   const start = commandSource.indexOf("id: 'inspect-ref-scale'");
   const end = commandSource.indexOf("\n  {\n    id:", start);
   const commandBlock = commandSource.slice(start, end);
-  assert.match(commandBlock, /category: 'Untested',[\s\S]*?captureOutput: true,[\s\S]*?intakeGroup: 'Ready to Test'/);
-  assert.doesNotMatch(commandBlock, /unavailableReason:/);
-  assert.match(directQuerySource, /if \(operation == "getopenstate"\)/);
-  assert.doesNotMatch(directQuerySource, /operation == "getscale" \|\| operation == "getopenstate"/);
-  assert.match(directQuerySource, /if \(operation == "getscale"\)[\s\S]*?reference->GetScale\(\)/);
+  assert.match(commandBlock, /category: 'Untested',[\s\S]*?captureOutput: true,[\s\S]*?testStatus: 'failed',[\s\S]*?unavailableReason:[\s\S]*?intakeGroup: 'Blocked — Known Crash'/);
+  assert.match(directQuerySource, /if \(operation == "getscale" \|\| operation == "getopenstate"\)/);
+  assert.doesNotMatch(directQuerySource, /reference->GetScale\(\)/);
 });
 
-test('current quest targets run through Starfield console history without capture', () => {
+test('current quest targets are blocked after the console-history path proved impractical', () => {
   const start = commandSource.indexOf("id: 'show-current-quest-targets'");
   const end = commandSource.indexOf("\n  {\n    id:", start);
   const commandBlock = commandSource.slice(start, end);
-  assert.match(commandBlock, /category: 'Untested',[\s\S]*?command: 'sqt',[\s\S]*?closeBeforeExecute: true,[\s\S]*?intakeGroup: 'Ready to Test'/);
+  assert.match(commandBlock, /category: 'Untested',[\s\S]*?command: 'sqt',[\s\S]*?closeBeforeExecute: true,[\s\S]*?testStatus: 'needs-adjustment',[\s\S]*?unavailableReason:[\s\S]*?intakeGroup: 'Executed — Issues'/);
   assert.doesNotMatch(commandBlock, /captureOutput: true/);
-  assert.doesNotMatch(commandBlock, /unavailableReason:/);
 });
 
 test('held-object inspection does not restore the unresolved native event adapter', () => {

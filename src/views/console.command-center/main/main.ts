@@ -141,7 +141,7 @@ const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1513;
 const UNTESTED_COMMAND_PAGE_SIZE = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.0.5';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.0.6';
 
 let activeView: ViewMode = 'recent';
 let query = '';
@@ -174,7 +174,7 @@ const questBrowserPages = new Map<string, number>();
 const questProgressSnapshots = new Map<string, QuestProgressSnapshot>();
 const openQuestBrowserCards = new Set<string>();
 const QUEST_BROWSER_PAGE_SIZE = 50;
-let openUntestedGroup: string | null = 'Ready to Test';
+let openUntestedGroup: string | null = null;
 const untestedGroupVisibleCounts = new Map<string, number>();
 
 app.innerHTML = `
@@ -1081,7 +1081,9 @@ function renderCommandCard(command: CommandDefinition): string {
       ? '<span class="command-test-tag">EFFECT UNCONFIRMED</span>'
       : command.testStatus === 'failed'
         ? '<span class="command-test-tag">FAILED</span>'
-        : '';
+        : command.testStatus === 'needs-adjustment'
+          ? '<span class="command-test-tag">ISSUE</span>'
+          : '';
   const warningTag = command.warning
     ? `<span class="caution-wrap">
         <button class="command-warning-tag${command.risk === 'danger' ? ' is-danger' : ''}" type="button" data-caution="${escapeHtml(command.id)}" aria-expanded="false" aria-controls="caution-${escapeHtml(command.id)}">${riskLabel}</button>
@@ -1091,16 +1093,16 @@ function renderCommandCard(command: CommandDefinition): string {
         </span>
       </span>`
     : '';
-  const availabilityTag = command.unavailableReason
+  const executeControl = unavailable
     ? `<span class="availability-wrap" tabindex="0">
-        <span class="command-availability-tag">UNAVAILABLE</span>
+        <button class="osf-btn osf-btn--osf-accent execute-button" type="button" disabled>Unavailable</button>
         <span class="availability-popover is-danger" role="tooltip">
           <strong>CONSOLE COMMAND</strong>
           <code>${escapeHtml(command.command)}</code>
           <span>CCC blocks this card, but advanced users can enter the command manually in Starfield’s console.</span>
         </span>
       </span>`
-    : '';
+    : `<button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${command.catalogSearch ? 'Search IDs' : 'Execute'}</button>`;
 
   return `
     <article class="command-card" data-command-id="${escapeHtml(command.id)}">
@@ -1109,7 +1111,7 @@ function renderCommandCard(command: CommandDefinition): string {
           <div class="command-heading-main">
             <h3>${escapeHtml(command.title)}</h3>
           </div>
-          <span class="command-heading-tags">${testTag}${availabilityTag}${warningTag}</span>
+          <span class="command-heading-tags">${testTag}${warningTag}</span>
         </div>
         <p class="command-description">${escapeHtml(command.description)}</p>
         ${command.unavailableReason ? `<p class="command-unavailable-reason">${escapeHtml(command.unavailableReason)}</p>` : ''}
@@ -1119,7 +1121,7 @@ function renderCommandCard(command: CommandDefinition): string {
         <button class="favorite-button${isFavorite ? ' is-favorite' : ''}" type="button" data-favorite="${escapeHtml(command.id)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
           <span aria-hidden="true">${isFavorite ? '★' : '☆'}</span>
         </button>
-        <button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${unavailable ? ` title="Command: ${escapeHtml(command.command)}"` : ''}${(nativeBackendReady || canRunWithoutNative) && !unavailable ? '' : ' disabled'}>${unavailable ? 'Unavailable' : command.catalogSearch ? 'Search IDs' : 'Execute'}</button>
+        ${executeControl}
       </div>
     </article>
   `;

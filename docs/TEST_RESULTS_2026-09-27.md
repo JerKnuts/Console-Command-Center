@@ -1,6 +1,6 @@
 # Starfield Console Command Center — historical in-game test record
 
-This file preserves user-reported testing from September 27 through October 1, 2026. Entries are chronological, and later sections supersede earlier failures or pending notes. The current release behavior is summarized in [`RELEASE_NOTES_v1.0.md`](RELEASE_NOTES_v1.0.md), [`../COMMAND_CATALOG.md`](../COMMAND_CATALOG.md), and [`../RELEASE_VALIDATION.md`](../RELEASE_VALIDATION.md).
+This file preserves user-reported testing from September 27 through October 2, 2026. Entries are chronological, and later sections supersede earlier failures or pending notes. The current release behavior is summarized in [`RELEASE_NOTES_v1.0.md`](RELEASE_NOTES_v1.0.md), [`../COMMAND_CATALOG.md`](../COMMAND_CATALOG.md), and [`../RELEASE_VALIDATION.md`](../RELEASE_VALIDATION.md).
 
 These results were reported from in-game testing rather than independently reproduced. Earlier test-build failures remain here because they explain why unsafe native adapters and unreliable console-output capture paths were removed.
 
@@ -230,3 +230,20 @@ The two console-output `help` searches are disabled for v0.3.2. The packaged ID 
 - Direct `player.setav carryweight 500` produced an effective value of 508 due to an active +8 modifier. CCC therefore exposes a modifier-aware Set Carry Weight Effective Total control instead of describing SetAV as an exact total.
 - Reevaluate Actor Behavior (`{refId}.evp`) released an NPC from a stopped interaction and made him resume walking.
 - Release Weather Override, Reset Reference 3D State, Set Actor Alert State, and Reference-ID Force Bleedout were rejected after they produced no dependable result or could not be parsed.
+
+## v1.0.5 WIP pass — October 2, 2026
+
+- The Unavailable command fallback appeared as a browser-style title on the large action while the full custom popup remained attached to the small status badge. v1.0.6 removes the small badge and attaches the custom popup to the large disabled action.
+- WIP automatically opened Ready to Test. v1.0.6 starts every WIP group collapsed.
+- Inspect Reference Scale safely rejected a stale Reference ID first. Retesting with live reference `0006A243` caused CommonLibSF to report missing Address Library ID 0 from `REL/IDDB.cpp(459)` and terminated Starfield. The direct `TESObjectREFR::GetScale()` adapter is now removed and both UI and native layers block scale inspection.
+- Show Current Quest Targets executed, but `sqt` flooded Starfield's console with too much unfiltered output to parse. It is now blocked under Executed — Issues pending a filtered native replacement.
+- Screenshot executed without an error, but gave no confirmation and no output file was located.
+- Save Game by Name was rejected by Starfield with “The Game Cannot Be Saved Now.” The test context may have prohibited saving, so the command remains available under Executed — Issues for a controlled retest.
+- Toggle Game Pause worked.
+- Advance One Frame executed without a noticeable effect.
+- Use Nearest Teleport Door worked and moved the player through the nearest door.
+- Enter Workshop Mode executed without an error, but could not be verified because no outpost was available.
+- Select Console Reference by ID worked; opening the console showed the requested object selected.
+- Select Closest Ship executed inside and outside the player ship without a confirmed selection.
+- Toggle Volume Geometry, Toggle Material Geometry, and Toggle Borders executed without a visible overlay.
+- The next WIP round was interrupted by the reference-scale crash before its remaining commands were tested.

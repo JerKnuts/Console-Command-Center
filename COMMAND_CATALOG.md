@@ -161,7 +161,7 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 | Set Exact Reference Rotation | `{refId}.setangle {axis} {degrees}` | Caution | Verified |
 | Inspect Reference Position | `{refId}.getpos {axis}` | Normal | Verified |
 | Inspect Reference Rotation | `{refId}.getangle {axis}` | Normal | Verified |
-| Inspect Reference Scale | `{refId}.getscale` | Normal | Ready to retest with direct `TESObjectREFR::GetScale()` adapter |
+| Inspect Reference Scale | `{refId}.getscale` | Normal | Blocked — the condition evaluator crashed previously, and the direct getter later terminated Starfield while resolving missing Address Library ID 0 |
 | Attach Weapon / Armor Mod | `{refId}.amod {modId}` | Caution | Untested |
 | Remove Weapon / Armor Mod | `{refId}.rmod {modId}` | Caution | Untested |
 | Inspect Companion Affinity | `{refId}.getav com_affinity` | Normal | Verified |
@@ -180,7 +180,7 @@ Latest user test report: October 1, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
-| Show Current Quest Targets | `sqt` | Normal | Ready to retest without CCC capture; results remain in Starfield console history |
+| Show Current Quest Targets | `sqt` | Normal | Executed with console history, but blocked in CCC because the unfiltered output was too large to use |
 | Get Current Quest Stage | `getstage {questId}` | Normal | Verified — native quest read returned the running quest's current stage immediately |
 | Show Quest Stage History | `sqs {questId}` | Normal | Verified — native stage checks returned the full done/not-set history without console capture |
 | Start Quest by ID | `startquest {questId}` | Danger | Needs adjustment — command was sent, but some quests need a stage before visible activation |

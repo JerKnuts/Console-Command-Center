@@ -32,13 +32,23 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
     setcamerafov: 'In-game v0.3.11 testing at 90 and 75 degrees produced no visible field-of-view change.',
     showsubtitle: 'In-game v0.3.11 testing produced no visible subtitle override.',
   };
+  const effectUnconfirmedReasons: Record<string, string> = {
+    toggleborders: 'In-game v1.0.5 testing executed without an error but showed no visible cell borders.',
+    togglematerialgeometry: 'In-game v1.0.5 testing executed without an error but showed no visible material-geometry overlay.',
+    togglevolumegeometry: 'In-game v1.0.5 testing executed without an error but showed no visible volume-geometry overlay.',
+  };
   const failedInGameReason = failedInGameReasons[name.toLowerCase()];
+  const effectUnconfirmedReason = effectUnconfirmedReasons[name.toLowerCase()];
   return {
     id: commandId(record.name, index),
     title: record.name,
     category: 'Untested',
-    intakeGroup: record.group === 'Console Commands' ? 'Engine Console Commands' : 'Script Functions',
-    description: record.description || 'No description was included in the engine command reference.',
+    intakeGroup: effectUnconfirmedReason
+      ? 'Executed — Effect Unconfirmed'
+      : record.group === 'Console Commands' ? 'Engine Console Commands' : 'Script Functions',
+    description: effectUnconfirmedReason
+      ? `${record.description || 'No description was included in the engine command reference.'} ${effectUnconfirmedReason}`
+      : record.description || 'No description was included in the engine command reference.',
     command: scriptFunction ? `{target}${name} {arguments}` : `${name} {arguments}`,
     inputs: [
       ...(scriptFunction ? [{
@@ -69,7 +79,7 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
       ? 'This unverified engine function may destroy state, terminate or stall the game, alter files, or make irreversible changes. Use only on a disposable save and review the final command carefully.'
       : 'This engine function has not been verified through CCC and may require undocumented arguments or developer context. Use a disposable save.',
     risk: danger || knownClimateCrash ? 'danger' : 'caution',
-    testStatus: knownClimateCrash ? 'failed' : 'untested',
+    testStatus: knownClimateCrash ? 'failed' : effectUnconfirmedReason ? 'inconclusive' : 'untested',
     unavailableReason: knownClimateCrash
       ? 'Disabled after an in-game v1.0 test crashed Starfield 1.16.244 in sky and weather processing.'
       : requiresCredentials

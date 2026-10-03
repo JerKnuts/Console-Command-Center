@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current development version: v1.0.5.** The v1.0 release is the first public Nexus build. v1.0.5 gives unavailable-command tooltips the same anchored warning-panel design used by Caution and Danger explanations. See the [v1.0.5 notes](docs/RELEASE_NOTES_v1.0.5.md) and [validation checklist](RELEASE_VALIDATION.md).
+**Current development version: v1.0.6.** The v1.0 release is the first public Nexus build. v1.0.6 moves unavailable-command details onto the disabled action, collapses every WIP group initially, and blocks the second reference-scale adapter after an Address Library ID 0 crash. See the [v1.0.6 notes](docs/RELEASE_NOTES_v1.0.6.md) and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -154,4 +154,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI checks.
 
-Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.5.md`](docs/RELEASE_NOTES_v1.0.5.md).
+Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.6.md`](docs/RELEASE_NOTES_v1.0.6.md).
