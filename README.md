@@ -10,6 +10,8 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
+Planned additions, including controller support and editable `.txt` command-batch files, are tracked in [Future features](docs/FUTURE_FEATURES.md).
+
 Commands that rely on known curated IDs use a reusable searchable Reference ID Picker instead of crowded preset-button grids. A separate **ID Browser** searches the catalog packaged with CCC.
 
 Some commands can affect achievements, progression, quests, save-game state, NPCs, ships, or world objects. Make a manual save before using commands that modify important game state.
