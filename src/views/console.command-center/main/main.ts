@@ -19,6 +19,16 @@ import {
 
 type ViewMode = 'favorites' | 'recent' | 'quest-browser' | 'activity' | 'custom' | string;
 
+type HelpPageId = 'recent' | 'favorites' | 'categories' | 'id-browser' | 'quest-browser' | 'custom' | 'activity';
+
+type HelpPage = {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  sections: Array<{ title: string; text: string }>;
+  note?: string;
+};
+
 type PendingExecution = {
   command: string;
   commands?: string[];
@@ -141,7 +151,85 @@ const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1505;
 const UNTESTED_COMMAND_PAGE_SIZE = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.0.10';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.0.11';
+
+const HELP_PAGES: Record<HelpPageId, HelpPage> = {
+  recent: {
+    eyebrow: 'RECENT COMMANDS HELP',
+    title: 'Return to commands you just used',
+    intro: 'Recent keeps the last ten command cards you successfully sent from CCC.',
+    sections: [
+      { title: 'RUN AGAIN', text: 'Review the inputs and warnings on a recent card, then use its action button to run it again.' },
+      { title: 'KEEP A COMMAND', text: 'Select the star on a card to keep it in Favorites after it leaves the recent list.' },
+      { title: 'CLEAR THE LIST', text: 'Clear Recent removes the history shown here. It does not reverse commands or remove Activity Log entries.' },
+    ],
+  },
+  favorites: {
+    eyebrow: 'FAVORITES HELP',
+    title: 'Keep useful commands close',
+    intro: 'Favorites collects the command cards you mark with a star.',
+    sections: [
+      { title: 'ADD FAVORITES', text: 'Select the star on any established or WIP command card. The filled star means it is saved here.' },
+      { title: 'USE SAVED CARDS', text: 'Inputs, warnings, confirmation, and execution work the same way they do in the original category.' },
+      { title: 'REMOVE FAVORITES', text: 'Select the star again to remove a card. Removing it does not affect Recent or Activity Log.' },
+    ],
+  },
+  categories: {
+    eyebrow: 'COMMAND CATEGORIES HELP',
+    title: 'Find and run a command',
+    intro: 'Categories organize prepared Starfield commands by what they affect.',
+    sections: [
+      { title: 'SEARCH', text: 'Search by command name, purpose, console syntax, or tag. The search covers every established category.' },
+      { title: 'PREPARE', text: 'Fill the visible fields or use a Browse button when CCC has matching IDs. Helper text explains the expected value.' },
+      { title: 'REVIEW AND RUN', text: 'Caution and Danger labels explain meaningful risks. CCC shows the completed command before execution.' },
+      { title: 'WIP COMMANDS', text: 'WIP separates commands by test result. Use uncertain commands only on a disposable or backed-up save.' },
+    ],
+    note: 'Make a manual save before changing quests, NPCs, ships, or important world state.',
+  },
+  'id-browser': {
+    eyebrow: 'ID BROWSER HELP',
+    title: 'Find packaged Form IDs',
+    intro: 'ID Browser searches the records included with CCC without scanning the live game.',
+    sections: [
+      { title: 'SEARCH AND FILTER', text: 'Search by name, Form ID, type, or category. Open a category to browse its matching records.' },
+      { title: 'SELECT A RECORD', text: 'Choose a tile to view its details and the actions CCC can safely prepare for that record type.' },
+      { title: 'COMMAND PICKERS', text: 'When a command sends you here, only compatible records appear. Selecting one returns its Form ID to the command.' },
+      { title: 'EXPANSION RECORDS', text: 'Shattered Space entries are labeled and require that expansion. Other installed mods are not scanned automatically.' },
+    ],
+  },
+  'quest-browser': {
+    eyebrow: 'QUEST BROWSER HELP',
+    title: 'Inspect and repair quest progress',
+    intro: 'Quest Browser contains packaged quest records and known stage indexes from the base game and Shattered Space.',
+    sections: [
+      { title: 'FIND A QUEST', text: 'Search by quest name, Editor ID, Form ID, source, or stage number, then open its group and quest card.' },
+      { title: 'INSPECT QUEST STATE', text: 'Inspect reads the current stage and completed-stage history without changing the save.' },
+      { title: 'CHANGE QUEST STATE', text: 'Start, Stop, Complete, Reset, and stage actions require confirmation because they can skip scripts, scenes, rewards, or prerequisites.' },
+    ],
+    note: 'Keep a backup save before repairing a quest. Prefer the smallest stage change that moves the stuck objective forward.',
+  },
+  custom: {
+    eyebrow: 'CUSTOM COMMAND HELP',
+    title: 'Build and reuse command batches',
+    intro: 'Custom Command runs raw Starfield console commands that are not represented by prepared cards.',
+    sections: [
+      { title: 'ENTER COMMANDS', text: 'Enter one command per line. Empty lines are ignored, and a batch can contain up to 100 commands.' },
+      { title: 'REVIEW THE BATCH', text: 'Review Commands shows the exact lines before CCC runs them in order. Execution stops when a command reports an error.' },
+      { title: 'SAVE A WORKFLOW', text: 'Name the current batch and save it for reuse. Load, update, or delete saved entries from the right side of the screen.' },
+    ],
+    note: 'Raw commands may have undocumented effects. Save the game before experimenting with syntax you do not recognize.',
+  },
+  activity: {
+    eyebrow: 'ACTIVITY LOG HELP',
+    title: 'Review what CCC executed',
+    intro: 'Activity Log keeps recent command outcomes and captured inspection results.',
+    sections: [
+      { title: 'CHECK RESULTS', text: 'Each entry records the command, time, outcome, and any readable result or error returned to CCC.' },
+      { title: 'REOPEN OUTPUT', text: 'Inspection entries can reopen their saved Results window without running the command a second time.' },
+      { title: 'CLEAR THE LOG', text: 'Clear Log removes the saved history from CCC. It does not undo commands or change the game state.' },
+    ],
+  },
+};
 
 let activeView: ViewMode = 'recent';
 let query = '';
@@ -185,7 +273,7 @@ app.innerHTML = `
         <h1>Console Command Center</h1>
       </div>
       <div class="topbar-actions">
-        <button class="osf-btn osf-btn--sm osf-btn--ghost" id="open-welcome" type="button">Help</button>
+        <button class="osf-btn osf-btn--sm osf-btn--ghost" id="open-help" type="button">Help</button>
         <button class="osf-btn osf-btn--sm osf-btn--ghost" id="close-view" type="button">Close</button>
       </div>
     </header>
@@ -289,8 +377,25 @@ app.innerHTML = `
       </div>
       <p class="welcome-save-note"><strong>Before changing quests or important game state:</strong> make a manual save.</p>
       <div class="welcome-actions">
-        <span>You can reopen this guide with Help.</span>
+        <span>Help opens a guide for the page you are viewing.</span>
         <button class="osf-btn osf-btn--osf-accent" id="welcome-start" type="button">Start Exploring</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="help-backdrop" id="help-backdrop" hidden>
+    <section class="help-dialog osf-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="osf-tricolor popup-stripe" aria-hidden="true"></div>
+      <header class="help-head">
+        <div><p class="osf-eyebrow" id="help-eyebrow">PAGE HELP</p><h2 id="help-title">Help</h2></div>
+        <button class="osf-btn osf-btn--sm osf-btn--ghost" id="help-close" type="button">Close</button>
+      </header>
+      <p class="help-intro" id="help-intro"></p>
+      <div class="help-sections" id="help-sections"></div>
+      <p class="help-note" id="help-note" hidden></p>
+      <div class="help-actions">
+        <button class="osf-btn" id="help-welcome" type="button">First-time Overview</button>
+        <button class="osf-btn osf-btn--osf-accent" id="help-done" type="button">Done</button>
       </div>
     </section>
   </div>
@@ -492,9 +597,18 @@ const footerOsfVersion = requiredElement('#footer-osf-version', HTMLElement);
 const footerStarfieldVersion = requiredElement('#footer-starfield-version', HTMLElement);
 const footerNativeStatus = requiredElement('#footer-native-status', HTMLElement);
 const closeView = requiredElement('#close-view', HTMLButtonElement);
-const openWelcomeButton = requiredElement('#open-welcome', HTMLButtonElement);
+const openHelpButton = requiredElement('#open-help', HTMLButtonElement);
 const welcomeBackdrop = requiredElement('#welcome-backdrop', HTMLElement);
 const welcomeStart = requiredElement('#welcome-start', HTMLButtonElement);
+const helpBackdrop = requiredElement('#help-backdrop', HTMLElement);
+const helpEyebrow = requiredElement('#help-eyebrow', HTMLElement);
+const helpTitle = requiredElement('#help-title', HTMLElement);
+const helpIntro = requiredElement('#help-intro', HTMLElement);
+const helpSections = requiredElement('#help-sections', HTMLElement);
+const helpNote = requiredElement('#help-note', HTMLElement);
+const helpClose = requiredElement('#help-close', HTMLButtonElement);
+const helpWelcome = requiredElement('#help-welcome', HTMLButtonElement);
+const helpDone = requiredElement('#help-done', HTMLButtonElement);
 const idPickerBackdrop = requiredElement('#id-picker-backdrop', HTMLElement);
 const idPickerTitle = requiredElement('#id-picker-title', HTMLElement);
 const idPickerSearch = requiredElement('#id-picker-search', HTMLInputElement);
@@ -2622,6 +2736,35 @@ function welcomeHasBeenSeen(): boolean {
   }
 }
 
+function activeHelpPageId(): HelpPageId {
+  if (activeView === 'recent') return 'recent';
+  if (activeView === 'favorites') return 'favorites';
+  if (activeView === 'id-browser') return 'id-browser';
+  if (activeView === 'quest-browser') return 'quest-browser';
+  if (activeView === 'custom') return 'custom';
+  if (activeView === 'activity') return 'activity';
+  return 'categories';
+}
+
+function openHelp(): void {
+  const page = HELP_PAGES[activeHelpPageId()];
+  helpEyebrow.textContent = page.eyebrow;
+  helpTitle.textContent = page.title;
+  helpIntro.textContent = page.intro;
+  helpSections.innerHTML = page.sections.map((section) => `
+    <article><strong>${escapeHtml(section.title)}</strong><span>${escapeHtml(section.text)}</span></article>
+  `).join('');
+  helpNote.textContent = page.note ?? '';
+  helpNote.hidden = !page.note;
+  helpBackdrop.hidden = false;
+  helpDone.focus();
+}
+
+function closeHelp(restoreFocus = true): void {
+  helpBackdrop.hidden = true;
+  if (restoreFocus) openHelpButton.focus();
+}
+
 function openWelcome(): void {
   welcomeBackdrop.hidden = false;
   welcomeStart.focus();
@@ -2634,10 +2777,19 @@ function closeWelcome(): void {
   } catch {
     // The guide can still be closed for the current session when persistence is unavailable.
   }
-  openWelcomeButton.focus();
+  openHelpButton.focus();
 }
 
-openWelcomeButton.addEventListener('click', openWelcome);
+openHelpButton.addEventListener('click', openHelp);
+helpClose.addEventListener('click', () => closeHelp());
+helpDone.addEventListener('click', () => closeHelp());
+helpWelcome.addEventListener('click', () => {
+  closeHelp(false);
+  openWelcome();
+});
+helpBackdrop.addEventListener('click', (event) => {
+  if (event.target === helpBackdrop) closeHelp();
+});
 welcomeStart.addEventListener('click', closeWelcome);
 welcomeBackdrop.addEventListener('click', (event) => {
   if (event.target === welcomeBackdrop) closeWelcome();
@@ -2674,7 +2826,9 @@ document.addEventListener('keydown', (event) => {
   }
   if (event.key === 'Escape') {
     const openCaution = commandList.querySelector<HTMLElement>('.caution-wrap.is-open');
-    if (!welcomeBackdrop.hidden) {
+    if (!helpBackdrop.hidden) {
+      closeHelp();
+    } else if (!welcomeBackdrop.hidden) {
       closeWelcome();
     } else if (!idPickerBackdrop.hidden) {
       closeIdPicker();
@@ -2689,7 +2843,7 @@ document.addEventListener('keydown', (event) => {
       void closeCurrentView();
     }
   }
-  if (event.key === '/' && idPickerBackdrop.hidden && activeView !== 'custom' && activeView !== 'activity' && document.activeElement !== search) {
+  if (event.key === '/' && idPickerBackdrop.hidden && helpBackdrop.hidden && welcomeBackdrop.hidden && confirmBackdrop.hidden && activeView !== 'custom' && activeView !== 'activity' && document.activeElement !== search) {
     event.preventDefault();
     search.focus({ preventScroll: true });
     search.select();
@@ -2711,6 +2865,7 @@ document.addEventListener('keydown', (event) => {
     && activeView !== 'activity'
     && confirmBackdrop.hidden
     && idPickerBackdrop.hidden
+    && helpBackdrop.hidden
     && welcomeBackdrop.hidden
     && !isEditable
   ) {

@@ -714,12 +714,23 @@ test('inconclusive visual commands remain available while known crash paths are 
   assert.match(engineCommandSource, /unavailableReason: knownCrashReason/);
 });
 
-test('first-run welcome guide is persistent and can be reopened from Help', () => {
+test('first-run welcome guide is persistent and remains available from contextual Help', () => {
   assert.match(source, /STORAGE_WELCOME_SEEN/);
-  assert.match(source, /id="open-welcome"[^>]*>Help<\/button>/);
+  assert.match(source, /id="open-help"[^>]*>Help<\/button>/);
   assert.match(source, /id="welcome-backdrop"/);
   assert.match(source, /id="welcome-start"[^>]*>Start Exploring<\/button>/);
+  assert.match(source, /id="help-welcome"[^>]*>First-time Overview<\/button>/);
   assert.match(source, /if \(!welcomeHasBeenSeen\(\)\) openWelcome\(\)/);
+});
+
+test('Help provides a dedicated guide for every major page type', () => {
+  assert.match(source, /const HELP_PAGES: Record<HelpPageId, HelpPage>/);
+  for (const page of ['recent', 'favorites', 'categories', 'id-browser', 'quest-browser', 'custom', 'activity']) {
+    assert.match(source, new RegExp(`(?:^|\\n)  ['"]?${page.replace('-', '\\-')}['"]?: \\{`));
+  }
+  assert.match(source, /function activeHelpPageId\(\): HelpPageId/);
+  assert.match(source, /openHelpButton\.addEventListener\('click', openHelp\)/);
+  assert.match(source, /helpBackdrop\.hidden = false/);
 });
 
 test('searching health discovers the player actor-value inspector', () => {

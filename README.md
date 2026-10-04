@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current development version: v1.0.10.** The v1.0 release is the first public Nexus build. v1.0.10 keeps each paired speech override on a compact half-width card with vertically stacked actions. See the [v1.0.10 notes](docs/RELEASE_NOTES_v1.0.10.md) and [validation checklist](RELEASE_VALIDATION.md).
+**Current development version: v1.0.11.** The v1.0 release is the first public Nexus build. v1.0.11 adds a dedicated contextual Help window for every major CCC page while retaining a separate first-time welcome. See the [v1.0.11 notes](docs/RELEASE_NOTES_v1.0.11.md) and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -45,6 +45,8 @@ To update, replace the existing CCC files with the files from the new archive. T
 - Multiline custom-command batches that execute one command per line, with up to 100 named saved entries, a visible usage counter, and typed confirmation before deleting every saved entry
 - Separate **WIP** category with 34 prepared cards grouped by test result and a lazily loaded library of 1,505 engine commands and script functions
 - Activity log
+- Contextual Help for Recent, Favorites, command categories, ID Browser, Quest Browser, Custom Command, and Activity Log
+- Separate first-time welcome overview that remains available from each Help window
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
 - Standalone **ID Browser** with 16,528 included IDs, collapsed categories, selectable results, Copy ID, and conservative quick actions
@@ -156,4 +158,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI checks.
 
-Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.10.md`](docs/RELEASE_NOTES_v1.0.10.md).
+Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.11.md`](docs/RELEASE_NOTES_v1.0.11.md).
