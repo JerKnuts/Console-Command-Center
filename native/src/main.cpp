@@ -27,7 +27,7 @@ namespace
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "1.0.12";
+    constexpr const char* kBuildId = "1.0.13";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -142,7 +142,7 @@ namespace
                 request.Reject("execution-failed", "Could not schedule the command after closing CCC.");
                 return;
             }
-            (void)request.Respond("console.command-center.executeResult", OSFUI::API::Json{
+            (void)request.Reply(OSFUI::API::Json{
                 { "ok", true }, { "command", *command }, { "queuedAfterClose", true }
             });
             return;
@@ -152,7 +152,7 @@ namespace
             return;
         }
 
-        (void)request.Respond("console.command-center.executeResult", OSFUI::API::Json{
+        (void)request.Reply(OSFUI::API::Json{
             { "ok", true },
             { "command", *command }
         });
@@ -266,7 +266,7 @@ namespace
                 { "command", state->command },
                 { "output", output }
             }.dump();
-            state->request.Respond("console.command-center.queryResult", payload.c_str());
+            state->request.Reply(payload.c_str());
         } catch (...) {
             RejectConsoleQuery(state, "query-failed", "Could not serialize console query output.");
         }
@@ -332,7 +332,7 @@ namespace
                 const auto payload = OSFUI::API::Json{
                     { "ok", true }, { "command", *command }, { "output", *output }, { "source", "direct" }
                 }.dump(-1, ' ', false, OSFUI::API::Json::error_handler_t::replace);
-                raw.Respond("console.command-center.queryResult", payload.c_str());
+                raw.Reply(payload.c_str());
                 return;
             }
 
@@ -425,7 +425,7 @@ namespace
                 }
 
                 const auto serialized = payload.dump();
-                request.Respond("console.command-center.questReadResult", serialized.c_str());
+                request.Reply(serialized.c_str());
             } catch (const std::exception& error) {
                 request.Reject("quest-read-failed", error.what());
             } catch (...) {
@@ -580,7 +580,7 @@ namespace
                 { "resultingEffective", resultingEffective },
                 { "command", command }
             }.dump();
-            raw.Respond("console.command-center.setEffectiveActorValueResult", payload.c_str());
+            raw.Reply(payload.c_str());
         } catch (const std::exception& error) {
             request.Reject("effective-total-failed", error.what());
         } catch (...) {
@@ -595,7 +595,7 @@ namespace
             return;
         }
 
-        (void)request.Respond("console.command-center.pingResult", OSFUI::API::Json{
+        (void)request.Reply(OSFUI::API::Json{
             { "ok", true },
             { "backend", "ConsoleCommandCenter.dll" },
             { "build", kBuildId },
@@ -618,14 +618,14 @@ namespace
             return;
         }
 
-        (void)request.Respond("console.command-center.closeResult", OSFUI::API::Json{
+        (void)request.Reply(OSFUI::API::Json{
             { "ok", true }
         });
     }
 
     void OnSFSEMessage(SFSE::MessagingInterface::Message* message)
     {
-        if (message->type != SFSE::MessagingInterface::kPostLoad) {
+        if (message->type != SFSE::MessagingInterface::kPostPostLoad) {
             return;
         }
         if (!g_ui.Init()) {

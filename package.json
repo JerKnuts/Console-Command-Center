@@ -1,23 +1,22 @@
 {
   "name": "console-command-center",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "private": true,
   "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "clean": "node scripts/clean.mjs",
     "test": "node --test tests/*.test.mjs",
-    "dev": "osfui dev",
-    "dev:game": "osfui dev --game",
-    "check": "osfui check",
-    "build": "npm run build:native && osfui build",
-    "package": "npm run build:native && osfui package",
-    "doctor": "osfui doctor",
+    "dev": "vite --root src/views/console.command-center/main",
+    "check": "node scripts/check-ui.mjs",
+    "build": "node native/build.mjs && node scripts/build-ui.mjs",
+    "package": "node scripts/package.mjs",
     "setup:deps": "node native/setup-deps.mjs",
     "validate:quests": "node scripts/validate-quest-browser.mjs",
     "build:native": "node native/build.mjs"
   },
   "devDependencies": {
-    "@osfui/cli": "^0.1.0"
+    "typescript": "7.0.2",
+    "vite": "8.1.5"
   }
 }

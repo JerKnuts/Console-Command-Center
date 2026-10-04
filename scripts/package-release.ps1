@@ -1,4 +1,5 @@
 $ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -49,7 +50,15 @@ finally {
     $sourceStream.Dispose()
 }
 
-$sourceHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $sourceZip).Hash
+$hashStream = [IO.File]::OpenRead($sourceZip)
+try {
+    $sha = [Security.Cryptography.SHA256]::Create()
+    $sourceHash = [BitConverter]::ToString($sha.ComputeHash($hashStream)).Replace('-', '')
+}
+finally {
+    if ($sha) { $sha.Dispose() }
+    $hashStream.Dispose()
+}
 $manifest = @(
     "Console Command Center v$version"
     ''
@@ -58,7 +67,7 @@ $manifest = @(
     ''
     "Included source files: $($sourceFiles.Count)"
     ''
-    'Extract the project, then run npm run build or npm run dev:game.'
+    'Extract the project, then run npm install and npm run build.'
 )
 Set-Content -LiteralPath $manifestPath -Value $manifest -Encoding UTF8
 

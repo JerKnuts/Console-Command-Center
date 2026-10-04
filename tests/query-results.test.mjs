@@ -37,7 +37,7 @@ function harness(reply, rejection) {
     ...elements, Error, console,
     localStorage: { getItem() { return null; }, setItem() {} },
     resultsDialog: { open: false, showModal() { this.open = true; } },
-    window: { osfui: { async call(route, payload) { calls.push(route); payloads.push(payload); if (rejection) throw new Error(rejection); return typeof reply === 'function' ? reply(route, payload, calls.length) : reply; } } },
+    window: { osfui: { async request(route, payload) { calls.push(route); payloads.push(payload); if (rejection) throw new Error(rejection); return typeof reply === 'function' ? reply(route, payload, calls.length) : reply; } } },
     nativeBackendReady: true, executionCount: 0, lastCommand: '', activeView: 'Targets',
     inventoryResultRows: [],
     INVENTORY_TYPE_LABELS: {

@@ -17,6 +17,14 @@ That command clones the repository, checks out the pinned revision, and restores
 
 The full GPL text is included in `LICENSE`, and the additional CommonLibSF terms are included in `EXCEPTIONS`.
 
+## OSF UI SDK declarations
+
+CCC includes the official OSF UI 2.0 native header (`native/include/OSFUI.h`) and browser declarations (`src/osfui.d.ts`) from [ozooma10/osf-ui](https://github.com/ozooma10/osf-ui), revision `c3d20db7e6549677f2426f9cf160d34abb8e9589`.
+
+- Project: OSF UI
+- License: GPL-3.0
+- Included files are declarations used to compile and type-check CCC; OSF UI remains a separate required mod.
+
 ## Starfield console-command reference
 
 The generated Untested engine-command library is derived from the game-help-based

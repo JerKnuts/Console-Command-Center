@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current development version: v1.0.12.** The v1.0 release is the first public Nexus build. v1.0.12 promotes the paired Speech Challenge Failure control from WIP to Gameplay. See the [v1.0.12 notes](docs/RELEASE_NOTES_v1.0.12.md) and [validation checklist](RELEASE_VALIDATION.md).
+**Current development version: v1.0.13.** The v1.0 release is the first public Nexus build. v1.0.13 migrates CCC from OSF UI's 1.x compatibility adapter to the native OSF UI 2.0 API, browser protocol, manifest, and view layout. See the [v1.0.13 notes](docs/RELEASE_NOTES_v1.0.13.md) and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -33,7 +33,7 @@ In OSF Settings, bind **Open Mod Settings** to a key such as F10. Use that key i
 
 Install the release archive with a Starfield mod manager, or copy its `SFSE` folder into the game's `Data` folder. Keep the archive's folder structure intact. Launch the game through SFSE and confirm the CCC footer reports the installed version and **NATIVE READY**.
 
-To update, replace the existing CCC files with the files from the new archive. To uninstall, remove `Data/SFSE/Plugins/ConsoleCommandCenter.dll` and `Data/SFSE/Plugins/OSFUI/views/console.command-center/`.
+To update from v1.0.12 or earlier, remove the old `Data/SFSE/Plugins/OSFUI/views/console.command-center/` folder and install the new archive. CCC v1.0.13 places its view under `Data/SFSE/Plugins/OSF/UI/views/console.command-center/`. To uninstall, remove that view folder and `Data/SFSE/Plugins/ConsoleCommandCenter.dll`.
 
 ## Features
 
@@ -96,7 +96,7 @@ The established command library remains curated, while commands still under inve
 ```text
 Console Command Center UI
         ↓
-OSF UI native bridge
+OSF UI 2.0 native API
         ↓
 ConsoleCommandCenter.dll
         ↓
@@ -109,7 +109,7 @@ The native plugin exposes direct game reads for inventory, supported reference i
 
 ## Source setup
 
-Requirements include Node.js/npm, Git, XMake, SFSE/CommonLibSF build prerequisites, and the OSF UI toolchain.
+Requirements include Node.js/npm, Git, XMake, and the SFSE/CommonLibSF build prerequisites. The repository includes the official OSF UI 2.0 native and browser declarations used by CCC.
 
 Install the JavaScript dependencies:
 
@@ -156,6 +156,7 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run build` builds both the native plugin and OSF UI frontend.
 - `npm run build:native` builds only the native plugin after ensuring CommonLibSF is available.
 - `npm run setup:deps` restores CommonLibSF without starting a build.
-- `npm run check` runs the OSF UI checks.
+- `npm run check` runs the OSF UI 2.0 and TypeScript checks.
+- `npm run package` validates, tests, builds, and creates both the Nexus-ready archive and corresponding full-source archive under `artifacts/`.
 
-Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.12.md`](docs/RELEASE_NOTES_v1.0.12.md).
+Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.13.md`](docs/RELEASE_NOTES_v1.0.13.md).

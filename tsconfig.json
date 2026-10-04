@@ -10,14 +10,9 @@
       "DOM",
       "DOM.Iterable"
     ],
-    "types": [
-      "@osfui/cli/view"
-    ],
     "noEmit": true
   },
   "include": [
-    "src",
-    "osfui.config.ts",
-    "osfui.mock.ts"
+    "src"
   ]
 }

@@ -1,5 +1,3 @@
-import '/shared/osfui.css';
-import '/shared/osfui.js';
 import './style.css';
 import { CATEGORY_ORDER, COMMANDS, type CommandDefinition, type CommandInput } from './commands';
 import {
@@ -151,7 +149,7 @@ const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1505;
 const UNTESTED_COMMAND_PAGE_SIZE = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.0.12';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.0.13';
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -1444,7 +1442,7 @@ async function prepareEffectiveTotalExecution(definition: CommandDefinition, bui
     setStatus('Could not read the effective-total target, actor value, and desired total.', 'error');
     return;
   }
-  if (!nativeBackendReady || !window.osfui?.call) {
+  if (!nativeBackendReady || !window.osfui?.request) {
     setStatus('ConsoleCommandCenter.dll is not connected.', 'error');
     return;
   }
@@ -1456,7 +1454,7 @@ async function prepareEffectiveTotalExecution(definition: CommandDefinition, bui
   };
   setStatus(`Calculating the base value for ${effectiveTotal.actorValue}...`, 'working');
   try {
-    const preview = await window.osfui.call<EffectiveTotalReply>('console.command-center.setEffectiveActorValue', {
+    const preview = await window.osfui.request<EffectiveTotalReply>('console.command-center.setEffectiveActorValue', {
       ...effectiveTotal,
       apply: false,
     });
@@ -1478,8 +1476,8 @@ function normalizedQuestId(value: string): string {
 }
 
 async function readQuestValue(questId: string, operation: QuestReadOperation, stage?: number): Promise<number | boolean> {
-  if (!window.osfui?.call) throw new Error('OSF UI native request API is unavailable');
-  const reply = await window.osfui.call<QuestReadReply>('console.command-center.questRead', {
+  if (!window.osfui?.request) throw new Error('OSF UI native request API is unavailable');
+  const reply = await window.osfui.request<QuestReadReply>('console.command-center.questRead', {
     questId,
     operation,
     ...(stage === undefined ? {} : { stage }),
@@ -1592,9 +1590,9 @@ async function executeConsole(execution: PendingExecution): Promise<void> {
   if (capturesOutput) showResults(resultTitle, command, '', 'loading');
   setStatus(`Executing: ${command}`, 'working');
   try {
-    if (!window.osfui?.call) throw new Error('OSF UI native request API is unavailable');
+    if (!window.osfui?.request) throw new Error('OSF UI native request API is unavailable');
     if (execution.effectiveTotal) {
-      const reply = await window.osfui.call<EffectiveTotalReply>('console.command-center.setEffectiveActorValue', {
+      const reply = await window.osfui.request<EffectiveTotalReply>('console.command-center.setEffectiveActorValue', {
         ...execution.effectiveTotal,
         apply: true,
       });
@@ -1607,8 +1605,8 @@ async function executeConsole(execution: PendingExecution): Promise<void> {
       return;
     }
     const reply = capturesOutput
-      ? await window.osfui.call<QueryReply>('console.command-center.query', { consoleCommand: command })
-      : await window.osfui.call<ExecuteReply>('console.command-center.execute', {
+      ? await window.osfui.request<QueryReply>('console.command-center.query', { consoleCommand: command })
+      : await window.osfui.request<ExecuteReply>('console.command-center.execute', {
         consoleCommand: command,
         closeBeforeExecute: execution.definition?.closeBeforeExecute === true,
       });
@@ -1657,7 +1655,7 @@ async function executeCustomBatch(execution: PendingExecution): Promise<void> {
     setStatus('ConsoleCommandCenter.dll is not connected.', 'error');
     return;
   }
-  if (!window.osfui?.call) {
+  if (!window.osfui?.request) {
     setStatus('OSF UI native request API is unavailable.', 'error');
     return;
   }
@@ -1666,7 +1664,7 @@ async function executeCustomBatch(execution: PendingExecution): Promise<void> {
     const command = commands[index];
     setStatus(`Executing command ${index + 1} of ${commands.length}: ${command}`, 'working');
     try {
-      const reply = await window.osfui.call<ExecuteReply>('console.command-center.execute', {
+      const reply = await window.osfui.request<ExecuteReply>('console.command-center.execute', {
         consoleCommand: command,
         closeBeforeExecute: false,
       });
@@ -2711,13 +2709,13 @@ async function closeCurrentView(): Promise<void> {
   if (!idPickerBackdrop.hidden) closeIdPicker(false);
   if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
 
-  if (!window.osfui?.call) {
+  if (!window.osfui?.request) {
     setStatus('OSF UI native request API is unavailable.', 'error');
     return;
   }
 
   try {
-    const reply = await window.osfui.call<CloseReply>('console.command-center.close');
+    const reply = await window.osfui.request<CloseReply>('console.command-center.close');
     if (!reply?.ok) throw new Error('Native backend did not confirm the close request');
   } catch (error) {
     setStatus(`Unable to close Console Command Center: ${error instanceof Error ? error.message : String(error)}`, 'error');
@@ -2816,8 +2814,8 @@ confirmBackdrop.addEventListener('click', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
-  // OSF UI's synthetic Back can target the document instead of the focused
-  // dialog, so handle it here as well as on the dialog itself.
+  // Back can target the document instead of the focused dialog, so handle it
+  // here as well as on the dialog itself.
   if (event.key === 'Escape' && resultsDialog.open) {
     event.preventDefault();
     event.stopPropagation();
@@ -2877,7 +2875,7 @@ document.addEventListener('keydown', (event) => {
 });
 
 async function connectNativeBackend(): Promise<void> {
-  if (!window.osfui?.call) {
+  if (!window.osfui?.request) {
     nativeBackendReady = false;
     footerNativeStatus.textContent = 'UNAVAILABLE';
     setStatus('OSF UI native request API is unavailable.', 'error');
@@ -2885,7 +2883,7 @@ async function connectNativeBackend(): Promise<void> {
   }
 
   try {
-    const reply = await window.osfui.call<PingReply>('console.command-center.ping');
+    const reply = await window.osfui.request<PingReply>('console.command-center.ping');
     if (!reply?.ok) throw new Error('Native backend returned an unsuccessful ping');
     footerStarfieldVersion.textContent = reply.runtime ?? 'UNKNOWN';
     if (reply.runtimeSupported === false) {
@@ -2907,22 +2905,10 @@ async function connectNativeBackend(): Promise<void> {
   render();
 }
 
-const ready = window.osfui?.ready;
-if (ready) {
-  ready.then(async (info) => {
-    window.osfui?.send?.('osfui.handleBack', { handle: true });
-    footerOsfVersion.textContent = info.version;
-    setStatus('OSF UI ready; checking ConsoleCommandCenter.dll...', 'working');
-    if (activeView === 'activity') render();
-    await connectNativeBackend();
-  }).catch(() => {
-    nativeBackendReady = false;
-    footerOsfVersion.textContent = 'UNAVAILABLE';
-    footerStarfieldVersion.textContent = 'UNKNOWN';
-    footerNativeStatus.textContent = 'UNAVAILABLE';
-    setStatus('OSF UI bridge unavailable.', 'error');
-    render();
-  });
+if (window.osfui?.request) {
+  footerOsfVersion.textContent = '2.0 API';
+  setStatus('OSF UI ready; checking ConsoleCommandCenter.dll...', 'working');
+  void connectNativeBackend();
 } else {
   nativeBackendReady = false;
   footerOsfVersion.textContent = 'UNAVAILABLE';
