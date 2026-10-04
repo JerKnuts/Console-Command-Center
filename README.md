@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current development version: v1.0.11.** The v1.0 release is the first public Nexus build. v1.0.11 adds a dedicated contextual Help window for every major CCC page while retaining a separate first-time welcome. See the [v1.0.11 notes](docs/RELEASE_NOTES_v1.0.11.md) and [validation checklist](RELEASE_VALIDATION.md).
+**Current development version: v1.0.12.** The v1.0 release is the first public Nexus build. v1.0.12 promotes the paired Speech Challenge Failure control from WIP to Gameplay. See the [v1.0.12 notes](docs/RELEASE_NOTES_v1.0.12.md) and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -89,7 +89,7 @@ See [`QUEST_BROWSER.md`](QUEST_BROWSER.md) for details.
 
 ## Command catalog
 
-The established command library remains curated, while commands still under investigation live in a separate **WIP** category. CCC contains **147 established command cards** plus **1,539 WIP cards**: 34 prepared cards, 557 engine console commands, and 948 script functions. A card can contain paired actions when one command enables an override and another restores normal behavior. Prepared cards are separated into Ready to Test, Executed — Effect Unconfirmed, Executed — Issues, and Blocked — Known Crash groups. The top-right search covers only established commands on normal command screens and automatically switches to WIP-only search inside WIP. The raw engine library loads only when WIP is opened, and each group displays 100 entries at a time. Commands with an inconclusive result remain available for advanced users; known crash paths, confirmed unusable actions, and credential-handling commands remain unavailable. Hover or focus the large disabled Unavailable action to see the underlying console command. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The established command library remains curated, while commands still under investigation live in a separate **WIP** category. CCC contains **148 established command cards** plus **1,538 WIP cards**: 33 prepared cards, 557 engine console commands, and 948 script functions. A card can contain paired actions when one command enables an override and another restores normal behavior. Prepared cards are separated into Ready to Test, Executed — Effect Unconfirmed, Executed — Issues, and Blocked — Known Crash groups. The top-right search covers only established commands on normal command screens and automatically switches to WIP-only search inside WIP. The raw engine library loads only when WIP is opened, and each group displays 100 entries at a time. Commands with an inconclusive result remain available for advanced users; known crash paths, confirmed unusable actions, and credential-handling commands remain unavailable. Hover or focus the large disabled Unavailable action to see the underlying console command. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 
@@ -158,4 +158,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI checks.
 
-Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.11.md`](docs/RELEASE_NOTES_v1.0.11.md).
+Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.12.md`](docs/RELEASE_NOTES_v1.0.12.md).

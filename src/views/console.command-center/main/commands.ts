@@ -204,6 +204,23 @@ export const COMMANDS: CommandDefinition[] = [
     testStatus: 'verified',
   },
   {
+    id: 'untested-force-speech-fail',
+    title: 'Speech Challenge Failure',
+    category: 'Gameplay',
+    description: 'Force speech challenges to fail, or restore normal failure rules.',
+    command: 'setforcespeechchallengealwaysfail 1',
+    executeLabel: 'Always Fail',
+    secondaryAction: {
+      label: 'Restore Normal',
+      title: 'Restore Normal Speech Failure Rules',
+      command: 'setforcespeechchallengealwaysfail 0',
+    },
+    tags: ['speech', 'persuasion', 'fail', 'always fail', 'restore normal'],
+    warning: 'This changes all speech challenges until the matching restore command is run.',
+    risk: 'caution',
+    testStatus: 'verified',
+  },
+  {
     id: 'clear-bounty',
     title: 'Pay Bounty',
     category: 'Gameplay',
