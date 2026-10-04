@@ -36,6 +36,26 @@ Planned behavior:
 
 The preferred configuration is an in-game **Run automatically** setting stored separately from the `.txt` content. This keeps batch files easy to edit and prevents a copied or downloaded text file from silently enabling itself.
 
+## Mod-provided and generated ID catalogs
+
+Allow ID Browser to include weapons, clothing, armor, ammunition, aid, books, miscellaneous items, and other supported records added by installed mods without restoring the unsafe loaded-game form scanner.
+
+Planned design:
+
+- Keep CCC's packaged ID catalog unchanged and place third-party records in a separate **Mod Catalogs** area.
+- Read Starfield's loaded plugin list only to identify available third-party plugins and resolve their current load-order indexes.
+- Import records from explicit catalog files generated for selected mods rather than traversing Starfield's global loaded-form map.
+- Provide or support an external generator, such as an xEdit script, that scans only the plugin files selected by the player.
+- Allow mod authors to include a ready-made CCC catalog with their mods.
+- Store each record's plugin filename and local Form ID, then resolve the full runtime Form ID after the game establishes its load order.
+- Support full, medium, and small plugin indexes.
+- Filter deleted, unnamed, internal, template, and non-playable records before displaying them.
+- Distinguish records added by a mod from base-game records that the mod only overrides.
+- Load localized display names when available and retain a readable Editor ID fallback.
+- Provide **Refresh Mod Catalogs** so newly generated or edited catalogs can appear without rebuilding CCC.
+
+The removed live scanner must not be reused. It walked Starfield's global loaded-form map and caused an access violation during the earlier test9 build. Explicit catalog files keep the feature bounded, reviewable, and separate from CCC's verified built-in data.
+
 ## Controller support
 
 Add complete controller support as one coordinated feature rather than restoring the earlier partial navigation experiment.
