@@ -6,30 +6,32 @@ Close Starfield, replace the existing CCC files with the v1.0.13 build, and rest
 
 ## v1.0.13 interaction checks
 
-1. Confirm the installed view is under `SFSE/Plugins/OSF/UI/views/console.command-center/main` and no CCC files remain under the legacy `OSFUI/views` path.
-2. Open OSF Settings, choose Launcher, and confirm **Console Command Center** appears and opens normally.
-3. Confirm the footer reports **CCC v1.0.13**, **OSF UI 2.0 API**, and **NATIVE READY**.
-4. Execute a harmless command and a read-only inspection to confirm modern request/reply handling works.
-5. Close CCC with its Close button and reopen it from OSF Settings.
-6. Press Escape with a Results window open. Confirm Results closes first; press Escape again and confirm CCC closes.
-7. Open WIP and confirm every category starts collapsed.
-8. Confirm blocked cards no longer show a small Unavailable badge beside their status. Hover or focus the large disabled **Unavailable** action and confirm the command appears in the anchored warning panel.
-9. Open Recent Commands, choose **Clear Recent**, and confirm its cards and sidebar count clear.
-10. Confirm Inspect Reference Scale appears under **Blocked — Known Crash**, cannot execute through CCC, and exposes its syntax only from the large disabled action.
-11. Confirm Show Current Quest Targets appears under **Executed — Issues** and cannot flood the console through CCC.
-12. Confirm Spawn Ship by Base ID appears under **Executed — Issues** with the buried-ramp result and remains unavailable through CCC.
-13. Browse a Perk or Power from a command, use the selected ID, then open the standalone ID Browser. Confirm every category is available.
-14. Confirm Toggle Decal Rendering appears under **Blocked — Known Crash** and cannot execute through CCC.
-15. Search for Toggle Game Pause and confirm exactly one established result appears.
-16. Confirm Show First-Person Model in Third Person, Toggle All Actor Animations, Select Next Actor, and Select Next Reference appear in their established categories rather than WIP.
-17. Confirm Save Game by Name and Load Game by Name appear under Executed — Issues and cannot execute through CCC.
-18. Confirm PrintMessage, ToggleMovement, ToggleFullScreenMotionBlur, ToggleBoundVisGeom, and ToggleDetectionStats appear under Executed — Effect Unconfirmed.
-19. In Gameplay, confirm Speech Challenge Success uses one normal half-width card with **Always Succeed** above **Restore Normal**.
-20. In Gameplay, confirm Speech Challenge Failure uses one normal half-width card with **Always Fail** above **Restore Normal** and no longer appears in WIP.
-21. Confirm each of the four speech buttons previews its own console command and records the selected action in Activity Log.
-22. Open Help from Recent, Favorites, a normal command category, ID Browser, Quest Browser, Custom Command, and Activity Log. Confirm each page has its own title and instructions.
-23. From a contextual Help window, choose **First-time Overview** and confirm the separate welcome window opens.
-24. Confirm Close, Done, backdrop click, and Escape dismiss contextual Help without closing CCC.
+1. Before updating, use v1.0.12 to add a favorite, execute a harmless command, create an Activity Log entry, and save a named Custom Command batch. Close CCC normally.
+2. Install v1.0.13 without clearing OSF UI browser data. Confirm the favorite, Recent entry, Activity Log entry, and saved Custom Command batch all remain. Do not release the update if any are missing.
+3. Confirm the installed view is under `SFSE/Plugins/OSF/UI/views/console.command-center/main` and no CCC files remain under the legacy `OSFUI/views` path.
+4. Open OSF Settings, choose Launcher, and confirm **Console Command Center** appears and opens normally.
+5. Confirm the footer reports **CCC v1.0.13**, **OSF UI 2.0 API**, and **NATIVE READY**.
+6. Execute a harmless command and a read-only inspection to confirm modern request/reply handling works.
+7. Close CCC with its Close button and reopen it from OSF Settings.
+8. Press Escape with a Results window open. Confirm Results closes first; press Escape again and confirm CCC closes.
+9. Open WIP and confirm every category starts collapsed.
+10. Confirm blocked cards no longer show a small Unavailable badge beside their status. Hover or focus the large disabled **Unavailable** action and confirm the command appears in the anchored warning panel.
+11. Open Recent Commands, choose **Clear Recent**, and confirm its cards and sidebar count clear.
+12. Confirm Inspect Reference Scale appears under **Blocked — Known Crash**, cannot execute through CCC, and exposes its syntax only from the large disabled action.
+13. Confirm Show Current Quest Targets appears under **Executed — Issues** and cannot flood the console through CCC.
+14. Confirm Spawn Ship by Base ID appears under **Executed — Issues** with the buried-ramp result and remains unavailable through CCC.
+15. Browse a Perk or Power from a command, use the selected ID, then open the standalone ID Browser. Confirm every category is available.
+16. Confirm Toggle Decal Rendering appears under **Blocked — Known Crash** and cannot execute through CCC.
+17. Search for Toggle Game Pause and confirm exactly one established result appears.
+18. Confirm Show First-Person Model in Third Person, Toggle All Actor Animations, Select Next Actor, and Select Next Reference appear in their established categories rather than WIP.
+19. Confirm Save Game by Name and Load Game by Name appear under Executed — Issues and cannot execute through CCC.
+20. Confirm PrintMessage, ToggleMovement, ToggleFullScreenMotionBlur, ToggleBoundVisGeom, and ToggleDetectionStats appear under Executed — Effect Unconfirmed.
+21. In Gameplay, confirm Speech Challenge Success uses one normal half-width card with **Always Succeed** above **Restore Normal**.
+22. In Gameplay, confirm Speech Challenge Failure uses one normal half-width card with **Always Fail** above **Restore Normal** and no longer appears in WIP.
+23. Confirm each of the four speech buttons previews its own console command and records the selected action in Activity Log.
+24. Open Help from Recent, Favorites, a normal command category, ID Browser, Quest Browser, Custom Command, and Activity Log. Confirm each page has its own title and instructions.
+25. From a contextual Help window, choose **First-time Overview** and confirm the separate welcome window opens.
+26. Confirm Close, Done, backdrop click, and Escape dismiss contextual Help without closing CCC.
 
 ## Safe priority checks
 

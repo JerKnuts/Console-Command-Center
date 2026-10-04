@@ -14,11 +14,11 @@ Version 1.0.13 migrates Console Command Center to the native OSF UI 2.0 integrat
 
 ## Updating
 
-Remove the old `SFSE/Plugins/OSFUI/views/console.command-center` folder when updating from v1.0.12 or earlier. Install the v1.0.13 archive normally; saved favorites, recent commands, activity history, and custom commands remain browser-local CCC data.
+Remove the old `SFSE/Plugins/OSFUI/views/console.command-center` folder when updating from v1.0.12 or earlier. Install the v1.0.13 archive normally. Favorites, recent commands, activity history, and saved custom commands use the same CCC storage keys and OSF UI browser origin as v1.0.12, so the update preserves them. Do not clear OSF UI browser data while updating.
 
 ## Validation
 
-- All 59 automated behavior and command-catalog tests pass.
+- All 63 automated behavior and command-catalog tests pass.
 - OSF UI 2.0 compatibility and TypeScript checks pass.
 - The native plugin compiles against the official OSF UI 2.0 SDK header.
 - Production output contains the modern view path and no legacy CCC view path.
