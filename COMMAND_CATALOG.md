@@ -2,9 +2,9 @@
 
 Version: 1.0
 
-Established commands: 148
+Established command cards: 147
 
-WIP command intake: 1,540 (35 prepared cards, 557 engine console commands, 948 script functions)
+WIP command intake: 1,539 (34 prepared cards, 557 engine console commands, 948 script functions)
 
 Quest Browser: 2,318 quest records with 16,844 structurally recorded stages across the base game and Shattered Space
 
@@ -17,7 +17,7 @@ Testing status is intentionally conservative. Only commands confirmed through Co
 
 Latest user test report: October 3, 2026. See `docs/TEST_RESULTS_2026-09-27.md` for the accumulated in-game record.
 
-## Gameplay (11)
+## Gameplay (10)
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -29,8 +29,7 @@ Latest user test report: October 3, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 | Toggle All AI | `tai` | Caution | Verified |
 | Kill Nearby Hostiles | `kah` | Caution | Verified |
 | Kill Everyone Nearby | `killall` | Danger | Verified |
-| Always Succeed Speech Challenges | `setforcespeechchallengealwayssucceed 1` | Caution | Verified |
-| Restore Normal Speech Challenges | `setforcespeechchallengealwayssucceed 0` | Normal | Verified |
+| Speech Challenge Success | `setforcespeechchallengealwayssucceed 1` / `setforcespeechchallengealwayssucceed 0` | Caution | Verified; Always Succeed and Restore Normal share one card |
 | Pay Bounty | `player.paycrimegold 0 0 {factionId}` | Caution | Verified |
 
 **Pay Bounty** uses the compact ID field + **CHOOSE FACTION** box layout. The choice list is intentionally limited to bounty-relevant faction records (including supported Shattered Space entries), while manual faction-ID entry remains available. Inline preset-button grids are not used. The command spends the player's credits; it does not erase the bounty for free.
@@ -230,11 +229,11 @@ Latest user test report: October 3, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 
 **Ship workflow:** run **Get Current Ship Reference ID** while aboard the ship, then use that Reference ID with the ship actor-value commands. Use **Inspect Ship Actor Value** before changing a stat so you can record its existing value. Game Setting commands (owned-ship limit, docking/looting/transfer distance, and builder module limits) normally reset when Starfield restarts. The documented vanilla values used in CCC hints are 10 owned ships, 500 docking distance, 500 looting distance, and 130 for both ship-builder module limits; the transfer-distance default is less consistently documented, so inspect it first if exact restoration matters.
 
-## Work in Progress command intake (1,540)
+## Work in Progress command intake (1,539)
 
 Newly discovered commands enter this isolated category before they can appear alongside verified everyday, cheat, repair, or developer tools. Commands with destructive or uncertain effects retain Caution or Danger confirmation. Test them on a disposable save; successful commands can then move into their permanent category with an accurate description and warning.
 
-Prepared cards are split into four result groups: **Ready to Test** contains commands awaiting a useful in-game result, **Executed — Effect Unconfirmed** keeps commands that ran without errors but produced no observable effect, **Executed — Issues** keeps commands with confirmed usability problems, and **Blocked — Known Crash** keeps dangerous crash paths visible without allowing execution. **Engine Console Commands** contains 557 reference entries, and **Script Functions** contains 948 reference entries. The 1,505-entry engine library loads only when WIP is opened or searched. Open groups render 100 cards at a time. Raw engine cards accept optional arguments, and script-function cards also accept an optional target or prefix. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing the large disabled Unavailable action reveals the underlying console syntax for advanced manual use.
+Prepared cards are split into four result groups: **Ready to Test** contains commands awaiting a useful in-game result, **Executed — Effect Unconfirmed** keeps commands that ran without errors but produced no observable effect, **Executed — Issues** keeps commands with confirmed usability problems, and **Blocked — Known Crash** keeps dangerous crash paths visible without allowing execution. The Always Fail and Restore Normal speech actions share one prepared card. **Engine Console Commands** contains 557 reference entries, and **Script Functions** contains 948 reference entries. The 1,505-entry engine library loads only when WIP is opened or searched. Open groups render 100 cards at a time. Raw engine cards accept optional arguments, and script-function cards also accept an optional target or prefix. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing the large disabled Unavailable action reveals the underlying console syntax for advanced manual use.
 
 The first intake includes:
 

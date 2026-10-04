@@ -141,7 +141,7 @@ const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1505;
 const UNTESTED_COMMAND_PAGE_SIZE = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.0.8';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.0.9';
 
 let activeView: ViewMode = 'recent';
 let query = '';
@@ -1102,10 +1102,15 @@ function renderCommandCard(command: CommandDefinition): string {
           <span>CCC blocks this card, but advanced users can enter the command manually in Starfield’s console.</span>
         </span>
       </span>`
-    : `<button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${command.catalogSearch ? 'Search IDs' : 'Execute'}</button>`;
+    : command.secondaryAction
+      ? `<span class="command-action-pair">
+          <button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}" data-command-action="primary"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${escapeHtml(command.executeLabel ?? 'Execute')}</button>
+          <button class="osf-btn execute-button execute-button--secondary" type="button" data-execute="${escapeHtml(command.id)}" data-command-action="secondary"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${escapeHtml(command.secondaryAction.label)}</button>
+        </span>`
+      : `<button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${command.catalogSearch ? 'Search IDs' : escapeHtml(command.executeLabel ?? 'Execute')}</button>`;
 
   return `
-    <article class="command-card" data-command-id="${escapeHtml(command.id)}">
+    <article class="command-card${command.secondaryAction ? ' command-card--dual-action' : ''}" data-command-id="${escapeHtml(command.id)}">
       <div class="command-main">
         <div class="command-heading">
           <div class="command-heading-main">
@@ -1163,7 +1168,11 @@ function renderInput(command: CommandDefinition, input: CommandInput): string {
 }
 
 function buildCommand(command: CommandDefinition): string {
-  let output = command.command;
+  return buildCommandTemplate(command, command.command);
+}
+
+function buildCommandTemplate(command: CommandDefinition, template: string): string {
+  let output = template;
   for (const input of command.inputs ?? []) {
     const element = document.getElementById(`${command.id}-${input.key}`);
     const fallback = input.defaultValue === undefined ? '' : String(input.defaultValue);
@@ -2512,6 +2521,18 @@ commandList.addEventListener('click', (event) => {
     return;
   }
   const builtCommand = buildCommand(command);
+  const secondary = executeButton.dataset.commandAction === 'secondary' ? command.secondaryAction : undefined;
+  const actionDefinition: CommandDefinition = secondary
+    ? {
+        ...command,
+        title: secondary.title,
+        command: secondary.command,
+        warning: secondary.warning,
+        risk: secondary.risk,
+        secondaryAction: undefined,
+      }
+    : command;
+  const actionCommand = secondary ? buildCommandTemplate(command, secondary.command) : builtCommand;
   if (command.catalogSearch) {
     openPackagedFormSearch(command);
     return;
@@ -2520,7 +2541,7 @@ commandList.addEventListener('click', (event) => {
     void prepareEffectiveTotalExecution(command, builtCommand);
     return;
   }
-  requestExecution({ command: builtCommand, definition: command });
+  requestExecution({ command: actionCommand, definition: actionDefinition });
 });
 
 function closeCautionPopovers(exceptCommandId?: string): void {

@@ -54,6 +54,14 @@ export type CommandDefinition = {
   unavailableReason?: string;
   effectiveTotal?: boolean;
   verifyInGame?: boolean;
+  executeLabel?: string;
+  secondaryAction?: {
+    label: string;
+    title: string;
+    command: string;
+    warning?: string;
+    risk?: CommandRisk;
+  };
   catalogSearch?: {
     recordTypeInput?: string;
   };
@@ -180,22 +188,19 @@ export const COMMANDS: CommandDefinition[] = [
   },
   {
     id: 'speech-success-on',
-    title: 'Always Succeed Speech Challenges',
+    title: 'Speech Challenge Success',
     category: 'Gameplay',
-    description: 'Force speech challenges to succeed.',
+    description: 'Force speech challenges to succeed, or restore normal success rules.',
     command: 'setforcespeechchallengealwayssucceed 1',
-    tags: ['speech', 'persuasion', 'dialogue'],
+    executeLabel: 'Always Succeed',
+    secondaryAction: {
+      label: 'Restore Normal',
+      title: 'Restore Normal Speech Challenges',
+      command: 'setforcespeechchallengealwayssucceed 0',
+    },
+    tags: ['speech', 'persuasion', 'dialogue', 'always succeed', 'restore normal'],
     warning: 'This changes speech-challenge behavior until disabled.',
     risk: 'caution',
-    testStatus: 'verified',
-  },
-  {
-    id: 'speech-success-off',
-    title: 'Restore Normal Speech Challenges',
-    category: 'Gameplay',
-    description: 'Disable forced speech-challenge success.',
-    command: 'setforcespeechchallengealwayssucceed 0',
-    tags: ['speech', 'persuasion', 'dialogue', 'restore'],
     testStatus: 'verified',
   },
   {

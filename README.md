@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current development version: v1.0.8.** The v1.0 release is the first public Nexus build. v1.0.8 records the latest WIP results, promotes four working commands, documents the failed named save/load actions, and removes the duplicate Toggle Game Pause result. See the [v1.0.8 notes](docs/RELEASE_NOTES_v1.0.8.md) and [validation checklist](RELEASE_VALIDATION.md).
+**Current development version: v1.0.9.** The v1.0 release is the first public Nexus build. v1.0.9 combines each speech override with its matching Restore Normal action on one full-width card. See the [v1.0.9 notes](docs/RELEASE_NOTES_v1.0.9.md) and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -41,7 +41,7 @@ To update, replace the existing CCC files with the files from the new archive. T
 - Category browsing
 - Recent commands and favorites stay fixed at the top of the sidebar while the category list scrolls independently
 - Multiline custom-command batches that execute one command per line, with up to 100 named saved entries, a visible usage counter, and typed confirmation before deleting every saved entry
-- Separate **WIP** category with 35 prepared cards grouped by test result and a lazily loaded library of 1,505 engine commands and script functions
+- Separate **WIP** category with 34 prepared cards grouped by test result and a lazily loaded library of 1,505 engine commands and script functions
 - Activity log
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
@@ -85,7 +85,7 @@ See [`QUEST_BROWSER.md`](QUEST_BROWSER.md) for details.
 
 ## Command catalog
 
-The established command library remains curated, while commands still under investigation live in a separate **WIP** category. CCC contains **148 established command entries** plus **1,540 WIP entries**: 35 prepared cards, 557 engine console commands, and 948 script functions. Prepared cards are separated into Ready to Test, Executed — Effect Unconfirmed, Executed — Issues, and Blocked — Known Crash groups. The top-right search covers only established commands on normal command screens and automatically switches to WIP-only search inside WIP. The raw engine library loads only when WIP is opened, and each group displays 100 entries at a time. Commands with an inconclusive result remain available for advanced users; known crash paths, confirmed unusable actions, and credential-handling commands remain unavailable. Hover or focus the large disabled Unavailable action to see the underlying console command. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The established command library remains curated, while commands still under investigation live in a separate **WIP** category. CCC contains **147 established command cards** plus **1,539 WIP cards**: 34 prepared cards, 557 engine console commands, and 948 script functions. A card can contain paired actions when one command enables an override and another restores normal behavior. Prepared cards are separated into Ready to Test, Executed — Effect Unconfirmed, Executed — Issues, and Blocked — Known Crash groups. The top-right search covers only established commands on normal command screens and automatically switches to WIP-only search inside WIP. The raw engine library loads only when WIP is opened, and each group displays 100 entries at a time. Commands with an inconclusive result remain available for advanced users; known crash paths, confirmed unusable actions, and credential-handling commands remain unavailable. Hover or focus the large disabled Unavailable action to see the underlying console command. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 
@@ -154,4 +154,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI checks.
 
-Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.8.md`](docs/RELEASE_NOTES_v1.0.8.md).
+Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.9.md`](docs/RELEASE_NOTES_v1.0.9.md).
