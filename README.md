@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current development version: v1.0.9.** The v1.0 release is the first public Nexus build. v1.0.9 combines each speech override with its matching Restore Normal action on one full-width card. See the [v1.0.9 notes](docs/RELEASE_NOTES_v1.0.9.md) and [validation checklist](RELEASE_VALIDATION.md).
+**Current development version: v1.0.10.** The v1.0 release is the first public Nexus build. v1.0.10 keeps each paired speech override on a compact half-width card with vertically stacked actions. See the [v1.0.10 notes](docs/RELEASE_NOTES_v1.0.10.md) and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
 
@@ -154,4 +154,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI checks.
 
-Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.9.md`](docs/RELEASE_NOTES_v1.0.9.md).
+Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.10.md`](docs/RELEASE_NOTES_v1.0.10.md).

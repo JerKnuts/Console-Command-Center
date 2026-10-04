@@ -241,7 +241,7 @@ test('commands under investigation remain isolated in the user-facing WIP catego
   assert.match(untestedCommandSource, /id: 'untested-load-game'[\s\S]*?testStatus: 'failed'[\s\S]*?unavailableReason:[\s\S]*?intakeGroup: 'Executed — Issues'/);
 });
 
-test('paired speech overrides share full-width dual-action cards', () => {
+test('paired speech overrides share compact stacked-action cards', () => {
   assert.match(commandSource, /id: 'speech-success-on'[\s\S]*?title: 'Speech Challenge Success'[\s\S]*?executeLabel: 'Always Succeed'[\s\S]*?secondaryAction: \{[\s\S]*?label: 'Restore Normal'[\s\S]*?command: 'setforcespeechchallengealwayssucceed 0'/);
   assert.doesNotMatch(commandSource, /id: 'speech-success-off'/);
   assert.match(untestedCommandSource, /id: 'untested-force-speech-fail'[\s\S]*?title: 'Speech Challenge Failure'[\s\S]*?executeLabel: 'Always Fail'[\s\S]*?secondaryAction: \{[\s\S]*?label: 'Restore Normal'[\s\S]*?command: 'setforcespeechchallengealwaysfail 0'/);
@@ -250,8 +250,8 @@ test('paired speech overrides share full-width dual-action cards', () => {
   assert.match(source, /data-command-action="secondary"/);
   assert.match(source, /executeButton\.dataset\.commandAction === 'secondary'/);
   assert.match(source, /secondaryAction: undefined/);
-  assert.match(styleSource, /\.command-list\.is-command-grid > \.command-card--dual-action,[\s\S]*?grid-column: 1 \/ -1/);
-  assert.match(styleSource, /\.command-action-pair[\s\S]*?grid-template-columns:/);
+  assert.doesNotMatch(styleSource, /\.command-card--dual-action[\s\S]{0,160}?grid-column:\s*1 \/ -1/);
+  assert.match(styleSource, /\.command-action-pair\s*\{[\s\S]*?grid-template-columns:\s*minmax\(138px, 1fr\)/);
 });
 
 test('established command views use a compact grid while Recent remains a row list', () => {

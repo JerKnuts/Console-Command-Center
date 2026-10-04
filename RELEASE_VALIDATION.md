@@ -1,10 +1,10 @@
-# v1.0.9 validation checklist
+# v1.0.10 validation checklist
 
 ## Install
 
-Close Starfield, replace the existing CCC files with the v1.0.9 build, and restart the game. The footer and native connection message must both report **v1.0.9**.
+Close Starfield, replace the existing CCC files with the v1.0.10 build, and restart the game. The footer and native connection message must both report **v1.0.10**.
 
-## v1.0.9 interaction checks
+## v1.0.10 interaction checks
 
 1. Open WIP and confirm every category starts collapsed.
 2. Confirm blocked cards no longer show a small Unavailable badge beside their status. Hover or focus the large disabled **Unavailable** action and confirm the command appears in the anchored warning panel.
@@ -18,14 +18,14 @@ Close Starfield, replace the existing CCC files with the v1.0.9 build, and resta
 10. Confirm Show First-Person Model in Third Person, Toggle All Actor Animations, Select Next Actor, and Select Next Reference appear in their established categories rather than WIP.
 11. Confirm Save Game by Name and Load Game by Name appear under Executed — Issues and cannot execute through CCC.
 12. Confirm PrintMessage, ToggleMovement, ToggleFullScreenMotionBlur, ToggleBoundVisGeom, and ToggleDetectionStats appear under Executed — Effect Unconfirmed.
-13. In Gameplay, confirm Speech Challenge Success is one full-width card with **Always Succeed** and **Restore Normal** actions.
-14. In WIP, confirm Speech Challenge Failure is one full-width card with **Always Fail** and **Restore Normal** actions.
+13. In Gameplay, confirm Speech Challenge Success uses one normal half-width card with **Always Succeed** above **Restore Normal**.
+14. In WIP, confirm Speech Challenge Failure uses one normal half-width card with **Always Fail** above **Restore Normal**.
 15. Confirm each of the four speech buttons previews its own console command and records the selected action in Activity Log.
 
 ## Safe priority checks
 
 1. Confirm the first launch opens the welcome guide, **Start Exploring** closes it, and **Help** reopens it.
-2. Confirm the footer and native connection both report v1.0.9.
+2. Confirm the footer and native connection both report v1.0.10.
 3. Open **ID Browser**. It should report **16,528 included IDs**.
 4. Confirm all result categories begin collapsed and clicking the full category row opens it.
 5. Open NPCs, Mods, and Locations. Each large group should initially show 100 rows and offer **Show 100 more**.

@@ -394,8 +394,6 @@ select.osf-input:focus-visible {
   border-left: 2px solid transparent;
 }
 .command-list.is-command-grid > .empty-state { grid-column: 1 / -1; }
-.command-list.is-command-grid > .command-card--dual-action,
-.command-list.is-command-grid .untested-group-content > .command-card--dual-action { grid-column: 1 / -1; }
 
 .recent-toolbar {
   min-height: 42px;
@@ -691,11 +689,11 @@ select.osf-input:focus-visible {
   justify-content: flex-end;
   gap: 6px;
 }
-.command-card--dual-action .command-actions { min-width: 360px; }
+.command-card--dual-action .command-actions { min-width: 154px; }
 .command-action-pair {
   display: grid;
-  grid-template-columns: minmax(138px, 1fr) minmax(138px, 1fr);
-  gap: 6px;
+  grid-template-columns: minmax(138px, 1fr);
+  gap: 4px;
 }
 .command-action-pair .execute-button { min-width: 138px; }
 .execute-button--secondary {
@@ -1162,9 +1160,7 @@ select.osf-input:focus-visible {
 }
 
 @media (max-width: 760px) {
-  .command-card--dual-action { grid-template-columns: minmax(0, 1fr); }
-  .command-card--dual-action .command-actions { min-width: 0; justify-content: stretch; }
-  .command-card--dual-action .command-action-pair { flex: 1 1 auto; }
+  .command-card--dual-action .command-actions { min-width: 154px; }
 }
 .quest-browser-groups { display: grid; gap: 7px; }
 .quest-browser-group {
