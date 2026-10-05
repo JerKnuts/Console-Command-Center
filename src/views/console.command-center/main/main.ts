@@ -184,7 +184,7 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
       { title: 'SEARCH', text: 'Search by command name, purpose, console syntax, or tag. The search covers every established category.' },
       { title: 'PREPARE', text: 'Fill the visible fields or use a Browse button when CCC has matching IDs. Helper text explains the expected value.' },
       { title: 'REVIEW AND RUN', text: 'Caution and Danger labels explain meaningful risks. CCC shows the completed command before execution.' },
-      { title: 'CONTROLLER', text: 'Use the D-pad or left stick to move, A to select, B to go back, and Start to search. Press A on a text field to open the controller keyboard.' },
+      { title: 'CONTROLLER', text: 'Use the D-pad or left stick to move, A to select, B to go back, and Start to search. Commands are selected as whole cards; press A to enter a card with Execute selected, then press A again to run it. B returns to card selection. Press A on a text field to open the controller keyboard.' },
       { title: 'WIP COMMANDS', text: 'WIP separates commands by test result. Use uncertain commands only on a disposable or backed-up save.' },
     ],
     note: 'Make a manual save before changing quests, NPCs, ships, or important world state.',
@@ -1228,7 +1228,7 @@ function renderCommandCard(command: CommandDefinition): string {
       : `<button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${command.catalogSearch ? 'Search IDs' : escapeHtml(command.executeLabel ?? 'Execute')}</button>`;
 
   return `
-    <article class="command-card${command.secondaryAction ? ' command-card--dual-action' : ''}" data-command-id="${escapeHtml(command.id)}">
+    <article class="command-card${command.secondaryAction ? ' command-card--dual-action' : ''}" data-command-id="${escapeHtml(command.id)}" tabindex="0" aria-label="${escapeHtml(command.title)} command">
       <div class="command-main">
         <div class="command-heading">
           <div class="command-heading-main">

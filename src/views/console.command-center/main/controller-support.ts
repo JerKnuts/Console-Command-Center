@@ -154,6 +154,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   const modeButton = keyboard.querySelector<HTMLButtonElement>('[data-controller-keyboard-mode]')!;
   const shiftButton = keyboard.querySelector<HTMLButtonElement>('[data-controller-keyboard-shift]')!;
   const newlineButton = keyboard.querySelector<HTMLButtonElement>('[data-controller-keyboard-newline]')!;
+  const keyboardActions = keyboard.querySelector<HTMLElement>('.controller-keyboard-actions')!;
 
   const gamepadRecentlyActive = (): boolean => controllerActive && performance.now() - lastGamepadEvent <= CONTROLLER_EVENT_WINDOW_MS;
 
@@ -251,8 +252,21 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     if (keyboard.hidden || !(document.activeElement instanceof HTMLButtonElement)) return false;
     const active = document.activeElement;
     const row = active.closest<HTMLElement>('.controller-keyboard-row');
-    if (!row || !active.matches('[data-controller-key]')) return false;
     const rows = [...grid.querySelectorAll<HTMLElement>('.controller-keyboard-row')];
+    const actionRow = active.closest<HTMLElement>('.controller-keyboard-actions');
+    if (actionRow) {
+      const actions = focusableElements(keyboardActions);
+      const index = actions.indexOf(active);
+      if (direction === 'left' || direction === 'right') {
+        focusElement(actions[index + (direction === 'left' ? -1 : 1)]);
+      } else if (direction === 'up') {
+        const lastRow = rows[rows.length - 1];
+        const keys = lastRow ? [...lastRow.querySelectorAll<HTMLButtonElement>('[data-controller-key]')] : [];
+        focusElement(directionalCandidate(active, keys, 'up'));
+      }
+      return true;
+    }
+    if (!row || !active.matches('[data-controller-key]')) return false;
     const rowIndex = rows.indexOf(row);
     const keys = [...row.querySelectorAll<HTMLButtonElement>('[data-controller-key]')];
     const columnIndex = keys.indexOf(active);
@@ -265,6 +279,10 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     }
 
     const nextRow = rows[rowIndex + (direction === 'up' ? -1 : 1)];
+    if (!nextRow && direction === 'down') {
+      focusElement(focusableElements(keyboardActions)[0]);
+      return true;
+    }
     const nextKeys = nextRow ? [...nextRow.querySelectorAll<HTMLButtonElement>('[data-controller-key]')] : [];
     focusElement(nextKeys[Math.min(columnIndex, nextKeys.length - 1)]);
     return true;
@@ -279,13 +297,43 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   function commandAreaTarget(): HTMLElement | undefined {
     const commandList = document.querySelector<HTMLElement>('#command-list');
     const customPanel = document.querySelector<HTMLElement>('#custom-panel');
-    return (commandList ? focusableElements(commandList)[0] : undefined)
+    return commandList?.querySelector<HTMLElement>('.command-card[tabindex]')
       ?? (customPanel && !customPanel.hidden ? focusableElements(customPanel)[0] : undefined)
       ?? document.querySelector<HTMLElement>('#search')
       ?? undefined;
   }
 
+  function directionalCandidate(
+    active: HTMLElement,
+    elements: HTMLElement[],
+    direction: 'up' | 'down' | 'left' | 'right',
+  ): HTMLElement | undefined {
+    const current = elementCenter(active);
+    let best: HTMLElement | undefined;
+    let bestScore = Number.POSITIVE_INFINITY;
+    for (const candidate of elements) {
+      if (candidate === active) continue;
+      const score = controllerDirectionalScore(current, elementCenter(candidate), direction);
+      if (score !== null && score < bestScore) {
+        best = candidate;
+        bestScore = score;
+      }
+    }
+    return best;
+  }
+
   function moveMappedRegion(active: HTMLElement, direction: 'up' | 'down' | 'left' | 'right'): boolean {
+    const commandCard = active.closest<HTMLElement>('.command-card');
+    if (commandCard) {
+      if (active === commandCard) {
+        const cards = [...document.querySelectorAll<HTMLElement>('#command-list .command-card[tabindex]')].filter(isVisible);
+        focusElement(directionalCandidate(active, cards, direction));
+      } else {
+        focusElement(directionalCandidate(active, focusableElements(commandCard), direction));
+      }
+      return true;
+    }
+
     const navigation = active.closest<HTMLElement>('#navigation');
     if (navigation) {
       const buttons = focusableElements(navigation);
@@ -339,18 +387,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       const verticalLane = active.closest<HTMLElement>('#navigation, .command-list, .utility-nav-bar');
       if (verticalLane) elements = focusableElements(verticalLane);
     }
-    const current = elementCenter(active);
-    let best: HTMLElement | undefined;
-    let bestScore = Number.POSITIVE_INFINITY;
-    for (const candidate of elements) {
-      if (candidate === active) continue;
-      const score = controllerDirectionalScore(current, elementCenter(candidate), direction);
-      if (score !== null && score < bestScore) {
-        best = candidate;
-        bestScore = score;
-      }
-    }
-    focusElement(best);
+    focusElement(directionalCandidate(active, elements, direction));
   }
 
   function ensureControllerFocus(): void {
@@ -367,12 +404,23 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       openKeyboard(active);
       return;
     }
+    if (active instanceof HTMLElement && active.matches('.command-card')) {
+      const execute = active.querySelector<HTMLElement>('.execute-button:not([disabled])');
+      focusElement(execute ?? focusableElements(active)[0]);
+      return;
+    }
     if (active instanceof HTMLElement) active.click();
   }
 
   function controllerBack(): void {
     if (!keyboard.hidden) {
       closeKeyboard(false);
+      return;
+    }
+    const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const commandCard = active?.closest<HTMLElement>('.command-card');
+    if (commandCard) {
+      focusElement(active === commandCard ? activeNavigationButton() : commandCard);
       return;
     }
     document.dispatchEvent(new KeyboardEvent('keydown', {

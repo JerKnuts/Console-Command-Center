@@ -1793,6 +1793,12 @@ body.controller-active .controller-key:focus {
   border-color: var(--ccc-orange);
 }
 
+body.controller-active .command-card:focus {
+  outline: 2px solid var(--ccc-orange) !important;
+  outline-offset: -2px !important;
+  box-shadow: inset 4px 0 0 var(--ccc-orange), 0 0 0 2px rgba(var(--ccc-orange-rgb), 0.2) !important;
+}
+
 .controller-keyboard-backdrop {
   position: fixed;
   inset: 0;

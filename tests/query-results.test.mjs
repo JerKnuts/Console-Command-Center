@@ -355,6 +355,10 @@ test('controller support installs spatial navigation and in-game text entry', ()
   assert.match(controllerSource, /moveMappedRegion/);
   assert.match(controllerSource, /BUTTON_START[\s\S]*?openCommandSearch/);
   assert.match(controllerSource, /utility-nav-bar[\s\S]*?direction === 'left' \|\| direction === 'right'/);
+  assert.match(controllerSource, /command-card\[tabindex\]/);
+  assert.match(controllerSource, /active\.matches\('\.command-card'\)[\s\S]*?execute-button:not\(\[disabled\]\)/);
+  assert.match(controllerSource, /active === commandCard \? activeNavigationButton\(\) : commandCard/);
+  assert.match(controllerSource, /focusableElements\(keyboardActions\)\[0\]/);
   assert.match(controllerSource, /CONTROLLER TEXT ENTRY/);
   assert.match(controllerSource, /BUTTON_X[\s\S]*?backspace/);
   assert.match(controllerSource, /BUTTON_Y[\s\S]*?insertText\(' '\)/);
