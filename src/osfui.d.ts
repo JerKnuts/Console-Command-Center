@@ -51,6 +51,16 @@ export interface OSFUIBridge {
   state: OSFUIState;
 }
 
+export interface OSFUIGamepadButtonEvent extends JsonObject {
+  kind: "button";
+  button: { id: number; down: boolean };
+}
+
+export interface OSFUIGamepadStickEvent extends JsonObject {
+  kind: "stick";
+  axes: { lx: number; ly: number; rx: number; ry: number };
+}
+
 export type OSFUIHelper = OSFUIBridge;
 
 export interface ReadyEnvelope {

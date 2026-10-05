@@ -1,16 +1,23 @@
-# v1.0.13 validation checklist
+# v1.1.0 validation checklist
 
 ## Install
 
-Close Starfield, replace the existing CCC files with the v1.0.13 build, and restart the game. The footer and native connection message must both report **v1.0.13**.
+Close Starfield, replace the existing CCC files with the v1.1.0 build, and restart the game. The footer and native connection message must both report **v1.1.0**.
 
-## v1.0.13 interaction checks
+## Upgrade and controller checks
 
-1. Before updating, use v1.0.12 to add a favorite, execute a harmless command, create an Activity Log entry, and save a named Custom Command batch. Close CCC normally.
-2. Install v1.0.13 without clearing OSF UI browser data. Confirm the favorite, Recent entry, Activity Log entry, and saved Custom Command batch all remain. Do not release the update if any are missing.
+1. Before updating, use v1.0.13 to add a favorite, execute a harmless command, create an Activity Log entry, and save a named Custom Command batch. Close CCC normally.
+2. Install v1.1.0 without clearing OSF UI browser data. Confirm the favorite, Recent entry, Activity Log entry, and saved Custom Command batch all remain. Do not release the update if any are missing.
 3. Confirm the installed view is under `SFSE/Plugins/OSF/UI/views/console.command-center/main` and no CCC files remain under the legacy `OSFUI/views` path.
 4. Open OSF Settings, choose Launcher, and confirm **Console Command Center** appears and opens normally.
-5. Confirm the footer reports **CCC v1.0.13**, **OSF UI 2.0 API**, and **NATIVE READY**.
+5. Confirm the footer reports **CCC v1.1.0**, **OSF UI 2.0 API**, and **NATIVE READY**.
+6. Use only a controller. Confirm the D-pad and left stick move focus predictably through the sidebar, utility bar, command cards, and buttons.
+7. Confirm **A** activates the focused control and **B** closes the current popup before closing CCC.
+8. Open a long category, ID Browser, and Quest Browser. Confirm the right stick scrolls each view.
+9. Focus Search and press **A**. Enter text with the onscreen keyboard, use **X** for backspace, **Y** for space, **LB/RB** to move the cursor, and select **Done**. Confirm the search updates.
+10. Test a numeric command field and a Form ID field. Confirm they open number and hexadecimal layouts instead of the full alphabetic layout.
+11. Open and close confirmation, Help, Results, Reference ID Picker, and first-time welcome windows. Confirm focus stays inside the active window and returns to a sensible control afterward.
+12. Switch between mouse and controller. Confirm mouse clicks work normally and the bright controller focus outline returns after the next controller input.
 6. Execute a harmless command and a read-only inspection to confirm modern request/reply handling works.
 7. Close CCC with its Close button and reopen it from OSF Settings.
 8. Press Escape with a Results window open. Confirm Results closes first; press Escape again and confirm CCC closes.
@@ -115,7 +122,7 @@ Make a manual backup save first. Choose a minor quest that is safe to alter.
 
 ## Expected behavior
 
-- CCC remains a mouse-and-keyboard interface; controller support is identified as planned work.
+- Mouse and keyboard behavior remains intact alongside controller navigation and text entry.
 - Quest records are grouped, searchable, paged, and collapsed by default.
 - Quest modification buttons always show a Danger confirmation.
 - The packaged ID Browser contains no live game scanner.

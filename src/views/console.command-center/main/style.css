@@ -1780,3 +1780,93 @@ select.osf-input:focus-visible {
 .id-browser-raw pre {
   scrollbar-color: rgba(var(--ccc-orange-rgb), 0.48) rgba(5, 7, 10, 0.32);
 }
+/* Controller navigation and text entry */
+body.controller-active :is(button, a[href], input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--ccc-orange) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 2px rgba(var(--ccc-orange-rgb), 0.22) !important;
+}
+
+.controller-keyboard-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(2, 6, 10, 0.9);
+}
+
+.controller-keyboard-backdrop[hidden] { display: none; }
+
+.controller-keyboard {
+  width: min(980px, 94vw);
+  max-height: 94vh;
+  overflow: auto;
+  padding: 24px;
+  background: #080d12;
+  border: 1px solid var(--osf-border-strong, #52616d);
+}
+
+.controller-keyboard-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.controller-keyboard-head h2 { margin: 4px 0 0; }
+
+.controller-keyboard-value {
+  min-height: 52px;
+  margin-bottom: 16px;
+  padding: 13px 15px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  color: var(--osf-text-bright, #fff);
+  background: #02070b;
+  border: 1px solid var(--osf-border-strong, #52616d);
+  font-family: var(--ccc-console-font);
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.controller-keyboard-caret {
+  color: #071018;
+  background: var(--ccc-orange);
+  animation: controller-caret 1s steps(1) infinite;
+}
+
+@keyframes controller-caret { 50% { background: transparent; color: inherit; } }
+
+.controller-keyboard-grid { display: grid; gap: 8px; }
+.controller-keyboard-row { display: flex; justify-content: center; gap: 8px; }
+
+.controller-key {
+  width: 64px;
+  height: 48px;
+  color: var(--osf-text-bright, #fff);
+  background: #111922;
+  border: 1px solid var(--osf-border-strong, #52616d);
+  font-family: var(--osf-font-mono);
+  font-size: 17px;
+  text-transform: none;
+}
+
+.controller-keyboard-actions {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.controller-keyboard-actions .osf-btn { min-height: 46px; }
+.controller-keyboard-actions .is-active { border-color: var(--ccc-orange); color: var(--ccc-orange); }
+.controller-keyboard-hint { margin: 14px 0 0; color: var(--osf-text-faint); text-align: center; }
+
+@media (max-width: 760px) {
+  .controller-keyboard { padding: 16px; }
+  .controller-key { width: 44px; height: 42px; }
+  .controller-keyboard-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

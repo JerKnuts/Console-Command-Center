@@ -1,16 +1,16 @@
 # Console Command Center
 
-Console Command Center is an in-game console-command interface for **Starfield**. It provides a searchable mouse-and-keyboard menu for useful console commands without requiring the player to type them manually every time. Controller support is in development for a future release.
+Console Command Center is an in-game console-command interface for **Starfield**. It provides a searchable menu for useful console commands without requiring the player to type them manually every time. It supports mouse and keyboard or a game controller.
 
 The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute commands inside Starfield.
 
 ## Project status
 
-**Current development version: v1.0.13.** The v1.0 release is the first public Nexus build. v1.0.13 migrates CCC from OSF UI's 1.x compatibility adapter to the native OSF UI 2.0 API, browser protocol, manifest, and view layout. See the [v1.0.13 notes](docs/RELEASE_NOTES_v1.0.13.md) and [validation checklist](RELEASE_VALIDATION.md).
+**Current development version: v1.1.0.** The v1.0 release is the first public Nexus build. v1.1.0 adds complete controller navigation and controller text entry through OSF UI 2.0. See the [v1.1.0 notes](docs/RELEASE_NOTES_v1.1.0.md) and [validation checklist](RELEASE_VALIDATION.md).
 
-The core command execution system is working in-game. The command catalog is being tested command-by-command, and current development focuses on input reliability. The current interface supports mouse and keyboard. Controller navigation, activation, text entry, and adaptive larger controls are being developed together for a future release.
+The core command execution system is working in-game. The command catalog is being tested command-by-command. Controller support covers directional navigation, activation, Back, scrolling, dialogs, and an onscreen keyboard for editable fields.
 
-Planned additions, including controller support and editable `.txt` command-batch files, are tracked in [Future features](docs/FUTURE_FEATURES.md).
+Planned additions, including editable `.txt` command-batch files and optional mod-added item catalogs, are tracked in [Future features](docs/FUTURE_FEATURES.md).
 
 Commands that rely on known curated IDs use a reusable searchable Reference ID Picker instead of crowded preset-button grids. A separate **ID Browser** searches the catalog packaged with CCC.
 
@@ -33,7 +33,7 @@ In OSF Settings, bind **Open Mod Settings** to a key such as F10. Use that key i
 
 Install the release archive with a Starfield mod manager, or copy its `SFSE` folder into the game's `Data` folder. Keep the archive's folder structure intact. Launch the game through SFSE and confirm the CCC footer reports the installed version and **NATIVE READY**.
 
-To update from v1.0.12 or earlier, remove the old `Data/SFSE/Plugins/OSFUI/views/console.command-center/` folder and install the new archive. CCC v1.0.13 places its view under `Data/SFSE/Plugins/OSF/UI/views/console.command-center/`. To uninstall, remove that view folder and `Data/SFSE/Plugins/ConsoleCommandCenter.dll`.
+To update from v1.0.12 or earlier, remove the old `Data/SFSE/Plugins/OSFUI/views/console.command-center/` folder and install the new archive. CCC v1.0.13 and newer place the view under `Data/SFSE/Plugins/OSF/UI/views/console.command-center/`. To uninstall, remove that view folder and `Data/SFSE/Plugins/ConsoleCommandCenter.dll`.
 
 ## Features
 
@@ -55,7 +55,7 @@ To update from v1.0.12 or earlier, remove the old `Data/SFSE/Plugins/OSFUI/views
 - Filtered **ID Browser** controls for packaged perks, skills, traits, Starborn powers, and known removable environmental effects
 - Confirmation before execution
 - Caution and Danger warnings
-- Compact mouse-and-keyboard interface; controller support is in development
+- Complete controller navigation with A to select, B to go back, right-stick scrolling, and an onscreen keyboard
 - Compact Starfield-inspired OSF UI
 - Searchable **Quest Browser** with quest actions and recorded stage indexes
 - **Choose Quest** controls on every Quest ID field and a recorded-stage chooser for Set Quest Stage
@@ -159,4 +159,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run check` runs the OSF UI 2.0 and TypeScript checks.
 - `npm run package` validates, tests, builds, and creates both the Nexus-ready archive and corresponding full-source archive under `artifacts/`.
 
-Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.0.13.md`](docs/RELEASE_NOTES_v1.0.13.md).
+Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.1.0.md`](docs/RELEASE_NOTES_v1.1.0.md).

@@ -55,16 +55,3 @@ Planned design:
 - Provide **Refresh Mod Catalogs** so newly generated or edited catalogs can appear without rebuilding CCC.
 
 The removed live scanner must not be reused. It walked Starfield's global loaded-form map and caused an access violation during the earlier test9 build. Explicit catalog files keep the feature bounded, reviewable, and separate from CCC's verified built-in data.
-
-## Controller support
-
-Add complete controller support as one coordinated feature rather than restoring the earlier partial navigation experiment.
-
-Planned behavior:
-
-- Predictable directional navigation through menus, cards, fields, dialogs, and browser results.
-- Reliable activation, Back, confirmation, and popup controls.
-- Controller-compatible text entry for search fields, IDs, values, and custom commands.
-- Clear focus indicators and sensible focus restoration after dialogs and screen changes.
-- Input-aware control sizing and spacing that remains compact for mouse and keyboard.
-- In-game testing with OSF UI and OSF Settings before the feature is marked supported.

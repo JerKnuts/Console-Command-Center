@@ -1,4 +1,5 @@
 import './style.css';
+import { installControllerSupport } from './controller-support';
 import { CATEGORY_ORDER, COMMANDS, type CommandDefinition, type CommandInput } from './commands';
 import {
   ID_BROWSER_TOTAL,
@@ -149,7 +150,7 @@ const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1505;
 const UNTESTED_COMMAND_PAGE_SIZE = 100;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.0.13';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.1.0';
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -180,6 +181,7 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
       { title: 'SEARCH', text: 'Search by command name, purpose, console syntax, or tag. The search covers every established category.' },
       { title: 'PREPARE', text: 'Fill the visible fields or use a Browse button when CCC has matching IDs. Helper text explains the expected value.' },
       { title: 'REVIEW AND RUN', text: 'Caution and Danger labels explain meaningful risks. CCC shows the completed command before execution.' },
+      { title: 'CONTROLLER', text: 'Use the D-pad or left stick to move, A to select, B to go back, and the right stick to scroll. Press A on a text field to open the controller keyboard.' },
       { title: 'WIP COMMANDS', text: 'WIP separates commands by test result. Use uncertain commands only on a disposable or backed-up save.' },
     ],
     note: 'Make a manual save before changing quests, NPCs, ships, or important world state.',
@@ -300,7 +302,7 @@ app.innerHTML = `
           <span class="summary-separator">/</span>
           <span>Commands may affect achievements or save-game state.</span>
           <span class="summary-separator">/</span>
-          <span>Controller support is in development.</span>
+          <span>Controller: D-pad / left stick navigate, A select, B back, right stick scroll.</span>
         </div>
 
         <div id="command-list" class="command-list" aria-live="polite"></div>
@@ -372,6 +374,7 @@ app.innerHTML = `
         <article><strong>BROWSE IDS</strong><span>Find items, perks, powers, NPCs, weather, cells, and locations.</span></article>
         <article><strong>INSPECT QUESTS</strong><span>Read quest progress and carefully repair stuck stages.</span></article>
         <article><strong>SAVE WORKFLOWS</strong><span>Reuse favorites, recent actions, and saved custom command batches.</span></article>
+        <article><strong>USE A CONTROLLER</strong><span>Navigate with the D-pad or left stick. Press A on a field for controller text entry.</span></article>
       </div>
       <p class="welcome-save-note"><strong>Before changing quests or important game state:</strong> make a manual save.</p>
       <div class="welcome-actions">
@@ -2918,4 +2921,5 @@ if (window.osfui?.request) {
 }
 
 render();
+installControllerSupport(window.osfui);
 if (!welcomeHasBeenSeen()) openWelcome();
