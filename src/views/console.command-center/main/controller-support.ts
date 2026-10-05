@@ -8,6 +8,7 @@ const BUTTON_DPAD_UP = 0x0001;
 const BUTTON_DPAD_DOWN = 0x0002;
 const BUTTON_DPAD_LEFT = 0x0004;
 const BUTTON_DPAD_RIGHT = 0x0008;
+const BUTTON_START = 0x0010;
 const BUTTON_A = 0x1000;
 const BUTTON_B = 0x2000;
 const BUTTON_X = 0x4000;
@@ -269,6 +270,58 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     return true;
   }
 
+  function activeNavigationButton(): HTMLElement | undefined {
+    return document.querySelector<HTMLElement>('#navigation .nav-button.is-active, .utility-nav-bar .nav-button.is-active')
+      ?? document.querySelector<HTMLElement>('#navigation .nav-button')
+      ?? undefined;
+  }
+
+  function commandAreaTarget(): HTMLElement | undefined {
+    const commandList = document.querySelector<HTMLElement>('#command-list');
+    const customPanel = document.querySelector<HTMLElement>('#custom-panel');
+    return (commandList ? focusableElements(commandList)[0] : undefined)
+      ?? (customPanel && !customPanel.hidden ? focusableElements(customPanel)[0] : undefined)
+      ?? document.querySelector<HTMLElement>('#search')
+      ?? undefined;
+  }
+
+  function moveMappedRegion(active: HTMLElement, direction: 'up' | 'down' | 'left' | 'right'): boolean {
+    const navigation = active.closest<HTMLElement>('#navigation');
+    if (navigation) {
+      const buttons = focusableElements(navigation);
+      const index = buttons.indexOf(active);
+      if (direction === 'up' || direction === 'down') {
+        const next = buttons[index + (direction === 'up' ? -1 : 1)];
+        if (next) focusElement(next);
+        else if (direction === 'down') {
+          focusElement(document.querySelector<HTMLElement>('.utility-nav-bar .nav-button') ?? undefined);
+        }
+        return true;
+      }
+      if (direction === 'right') focusElement(commandAreaTarget());
+      return true;
+    }
+
+    const utilityBar = active.closest<HTMLElement>('.utility-nav-bar');
+    if (utilityBar) {
+      const buttons = focusableElements(utilityBar);
+      const index = buttons.indexOf(active);
+      if (direction === 'left' || direction === 'right') {
+        focusElement(buttons[index + (direction === 'left' ? -1 : 1)]);
+      } else if (direction === 'up') {
+        const sidebarButtons = document.querySelectorAll<HTMLElement>('#navigation .nav-button');
+        focusElement(sidebarButtons[sidebarButtons.length - 1]);
+      }
+      return true;
+    }
+
+    if (active.closest('.content') && direction === 'left') {
+      focusElement(activeNavigationButton());
+      return true;
+    }
+    return false;
+  }
+
   function moveFocus(direction: 'up' | 'down' | 'left' | 'right'): void {
     if (moveKeyboardGridFocus(direction)) return;
     const scope = currentScope(keyboard);
@@ -281,6 +334,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       focusElement(preferredInitialFocus(elements));
       return;
     }
+    if (moveMappedRegion(active, direction)) return;
     if (direction === 'up' || direction === 'down') {
       const verticalLane = active.closest<HTMLElement>('#navigation, .command-list, .utility-nav-bar');
       if (verticalLane) elements = focusableElements(verticalLane);
@@ -327,6 +381,19 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       bubbles: true,
       cancelable: true,
     }));
+  }
+
+  function openCommandSearch(): void {
+    if (!keyboard.hidden || currentScope(keyboard) !== document) return;
+    const search = document.querySelector<HTMLInputElement>('#search');
+    if (!search) return;
+    if (!isVisible(search)) {
+      document.querySelector<HTMLButtonElement>('#navigation [data-view="recent"]')?.click();
+    }
+    requestAnimationFrame(() => {
+      focusElement(search);
+      openKeyboard(search);
+    });
   }
 
   function stickDirection(axes: OSFUIGamepadStickEvent['axes']): 'up' | 'down' | 'left' | 'right' | null {
@@ -408,6 +475,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
         else if (payload.button.id === BUTTON_DPAD_DOWN) moveFocus('down');
         else if (payload.button.id === BUTTON_DPAD_LEFT) moveFocus('left');
         else if (payload.button.id === BUTTON_DPAD_RIGHT) moveFocus('right');
+        else if (payload.button.id === BUTTON_START) openCommandSearch();
         else if (payload.button.id === BUTTON_A) activateFocusedControl();
         else if (payload.button.id === BUTTON_B) controllerBack();
         else if (!keyboard.hidden && payload.button.id === BUTTON_X) backspace();

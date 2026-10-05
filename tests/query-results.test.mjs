@@ -342,7 +342,7 @@ test('Custom Command batches stop at the first reported error', async () => {
 test('controller support installs spatial navigation and in-game text entry', () => {
   const controllerSource = readFileSync(new URL('../src/views/console.command-center/main/controller-support.ts', import.meta.url), 'utf8');
   assert.match(source, /installControllerSupport\(window\.osfui\)/);
-  assert.match(source, /D-pad \/ left stick navigate, A select, B back, right stick scroll/);
+  assert.match(source, /D-pad \/ left stick navigate, A select, B back, Start search/);
   assert.match(controllerSource, /osfui\.gamepadRaw[\s\S]*?raw: true/);
   assert.match(controllerSource, /osfui\.handleBack/);
   assert.match(controllerSource, /ui\.gamepad/);
@@ -352,6 +352,9 @@ test('controller support installs spatial navigation and in-game text entry', ()
   assert.match(controllerSource, /moveKeyboardGridFocus/);
   assert.match(controllerSource, /active\.closest<HTMLElement>\('#navigation, \.command-list, \.utility-nav-bar'\)/);
   assert.match(controllerSource, /direction === heldStickDirection/);
+  assert.match(controllerSource, /moveMappedRegion/);
+  assert.match(controllerSource, /BUTTON_START[\s\S]*?openCommandSearch/);
+  assert.match(controllerSource, /utility-nav-bar[\s\S]*?direction === 'left' \|\| direction === 'right'/);
   assert.match(controllerSource, /CONTROLLER TEXT ENTRY/);
   assert.match(controllerSource, /BUTTON_X[\s\S]*?backspace/);
   assert.match(controllerSource, /BUTTON_Y[\s\S]*?insertText\(' '\)/);

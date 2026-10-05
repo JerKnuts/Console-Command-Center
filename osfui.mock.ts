@@ -8,6 +8,7 @@ const PAD_BUTTONS: Record<string, number> = {
   'pad-down': 0x0002,
   'pad-left': 0x0004,
   'pad-right': 0x0008,
+  'pad-start': 0x0010,
   'pad-a': 0x1000,
   'pad-b': 0x2000,
   'pad-x': 0x4000,

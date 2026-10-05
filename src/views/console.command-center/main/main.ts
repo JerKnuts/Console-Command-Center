@@ -184,7 +184,7 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
       { title: 'SEARCH', text: 'Search by command name, purpose, console syntax, or tag. The search covers every established category.' },
       { title: 'PREPARE', text: 'Fill the visible fields or use a Browse button when CCC has matching IDs. Helper text explains the expected value.' },
       { title: 'REVIEW AND RUN', text: 'Caution and Danger labels explain meaningful risks. CCC shows the completed command before execution.' },
-      { title: 'CONTROLLER', text: 'Use the D-pad or left stick to move, A to select, B to go back, and the right stick to scroll. Press A on a text field to open the controller keyboard.' },
+      { title: 'CONTROLLER', text: 'Use the D-pad or left stick to move, A to select, B to go back, and Start to search. Press A on a text field to open the controller keyboard.' },
       { title: 'WIP COMMANDS', text: 'WIP separates commands by test result. Use uncertain commands only on a disposable or backed-up save.' },
     ],
     note: 'Make a manual save before changing quests, NPCs, ships, or important world state.',
@@ -305,7 +305,7 @@ app.innerHTML = `
           <span class="summary-separator">/</span>
           <span>Commands may affect achievements or save-game state.</span>
           <span class="summary-separator">/</span>
-          <span>Controller: D-pad / left stick navigate, A select, B back, right stick scroll.</span>
+          <span>Controller: D-pad / left stick navigate, A select, B back, Start search.</span>
         </div>
 
         <div id="command-list" class="command-list" aria-live="polite"></div>
