@@ -4,11 +4,19 @@ type GamepadPayload = OSFUIGamepadButtonEvent | OSFUIGamepadStickEvent;
 
 type EditableTarget = HTMLInputElement | HTMLTextAreaElement;
 
+const BUTTON_DPAD_UP = 0x0001;
+const BUTTON_DPAD_DOWN = 0x0002;
+const BUTTON_DPAD_LEFT = 0x0004;
+const BUTTON_DPAD_RIGHT = 0x0008;
+const BUTTON_A = 0x1000;
+const BUTTON_B = 0x2000;
 const BUTTON_X = 0x4000;
 const BUTTON_Y = 0x8000;
 const BUTTON_LB = 0x0100;
 const BUTTON_RB = 0x0200;
 const CONTROLLER_EVENT_WINDOW_MS = 750;
+const STICK_DEAD_ZONE = 0.55;
+const STICK_REPEAT_MS = 180;
 const FOCUSABLE_SELECTOR = [
   'button:not([disabled])',
   'a[href]',
@@ -111,6 +119,8 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   let keyboardCursor = 0;
   let keyboardMode: 'alpha' | 'symbols' | 'number' | 'hex' = 'alpha';
   let keyboardShift = false;
+  let heldStickDirection: 'up' | 'down' | 'left' | 'right' | null = null;
+  let nextStickMoveAt = 0;
 
   const keyboard = document.createElement('div');
   keyboard.className = 'controller-keyboard-backdrop';
@@ -236,7 +246,31 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     updateKeyboardValue();
   }
 
+  function moveKeyboardGridFocus(direction: 'up' | 'down' | 'left' | 'right'): boolean {
+    if (keyboard.hidden || !(document.activeElement instanceof HTMLButtonElement)) return false;
+    const active = document.activeElement;
+    const row = active.closest<HTMLElement>('.controller-keyboard-row');
+    if (!row || !active.matches('[data-controller-key]')) return false;
+    const rows = [...grid.querySelectorAll<HTMLElement>('.controller-keyboard-row')];
+    const rowIndex = rows.indexOf(row);
+    const keys = [...row.querySelectorAll<HTMLButtonElement>('[data-controller-key]')];
+    const columnIndex = keys.indexOf(active);
+    if (rowIndex < 0 || columnIndex < 0) return true;
+
+    if (direction === 'left' || direction === 'right') {
+      const nextColumn = columnIndex + (direction === 'left' ? -1 : 1);
+      focusElement(keys[nextColumn]);
+      return true;
+    }
+
+    const nextRow = rows[rowIndex + (direction === 'up' ? -1 : 1)];
+    const nextKeys = nextRow ? [...nextRow.querySelectorAll<HTMLButtonElement>('[data-controller-key]')] : [];
+    focusElement(nextKeys[Math.min(columnIndex, nextKeys.length - 1)]);
+    return true;
+  }
+
   function moveFocus(direction: 'up' | 'down' | 'left' | 'right'): void {
+    if (moveKeyboardGridFocus(direction)) return;
     const scope = currentScope(keyboard);
     const elements = focusableElements(scope);
     if (elements.length === 0) return;
@@ -266,6 +300,37 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     const elements = focusableElements(currentScope(keyboard));
     if (document.activeElement instanceof HTMLElement && elements.includes(document.activeElement)) return;
     focusElement(preferredInitialFocus(elements));
+  }
+
+  function activateFocusedControl(): void {
+    ensureControllerFocus();
+    const active = document.activeElement;
+    if (isEditable(active) && keyboard.hidden) {
+      openKeyboard(active);
+      return;
+    }
+    if (active instanceof HTMLElement) active.click();
+  }
+
+  function controllerBack(): void {
+    if (!keyboard.hidden) {
+      closeKeyboard(false);
+      return;
+    }
+    document.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'Escape',
+      code: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    }));
+  }
+
+  function stickDirection(axes: OSFUIGamepadStickEvent['axes']): 'up' | 'down' | 'left' | 'right' | null {
+    const horizontal = Math.abs(axes.lx);
+    const vertical = Math.abs(axes.ly);
+    if (Math.max(horizontal, vertical) < STICK_DEAD_ZONE) return null;
+    if (horizontal > vertical) return axes.lx < 0 ? 'left' : 'right';
+    return axes.ly > 0 ? 'up' : 'down';
   }
 
   keyboard.addEventListener('click', (event) => {
@@ -328,17 +393,33 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'open'] });
 
   if (bridge) {
-    bridge.send('osfui.gamepadMode', { mode: 'default' });
+    bridge.send('osfui.gamepadRaw', { raw: true });
     bridge.send('osfui.handleBack', { handle: true });
     bridge.on<GamepadPayload>('ui.gamepad', (payload) => {
       controllerActive = true;
       lastGamepadEvent = performance.now();
       document.body.classList.add('controller-active');
-      if (!keyboard.hidden && payload.kind === 'button' && payload.button.down) {
-        if (payload.button.id === BUTTON_X) backspace();
-        if (payload.button.id === BUTTON_Y) insertText(' ');
-        if (payload.button.id === BUTTON_LB) moveCursor(-1);
-        if (payload.button.id === BUTTON_RB) moveCursor(1);
+      if (payload.kind === 'button' && payload.button.down) {
+        if (payload.button.id === BUTTON_DPAD_UP) moveFocus('up');
+        else if (payload.button.id === BUTTON_DPAD_DOWN) moveFocus('down');
+        else if (payload.button.id === BUTTON_DPAD_LEFT) moveFocus('left');
+        else if (payload.button.id === BUTTON_DPAD_RIGHT) moveFocus('right');
+        else if (payload.button.id === BUTTON_A) activateFocusedControl();
+        else if (payload.button.id === BUTTON_B) controllerBack();
+        else if (!keyboard.hidden && payload.button.id === BUTTON_X) backspace();
+        else if (!keyboard.hidden && payload.button.id === BUTTON_Y) insertText(' ');
+        else if (!keyboard.hidden && payload.button.id === BUTTON_LB) moveCursor(-1);
+        else if (!keyboard.hidden && payload.button.id === BUTTON_RB) moveCursor(1);
+      } else if (payload.kind === 'stick') {
+        const direction = stickDirection(payload.axes);
+        const now = performance.now();
+        if (!direction) {
+          heldStickDirection = null;
+        } else if (direction !== heldStickDirection || now >= nextStickMoveAt) {
+          moveFocus(direction);
+          heldStickDirection = direction;
+          nextStickMoveAt = now + STICK_REPEAT_MS;
+        }
       }
       requestAnimationFrame(ensureControllerFocus);
     });

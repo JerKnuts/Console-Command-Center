@@ -343,10 +343,13 @@ test('controller support installs spatial navigation and in-game text entry', ()
   const controllerSource = readFileSync(new URL('../src/views/console.command-center/main/controller-support.ts', import.meta.url), 'utf8');
   assert.match(source, /installControllerSupport\(window\.osfui\)/);
   assert.match(source, /D-pad \/ left stick navigate, A select, B back, right stick scroll/);
-  assert.match(controllerSource, /osfui\.gamepadMode/);
+  assert.match(controllerSource, /osfui\.gamepadRaw[\s\S]*?raw: true/);
   assert.match(controllerSource, /osfui\.handleBack/);
   assert.match(controllerSource, /ui\.gamepad/);
   assert.match(controllerSource, /controllerDirectionalScore/);
+  assert.match(controllerSource, /BUTTON_A[\s\S]*?activateFocusedControl/);
+  assert.match(controllerSource, /BUTTON_B[\s\S]*?controllerBack/);
+  assert.match(controllerSource, /moveKeyboardGridFocus/);
   assert.match(controllerSource, /CONTROLLER TEXT ENTRY/);
   assert.match(controllerSource, /BUTTON_X[\s\S]*?backspace/);
   assert.match(controllerSource, /BUTTON_Y[\s\S]*?insertText\(' '\)/);

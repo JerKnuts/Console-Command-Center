@@ -34,6 +34,7 @@ function inventoryFixture(): string {
 export function install(ctx: MockContext): void {
   const listeners = new Map<string, Set<Listener>>();
   let failRequests = false;
+  let gamepadRaw = false;
 
   const emit = (name: string, payload: JsonValue): void => {
     for (const listener of listeners.get(name) ?? []) listener(payload);
@@ -56,7 +57,7 @@ export function install(ctx: MockContext): void {
     emit('ui.gamepad', { kind: 'button', button: { id: buttonId, down: true } });
     const activate = (): void => {
       const key = PAD_KEYS[id];
-      if (key) {
+      if (key && !gamepadRaw) {
         const target = document.activeElement instanceof HTMLElement ? document.activeElement : document.body;
         if (id === 'pad-a' && !(target instanceof HTMLInputElement) && !(target instanceof HTMLTextAreaElement)) {
           target.click();
@@ -92,6 +93,7 @@ export function install(ctx: MockContext): void {
     },
     send(name: string, payload?: JsonObject): boolean {
       ctx.log({ send: name, payload: payload ?? {} });
+      if (name === 'osfui.gamepadRaw') gamepadRaw = payload?.raw === true;
       return true;
     },
     async request<T extends JsonValue = JsonValue>(name: string, payload?: JsonObject): Promise<T> {

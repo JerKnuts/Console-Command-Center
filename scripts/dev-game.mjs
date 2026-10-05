@@ -74,6 +74,10 @@ const externalModRoot = await configuredDeployRoot();
 const externalView = resolve(externalModRoot, 'SFSE/Plugins/OSF/UI/views/console.command-center/main');
 let fullDeploy = true;
 
+function isLocked(error) {
+  return error?.code === 'EBUSY' || error?.code === 'EPERM' || error?.code === 'EACCES';
+}
+
 async function buildAndDeploy() {
   await run(process.execPath, [resolve(projectRoot, 'scripts/build-ui.mjs')]);
   await rm(modView, { recursive: true, force: true });
@@ -81,9 +85,15 @@ async function buildAndDeploy() {
   await cp(distView, modView, { recursive: true });
   console.log(`[ccc] Browser-ready UI deployed to ${modView}`);
   if (fullDeploy) {
-    await mirrorTree(resolve(projectRoot, 'dist'), externalModRoot);
+    try {
+      await mirrorTree(resolve(projectRoot, 'dist'), externalModRoot);
+      console.log(`[ccc] Compiled mod deployed to ${externalModRoot}`);
+    } catch (error) {
+      if (!isLocked(error)) throw error;
+      await mirrorTree(distView, externalView);
+      console.warn(`[ccc] Starfield has the DLL locked; updated the UI in ${externalModRoot}. Restart dev:game after closing Starfield to replace the DLL.`);
+    }
     fullDeploy = false;
-    console.log(`[ccc] Compiled mod deployed to ${externalModRoot}`);
   } else {
     await mirrorTree(distView, externalView);
     console.log(`[ccc] Updated browser-ready UI in ${externalModRoot}`);
