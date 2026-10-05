@@ -350,6 +350,8 @@ test('controller support installs spatial navigation and in-game text entry', ()
   assert.match(controllerSource, /BUTTON_A[\s\S]*?activateFocusedControl/);
   assert.match(controllerSource, /BUTTON_B[\s\S]*?controllerBack/);
   assert.match(controllerSource, /moveKeyboardGridFocus/);
+  assert.match(controllerSource, /active\.closest<HTMLElement>\('#navigation, \.command-list, \.utility-nav-bar'\)/);
+  assert.match(controllerSource, /direction === heldStickDirection/);
   assert.match(controllerSource, /CONTROLLER TEXT ENTRY/);
   assert.match(controllerSource, /BUTTON_X[\s\S]*?backspace/);
   assert.match(controllerSource, /BUTTON_Y[\s\S]*?insertText\(' '\)/);

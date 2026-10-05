@@ -272,7 +272,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   function moveFocus(direction: 'up' | 'down' | 'left' | 'right'): void {
     if (moveKeyboardGridFocus(direction)) return;
     const scope = currentScope(keyboard);
-    const elements = focusableElements(scope);
+    let elements = focusableElements(scope);
     if (elements.length === 0) return;
     const active = document.activeElement instanceof HTMLElement && elements.includes(document.activeElement)
       ? document.activeElement
@@ -280,6 +280,10 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     if (!active) {
       focusElement(preferredInitialFocus(elements));
       return;
+    }
+    if (direction === 'up' || direction === 'down') {
+      const verticalLane = active.closest<HTMLElement>('#navigation, .command-list, .utility-nav-bar');
+      if (verticalLane) elements = focusableElements(verticalLane);
     }
     const current = elementCenter(active);
     let best: HTMLElement | undefined;
@@ -415,9 +419,12 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
         const now = performance.now();
         if (!direction) {
           heldStickDirection = null;
-        } else if (direction !== heldStickDirection || now >= nextStickMoveAt) {
+        } else if (!heldStickDirection) {
           moveFocus(direction);
           heldStickDirection = direction;
+          nextStickMoveAt = now + STICK_REPEAT_MS;
+        } else if (direction === heldStickDirection && now >= nextStickMoveAt) {
+          moveFocus(direction);
           nextStickMoveAt = now + STICK_REPEAT_MS;
         }
       }

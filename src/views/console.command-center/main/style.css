@@ -1781,10 +1781,16 @@ select.osf-input:focus-visible {
   scrollbar-color: rgba(var(--ccc-orange-rgb), 0.48) rgba(5, 7, 10, 0.32);
 }
 /* Controller navigation and text entry */
-body.controller-active :is(button, a[href], input, textarea, select, summary, [tabindex]):focus-visible {
+body.controller-active :is(button, a[href], input, textarea, select, summary, [tabindex]):focus {
   outline: 2px solid var(--ccc-orange) !important;
   outline-offset: 3px !important;
   box-shadow: 0 0 0 2px rgba(var(--ccc-orange-rgb), 0.22) !important;
+}
+
+body.controller-active .controller-key:focus {
+  color: var(--osf-text-bright, #fff);
+  background: rgba(var(--ccc-orange-rgb), 0.32);
+  border-color: var(--ccc-orange);
 }
 
 .controller-keyboard-backdrop {
