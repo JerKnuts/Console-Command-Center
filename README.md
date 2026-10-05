@@ -154,6 +154,7 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 ## Development notes
 
 - `npm run build` builds both the native plugin and OSF UI frontend.
+- `npm run dev:game` opens the game-sized browser harness with simulated CCC responses and keeps the modern OSF UI view under `mod/` updated as frontend files change.
 - `npm run build:native` builds only the native plugin after ensuring CommonLibSF is available.
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI 2.0 and TypeScript checks.

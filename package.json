@@ -8,6 +8,7 @@
     "clean": "node scripts/clean.mjs",
     "test": "node --test tests/*.test.mjs",
     "dev": "vite --root src/views/console.command-center/main",
+    "dev:game": "node scripts/dev-game.mjs",
     "check": "node scripts/check-ui.mjs",
     "build": "node native/build.mjs && node scripts/build-ui.mjs",
     "package": "node scripts/package.mjs",
@@ -16,6 +17,7 @@
     "build:native": "node native/build.mjs"
   },
   "devDependencies": {
+    "@osfui/cli": "0.1.0",
     "typescript": "7.0.2",
     "vite": "8.1.5"
   }

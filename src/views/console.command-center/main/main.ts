@@ -16,6 +16,9 @@ import {
   type IdCatalogEntry,
 } from './id-catalog';
 
+const previewReady = (window as Window & { __CCC_PREVIEW_READY__?: Promise<void> }).__CCC_PREVIEW_READY__;
+if (previewReady) await previewReady;
+
 type ViewMode = 'favorites' | 'recent' | 'quest-browser' | 'activity' | 'custom' | string;
 
 type HelpPageId = 'recent' | 'favorites' | 'categories' | 'id-browser' | 'quest-browser' | 'custom' | 'activity';
