@@ -12,7 +12,8 @@ test('dev:game starts the browser harness and deploys the modern view into mod',
   assert.match(devScript, /@osfui\/cli\/src\/cli\.mjs/);
   assert.match(devScript, /mod\/SFSE\/Plugins\/OSF\/UI\/views\/console\.command-center\/main/);
   assert.doesNotMatch(devScript, /OSFUI\/views/);
-  assert.match(devScript, /watch\(sourceRoot, \{ recursive: true \}\)/);
+  assert.match(devScript, /watch\(sourceRoot, \{ recursive: true \},/);
+  assert.match(devScript, /The browser preview dependency is missing\. Run/);
 });
 
 test('browser preview supplies native fixtures and controller controls', () => {

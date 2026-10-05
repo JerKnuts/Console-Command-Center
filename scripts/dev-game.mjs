@@ -1,4 +1,5 @@
-import { cp, mkdir, rm, watch } from 'node:fs/promises';
+import { watch } from 'node:fs';
+import { access, cp, mkdir, rm } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +9,13 @@ const sourceRoot = resolve(projectRoot, 'src/views/console.command-center/main')
 const distView = resolve(projectRoot, 'dist/SFSE/Plugins/OSF/UI/views/console.command-center/main');
 const modView = resolve(projectRoot, 'mod/SFSE/Plugins/OSF/UI/views/console.command-center/main');
 const cli = resolve(projectRoot, 'node_modules/@osfui/cli/src/cli.mjs');
+
+try {
+  await access(cli);
+} catch {
+  console.error('[ccc] The browser preview dependency is missing. Run "npm install", then run "npm run dev:game" again.');
+  process.exit(1);
+}
 
 function run(command, args) {
   return new Promise((fulfill, reject) => {
@@ -57,14 +65,12 @@ async function rebuild() {
   }
 }
 
-const watcher = watch(sourceRoot, { recursive: true });
-(async () => {
-  for await (const event of watcher) {
-    if (!event.filename || !/\.(?:css|html|ts)$/.test(event.filename)) continue;
-    clearTimeout(timer);
-    timer = setTimeout(() => void rebuild(), 300);
-  }
-})().catch((error) => console.error(`[ccc] File watcher stopped: ${error.message}`));
+const watcher = watch(sourceRoot, { recursive: true }, (_eventType, filename) => {
+  if (!filename || !/\.(?:css|html|ts)$/.test(filename)) return;
+  clearTimeout(timer);
+  timer = setTimeout(() => void rebuild(), 300);
+});
+watcher.on('error', (error) => console.error(`[ccc] File watcher stopped: ${error.message}`));
 
 function shutdown(signal) {
   clearTimeout(timer);
