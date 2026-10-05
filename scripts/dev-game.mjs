@@ -1,4 +1,4 @@
-import { watch } from 'node:fs';
+import { rmSync, watch } from 'node:fs';
 import { access, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { basename, dirname, resolve } from 'node:path';
@@ -72,10 +72,20 @@ async function configuredDeployRoot() {
 
 const externalModRoot = await configuredDeployRoot();
 const externalView = resolve(externalModRoot, 'SFSE/Plugins/OSF/UI/views/console.command-center/main');
+const authorModeMarker = resolve(externalModRoot, 'SFSE/Plugins/OSFUI/.author-mode.json');
 let fullDeploy = true;
 
 function isLocked(error) {
   return error?.code === 'EBUSY' || error?.code === 'EPERM' || error?.code === 'EACCES';
+}
+
+async function enableAuthorMode() {
+  await mkdir(dirname(authorModeMarker), { recursive: true });
+  await writeFile(authorModeMarker, `${JSON.stringify({
+    enabled: true,
+    expiresAt: Math.floor(Date.now() / 1000) + (12 * 60 * 60),
+    source: 'console-command-center dev:game',
+  }, null, 2)}\n`);
 }
 
 async function buildAndDeploy() {
@@ -98,6 +108,7 @@ async function buildAndDeploy() {
     await mirrorTree(distView, externalView);
     console.log(`[ccc] Updated browser-ready UI in ${externalModRoot}`);
   }
+  await enableAuthorMode();
 }
 
 await buildAndDeploy();
@@ -142,6 +153,7 @@ watcher.on('error', (error) => console.error(`[ccc] File watcher stopped: ${erro
 function shutdown(signal) {
   clearTimeout(timer);
   watcher.close();
+  try { rmSync(authorModeMarker, { force: true }); } catch {}
   if (!preview.killed) preview.kill(signal);
 }
 
@@ -155,5 +167,6 @@ process.once('SIGTERM', () => {
 });
 preview.once('exit', (code) => {
   watcher.close();
+  try { rmSync(authorModeMarker, { force: true }); } catch {}
   process.exit(code ?? 0);
 });

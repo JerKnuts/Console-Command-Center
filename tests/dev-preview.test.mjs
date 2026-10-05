@@ -19,6 +19,7 @@ test('dev:game starts the browser harness and deploys the modern view and compil
   assert.match(devScript, /mirrorTree\(distView, externalView\)/);
   assert.match(devScript, /Compiled mod deployed to/);
   assert.match(devScript, /Starfield has the DLL locked; updated the UI/);
+  assert.match(devScript, /\.author-mode\.json/);
 });
 
 test('browser preview supplies native fixtures and controller controls', () => {

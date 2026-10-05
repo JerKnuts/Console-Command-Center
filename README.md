@@ -154,7 +154,7 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 ## Development notes
 
 - `npm run build` builds both the native plugin and OSF UI frontend.
-- `npm run dev:game` opens the game-sized browser harness with simulated CCC responses, keeps the modern OSF UI view under `mod/` updated, and mirrors the compiled mod into the configured MO2 mods directory as frontend files change. The first run asks for the MO2 mods directory and saves it in `.osfui/local.json`; use `--deploy "C:\\path\\to\\mods"` to override it.
+- `npm run dev:game` opens the game-sized browser harness with simulated CCC responses, keeps the modern OSF UI view under `mod/` updated, and mirrors the compiled mod into the configured MO2 mods directory as frontend files change. It temporarily enables OSF UI author mode so a running game can reload frontend edits; locked native files are left alone until Starfield closes. The first run asks for the MO2 mods directory and saves it in `.osfui/local.json`; use `--deploy "C:\\path\\to\\mods"` to override it.
 - `npm run build:native` builds only the native plugin after ensuring CommonLibSF is available.
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI 2.0 and TypeScript checks.
