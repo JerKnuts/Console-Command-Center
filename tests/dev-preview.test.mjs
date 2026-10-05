@@ -7,13 +7,17 @@ const devScript = readFileSync(new URL('../scripts/dev-game.mjs', import.meta.ur
 const mockSource = readFileSync(new URL('../osfui.mock.ts', import.meta.url), 'utf8');
 const configSource = readFileSync(new URL('../osfui.config.ts', import.meta.url), 'utf8');
 
-test('dev:game starts the browser harness and deploys the modern view into mod', () => {
+test('dev:game starts the browser harness and deploys the modern view and compiled mod', () => {
   assert.equal(packageJson.scripts['dev:game'], 'node scripts/dev-game.mjs');
   assert.match(devScript, /@osfui\/cli\/src\/cli\.mjs/);
   assert.match(devScript, /mod\/SFSE\/Plugins\/OSF\/UI\/views\/console\.command-center\/main/);
   assert.doesNotMatch(devScript, /OSFUI\/views/);
   assert.match(devScript, /watch\(sourceRoot, \{ recursive: true \},/);
   assert.match(devScript, /The browser preview dependency is missing\. Run/);
+  assert.match(devScript, /\.osfui\/local\.json/);
+  assert.match(devScript, /mirrorTree\(resolve\(projectRoot, 'dist'\), externalModRoot\)/);
+  assert.match(devScript, /mirrorTree\(distView, externalView\)/);
+  assert.match(devScript, /Compiled mod deployed to/);
 });
 
 test('browser preview supplies native fixtures and controller controls', () => {
