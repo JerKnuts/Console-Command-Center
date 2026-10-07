@@ -269,3 +269,53 @@ The two console-output `help` searches are disabled for v0.3.2. The packaged ID 
 - PickNextActor and PickNextRef both worked; opening Starfield's console afterward showed the expected actor or reference selected. Both are promoted to Targets.
 - Search displayed two Toggle Game Pause cards because the original established `tgp` entry and a separately promoted intake entry were both present. The duplicate intake entry is removed in v1.0.8.
 - Testing ended after item 8; the remaining proposed commands were not run.
+
+## Controller-development WIP command pass — October 4, 2026
+
+- The raw Toggle Sky, Toggle Grass, Toggle Collision, Toggle Detection, Toggle Combat AI, and Toggle AI engine entries all worked. Their established category entries remain verified, and the redundant raw WIP entries are omitted from the engine library.
+- Toggle AI Schedules, Toggle Conversations, and Toggle Emotions executed without errors but produced no noticeable NPC change.
+- Toggle Lens Flare, Toggle TAA, Toggle Motion Blur, and Set Image Space Modifiers Enable executed without errors but produced no confirmed visible rendering change.
+- Toggle Lighting Heatmap and Toggle Overdraw executed without errors but displayed no visible diagnostic view.
+- The nine commands without a verified effect remain available under Executed — Effect Unconfirmed.
+
+### Follow-up WIP rendering and camera round
+
+- Toggle Fly Camera worked. The detached camera still allowed some inputs to reach the player character: Space made the character jump, and weapon draw and fire controls still worked.
+- The raw Toggle God Mode and Toggle Immortal Mode commands worked. Their existing established actions remain verified, and the redundant raw WIP entries are omitted.
+- Toggle Cell Node argument `0` hid every nearby person and restored them when repeated. It is exposed as Toggle People.
+- Toggle Cell Node argument `1` made scene lighting very dark and restored it when repeated. It is exposed as Toggle Lighting; map markers remained visible during testing.
+- Toggle Cell Node argument `3` hid water and restored it when repeated. It is exposed as Toggle Water.
+- Toggle Cell Node arguments `2` and `4` executed without noticeable effects. They remain separate WIP actions named Toggle Land Layer and Toggle Static Layer under Executed — Effect Unconfirmed.
+- Toggle Distant LOD worked outdoors and hid distant level-of-detail geometry. It is promoted to World.
+- Toggle GUI Overlay, Toggle Audio Overlay, Toggle Controls Overlay, Toggle Weapon Overlay, Toggle Depth Leak, and Show Bones executed without confirmed visible effects. They remain under Executed — Effect Unconfirmed.
+- Attach Weapon / Armor Mod and Remove Weapon / Armor Mod executed without a confirmed item change. Both are moved from Targets to WIP under Executed — Effect Unconfirmed.
+- Start Quest by ID is moved from Quests to WIP under Executed — Issues. Testing showed that a quest can start internally without appearing in the quest log until a stage is set.
+- Stop Actor Combat is moved from Targets to WIP under Executed — Issues because the tested actor still appeared to remain in combat.
+- Mark Reference for Permanent Deletion has not been tested and is moved from Targets to WIP under Ready to Test. Its permanent-deletion danger warning remains in place.
+- Search Form IDs and Search Form IDs by Type retain their established Inventory placement and are corrected from stale untested metadata to verified, matching their successful packaged-catalog test.
+- ID Browser now uses the compact command-style master/detail layout. Result rows show only item names; record type, category, details, Form ID, Editor ID, quantity, and actions appear in the selected-item information panel.
+- Commands is now its own bottom navigation page. Recent and Favorites stay fixed at the top of the sidebar, while the lower sidebar changes between command categories, ID Browser categories, and Quest Browser categories for the selected page.
+- ID Browser and Quest Browser now use their sidebar filters exclusively. The redundant All Categories and All Quests entries are hidden, Quest categories are separated into Base Game and Shattered Space sections, and the duplicate category/source bars inside both result areas are removed.
+- Quest Browser now uses the same compact master/detail layout as Commands and ID Browser. The left pane contains quest names only; the right pane contains record information, inspection, quest-state commands, and recorded stage controls. Controller A enters the selected quest pane, Right moves into it, and B returns to the selected quest row.
+- Commands, ID Browser, Quest Browser, and Custom Command now share one right-panel width and divider position. The five-page navigation bar is moved directly below the CCC header, and controller LB/RB switch between those pages while preserving the keyboard cursor controls when the virtual keyboard is open.
+- Page headings are simplified: command counts and controller instructions are removed from the command summary, ID Browser and Quest Browser become the small page labels, and their selected categories become the large titles. The duplicate matching-ID strip above ID Browser results is removed.
+- Commands, ID Browser, and Quest Browser now calculate their master/detail areas with the same top inset, full available height, and border-box sizing. Their right panes align at both the top and bottom instead of inheriting different heights from separate page containers.
+
+### v1.1.0 controller regression follow-up
+
+- In-game page cycling, compact layouts, search, and general controller behavior passed user testing.
+- Refined category-first entry, three-level B navigation, hold-B exit, detail-panel focus indicators, favorite-to-execute movement, quest action movement, and virtual keyboard vertical alignment.
+- Removed Show More and quest pagination controls so each selected list loads completely. Added held-direction repeat, right-stick scrolling for result windows, a strict Quest detail focus trap, reliable ID category entry, and controller entry points for reusable commands and saved Activity results.
+# Additional v1.1.0 controller and search verification — 2026-10-06
+
+- 81 automated checks pass.
+- B returns from a main list to its active category, including Recent and Favorites.
+- Results dialogs restore focus to the control that opened them.
+- The bottom virtual-keyboard row maps down to the nearest action by position.
+- Opening the controller keyboard reasserts raw controller ownership and handled Back input.
+- Controller-only Select, Start, LB, and RB hints are present.
+- Commands, ID Browser, and Quest Browser searches ignore the selected sidebar category while a query is active.
+- Controller hints mark Close/Cancel with B, keyboard Backspace with X, and keyboard Space with Y.
+- Selected ID directional focus stays inside its detail pane until B is pressed.
+- Activity Log links the newest entry upward to Clear Log and Clear Log downward to that entry.
+- Additional v1.1.0 WIP testing found no visible effect from Toggle Stairs Geometry, Toggle Magic Stats, ShowAnim, Show Head Track Target, VATS Target, Toggle Character Controller Shape, Test Seen Data, Show Who Detects Player, or Toggle Full Help. These remain inconclusive; several appear to depend on console selection, debug-text pages, or console-only output.

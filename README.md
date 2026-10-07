@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current development version: v1.1.0.** The v1.0 release is the first public Nexus build. v1.1.0 adds complete controller navigation and controller text entry through OSF UI 2.0. See the [v1.1.0 notes](docs/RELEASE_NOTES_v1.1.0.md) and [validation checklist](RELEASE_VALIDATION.md).
+**Current release: v1.1.0.** This controller-support update adds compact master/detail layouts and complete controller navigation through OSF UI 2.0. See the [v1.1.0 notes](docs/RELEASE_NOTES_v1.1.0.md) and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command. Controller support covers directional navigation, activation, Back, scrolling, dialogs, and an onscreen keyboard for editable fields.
 
@@ -43,13 +43,13 @@ To update from v1.0.12 or earlier, remove the old `Data/SFSE/Plugins/OSFUI/views
 - Category browsing
 - Recent commands and favorites stay fixed at the top of the sidebar while the category list scrolls independently
 - Multiline custom-command batches that execute one command per line, with up to 100 named saved entries, a visible usage counter, and typed confirmation before deleting every saved entry
-- Separate **WIP** category with 34 prepared cards grouped by test result and a lazily loaded library of 1,505 engine commands and script functions
+- Separate **WIP** category with 40 prepared cards grouped by test result and a lazily loaded library of 1,505 engine commands and script functions
 - Activity log
 - Contextual Help for Recent, Favorites, command categories, ID Browser, Quest Browser, Custom Command, and Activity Log
 - Separate first-time welcome overview that remains available from each Help window
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
-- Standalone **ID Browser** with 16,528 included IDs, collapsed categories, selectable results, Copy ID, and conservative quick actions
+- Standalone **ID Browser** with 16,528 included IDs, sidebar categories, compact selectable results, Copy ID, and conservative quick actions
 - Working **Search Form IDs** command cards that open the packaged ID Browser directly; typed `QUST` searches open Quest Browser
 - **Browse Items**, **Browse Equipment**, **Browse Base IDs**, **Browse Mods**, and **Browse Ships** controls that return packaged IDs directly to command fields without executing them
 - Filtered **ID Browser** controls for packaged perks, skills, traits, Starborn powers, and known removable environmental effects
@@ -65,7 +65,7 @@ To update from v1.0.12 or earlier, remove the old `Data/SFSE/Plugins/OSFUI/views
 
 ## ID Browser and Reference ID Picker
 
-The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It searches **16,528 included IDs** instantly by name, Form ID, type, category, and Editor ID. The catalog covers weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Location and cell selections can copy either the Form ID or Editor ID. Weather records can be applied immediately, Cell records can teleport through their Editor ID, and Location records can narrow the browser to matching teleportable Cells. Shattered Space records display an expansion requirement and use cleaned Editor IDs where a verified localized display name is unavailable. Long descriptive labels, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded. Large categories load 100 tiles at a time so browsing and searching stay responsive. Every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous.
+The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It searches **16,528 included IDs** instantly by name, Form ID, type, category, and Editor ID. The catalog covers weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Location and cell selections can copy either the Form ID or Editor ID. Weather records can be applied immediately, Cell records can teleport through their Editor ID, and Location records can narrow the browser to matching teleportable Cells. Shattered Space records display an expansion requirement and use cleaned Editor IDs where a verified localized display name is unavailable. Long descriptive labels, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded. The selected sidebar category loads as one scrollable compact list. Every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous.
 
 CCC does not scan Starfield's live form memory. That experimental path caused an access violation during test9 and was removed. Expansion-only records carry a visible requirement such as **Shattered Space DLC**.
 
@@ -73,7 +73,7 @@ The reusable Reference ID Picker remains the compact command-specific chooser. *
 
 ## Quest Browser
 
-ID Browser, Quest Browser, Custom Command, and Activity Log live in a dedicated horizontal utility bar along the bottom of CCC. Recent and Favorites remain fixed in the left sidebar while Categories scroll independently.
+Commands, ID Browser, Quest Browser, Custom Command, and Activity Log live in a dedicated navigation bar directly below the CCC header. Recent and Favorites remain fixed in the left sidebar while each browser supplies its own category list.
 
 Quest Browser includes recorded quest-stage selections for inspecting or advancing quest state. Every packaged Quest ID and stage number is structurally validated against its installed master file. Console Command Center uses those mappings to execute vanilla commands such as:
 
@@ -89,7 +89,7 @@ See [`QUEST_BROWSER.md`](QUEST_BROWSER.md) for details.
 
 ## Command catalog
 
-The established command library remains curated, while commands still under investigation live in a separate **WIP** category. CCC contains **148 established command cards** plus **1,538 WIP cards**: 33 prepared cards, 557 engine console commands, and 948 script functions. A card can contain paired actions when one command enables an override and another restores normal behavior. Prepared cards are separated into Ready to Test, Executed — Effect Unconfirmed, Executed — Issues, and Blocked — Known Crash groups. The top-right search covers only established commands on normal command screens and automatically switches to WIP-only search inside WIP. The raw engine library loads only when WIP is opened, and each group displays 100 entries at a time. Commands with an inconclusive result remain available for advanced users; known crash paths, confirmed unusable actions, and credential-handling commands remain unavailable. Hover or focus the large disabled Unavailable action to see the underlying console command. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The established command library remains curated, while commands still under investigation live in a separate **WIP** category. CCC contains **147 established command cards** plus **1,545 WIP cards**: 40 prepared cards, 557 engine console commands, and 948 script functions. A card can contain paired actions when one command enables an override and another restores normal behavior. Prepared cards are separated into Ready to Test, Executed — Effect Unconfirmed, Executed — Issues, and Blocked — Known Crash groups. Search spans every category in the active browser; WIP searches include the complete raw engine library. Commands with an inconclusive result remain available for advanced users; known crash paths, confirmed unusable actions, and credential-handling commands remain unavailable. Hover or focus the large disabled Unavailable action to see the underlying console command. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 

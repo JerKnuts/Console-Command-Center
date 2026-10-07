@@ -6,7 +6,7 @@ Quest Browser contains **2,318 quest records** and **16,844 recorded stage index
 - 241 Shattered Space records
 - 972 records whose player-facing name is unavailable and therefore use their internal Editor ID
 
-The browser supports search by quest name, Editor ID, Form ID, source, category, and stage number. Large categories are collapsed and paginated so the full catalog does not overload the in-game interface. Shattered Space records display an expansion requirement note.
+The browser supports search by quest name, Editor ID, Form ID, source, category, and stage number. Base Game and Shattered Space categories live in the sidebar, and the selected category loads as one compact scrollable list. Shattered Space records display an expansion requirement note.
 
 Each quest provides:
 

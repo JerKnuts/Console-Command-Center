@@ -448,7 +448,7 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     tags: ['form id', 'search', 'lookup', 'id browser', 'read only'],
     catalogSearch: {},
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'search-form-ids-by-type',
@@ -462,7 +462,7 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     tags: ['form id', 'search', 'lookup', 'weapon', 'armor', 'npc', 'quest', 'id browser', 'read only'],
     catalogSearch: { recordTypeInput: 'recordType' },
-    testStatus: 'untested',
+    testStatus: 'verified',
   },
   {
     id: 'add-credits',
@@ -835,9 +835,11 @@ export const COMMANDS: CommandDefinition[] = [
     id: 'free-camera',
     title: 'Toggle Free Camera',
     category: 'Camera',
-    description: 'Toggle free-camera mode while the world continues running.',
+    description: 'Toggle free-camera mode while the world continues running. Some controls can still affect the player character.',
     command: 'tfc',
     tags: ['camera', 'photo', 'toggle'],
+    warning: 'Free camera does not fully disable player control. Jumping, drawing a weapon, and firing can still affect the character.',
+    risk: 'caution',
     testStatus: 'verified',
   },
   {
@@ -1244,14 +1246,15 @@ export const COMMANDS: CommandDefinition[] = [
   {
     id: 'stop-actor-combat',
     title: 'Stop Actor Combat',
-    category: 'Targets',
-    description: 'Tell one actor to stop its current combat state using its Reference ID.',
+    category: 'Untested',
+    description: 'Tell one actor to stop its current combat state using its Reference ID. In-game testing did not confirm that the target left combat.',
     command: '{refId}.stopcombat',
     tags: ['combat', 'npc', 'actor', 'stopcombat', 'reference'],
     inputs: [hexInput('refId', 'Reference ID', '00000000')],
     warning: 'Scripts, factions, or nearby enemies may cause the actor to enter combat again immediately.',
     risk: 'caution',
     testStatus: 'needs-adjustment',
+    intakeGroup: 'Executed — Issues',
   },
   {
     id: 'activate-reference',
@@ -1333,7 +1336,7 @@ export const COMMANDS: CommandDefinition[] = [
   {
     id: 'mark-ref-for-delete',
     title: 'Mark Reference for Permanent Deletion',
-    category: 'Targets',
+    category: 'Untested',
     description: 'Mark a world reference for permanent deletion when its cell reloads.',
     command: '{refId}.markfordelete',
     inputs: [hexInput('refId', 'Reference ID', '00000000')],
@@ -1341,6 +1344,7 @@ export const COMMANDS: CommandDefinition[] = [
     warning: 'EXTREME DANGER: MarkForDelete is permanent after the cell reloads. There is no normal way to restore the deleted reference. Prefer this only for objects you spawned yourself and verify the exact Reference ID first. Never use it casually on vanilla, quest, ship, or persistent references.',
     risk: 'danger',
     testStatus: 'untested',
+    intakeGroup: 'Ready to Test',
   },
   {
     id: 'set-ref-position',
@@ -1418,8 +1422,8 @@ export const COMMANDS: CommandDefinition[] = [
   {
     id: 'add-item-mod',
     title: 'Attach Weapon / Armor Mod',
-    category: 'Targets',
-    description: 'Attach a modifier to a dropped weapon or armor reference using its Reference ID and a Mod ID.',
+    category: 'Untested',
+    description: 'Attach a modifier to a dropped weapon or armor reference using its Reference ID and a Mod ID. In-game execution produced no confirmed item change.',
     command: '{refId}.amod {modId}',
     tags: ['weapon', 'armor', 'mod', 'amod', 'modifier'],
     inputs: [
@@ -1431,13 +1435,14 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     warning: 'Many OMOD IDs are weapon- or armor-specific. The game may accept an incompatible modifier but produce janky or broken equipment. Confirm the exact mod ID for that item first.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'inconclusive',
+    intakeGroup: 'Executed — Effect Unconfirmed',
   },
   {
     id: 'remove-item-mod',
     title: 'Remove Weapon / Armor Mod',
-    category: 'Targets',
-    description: 'Remove a modifier from a dropped weapon or armor reference.',
+    category: 'Untested',
+    description: 'Remove a modifier from a dropped weapon or armor reference. In-game execution produced no confirmed item change.',
     command: '{refId}.rmod {modId}',
     tags: ['weapon', 'armor', 'mod', 'rmod', 'modifier'],
     inputs: [
@@ -1449,7 +1454,8 @@ export const COMMANDS: CommandDefinition[] = [
     ],
     warning: 'Removing the wrong modifier can change item quality or remove an intended attachment.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'inconclusive',
+    intakeGroup: 'Executed — Effect Unconfirmed',
   },
   {
     id: 'inspect-companion-affinity',
@@ -1585,8 +1591,8 @@ export const COMMANDS: CommandDefinition[] = [
   {
     id: 'start-quest',
     title: 'Start Quest by ID',
-    category: 'Quests',
-    description: 'Start a quest using its Quest ID.',
+    category: 'Untested',
+    description: 'Start a quest using its Quest ID. Testing showed that some quests start internally but do not appear in the quest log until a stage is set.',
     command: 'startquest {questId}',
     tags: ['quest', 'start', 'repair'],
     inputs: [questIdInput()],
@@ -1594,6 +1600,7 @@ export const COMMANDS: CommandDefinition[] = [
     risk: 'danger',
     testStatus: 'needs-adjustment',
     verifyInGame: true,
+    intakeGroup: 'Executed — Issues',
   },
   {
     id: 'stop-quest',

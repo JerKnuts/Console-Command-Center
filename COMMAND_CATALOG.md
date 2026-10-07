@@ -2,9 +2,9 @@
 
 Version: 1.0
 
-Established command cards: 148
+Established command cards: 147
 
-WIP command intake: 1,538 (33 prepared cards, 557 engine console commands, 948 script functions)
+WIP command intake: 1,545 (40 prepared cards, 557 engine console commands, 948 script functions)
 
 Quest Browser: 2,318 quest records with 16,844 structurally recorded stages across the base game and Shattered Space
 
@@ -234,7 +234,7 @@ Latest user test report: October 3, 2026. See `docs/TEST_RESULTS_2026-09-27.md` 
 
 Newly discovered commands enter this isolated category before they can appear alongside verified everyday, cheat, repair, or developer tools. Commands with destructive or uncertain effects retain Caution or Danger confirmation. Test them on a disposable save; successful commands can then move into their permanent category with an accurate description and warning.
 
-Prepared cards are split into four result groups: **Ready to Test** contains commands awaiting a useful in-game result, **Executed — Effect Unconfirmed** keeps commands that ran without errors but produced no observable effect, **Executed — Issues** keeps commands with confirmed usability problems, and **Blocked — Known Crash** keeps dangerous crash paths visible without allowing execution. **Engine Console Commands** contains 557 reference entries, and **Script Functions** contains 948 reference entries. The 1,505-entry engine library loads only when WIP is opened or searched. Open groups render 100 cards at a time. Raw engine cards accept optional arguments, and script-function cards also accept an optional target or prefix. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing the large disabled Unavailable action reveals the underlying console syntax for advanced manual use.
+Prepared cards are split into four result groups: **Ready to Test** contains commands awaiting a useful in-game result, **Executed — Effect Unconfirmed** keeps commands that ran without errors but produced no observable effect, **Executed — Issues** keeps commands with confirmed usability problems, and **Blocked — Known Crash** keeps dangerous crash paths visible without allowing execution. **Engine Console Commands** contains 557 reference entries, and **Script Functions** contains 948 reference entries. The complete 1,505-entry engine library loads when WIP is opened or searched. Raw engine cards accept optional arguments, and target-scoped diagnostics and script functions also accept an optional target or prefix. Selected status commands capture their console text in CCC's Results window. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing the large disabled Unavailable action reveals the underlying console syntax for advanced manual use.
 
 The first intake includes:
 

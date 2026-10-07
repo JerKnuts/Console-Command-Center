@@ -11,49 +11,44 @@ Close Starfield, replace the existing CCC files with the v1.1.0 build, and resta
 3. Confirm the installed view is under `SFSE/Plugins/OSF/UI/views/console.command-center/main` and no CCC files remain under the legacy `OSFUI/views` path.
 4. Open OSF Settings, choose Launcher, and confirm **Console Command Center** appears and opens normally.
 5. Confirm the footer reports **CCC v1.1.0**, **OSF UI 2.0 API**, and **NATIVE READY**.
-6. Use only a controller. Confirm the D-pad and left stick move focus predictably through the sidebar, utility bar, command cards, and buttons.
-7. Confirm **A** activates the focused control and **B** closes the current popup before closing CCC.
-8. Open a long category, ID Browser, and Quest Browser. Confirm the right stick scrolls each view.
-9. Focus Search and press **A**. Enter text with the onscreen keyboard, use **X** for backspace, **Y** for space, **LB/RB** to move the cursor, and select **Done**. Confirm the search updates.
-10. Test a numeric command field and a Form ID field. Confirm they open number and hexadecimal layouts instead of the full alphabetic layout.
-11. Open and close confirmation, Help, Results, Reference ID Picker, and first-time welcome windows. Confirm focus stays inside the active window and returns to a sensible control afterward.
-12. Switch between mouse and controller. Confirm mouse clicks work normally and the bright controller focus outline returns after the next controller input.
-6. Execute a harmless command and a read-only inspection to confirm modern request/reply handling works.
-7. Close CCC with its Close button and reopen it from OSF Settings.
-8. Press Escape with a Results window open. Confirm Results closes first; press Escape again and confirm CCC closes.
-9. Open WIP and confirm every category starts collapsed.
-10. Confirm blocked cards no longer show a small Unavailable badge beside their status. Hover or focus the large disabled **Unavailable** action and confirm the command appears in the anchored warning panel.
-11. Open Recent Commands, choose **Clear Recent**, and confirm its cards and sidebar count clear.
-12. Confirm Inspect Reference Scale appears under **Blocked — Known Crash**, cannot execute through CCC, and exposes its syntax only from the large disabled action.
-13. Confirm Show Current Quest Targets appears under **Executed — Issues** and cannot flood the console through CCC.
-14. Confirm Spawn Ship by Base ID appears under **Executed — Issues** with the buried-ramp result and remains unavailable through CCC.
-15. Browse a Perk or Power from a command, use the selected ID, then open the standalone ID Browser. Confirm every category is available.
-16. Confirm Toggle Decal Rendering appears under **Blocked — Known Crash** and cannot execute through CCC.
-17. Search for Toggle Game Pause and confirm exactly one established result appears.
-18. Confirm Show First-Person Model in Third Person, Toggle All Actor Animations, Select Next Actor, and Select Next Reference appear in their established categories rather than WIP.
-19. Confirm Save Game by Name and Load Game by Name appear under Executed — Issues and cannot execute through CCC.
-20. Confirm PrintMessage, ToggleMovement, ToggleFullScreenMotionBlur, ToggleBoundVisGeom, and ToggleDetectionStats appear under Executed — Effect Unconfirmed.
-21. In Gameplay, confirm Speech Challenge Success uses one normal half-width card with **Always Succeed** above **Restore Normal**.
-22. In Gameplay, confirm Speech Challenge Failure uses one normal half-width card with **Always Fail** above **Restore Normal** and no longer appears in WIP.
-23. Confirm each of the four speech buttons previews its own console command and records the selected action in Activity Log.
-24. Open Help from Recent, Favorites, a normal command category, ID Browser, Quest Browser, Custom Command, and Activity Log. Confirm each page has its own title and instructions.
-25. From a contextual Help window, choose **First-time Overview** and confirm the separate welcome window opens.
-26. Confirm Close, Done, backdrop click, and Escape dismiss contextual Help without closing CCC.
+6. Use only a controller. Confirm **LB/RB** cycle through Commands, ID Browser, Quest Browser, Custom Command, and Activity Log in the navigation bar below the header.
+7. On Commands, ID Browser, and Quest Browser, confirm focus begins on the first category. Press **A** to enter the main list, **A** again to enter the selected detail pane, and **B** to return one layer at a time.
+8. Confirm tapping **B** while a category is focused closes CCC, and holding **B** closes CCC from any layer.
+9. Confirm the D-pad and left stick move predictably, held directions repeat smoothly, and the right stick scrolls long lists and Results windows.
+10. Confirm directional input cannot escape Selected ID or Selected Quest; only **B** returns to the main list.
+11. Focus Search and press **A**. Enter text with the onscreen keyboard, use **X** for backspace, **Y** for space, **LB/RB** to move the cursor, and select **Done**. Confirm the search spans all categories in the active browser.
+12. Test a numeric command field and a Form ID field. Confirm they open number and hexadecimal layouts instead of the full alphabetic layout.
+13. Open and close confirmation, Help, Results, Reference ID Picker, inspection, and first-time welcome windows. Confirm focus stays inside the active window and returns to the control that opened it.
+14. Confirm Close and Cancel show **B**, Search shows **Start**, Help shows **Select**, the top navigation shows **LB/RB**, and keyboard Backspace and Space show **X/Y** while a controller is active.
+15. Confirm moving right from the favorite star reaches Execute and moving left from Execute returns to the star.
+16. Confirm Custom Command opens at Reusable Entries and Activity Log opens at its newest entry. From the newest Activity entry, Up must reach Clear Log.
+17. Switch between mouse and controller. Confirm mouse clicks work normally and the bright controller focus outline returns after the next controller input.
+18. Execute a harmless command and a read-only inspection to confirm modern request/reply handling works.
+19. Press Escape with a Results window open. Confirm Results closes first; press Escape again and confirm CCC closes.
+20. Confirm blocked WIP cards expose their syntax only from the large disabled **Unavailable** action.
+21. Open Recent, choose **Clear Recent**, and confirm its cards and sidebar count clear.
+22. Confirm Inspect Reference Scale and Toggle Decal Rendering remain under **Blocked — Known Crash** and cannot execute through CCC.
+23. Confirm Show Current Quest Targets and Spawn Ship by Base ID remain under **Executed — Issues** and unavailable.
+24. Search for Toggle Game Pause and confirm exactly one established result appears.
+25. Confirm Show First-Person Model in Third Person, Toggle All Actor Animations, Select Next Actor, and Select Next Reference appear in their established categories rather than WIP.
+26. Confirm Save Game by Name and Load Game by Name appear under Executed — Issues and cannot execute through CCC.
+27. Confirm Speech Challenge Success and Failure each use one compact card with two equally sized action buttons beside the favorite star.
+28. Open Help from every page and confirm each page has its own title and instructions. Open **First-time Overview** from Help and confirm the separate welcome window appears.
 
 ## Safe priority checks
 
 1. Confirm the first launch opens the welcome guide, **Start Exploring** closes it, and **Help** opens the guide for the current page.
-2. Confirm the footer and native connection both report v1.0.13.
+2. Confirm the footer and native connection both report v1.1.0.
 3. Open **ID Browser**. It should report **16,528 included IDs**.
-4. Confirm all result categories begin collapsed and clicking the full category row opens it.
-5. Open NPCs, Mods, and Locations. Each large group should initially show 100 rows and offer **Show 100 more**.
-6. Search for **Med Pack**, **Beowulf**, an Editor ID, and a hexadecimal Form ID. Search should include collapsed groups automatically.
+4. Confirm ID Browser categories appear in the sidebar and choosing one displays its compact result list.
+5. Open NPCs, Mods, and Locations. Each selected category should load completely without a **Show More** control.
+6. Search for **Med Pack**, **Beowulf**, an Editor ID, and a hexadecimal Form ID. Search should cover all ID Browser categories automatically.
 7. Select a normal inventory item, copy its Form ID, then add a quantity greater than one.
 8. Select a cell and a location. Each should show both **Copy ID** and **Copy Editor ID**.
 9. Select a Shattered Space record and confirm its expansion requirement is visible.
 10. Confirm internal test, template, dummy, and creature-attack records do not dominate the results.
-11. Clear the search and confirm every category returns to its collapsed state, including categories that were open before searching.
-12. On the first ID Browser open, allow the brief loading state to finish; close and reopen it and confirm the catalog appears immediately.
+11. Clear the search and confirm the previously selected category and result list return.
+12. Close and reopen ID Browser and confirm its catalog appears immediately.
 
 ## Form ID command searches
 
@@ -90,8 +85,8 @@ Close Starfield, replace the existing CCC files with the v1.1.0 build, and resta
 
 1. Confirm **Inspect Quest State** reports the current stage and marks completed stages through the native reader.
 2. Confirm each expanded quest explains that Start may need a stage before appearing in the mission log and Reset does not restart the quest.
-3. On the first Quest Browser open, allow the brief loading state to finish; close and reopen it and confirm the quest list appears immediately.
-4. Find an original-story quest, New Game Plus variant, expansion quest, and internal/system quest. Confirm each applicable badge is visible before expanding the quest row.
+3. Close and reopen Quest Browser and confirm its category and quest list appear immediately.
+4. Find an original-story quest, New Game Plus variant, expansion quest, and internal/system quest. Confirm each applicable note appears in the Selected Quest pane.
 
 ## Disposable-save quest checks
 
@@ -123,7 +118,7 @@ Make a manual backup save first. Choose a minor quest that is safe to alter.
 ## Expected behavior
 
 - Mouse and keyboard behavior remains intact alongside controller navigation and text entry.
-- Quest records are grouped, searchable, paged, and collapsed by default.
+- Quest records are grouped by Base Game and Shattered Space sidebar categories, globally searchable, and shown in compact scrollable lists.
 - Quest modification buttons always show a Danger confirmation.
 - The packaged ID Browser contains no live game scanner.
 - Known-broken commands remain visibly unavailable.

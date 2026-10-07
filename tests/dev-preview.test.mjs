@@ -30,5 +30,6 @@ test('browser preview supplies native fixtures and controller controls', () => {
   assert.match(mockSource, /pad-up/);
   assert.match(mockSource, /pad-a/);
   assert.match(mockSource, /pad-start/);
+  assert.match(mockSource, /pad-select/);
   assert.match(mockSource, /ui\.gamepad/);
 });

@@ -23,10 +23,48 @@ const PROMOTED_ENGINE_COMMANDS = new Set([
   'picknextref',
   'pickrefbyid',
   'show1stperson',
+  'toggleai',
   'toggleanimations',
+  'togglecellnode',
+  'togglecollision',
+  'togglecombatai',
+  'toggledetection',
+  'toggledistantlod',
+  'toggleflycam',
   'togglegamepause',
+  'togglegodmode',
+  'togglegrass',
   'togglehandsculled',
+  'toggleimmortalmode',
+  'togglesky',
   'usenearestteleportdoor',
+]);
+
+// These commands are useful only when their console text is returned to CCC.
+// Keep this list narrow: visual toggles often print nothing and should not be
+// reported as failures merely because the capture buffer is empty.
+const CAPTURED_ENGINE_COMMANDS = new Set([
+  'getdebugtext',
+  'getselectedref',
+  'printailist',
+  'showanim',
+  'showglobalvars',
+  'showinventory',
+  'showinventoryvars',
+  'showquests',
+  'showwhodetectsplayer',
+]);
+
+// Legacy console diagnostics that act on an object reference accept the same
+// target prefix form used by script functions (for example, player.ShowAnim).
+const TARGETED_ENGINE_COMMANDS = new Set([
+  'showanim',
+  'showheadtracktarget',
+  'showinventory',
+  'showinventoryvars',
+  'togglecharcontrollershape',
+  'toggledetectionstats',
+  'vatstarget',
 ]);
 
 export const ENGINE_COMMAND_LIBRARY_TOTAL = ENGINE_COMMAND_RECORDS.filter((record) => !PROMOTED_ENGINE_COMMANDS.has(commandName(record.name).toLowerCase())).length;
@@ -35,7 +73,9 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
   .filter((record) => !PROMOTED_ENGINE_COMMANDS.has(commandName(record.name).toLowerCase()))
   .map((record, index) => {
   const name = commandName(record.name);
+  const normalizedName = name.toLowerCase();
   const scriptFunction = record.group === 'Script Functions';
+  const acceptsTargetPrefix = scriptFunction || TARGETED_ENGINE_COMMANDS.has(normalizedName);
   const danger = severeCommand.test(`${record.name} ${record.description}`);
   const requiresCredentials = /^LinkFullAccount$/i.test(name);
   const knownCrashReasons: Record<string, string> = {
@@ -51,20 +91,44 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
   };
   const effectUnconfirmedReasons: Record<string, string> = {
     printmessage: 'In-game v1.0.7 testing with visible-message arguments executed without an error but displayed no message.',
+    setimagespacemodifiersenable: 'In-game testing on Starfield 1.16.244 executed without an error, but produced no confirmed visible image-space change.',
+    showbones: 'In-game testing on Starfield 1.16.244 executed after selecting an actor, but displayed no visible skeleton.',
+    showanim: 'In-game v1.1.0 testing produced no visible actor-status display. This legacy target-scoped diagnostic may require console selection or a debug-text surface that CCC does not currently expose.',
+    showheadtracktarget: 'In-game v1.1.0 testing with an actor context produced no visible head-track diagnostic.',
+    vatstarget: 'In-game v1.1.0 testing produced no visible VATS targeting diagnostic.',
     showlightbounds: 'In-game v1.0.6 testing executed without an error but showed no visible light-bound overlay.',
+    toggleaudiooverlay: 'In-game testing on Starfield 1.16.244 executed without an error, but displayed no visible audio overlay.',
     toggleboundvisgeom: 'In-game v1.0.7 testing executed without an error but showed no visible bound-geometry overlay.',
+    togglecharcontrollershape: 'In-game v1.1.0 testing produced no noticeable movement, jumping, crouching, or controller-shape change.',
     toggleborders: 'In-game v1.0.5 testing executed without an error but showed no visible cell borders.',
+    toggleaischedules: 'In-game testing on Starfield 1.16.244 executed without an error, but produced no noticeable change to nearby NPC schedules.',
+    toggleconversations: 'In-game testing on Starfield 1.16.244 executed without an error, but produced no noticeable conversation change.',
+    togglecontrolsoverlay: 'In-game testing on Starfield 1.16.244 executed without an error, but displayed no visible controls overlay.',
     toggledebugtext: 'In-game v1.0.6 testing executed without an error but showed no visible debug text.',
+    toggledepthleak: 'In-game testing on Starfield 1.16.244 executed without an error, but produced no confirmed visible depth diagnostic.',
     toggledetectionstats: 'In-game v1.0.7 testing executed without an error but showed no visible detection statistics.',
+    toggleemotions: 'In-game testing on Starfield 1.16.244 executed without an error, but produced no noticeable facial-emotion change.',
     togglefullscreenmotionblur: 'In-game v1.0.7 testing executed without an error but produced no confirmed visible change.',
+    toggleguioverlay: 'In-game testing on Starfield 1.16.244 executed without an error, but displayed no visible GUI diagnostic overlay.',
+    togglelensflare: 'In-game testing on Starfield 1.16.244 executed without an error, but produced no confirmed visible lens-flare change.',
+    togglelightingheatmap: 'In-game testing on Starfield 1.16.244 executed without an error, but displayed no visible lighting heatmap.',
     togglelitebrite: 'In-game v1.0.6 testing executed without an error but showed no visible lighting change.',
     togglematerialgeometry: 'In-game v1.0.5 testing executed without an error but showed no visible material-geometry overlay.',
+    togglemagicstats: 'In-game v1.1.0 testing produced no visible magic-stat display. This may depend on a separate debug-text page or console output.',
+    togglemotionblur: 'In-game testing on Starfield 1.16.244 executed without an error, but produced no confirmed visible motion-blur change.',
     togglemovement: 'In-game v1.0.7 testing executed without an error, but nearby NPCs continued walking normally.',
     togglenavmesh: 'In-game v1.0.6 testing executed without an error but showed no visible navigation mesh.',
     togglenavmeshinfo: 'In-game v1.0.6 testing executed without an error but showed no visible navigation information.',
+    toggleoverdraw: 'In-game testing on Starfield 1.16.244 executed without an error, but displayed no visible overdraw diagnostic.',
     togglepathline: 'In-game v1.0.6 testing executed without an error but showed no visible path line.',
     toggleprimitives: 'In-game v1.0.6 testing executed without an error but showed no visible primitive overlay.',
+    togglestairsgeometry: 'In-game v1.1.0 testing near stairs produced no visible geometry overlay.',
+    toggletaa: 'In-game testing on Starfield 1.16.244 executed without an error, but produced no confirmed visible anti-aliasing change.',
     togglevolumegeometry: 'In-game v1.0.5 testing executed without an error but showed no visible volume-geometry overlay.',
+    toggleweaponoverlay: 'In-game testing on Starfield 1.16.244 executed without an error, but displayed no visible weapon overlay.',
+    testseendata: 'In-game v1.1.0 testing in explored space produced no visible seen-data display.',
+    showwhodetectsplayer: 'In-game v1.1.0 testing near detecting actors produced no visible diagnostic.',
+    togglefullhelp: 'In-game v1.1.0 testing, including arguments 0 and 1, produced no visible change. The command appears to affect console help output rather than the game view.',
   };
   const failedInGameReason = failedInGameReasons[name.toLowerCase()];
   const effectUnconfirmedReason = effectUnconfirmedReasons[name.toLowerCase()];
@@ -78,9 +142,9 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
     description: effectUnconfirmedReason
       ? `${record.description || 'No description was included in the engine command reference.'} ${effectUnconfirmedReason}`
       : record.description || 'No description was included in the engine command reference.',
-    command: scriptFunction ? `{target}${name} {arguments}` : `${name} {arguments}`,
+    command: acceptsTargetPrefix ? `{target}${name} {arguments}` : `${name} {arguments}`,
     inputs: [
-      ...(scriptFunction ? [{
+      ...(acceptsTargetPrefix ? [{
         key: 'target',
         label: 'Optional Target / Prefix',
         type: 'text' as const,
@@ -100,6 +164,7 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
       },
     ],
     tags: [name, record.name, record.group, 'engine command', 'developer'],
+    captureOutput: CAPTURED_ENGINE_COMMANDS.has(normalizedName),
     warning: knownCrashReason
       ? knownCrashReason
       : failedInGameReason
