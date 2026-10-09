@@ -7,6 +7,10 @@ This file replaces the individual release-note documents. It records user-visibl
 - Removed generated dependencies, build output, old patch manifests, superseded test-build notes, and duplicate release-note files from the distributed source archive.
 - Consolidated release history into this changelog and folded the Quest Browser guide into the README.
 - Replaced the accumulated release checklist with a shorter checklist for the current session-based Mod Browser workflow.
+- Added a development-only Mod Browser scanner to the OSF UI webview.
+- The preview now discovers the active MO2 profile, resolves enabled plugin files from the MO2 mods folder and stock Data folder, and calculates full, medium, and small runtime Form IDs.
+- **Scan Mods** in the webview now loads real supported records instead of the three-item fixture catalog.
+- Added explicit preview configuration for the MO2 profile and stock game Data folder when automatic detection is not appropriate.
 
 ## 1.1.25
 

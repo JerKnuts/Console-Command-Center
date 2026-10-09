@@ -6,7 +6,7 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current release: v1.1.26.** This source-cleanup release removes generated dependencies and build output from the source download, consolidates the release history, and trims obsolete test documentation. See the [changelog](CHANGELOG.md) and [validation checklist](RELEASE_VALIDATION.md).
+**Current release: v1.1.26.** This update cleans the distributed source and lets the OSF UI development webview scan a configured MO2 profile and display its real mod IDs. See the [changelog](CHANGELOG.md) and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command. Controller support covers directional navigation, activation, Back, scrolling, dialogs, and an onscreen keyboard for editable fields.
 
@@ -162,6 +162,7 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 
 - `npm run build` builds both the native plugin and OSF UI frontend.
 - `npm run dev:game` opens the game-sized browser harness with simulated CCC responses, keeps the modern OSF UI view under `mod/` updated, and mirrors the compiled mod into the configured MO2 mods directory as frontend files change. It temporarily enables OSF UI author mode so a running game can reload frontend edits; locked native files are left alone until Starfield closes. The first run asks for the MO2 mods directory and saves it in `.osfui/local.json`; use `--deploy "C:\\path\\to\\mods"` to override it.
+- In the development webview, **Scan Mods** reads the active MO2 profile and parses supported records from its real plugin files. Set `profilePath` and `gameDataRoot` in `.osfui/local.json` when automatic profile or game-folder detection chooses the wrong location.
 - `npm run build:native` builds only the native plugin after ensuring CommonLibSF is available.
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI 2.0 and TypeScript checks.

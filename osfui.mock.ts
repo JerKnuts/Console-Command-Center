@@ -33,6 +33,21 @@ function inventoryFixture(): string {
     'SUMMARY\t40'].join('\n');
 }
 
+async function previewModCatalogRequest(name: string, payload?: JsonObject): Promise<JsonValue | null> {
+  const route = name === 'console.command-center.modCatalogs'
+    ? '/__ccc/mod-catalogs'
+    : name === 'console.command-center.modCatalogRecords'
+      ? `/__ccc/mod-catalog-records?plugin=${encodeURIComponent(String(payload?.plugin ?? ''))}`
+      : null;
+  if (!route) return null;
+  const response = await fetch(route, { cache: 'no-store' });
+  if (!response.ok) {
+    const failure = await response.json().catch(() => ({})) as { error?: string };
+    throw new Error(failure.error || `Preview mod scanner returned HTTP ${response.status}.`);
+  }
+  return await response.json() as JsonValue;
+}
+
 export function install(ctx: MockContext): void {
   const listeners = new Map<string, Set<Listener>>();
   let failRequests = false;
@@ -126,6 +141,11 @@ export function install(ctx: MockContext): void {
         case 'console.command-center.modCatalogRecords':
         case 'console.command-center.modCatalogCache':
         case 'console.command-center.modCatalogs': {
+          const localCatalog = await previewModCatalogRequest(name, payload);
+          if (localCatalog) {
+            reply = localCatalog;
+            break;
+          }
           const includeRecords = name === 'console.command-center.modCatalogRecords';
           reply = {
             ok: true,

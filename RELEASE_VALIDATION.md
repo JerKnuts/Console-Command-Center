@@ -52,6 +52,7 @@ This is the maintained release checklist. It covers behavior most likely to brea
 10. Favorite a scanned ID and use **Open** from Favorites to return to its mod, category, and record.
 11. Open Activity Log and verify the **Mod Browser Scan** entry reports load-order entries, discovered and loaded mods, IDs, zero-ID mods, failures, opened and missing files, and elapsed time.
 12. Close and reopen Mod Browser in the same session and confirm the scanned catalog remains available. Restarting the game may require another manual scan.
+13. Run `npm run dev:game`, open Mod Browser in the OSF UI webview, and select **Scan Mods**. Confirm it displays the configured MO2 profile's real plugins and IDs rather than Browser Fixture Arsenal.
 
 ## Quest Browser
 

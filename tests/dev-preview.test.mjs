@@ -6,6 +6,7 @@ const packageJson = JSON.parse(readFileSync(new URL('../package.json', import.me
 const devScript = readFileSync(new URL('../scripts/dev-game.mjs', import.meta.url), 'utf8');
 const mockSource = readFileSync(new URL('../osfui.mock.ts', import.meta.url), 'utf8');
 const configSource = readFileSync(new URL('../osfui.config.ts', import.meta.url), 'utf8');
+const previewScanner = readFileSync(new URL('../scripts/preview-mod-catalogs.mjs', import.meta.url), 'utf8');
 
 test('dev:game starts the browser harness and deploys the modern view and compiled mod', () => {
   assert.equal(packageJson.scripts['dev:game'], 'node scripts/dev-game.mjs');
@@ -32,4 +33,16 @@ test('browser preview supplies native fixtures and controller controls', () => {
   assert.match(mockSource, /pad-start/);
   assert.match(mockSource, /pad-select/);
   assert.match(mockSource, /ui\.gamepad/);
+});
+
+test('browser preview routes Mod Browser requests to the configured MO2 load order', () => {
+  assert.match(configSource, /cccPreviewModCatalogPlugin/);
+  assert.match(mockSource, /\/__ccc\/mod-catalogs/);
+  assert.match(mockSource, /\/__ccc\/mod-catalog-records\?plugin=/);
+  assert.match(previewScanner, /loadorder\.txt/);
+  assert.match(previewScanner, /modlist\.txt/);
+  assert.match(previewScanner, /CCC_MO2_PROFILE/);
+  assert.match(previewScanner, /CCC_GAME_DATA_ROOT/);
+  assert.match(previewScanner, /runtimeFormId/);
+  assert.match(previewScanner, /preview-load-order-scan/);
 });
