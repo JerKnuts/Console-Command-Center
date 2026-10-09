@@ -18,6 +18,7 @@ const idCatalogSource = readFileSync(new URL('../src/views/console.command-cente
 const generatedIdSource = readFileSync(new URL('../src/views/console.command-center/main/id-browser-data.ts', import.meta.url), 'utf8');
 const referenceIdSource = readFileSync(new URL('../src/views/console.command-center/main/reference-ids.ts', import.meta.url), 'utf8');
 const questBrowserSource = readFileSync(new URL('../src/views/console.command-center/main/quest-browser.ts', import.meta.url), 'utf8');
+const questExtractorSource = readFileSync(new URL('../scripts/extract-quest-records.mjs', import.meta.url), 'utf8');
 const directQuerySource = readFileSync(new URL('../native/include/DirectQuery.h', import.meta.url), 'utf8');
 const names = new Set(['executeConsole', 'executeCustomBatch', 'showResults', 'extractResultIds', 'parseInventoryResults', 'renderInventoryResults', 'describe', 'escapeHtml', 'renderActivityPanel', 'parseCustomCommands', 'readStringArray']);
 const functions = [...source.matchAll(/^(?:async )?function (\w+)\b[\s\S]*?^}/gm)]
@@ -197,6 +198,9 @@ test('Custom Command can persist, load, update, and delete up to 100 named entri
   assert.match(source, /\$\{savedCustomCommands\.length\} \/ \$\{MAX_SAVED_CUSTOM_COMMANDS\}/);
   assert.match(source, /data-custom-load=/);
   assert.match(source, /data-custom-delete=/);
+  assert.match(source, /data-custom-favorite=/);
+  assert.match(source, /data-favorite-custom-load=/);
+  assert.match(source, /savedCustomCommands\.filter\(\(entry\) => entry\.favorite\)/);
   assert.match(source, /input\.value = entry\.commands/);
   assert.match(source, /entry\.name\.toLowerCase\(\) === name\.toLowerCase\(\)/);
   assert.match(source, /writeSavedCustomCommands\(\)/);
@@ -206,6 +210,36 @@ test('Custom Command can persist, load, update, and delete up to 100 named entri
   assert.match(styleSource, /\.custom-workspace \{ display: grid; grid-template-columns: minmax\(260px, 1fr\) minmax\(var\(--ccc-detail-pane-min-width\), var\(--ccc-detail-pane-width\)\);/);
   assert.match(styleSource, /\.custom-saved-entry-actions \{ display: flex;/);
   assert.doesNotMatch(source, /const preview = commands\[0\]/);
+});
+
+test('ID Browser and Mod Browser records can be saved and reopened from Favorites', () => {
+  assert.match(source, /STORAGE_ID_FAVORITES = 'consoleCommandCenter\.idFavorites'/);
+  assert.match(source, /function idFavoriteKey\(entry: IdCatalogEntry\)/);
+  assert.match(source, /data-id-favorite-toggle=/);
+  assert.match(source, /data-favorite-id-toggle=/);
+  assert.match(source, /data-open-favorite-id=/);
+  assert.match(source, /savedFrom: entry\.source === 'mod' \? 'mod-browser' : 'id-browser'/);
+  assert.match(source, /idFavorites\.length/);
+  assert.match(styleSource, /\.id-browser-selection-actions \.id-browser-favorite/);
+});
+
+test('quest inspection returns controller focus to the right-panel inspect button', () => {
+  assert.match(source, /let resultsReturnFocus:/);
+  assert.match(source, /resultsDialog\.addEventListener\('close'/);
+  assert.match(source, /resultsReturnFocus = \(\) => \[\.\.\.commandList\.querySelectorAll<HTMLButtonElement>\('\[data-quest-inspect\]'\)\]/);
+  assert.match(source, /button\.dataset\.questId === inspectedQuestId/);
+});
+
+test('category selection has a complete orange outline', () => {
+  assert.match(styleSource, /\.navigation-categories \.nav-button\.is-active,[\s\S]*?border-color: var\(--ccc-orange\);[\s\S]*?box-shadow: inset 0 0 0 1px var\(--ccc-orange\);/);
+});
+
+test('shared category sidebar gives long names more room and separates rows', () => {
+  assert.match(styleSource, /\.workspace\s*\{[\s\S]*?grid-template-columns:\s*250px minmax\(0, 1fr\)/);
+  assert.match(styleSource, /\.navigation-categories\s*\{[\s\S]*?gap:\s*4px/);
+  assert.match(styleSource, /\.navigation-categories \.nav-button\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\) auto;[\s\S]*?height:\s*auto;[\s\S]*?min-height:\s*44px;[\s\S]*?align-items:\s*center;[\s\S]*?padding:\s*10px 11px;[\s\S]*?border-bottom-color:/);
+  assert.match(styleSource, /\.navigation-categories \.nav-button > span:first-child\s*\{[\s\S]*?display:\s*flex;[\s\S]*?justify-content:\s*flex-start;[\s\S]*?line-height:\s*1\.35;[\s\S]*?white-space:\s*normal;[\s\S]*?overflow-wrap:\s*anywhere;[\s\S]*?text-align:\s*left/);
+  assert.match(styleSource, /\.navigation-categories \.nav-count\s*\{[\s\S]*?align-self:\s*center;[\s\S]*?padding-top:\s*0/);
 });
 
 test('all master-detail pages use the same right-panel width', () => {
@@ -312,10 +346,11 @@ test('command views use a compact title list with one selected detail panel', ()
   assert.match(styleSource, /\.recent-toolbar/);
 });
 
-test('sidebar categories follow the selected Commands, ID Browser, and Quest Browser page', () => {
+test('sidebar categories follow the selected Commands, ID Browser, Mod Browser, and Quest Browser page', () => {
   assert.match(source, /data-view="commands"/);
   assert.match(source, /COMMAND CATEGORIES/);
   assert.match(source, /ID CATEGORIES/);
+  assert.match(source, /MOD CATALOGS/);
   assert.match(source, /QUEST CATEGORIES/);
   assert.match(source, /data-\$\{kind\}-category=/);
   assert.match(source, /\[data-command-category\]/);
@@ -332,7 +367,7 @@ test('sidebar categories follow the selected Commands, ID Browser, and Quest Bro
   assert.match(source, /questBrowserSource !== 'all' && entry\.source !== questBrowserSource/);
   assert.match(source, /questBrowserCategory !== 'all' && entry\.category !== questBrowserCategory/);
   assert.match(styleSource, /\.sidebar-source-heading\s*\{/);
-  assert.match(styleSource, /\.utility-nav-bar\s*\{[\s\S]*?grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(styleSource, /\.utility-nav-bar\s*\{[\s\S]*?grid-template-columns:\s*repeat\(6, minmax\(0, 1fr\)\)/);
   assert.ok(source.indexOf('class="utility-nav-bar"') < source.indexOf('class="workspace"'));
   assert.match(styleSource, /grid-template-rows:\s*56px 2px 44px minmax\(0, 1fr\) 34px/);
 });
@@ -375,7 +410,8 @@ test('page searches span every category in Commands, ID Browser, and Quest Brows
   assert.match(source, /if \(activeView === 'commands' && commandCategory === 'Untested'\) untestedQuery = query/);
   assert.match(source, /search\.value = view === 'commands' && commandCategory === 'Untested' \? untestedQuery : ''/);
   assert.match(source, /activeView === 'commands' && commandCategory === 'Untested'[\s\S]*?'Search WIP name, command, or description\.\.\.'/);
-  assert.match(source, /const browserScopeMatches = query \? true : categoryMatches && recordTypeMatches/);
+  assert.match(source, /const searchAllMods = activeView === 'mod-browser'/);
+  assert.match(source, /const browserScopeMatches = query \? \(searchAllMods \|\| categoryMatches\) : categoryMatches && recordTypeMatches/);
   assert.match(source, /function questBrowserMatches[\s\S]*?if \(!query\) \{[\s\S]*?questBrowserSource[\s\S]*?questBrowserCategory/);
   assert.doesNotMatch(source, /data-untested-search|data-clear-untested-search/);
   assert.doesNotMatch(source, /searchWrap\.hidden = [^;]*commandCategory === 'Untested'/);
@@ -554,7 +590,7 @@ test('perk, power, and effect commands use filtered ID Browser selection', () =>
   assert.doesNotMatch(idCatalogSource, /PERK_SKILL_PICKER|POWER_SPELL_PICKER|SPELL_EFFECT_PICKER/);
   assert.match(source, /pickerCategories = activeCatalogPicker\?\.browser === 'id' \? activeCatalogPicker\.allowedCategories : \[\]/);
   assert.match(source, /pickerCategories\.includes\(entry\.category\)/);
-  assert.match(source, /const visibleRows = results\.map\(renderResultRow\)\.join\(''\)/);
+  assert.match(source, /: results\.map\(renderResultRow\)\.join\(''\)/);
   assert.match(source, /id-browser-panel\$\{activeCatalogPicker\?\.browser === 'id' \? ' is-selecting' : ''\}/);
   assert.match(styleSource, /\.id-browser-panel\.is-selecting\s*\{[\s\S]*?grid-template-rows:\s*auto minmax\(0, 1fr\);/);
   assert.equal((idCatalogSource.match(/category: 'Powers'/g) ?? []).length, 24);
@@ -573,11 +609,12 @@ test('command-specific browser filters never leak into the standalone ID Browser
   assert.match(source, /if \(view === 'id-browser'\) \{\s*idBrowserCategory = 'common';\s*idBrowserRecordTypeFilter = '';/);
 });
 
-test('ID Browser renders one flat compact result list for the selected sidebar category', () => {
-  assert.doesNotMatch(source, /id-browser-category-group/);
+test('ID Browser stays flat while Mod Browser groups large catalogs by category', () => {
+  assert.match(source, /const visibleRows = activeView === 'mod-browser' && results\.length > 0/);
+  assert.match(source, /id-browser-category-group/);
   assert.doesNotMatch(source, /idBrowserOpenCategories/);
   assert.doesNotMatch(source, /group\.addEventListener\('toggle'/);
-  assert.match(source, /const visibleRows = results\.map\(renderResultRow\)\.join\(''\)/);
+  assert.match(source, /: results\.map\(renderResultRow\)\.join\(''\)/);
   assert.doesNotMatch(source, /ID_BROWSER_PAGE_SIZE|data-id-browser-more/);
   assert.match(source, /Copy Editor ID/);
   assert.match(source, /\['CELL', 'LCTN'\]\.includes/);
@@ -585,13 +622,13 @@ test('ID Browser renders one flat compact result list for the selected sidebar c
 
 test('ID Browser list interactions preserve scroll', () => {
   assert.match(source, /const scrollTop = resultsElement\.scrollTop;/);
-  assert.equal((source.match(/replacement\.scrollTop = scrollTop/g) ?? []).length, 1);
+  assert.equal((source.match(/replacement\.scrollTop = scrollTop/g) ?? []).length, 2);
 });
 
 test('ID Browser uses a compact title list with a selected information panel', () => {
   assert.match(source, /class="id-browser-workspace"/);
   assert.match(styleSource, /\.id-browser-workspace\s*\{[\s\S]*?grid-template-columns:\s*minmax\(260px, 1fr\) minmax\(var\(--ccc-detail-pane-min-width\), var\(--ccc-detail-pane-width\)\);/);
-  assert.doesNotMatch(styleSource, /\.id-browser-category-contents/);
+  assert.match(styleSource, /\.id-browser-category-contents/);
   assert.match(styleSource, /\.id-browser-row\s*\{[\s\S]*?min-height:\s*30px;/);
 });
 
@@ -612,18 +649,22 @@ test('search fields expose clear buttons and ID Browser relies on sidebar catego
   assert.match(styleSource, /\.search-clear\[hidden\]\s*\{\s*display:\s*none;/);
   assert.match(source, /idBrowserCategory = 'common'/);
   assert.doesNotMatch(source, /id="id-browser-category"/);
-  assert.doesNotMatch(source, /id-browser-category-group/);
+  assert.match(source, /activeView === 'mod-browser' && results\.length > 0/);
   assert.doesNotMatch(styleSource, /\.id-browser-controls/);
 });
 
-test('main command cards hide raw syntax while review and history retain it', () => {
+test('command lists stay compact while the selected right panel shows raw syntax', () => {
   assert.doesNotMatch(source, /command-heading-preview|data-preview=/);
   assert.doesNotMatch(source, /function updatePreview/);
+  assert.match(source, /detailView \? `<code class="command-detail-syntax">\$\{escapeHtml\(command\.command\)\}<\/code>`/);
+  assert.match(styleSource, /\.command-detail-syntax\s*\{[\s\S]*?user-select:\s*text/);
   assert.match(source, /class="confirm-command"/);
   assert.match(source, /class="activity-command"/);
 });
 
 test('ID Browser quick actions build item, weather, and cell commands', () => {
+  assert.match(source, /class="id-browser-add-row"/);
+  assert.match(styleSource, /\.id-browser-add-row\s*\{[\s\S]*?grid-template-columns:/);
   const quickActionFunctions = [...source.matchAll(/^(?:async )?function (\w+)\b[\s\S]*?^}/gm)]
     .filter((match) => ['idBrowserAction', 'requestIdBrowserQuickAction'].includes(match[1]))
     .map((match) => match[0]);
@@ -633,16 +674,24 @@ test('ID Browser quick actions build item, weather, and cell commands', () => {
   vm.createContext(sandbox);
   vm.runInContext(stripTypeScriptTypes(quickActionFunctions.join('\n')), sandbox);
   const medPack = { label: 'Med Pack', value: '0000ABF9', type: 'ALCH', category: 'Aid', action: 'additem' };
+  const book = { label: 'DarkStar Changelog', value: '5800874B', type: 'BOOK', category: 'Books & Notes' };
   const ship = { label: 'Abyss Trekker', value: '000F31DB', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' };
+  const furniture = { label: 'DarkStar Cooking Station', value: '58002B48', type: 'FURN', category: 'Furniture' };
   const weather = { label: 'Clear', value: '0002B07E', type: 'WTHR', category: 'Weather' };
   const cell = { label: 'The Rock', value: '00016758', type: 'CELL', category: 'Cells', keywords: ['CityAkilaTheRock01'] };
   const location = { label: 'Akila City', value: '00001226', type: 'LCTN', category: 'Locations', keywords: ['CityAkilaLocation'] };
   assert.equal(sandbox.idBrowserAction(ship), null);
+  assert.equal(sandbox.idBrowserAction(furniture), 'spawn');
+  sandbox.requestIdBrowserQuickAction(furniture);
+  assert.equal(requested.command, 'player.placeatme 58002B48 1');
   sandbox.requestIdBrowserQuickAction(medPack);
   assert.equal(requested.command, 'player.additem 0000ABF9 1');
   sandbox.requestIdBrowserQuickAction(medPack, 4);
   assert.equal(requested.command, 'player.additem 0000ABF9 4');
   assert.match(requested.definition.description, /Add 4 Med Pack/);
+  assert.equal(sandbox.idBrowserAction(book), 'additem');
+  sandbox.requestIdBrowserQuickAction(book);
+  assert.equal(requested.command, 'player.additem 5800874B 1');
   sandbox.requestIdBrowserQuickAction(weather);
   assert.equal(requested.command, 'fw 0002B07E');
   assert.equal(requested.definition.category, 'World');
@@ -760,6 +809,22 @@ test('Quest Browser contains every extracted base-game and Shattered Space quest
   assert.equal(entries.filter((entry) => entry.source === 'Base Game').length, 2077);
   assert.equal(entries.filter((entry) => entry.source === 'Shattered Space').length, 241);
   assert.equal(new Set(entries.map((entry) => `${entry.source}:${entry.id}`)).size, entries.length);
+});
+
+test('Quest Browser keeps support records but moves them out of player-facing categories', () => {
+  assert.equal((questBrowserSource.match(/"internal":true/g) ?? []).length, 1322);
+  assert.match(questBrowserSource, /"quest":"\[Always On Quest - Entangled\]"[\s\S]{0,220}"category":"Internal \/ System","internal":true/);
+  assert.match(questBrowserSource, /"quest":"\[Entangled - Support Quest\]"[\s\S]{0,300}"category":"Internal \/ System","internal":true/);
+  assert.match(source, /SUPPORT \/ INTERNAL QUEST/);
+});
+
+test('Shattered Space quest names use only the Shattered Space localization tables', () => {
+  assert.match(questExtractorSource, /expectedNames = new Set/);
+  assert.match(questExtractorSource, /pluginStem\.toLowerCase\(\)\}_en/);
+  assert.match(questBrowserSource, /"quest":"Conflict in Conviction"[^}]*"source":"Shattered Space"[^}]*"category":"Main Quests"/);
+  assert.match(questBrowserSource, /"quest":"What Remains"[^}]*"source":"Shattered Space"[^}]*"category":"Main Quests"/);
+  assert.doesNotMatch(questBrowserSource, /"quest":"Can I count on you to keep this between just you and I\?"/);
+  assert.doesNotMatch(questBrowserSource, /"quest":"Hope you like it\."/);
 });
 
 test('Quest Browser exposes native inspections and confirmed state-changing actions', () => {

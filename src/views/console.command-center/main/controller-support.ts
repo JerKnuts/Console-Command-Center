@@ -303,7 +303,9 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   }
 
   function firstCategoryButton(): HTMLElement | undefined {
-    return document.querySelector<HTMLElement>('#navigation .navigation-categories .nav-button') ?? undefined;
+    return document.querySelector<HTMLElement>('#navigation .navigation-categories .nav-button:not([data-scan-mod-catalogs])')
+      ?? document.querySelector<HTMLElement>('#navigation [data-scan-mod-catalogs]')
+      ?? undefined;
   }
 
   function activeNavigationButton(): HTMLElement | undefined {
@@ -341,7 +343,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   }
 
   function utilityViewTarget(view: string | undefined): HTMLElement | undefined {
-    if (view === 'commands' || view === 'id-browser' || view === 'quest-browser') return firstCategoryButton();
+    if (view === 'commands' || view === 'id-browser' || view === 'mod-browser' || view === 'quest-browser') return firstCategoryButton();
     if (view === 'custom') {
       return document.querySelector<HTMLElement>('.custom-saved-list [data-custom-load], #custom-command-name, #custom-save-form button, .custom-saved-panel')
         ?? commandAreaTarget();
@@ -372,6 +374,42 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   }
 
   function moveMappedRegion(active: HTMLElement, direction: 'up' | 'down' | 'left' | 'right'): boolean {
+    const customEntry = active.closest<HTMLElement>('.custom-saved-entry');
+    if (customEntry) {
+      if (active.matches('[data-custom-favorite]') && direction === 'right') {
+        focusElement(customEntry.querySelector<HTMLElement>('[data-custom-load]') ?? undefined);
+        return true;
+      }
+      if (active.matches('[data-custom-load]')) {
+        if (direction === 'left') focusElement(customEntry.querySelector<HTMLElement>('[data-custom-favorite]') ?? undefined);
+        else if (direction === 'right') focusElement(customEntry.querySelector<HTMLElement>('[data-custom-delete]') ?? undefined);
+        else return false;
+        return true;
+      }
+      if (active.matches('[data-custom-delete]') && direction === 'left') {
+        focusElement(customEntry.querySelector<HTMLElement>('[data-custom-load]') ?? undefined);
+        return true;
+      }
+    }
+
+    const favoriteSavedCommand = active.closest<HTMLElement>('.favorite-saved-command');
+    if (favoriteSavedCommand && active.matches('[data-favorite-custom-toggle]') && direction === 'right') {
+      focusElement(favoriteSavedCommand.querySelector<HTMLElement>('[data-favorite-custom-load]') ?? undefined);
+      return true;
+    }
+    if (favoriteSavedCommand && active.matches('[data-favorite-custom-load]') && direction === 'left') {
+      focusElement(favoriteSavedCommand.querySelector<HTMLElement>('[data-favorite-custom-toggle]') ?? undefined);
+      return true;
+    }
+    if (favoriteSavedCommand && active.matches('[data-favorite-id-toggle]') && direction === 'right') {
+      focusElement(favoriteSavedCommand.querySelector<HTMLElement>('[data-open-favorite-id]') ?? undefined);
+      return true;
+    }
+    if (favoriteSavedCommand && active.matches('[data-open-favorite-id]') && direction === 'left') {
+      focusElement(favoriteSavedCommand.querySelector<HTMLElement>('[data-favorite-id-toggle]') ?? undefined);
+      return true;
+    }
+
     if (active.matches('#clear-activity') && direction === 'down') {
       focusElement(document.querySelector<HTMLElement>('.activity-list .activity-entry') ?? undefined);
       return true;
@@ -594,7 +632,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     if (active instanceof HTMLElement && active.matches('.utility-nav-bar .nav-button')) {
       active.click();
       const view = active.dataset.view;
-      const categoryDriven = view === 'commands' || view === 'id-browser' || view === 'quest-browser';
+      const categoryDriven = view === 'commands' || view === 'id-browser' || view === 'mod-browser' || view === 'quest-browser';
       contentMode = !categoryDriven;
       requestAnimationFrame(() => focusElement(utilityViewTarget(view)));
       return;
@@ -714,7 +752,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     const nextButton = buttons[nextIndex];
     nextButton.click();
     const view = nextButton.dataset.view;
-    const categoryDriven = view === 'commands' || view === 'id-browser' || view === 'quest-browser';
+    const categoryDriven = view === 'commands' || view === 'id-browser' || view === 'mod-browser' || view === 'quest-browser';
     contentMode = !categoryDriven;
     requestAnimationFrame(() => focusElement(utilityViewTarget(view)));
   }

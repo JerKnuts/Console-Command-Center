@@ -14,13 +14,14 @@ import {
   mergeGeneratedIdCatalog,
   type IdCatalogEntry,
 } from './id-catalog';
+import { normalizeModCatalogs, type ModCatalogReply, type ModCatalogSummary } from './mod-catalog';
 
 const previewReady = (window as Window & { __CCC_PREVIEW_READY__?: Promise<void> }).__CCC_PREVIEW_READY__;
 if (previewReady) await previewReady;
 
-type ViewMode = 'commands' | 'favorites' | 'recent' | 'id-browser' | 'quest-browser' | 'activity' | 'custom' | string;
+type ViewMode = 'commands' | 'favorites' | 'recent' | 'id-browser' | 'mod-browser' | 'quest-browser' | 'activity' | 'custom' | string;
 
-type HelpPageId = 'recent' | 'favorites' | 'categories' | 'id-browser' | 'quest-browser' | 'custom' | 'activity';
+type HelpPageId = 'recent' | 'favorites' | 'categories' | 'id-browser' | 'mod-browser' | 'quest-browser' | 'custom' | 'activity';
 
 type HelpPage = {
   eyebrow: string;
@@ -76,6 +77,12 @@ type SavedCustomCommand = {
   name: string;
   commands: string;
   updatedAt: number;
+  favorite?: boolean;
+};
+
+type FavoriteIdEntry = IdCatalogEntry & {
+  favoriteKey: string;
+  savedFrom: 'id-browser' | 'mod-browser';
 };
 
 type PingReply = {
@@ -140,6 +147,7 @@ const app = document.querySelector('#app');
 if (!(app instanceof HTMLElement)) throw new Error('Missing #app element');
 
 const STORAGE_FAVORITES = 'consoleCommandCenter.favorites';
+const STORAGE_ID_FAVORITES = 'consoleCommandCenter.idFavorites';
 const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const STORAGE_CUSTOM_COMMANDS = 'consoleCommandCenter.customCommands';
@@ -151,7 +159,7 @@ const MAX_CUSTOM_COMMAND_LENGTH = 1024;
 const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1505;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.1.0';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.1.26';
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -167,10 +175,10 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   favorites: {
     eyebrow: 'FAVORITES HELP',
     title: 'Keep useful commands close',
-    intro: 'Favorites collects the command cards you mark with a star.',
+    intro: 'Favorites collects command cards, saved command batches, and browser IDs you mark with a star.',
     sections: [
-      { title: 'ADD FAVORITES', text: 'Select the star on any established or WIP command card. The filled star means it is saved here.' },
-      { title: 'USE SAVED CARDS', text: 'Inputs, warnings, confirmation, and execution work the same way they do in the original category.' },
+      { title: 'ADD FAVORITES', text: 'Select the star on any command, saved command batch, or selected ID. The filled star means it is saved here.' },
+      { title: 'USE SAVED COMMANDS', text: 'Load a saved batch from Favorites to open it in Custom Command for review before execution.' },
       { title: 'REMOVE FAVORITES', text: 'Select the star again to remove a card. Removing it does not affect Recent or Activity Log.' },
     ],
   },
@@ -189,13 +197,26 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   },
   'id-browser': {
     eyebrow: 'ID BROWSER HELP',
-    title: 'Find packaged Form IDs',
-    intro: 'ID Browser searches the records included with CCC without scanning the live game.',
+    title: 'Find Form IDs',
+    intro: 'ID Browser searches records included with CCC and supported records detected from the mods currently loaded by Starfield.',
     sections: [
       { title: 'SEARCH AND FILTER', text: 'Choose an ID category from the left side, then search its records by name, Form ID, type, or category.' },
       { title: 'SELECT A RECORD', text: 'Choose a name from the compact list to view its information and the actions CCC can safely prepare for that record type.' },
       { title: 'COMMAND PICKERS', text: 'When a command sends you here, only compatible records appear. Selecting one returns its Form ID to the command.' },
-      { title: 'EXPANSION RECORDS', text: 'Shattered Space entries are labeled and require that expansion. Other installed mods are not scanned automatically.' },
+      { title: 'MOD CATALOGS', text: 'Mod records live in the separate Mod Browser. Opening ID Browser never starts a mod scan.' },
+    ],
+  },
+  'mod-browser': {
+    eyebrow: 'MOD BROWSER',
+    title: 'Browse records added by active mods',
+    intro: 'Mod Browser scans only when you select Scan Mods. Results remain available for the current game session.',
+    sections: [
+      { title: 'SCAN MODS', text: 'One action discovers the active mods and collects their supported IDs for the current game session.' },
+      { title: 'Session scan', text: 'CCC does not scan when Mod Browser opens. Select Scan Mods once after starting the game when you want to browse mod IDs.' },
+      { title: 'Browse categories', text: 'A selected mod is divided into collapsible record categories. Only an opened category adds its records to the list.' },
+      { title: 'Search scope', text: 'With no mod selected, Search All searches every scanned mod ID. Select a mod and choose Search Mod to limit results to that plugin.' },
+      { title: 'Current load order', text: 'Each scan uses the current full, medium, and small plugin indexes so the displayed Form IDs match this session.' },
+      { title: 'Refresh the list', text: 'Select Scan Mods again after enabling, disabling, or updating plugins.' },
     ],
   },
   'quest-browser': {
@@ -236,6 +257,7 @@ let activeView: ViewMode = 'recent';
 let query = '';
 let untestedQuery = '';
 let favorites = readStringArray(STORAGE_FAVORITES);
+let idFavorites = readFavoriteIds();
 let recent = readStringArray(STORAGE_RECENT);
 let activityLog = readActivityLog();
 let savedCustomCommands = readSavedCustomCommands();
@@ -244,8 +266,16 @@ let activeIdPicker: ActiveIdPicker | null = null;
 let activeCatalogPicker: ActiveCatalogPicker | null = null;
 let nativeBackendReady = false;
 let idCatalog: IdCatalogEntry[] = CURATED_ID_CATALOG;
+let packagedIdCatalog: IdCatalogEntry[] = CURATED_ID_CATALOG;
 let idCatalogLoaded = false;
 let idCatalogLoading: Promise<void> | null = null;
+let modCatalogs: ModCatalogSummary[] = [];
+let modCatalogScanAllRunning = false;
+let modCatalogScanAllComplete = false;
+let modCatalogSummaryScanStartedAt = 0;
+let modCatalogSummaryTimer: number | null = null;
+let modSearchScope: 'mod' | 'all' = 'mod';
+const openModCategories = new Set<string>();
 let questBrowserEntries: QuestBrowserEntry[] = [];
 let questBrowserLoaded = false;
 let questBrowserLoading: Promise<void> | null = null;
@@ -284,7 +314,10 @@ app.innerHTML = `
         <span>Commands</span><span class="nav-count">${COMMANDS.filter((command) => command.category !== 'Untested').length}</span>
       </button>
       <button class="nav-button nav-button--ids" type="button" data-view="id-browser">
-        <span>ID Browser</span><span class="nav-count">${ID_BROWSER_TOTAL}</span>
+        <span>ID Browser</span><span class="nav-count" id="id-browser-nav-count">${ID_BROWSER_TOTAL}</span>
+      </button>
+      <button class="nav-button nav-button--mods" type="button" data-view="mod-browser">
+        <span>Mod Browser</span><span class="nav-count" id="mod-browser-nav-count">0</span>
       </button>
       <button class="nav-button nav-button--quest" type="button" data-view="quest-browser">
         <span>Quest Browser</span><span class="nav-count">${QUEST_BROWSER_TOTAL}</span>
@@ -309,10 +342,29 @@ app.innerHTML = `
             <p class="osf-eyebrow" id="section-kicker">COMMANDS</p>
             <h2 id="section-title">Recent Commands</h2>
           </div>
-          <label class="search-wrap" id="search-wrap">
-            <span class="osf-eyebrow search-label"><span>SEARCH</span><span class="controller-menu-hint" aria-hidden="true"><i></i><i></i><i></i></span></span>
-            <span class="search-field"><input class="osf-input" id="search" type="search" placeholder="Search name, command, tag..." autocomplete="off"><button class="search-clear" id="search-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button></span>
-          </label>
+          <div class="search-tools">
+            <div class="mod-search-scope" id="mod-search-scope" aria-label="Mod search scope" hidden>
+              <button type="button" data-mod-search-scope="mod">Search Mod</button>
+              <button type="button" data-mod-search-scope="all">Search All</button>
+            </div>
+            <label class="search-wrap" id="search-wrap">
+              <span class="osf-eyebrow search-label"><span>SEARCH</span><span class="controller-menu-hint" aria-hidden="true"><i></i><i></i><i></i></span></span>
+              <span class="search-field"><input class="osf-input" id="search" type="search" placeholder="Search name, command, tag..." autocomplete="off"><button class="search-clear" id="search-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="mod-scan-overlay" id="mod-scan-overlay" role="status" aria-live="polite" hidden>
+          <section class="mod-scan-card osf-card">
+            <span class="mod-scan-spinner" aria-hidden="true"></span>
+            <div class="mod-scan-copy">
+              <p class="osf-eyebrow">MOD BROWSER</p>
+              <h3>Updating Mod Browser</h3>
+              <p id="mod-scan-detail">Reading the active load order and plugin headers.</p>
+              <div class="mod-scan-meta"><span id="mod-scan-count">Discovering plugins…</span><span id="mod-scan-elapsed">Elapsed 0.0s</span></div>
+              <small>Cache restores are read-only. A full record scan runs only after you select Scan Mods.</small>
+            </div>
+          </section>
         </div>
 
         <div class="command-summary">
@@ -447,6 +499,7 @@ const inventoryResultsSort = requiredElement('#inventory-results-sort', HTMLSele
 const inventoryResults = requiredElement('#inventory-results', HTMLElement);
 const resultsFooter = requiredElement('#results-footer', HTMLElement);
 let inventoryResultRows: InventoryResultRow[] = [];
+let resultsReturnFocus: (() => HTMLElement | null) | null = null;
 
 function syncSearchClear(input: HTMLInputElement, button: HTMLButtonElement): void {
   button.hidden = input.value.length === 0;
@@ -466,6 +519,11 @@ resultsDialog.addEventListener('keydown', (event) => {
     event.preventDefault();
     resultsDialog.close();
   }
+});
+resultsDialog.addEventListener('close', () => {
+  const resolveTarget = resultsReturnFocus;
+  resultsReturnFocus = null;
+  if (resolveTarget) requestAnimationFrame(() => resolveTarget()?.focus({ preventScroll: true }));
 });
 
 function showResults(title: string, command: string, output: string, state: 'loading' | 'ready' | 'error'): void {
@@ -587,6 +645,11 @@ function requiredElement<T extends Element>(selector: string, kind: { new(): T }
 
 const navigation = requiredElement('#navigation', HTMLElement);
 const searchWrap = requiredElement('#search-wrap', HTMLElement);
+const modSearchScopeControl = requiredElement('#mod-search-scope', HTMLElement);
+const modScanOverlay = requiredElement('#mod-scan-overlay', HTMLElement);
+const modScanDetail = requiredElement('#mod-scan-detail', HTMLElement);
+const modScanCount = requiredElement('#mod-scan-count', HTMLElement);
+const modScanElapsed = requiredElement('#mod-scan-elapsed', HTMLElement);
 const search = requiredElement('#search', HTMLInputElement);
 const searchClear = requiredElement('#search-clear', HTMLButtonElement);
 const sectionKicker = requiredElement('#section-kicker', HTMLElement);
@@ -649,6 +712,50 @@ function writeStringArray(key: string, values: string[]): void {
   }
 }
 
+function readFavoriteIds(): FavoriteIdEntry[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_ID_FAVORITES) ?? '[]');
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((entry): entry is FavoriteIdEntry => {
+      if (!entry || typeof entry !== 'object') return false;
+      const value = entry as Partial<FavoriteIdEntry>;
+      return typeof value.favoriteKey === 'string'
+        && (value.savedFrom === 'id-browser' || value.savedFrom === 'mod-browser')
+        && typeof value.label === 'string'
+        && typeof value.value === 'string'
+        && typeof value.type === 'string'
+        && typeof value.category === 'string';
+    });
+  } catch {
+    return [];
+  }
+}
+
+function writeFavoriteIds(): void {
+  try {
+    localStorage.setItem(STORAGE_ID_FAVORITES, JSON.stringify(idFavorites));
+  } catch {
+    // Favorites remain available for the current session if storage is unavailable.
+  }
+}
+
+function idFavoriteKey(entry: IdCatalogEntry): string {
+  return entry.source === 'mod' && entry.plugin
+    ? `mod:${entry.plugin.toLowerCase()}:${(entry.localFormId ?? entry.value).toUpperCase()}:${entry.type.toUpperCase()}`
+    : `id:${entry.value.toUpperCase()}:${entry.type.toUpperCase()}`;
+}
+
+function toggleIdFavorite(entry: IdCatalogEntry): void {
+  const favoriteKey = idFavoriteKey(entry);
+  const existing = idFavorites.some((favorite) => favorite.favoriteKey === favoriteKey);
+  idFavorites = existing
+    ? idFavorites.filter((favorite) => favorite.favoriteKey !== favoriteKey)
+    : [{ ...entry, favoriteKey, savedFrom: entry.source === 'mod' ? 'mod-browser' : 'id-browser' }, ...idFavorites];
+  writeFavoriteIds();
+  render();
+  setStatus(`${existing ? 'Removed' : 'Added'} ${entry.label} ${existing ? 'from' : 'to'} Favorites.`, 'success');
+}
+
 function readSavedCustomCommands(): SavedCustomCommand[] {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_CUSTOM_COMMANDS) ?? '[]');
@@ -659,7 +766,8 @@ function readSavedCustomCommands(): SavedCustomCommand[] {
       return typeof value.id === 'string'
         && typeof value.name === 'string'
         && typeof value.commands === 'string'
-        && typeof value.updatedAt === 'number';
+        && typeof value.updatedAt === 'number'
+        && (value.favorite === undefined || typeof value.favorite === 'boolean');
     }).slice(0, MAX_SAVED_CUSTOM_COMMANDS);
   } catch {
     return [];
@@ -705,13 +813,13 @@ function writeActivityLog(): void {
   }
 }
 
-function addActivity(execution: PendingExecution, outcome: 'success' | 'error', message: string): void {
+function addActivitySummary(label: string, category: string, command: string, outcome: 'success' | 'error', message: string): void {
   const entry: ActivityEntry = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     timestamp: Date.now(),
-    command: execution.command.trim(),
-    label: execution.definition?.title ?? 'Custom Command',
-    category: execution.definition?.category ?? 'Custom',
+    command: command.trim(),
+    label,
+    category,
     outcome,
     message,
   };
@@ -723,6 +831,16 @@ function addActivity(execution: PendingExecution, outcome: 'success' | 'error', 
   }
   writeActivityLog();
   if (activeView === 'activity') render();
+}
+
+function addActivity(execution: PendingExecution, outcome: 'success' | 'error', message: string): void {
+  addActivitySummary(
+    execution.definition?.title ?? 'Custom Command',
+    execution.definition?.category ?? 'Custom',
+    execution.command,
+    outcome,
+    message,
+  );
 }
 
 function escapeHtml(value: string): string {
@@ -745,7 +863,7 @@ function renderNavigation(): void {
 
   const special = [
     { id: 'recent', label: 'Recent', count: recent.filter((id) => COMMANDS.some((command) => command.id === id)).length },
-    { id: 'favorites', label: 'Favorites', count: favorites.filter((id) => COMMANDS.some((command) => command.id === id)).length },
+    { id: 'favorites', label: 'Favorites', count: favorites.filter((id) => COMMANDS.some((command) => command.id === id)).length + savedCustomCommands.filter((entry) => entry.favorite).length + idFavorites.length },
   ];
 
   let categoryLabel = 'COMMAND CATEGORIES';
@@ -753,12 +871,36 @@ function renderNavigation(): void {
 
   if (activeView === 'id-browser') {
     categoryLabel = 'ID CATEGORIES';
-    categoryContent = ID_BROWSER_CATEGORIES
+    const builtInCategories = ID_BROWSER_CATEGORIES
       .filter((category) => category.value !== 'all')
       .map((category) => ({ category, count: idBrowserCategoryCount(category.value) }))
       .filter(({ count }) => count > 0)
       .map(({ category, count }) => sidebarCategoryButton('id', category.value, category.label, count, idBrowserCategory === category.value))
       .join('');
+    categoryContent = builtInCategories;
+  } else if (activeView === 'mod-browser') {
+    categoryLabel = 'MOD CATALOGS';
+    const populatedCatalogs = (modCatalogScanAllComplete ? modCatalogs.filter((catalog) => catalog.entries.length > 0) : modCatalogs)
+      .slice()
+      .sort((left, right) => {
+        const leftCount = left.recordsLoaded ? left.entries.length : left.reportedCount;
+        const rightCount = right.recordsLoaded ? right.entries.length : right.reportedCount;
+        return rightCount - leftCount || left.name.localeCompare(right.name);
+      });
+    const officialCreations = populatedCatalogs.filter((catalog) => catalog.officialCreation);
+    const communityMods = populatedCatalogs.filter((catalog) => !catalog.officialCreation);
+    const modCategories = [
+      officialCreations.length
+        ? `<div class="sidebar-source-heading">Official Creations</div>${officialCreations.map((catalog) => sidebarCatalogButton(catalog, idBrowserCategory === catalog.key)).join('')}`
+        : '',
+      communityMods.length
+        ? `<div class="sidebar-source-heading">Mods</div>${communityMods.map((catalog) => sidebarCatalogButton(catalog, idBrowserCategory === catalog.key)).join('')}`
+        : '',
+    ].join('');
+    const modState = modCategories || '<div class="sidebar-catalog-note">Select Scan Mods to load this session\'s mod IDs.</div>';
+    categoryContent = `<div class="sidebar-mod-actions">
+        <button class="nav-button sidebar-refresh" type="button" data-scan-mod-catalogs ${modCatalogScanAllRunning ? 'disabled' : ''}><span>${modCatalogScanAllRunning ? 'Scanning Mods…' : 'Scan Mods'}</span></button>
+      </div>${modState}`;
   } else if (activeView === 'quest-browser') {
     categoryLabel = 'QUEST CATEGORIES';
     categoryContent = (['Base Game', 'Shattered Space'] as const).map((source) => {
@@ -797,6 +939,12 @@ function renderNavigation(): void {
 
   const activityCount = document.querySelector('#activity-nav-count');
   if (activityCount instanceof HTMLElement) activityCount.textContent = String(activityLog.length);
+  const idCount = document.querySelector('#id-browser-nav-count');
+  if (idCount instanceof HTMLElement) idCount.textContent = (idCatalogLoaded ? idCatalog.length : ID_BROWSER_TOTAL).toLocaleString();
+  const modCount = document.querySelector('#mod-browser-nav-count');
+  if (modCount instanceof HTMLElement) {
+    modCount.textContent = modCatalogs.reduce((total, catalog) => total + catalog.entries.length, 0).toLocaleString();
+  }
 }
 
 function navButton(id: string, label: string, count: number): string {
@@ -808,12 +956,20 @@ function sidebarCategoryButton(kind: 'command' | 'id', id: string, label: string
   return `<button class="nav-button${active ? ' is-active' : ''}" type="button" data-${kind}-category="${escapeHtml(id)}" title="${escapeHtml(label)}"><span>${escapeHtml(label)}</span><span class="nav-count">${count.toLocaleString()}</span></button>`;
 }
 
+function sidebarCatalogButton(catalog: ModCatalogSummary, active: boolean): string {
+  const availableCount = catalog.recordsLoaded ? catalog.entries.length : catalog.reportedCount;
+  const count = availableCount > 0 ? availableCount.toLocaleString() : catalog.cached ? '0' : '…';
+  return `<button class="nav-button${active ? ' is-active' : ''}" type="button" data-id-category="${escapeHtml(catalog.key)}" title="${escapeHtml(catalog.plugin)}"><span>${escapeHtml(catalog.name)}</span><span class="nav-count">${count}</span></button>`;
+}
+
 function questSidebarCategoryButton(source: QuestBrowserEntry['source'], category: string, count: number, active: boolean): string {
   return `<button class="nav-button${active ? ' is-active' : ''}" type="button" data-quest-source="${escapeHtml(source)}" data-quest-category="${escapeHtml(category)}" title="${escapeHtml(category)}"><span>${escapeHtml(category)}</span><span class="nav-count">${count.toLocaleString()}</span></button>`;
 }
 
 function idBrowserCategoryCount(value: string): number {
   if (value === 'all') return idCatalogLoaded ? idCatalog.length : ID_BROWSER_TOTAL;
+  const modCatalog = modCatalogs.find((catalog) => catalog.key === value);
+  if (modCatalog) return modCatalog.entries.length;
   const category = ID_BROWSER_CATEGORIES.find((entry) => entry.value === value);
   if (!category || !idCatalogLoaded) return 0;
   return idCatalog.filter((entry) => category.builtInCategories.includes(entry.category)
@@ -856,11 +1012,16 @@ function activeCommands(): CommandDefinition[] {
 }
 
 function viewTitle(): string {
+  if (query && activeView === 'mod-browser') {
+    const activeMod = modCatalogs.find((catalog) => catalog.key === idBrowserCategory);
+    return modSearchScope === 'all' || !activeMod ? 'Search All Mod IDs' : `Search ${activeMod.name}`;
+  }
   if (query && activeView !== 'custom' && activeView !== 'activity') return 'Search Results';
   if (activeView === 'favorites') return 'Favorites';
   if (activeView === 'recent') return 'Recent Commands';
   if (activeView === 'quest-browser') return questBrowserCategory === 'all' ? 'All Quests' : questBrowserCategory;
   if (activeView === 'id-browser') return idBrowserCategory === 'all' ? 'All Included IDs' : activeIdBrowserCategory().label;
+  if (activeView === 'mod-browser') return modCatalogs.find((catalog) => catalog.key === idBrowserCategory)?.name ?? 'Installed Mods';
   if (activeView === 'activity') return 'Activity Log';
   if (activeView === 'custom') return 'Custom Command';
   if (activeView === 'commands' && commandCategory === 'Untested') return 'Work in Progress';
@@ -873,12 +1034,48 @@ function clearForDatasetLoad(): void {
   commandList.replaceChildren();
 }
 
+function updateModCatalogSummaryTimer(): void {
+  if (!modCatalogSummaryScanStartedAt) return;
+  const elapsedSeconds = (performance.now() - modCatalogSummaryScanStartedAt) / 1000;
+  modScanElapsed.textContent = `Elapsed ${elapsedSeconds.toFixed(1)}s`;
+}
+
+function beginModCatalogSummaryScan(): void {
+  modCatalogSummaryScanStartedAt = performance.now();
+  modScanDetail.textContent = 'Reading the active load order and plugin headers.';
+  modScanCount.textContent = modCatalogs.length > 0
+    ? `Checking ${modCatalogs.length.toLocaleString()} known plugins…`
+    : 'Discovering plugins…';
+  updateModCatalogSummaryTimer();
+  modScanOverlay.hidden = false;
+  if (modCatalogSummaryTimer !== null) window.clearInterval(modCatalogSummaryTimer);
+  modCatalogSummaryTimer = window.setInterval(updateModCatalogSummaryTimer, 100);
+}
+
+function setModCatalogSummaryProgress(detail: string, count: string): void {
+  modScanDetail.textContent = detail;
+  modScanCount.textContent = count;
+  updateModCatalogSummaryTimer();
+}
+
+function finishModCatalogSummaryScan(): void {
+  if (modCatalogSummaryTimer !== null) window.clearInterval(modCatalogSummaryTimer);
+  modCatalogSummaryTimer = null;
+  modCatalogSummaryScanStartedAt = 0;
+  modScanOverlay.hidden = true;
+}
+
+function paintModCatalogSummaryScan(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+}
+
 function ensureIdCatalogLoaded(): Promise<void> {
   if (idCatalogLoaded) return Promise.resolve();
   if (idCatalogLoading) return idCatalogLoading;
   idCatalogLoading = import('./id-browser-data')
     .then(({ GENERATED_ID_CATALOG }) => {
-      idCatalog = mergeGeneratedIdCatalog(GENERATED_ID_CATALOG);
+      packagedIdCatalog = mergeGeneratedIdCatalog(GENERATED_ID_CATALOG);
+      idCatalog = [...packagedIdCatalog, ...modCatalogs.flatMap((catalog) => catalog.entries)];
       idCatalogLoaded = true;
     })
     .catch((error) => {
@@ -886,9 +1083,94 @@ function ensureIdCatalogLoaded(): Promise<void> {
     })
     .finally(() => {
       idCatalogLoading = null;
-      if (activeView === 'id-browser') render();
+      if (activeView === 'id-browser' || activeView === 'mod-browser') render();
     });
   return idCatalogLoading;
+}
+
+function rebuildIdCatalog(): void {
+  idCatalog = [...packagedIdCatalog, ...modCatalogs.flatMap((item) => item.entries)]
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+async function requestModCatalogRecords(catalog: ModCatalogSummary, index: number, total: number, action: string, showProgress = true, idsFound = 0): Promise<ModCatalogSummary | null> {
+  const bridge = window.osfui;
+  if (!bridge?.request) return null;
+  if (showProgress) {
+    setModCatalogSummaryProgress(`${action} ${catalog.name}.`, `Mod ${(index + 1).toLocaleString()} / ${total.toLocaleString()} · ${idsFound.toLocaleString()} IDs found`);
+    await paintModCatalogSummaryScan();
+  }
+  try {
+    const reply = await bridge.request<ModCatalogReply>('console.command-center.modCatalogRecords', { plugin: catalog.plugin }, { timeoutMs: 0 });
+    if (!reply.ok || reply.error) throw new Error(reply.error || 'The mod returned an invalid catalog reply.');
+    return normalizeModCatalogs(reply)[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function scanModCatalogs(): Promise<void> {
+  if (modCatalogScanAllRunning || !nativeBackendReady || !window.osfui?.request) return;
+  const scanStartedAt = performance.now();
+  modCatalogScanAllRunning = true;
+  modCatalogScanAllComplete = false;
+  beginModCatalogSummaryScan();
+  setModCatalogSummaryProgress('Scanning active mods and collecting all supported IDs.', 'This may take a while with a large load order.');
+  renderNavigation();
+  await paintModCatalogSummaryScan();
+  try {
+    const reply = await window.osfui.request<ModCatalogReply>('console.command-center.modCatalogs', {}, { timeoutMs: 0 });
+    if (!reply.ok || reply.error) throw new Error(reply.error || 'The mod scan reply was not valid.');
+    const discoveredCatalogs = normalizeModCatalogs(reply);
+    if (discoveredCatalogs.length === 0 && (reply.loadOrderEntries ?? reply.scannedPlugins ?? 0) > 0) {
+      throw new Error('The scan found a load order but returned no usable mod plugins. The existing catalog was kept.');
+    }
+    const scannedCatalogs: ModCatalogSummary[] = [];
+    let scannedIdTotal = 0;
+    let failed = 0;
+    for (let index = 0; index < discoveredCatalogs.length; ++index) {
+      const loaded = await requestModCatalogRecords(discoveredCatalogs[index], index, discoveredCatalogs.length, 'Scanning IDs from', true, scannedIdTotal);
+      if (loaded) {
+        scannedCatalogs.push(loaded);
+        scannedIdTotal += loaded.entries.length;
+      }
+      else ++failed;
+    }
+    if (discoveredCatalogs.length > 0 && scannedCatalogs.length === 0) {
+      throw new Error('No mod catalog replies could be loaded. The existing catalog was kept.');
+    }
+    setModCatalogSummaryProgress('Finishing the Mod Browser catalog.', `Mod ${discoveredCatalogs.length.toLocaleString()} / ${discoveredCatalogs.length.toLocaleString()} · ${scannedIdTotal.toLocaleString()} IDs found`);
+    await paintModCatalogSummaryScan();
+    modCatalogs = scannedCatalogs;
+    rebuildIdCatalog();
+    modCatalogs.sort((left, right) => right.entries.length - left.entries.length || left.name.localeCompare(right.name));
+    modCatalogScanAllComplete = true;
+    const total = modCatalogs.reduce((sum, catalog) => sum + catalog.entries.length, 0);
+    const empty = modCatalogs.filter((catalog) => catalog.entries.length === 0).length;
+    const elapsedMs = performance.now() - scanStartedAt;
+    const details = [
+      'Mod Browser scan completed.',
+      `Active load-order entries: ${(reply.loadOrderEntries ?? discoveredCatalogs.length).toLocaleString()}`,
+      `Mod plugins discovered: ${discoveredCatalogs.length.toLocaleString()}`,
+      `Mod catalogs loaded: ${scannedCatalogs.length.toLocaleString()}`,
+      `Supported IDs found: ${total.toLocaleString()}`,
+      `Mods with no supported IDs: ${empty.toLocaleString()}`,
+      `Mods that could not be read: ${failed.toLocaleString()}`,
+      `Plugin files opened: ${(reply.pluginFilesOpened ?? discoveredCatalogs.length).toLocaleString()}`,
+      `Plugin files missing: ${(reply.pluginFilesMissing ?? 0).toLocaleString()}`,
+      `Elapsed: ${(elapsedMs / 1000).toFixed(1)} seconds`,
+    ].join('\n');
+    addActivitySummary('Mod Browser Scan', 'Mod Browser', 'Scan Mods', 'success', `Result: ${details}`);
+    setStatus(`Scanned ${discoveredCatalogs.length.toLocaleString()} mods and loaded ${total.toLocaleString()} IDs for this session. ${empty.toLocaleString()} mods with no supported IDs are hidden${failed ? `; ${failed.toLocaleString()} mods could not be read` : ''}.`, failed ? 'normal' : 'success');
+  } catch (error) {
+    const message = `Mods could not be scanned: ${describe(error)}`;
+    addActivitySummary('Mod Browser Scan', 'Mod Browser', 'Scan Mods', 'error', `${message}\nElapsed: ${((performance.now() - scanStartedAt) / 1000).toFixed(1)} seconds`);
+    setStatus(message, 'error');
+  } finally {
+    finishModCatalogSummaryScan();
+    modCatalogScanAllRunning = false;
+    render();
+  }
 }
 
 function ensureQuestBrowserLoaded(): Promise<void> {
@@ -950,6 +1232,11 @@ function renderUntestedCommandGroups(commands: CommandDefinition[], compact = fa
   const content = [...groups.entries()]
     .sort(([left], [right]) => groupOrder.indexOf(left) - groupOrder.indexOf(right))
     .map(([group, entries]) => {
+      if (group === 'Ready to Test') {
+        return `<section class="untested-group is-open is-headingless">
+          <div class="untested-group-content">${entries.map((entry) => compact ? renderCommandListRow(entry) : renderCommandCard(entry)).join('')}</div>
+        </section>`;
+      }
       const open = Boolean(untestedQuery.trim()) || openUntestedGroup === group;
       return `<section class="untested-group${open ? ' is-open' : ''}">
         <button class="untested-group-heading" type="button" data-untested-group="${escapeHtml(group)}" aria-expanded="${open}">
@@ -1009,10 +1296,44 @@ function renderCommandDetail(command: CommandDefinition | undefined): string {
 
 function renderCompactCommandLayout(commands: CommandDefinition[]): string {
   const selected = commands.find((command) => command.id === selectedCommandId);
+  const savedFavorites = activeView === 'favorites' ? renderSavedCommandFavorites() : '';
+  const idFavoriteCards = activeView === 'favorites' ? renderIdFavorites() : '';
   const list = activeView === 'commands' && commandCategory === 'Untested' && !query
     ? renderUntestedCommandGroups(commands, true)
-    : `${activeView === 'recent' ? renderRecentToolbar() : ''}${commands.map(renderCommandListRow).join('')}`;
+    : `${activeView === 'recent' ? renderRecentToolbar() : ''}${savedFavorites}${idFavoriteCards}${commands.map(renderCommandListRow).join('')}`;
   return `<div class="compact-command-list" role="listbox" aria-label="${escapeHtml(viewTitle())} commands">${list}</div>${renderCommandDetail(selected)}`;
+}
+
+function renderSavedCommandFavorites(): string {
+  return savedCustomCommands.filter((entry) => entry.favorite).map((entry) => {
+    const commandCount = parseCustomCommands(entry.commands).length;
+    return `<article class="favorite-saved-command">
+      <div class="favorite-saved-command-copy">
+        <span class="osf-eyebrow">SAVED COMMAND</span>
+        <strong>${escapeHtml(entry.name)}</strong>
+        <small>${commandCount} command${commandCount === 1 ? '' : 's'}</small>
+      </div>
+      <div class="favorite-saved-command-actions">
+        <button class="favorite-button is-favorite" type="button" data-favorite-custom-toggle="${escapeHtml(entry.id)}" aria-label="Remove ${escapeHtml(entry.name)} from favorites" title="Remove from favorites">★</button>
+        <button class="osf-btn osf-btn--sm" type="button" data-favorite-custom-load="${escapeHtml(entry.id)}">Load</button>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+function renderIdFavorites(): string {
+  return idFavorites.map((entry) => `
+    <article class="favorite-saved-command favorite-id-entry">
+      <div class="favorite-saved-command-copy">
+        <span class="osf-eyebrow">${entry.savedFrom === 'mod-browser' ? 'MOD ID' : 'ID BROWSER'}</span>
+        <strong>${escapeHtml(entry.label)}</strong>
+        <small>${escapeHtml(entry.sourceName ?? entry.plugin ?? entry.category)} · ${escapeHtml(entry.value)}</small>
+      </div>
+      <div class="favorite-saved-command-actions">
+        <button class="favorite-button is-favorite" type="button" data-favorite-id-toggle="${escapeHtml(entry.favoriteKey)}" aria-label="Remove ${escapeHtml(entry.label)} from favorites" title="Remove from favorites">★</button>
+        <button class="osf-btn osf-btn--sm" type="button" data-open-favorite-id="${escapeHtml(entry.favoriteKey)}">Open</button>
+      </div>
+    </article>`).join('');
 }
 
 function selectCommand(commandId: string, focusRow = false): void {
@@ -1030,7 +1351,18 @@ function selectCommand(commandId: string, focusRow = false): void {
 function render(): void {
   syncSearchClear(search, searchClear);
   renderNavigation();
+  const activeModSelected = modCatalogs.some((catalog) => catalog.key === idBrowserCategory);
+  const effectiveModSearchScope = activeModSelected ? modSearchScope : 'all';
+  modSearchScopeControl.hidden = activeView !== 'mod-browser';
+  modSearchScopeControl.querySelectorAll<HTMLButtonElement>('[data-mod-search-scope]').forEach((button) => {
+    const scope = button.dataset.modSearchScope;
+    const active = scope === effectiveModSearchScope;
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-pressed', String(active));
+    button.disabled = scope === 'mod' && !activeModSelected;
+  });
   const commandGridView = activeView !== 'id-browser'
+    && activeView !== 'mod-browser'
     && activeView !== 'quest-browser'
     && activeView !== 'activity'
     && activeView !== 'custom'
@@ -1052,6 +1384,8 @@ function render(): void {
       ? 'DIAGNOSTICS'
       : activeView === 'id-browser'
         ? 'ID BROWSER'
+        : activeView === 'mod-browser'
+          ? 'MOD BROWSER'
         : activeView === 'quest-browser'
           ? 'QUEST BROWSER'
           : query
@@ -1062,6 +1396,8 @@ function render(): void {
     ? 'Search quest, Editor ID, Form ID, source, or stage...'
     : activeView === 'id-browser'
       ? 'Search included IDs by name, Form ID, or type...'
+    : activeView === 'mod-browser'
+        ? (effectiveModSearchScope === 'all' ? 'Search every loaded mod ID...' : 'Search this mod by name, Form ID, or type...')
       : activeView === 'commands' && commandCategory === 'Untested'
         ? 'Search WIP name, command, or description...'
       : 'Search name, command, tag...';
@@ -1075,6 +1411,14 @@ function render(): void {
       void ensureIdCatalogLoaded();
       return;
     }
+    commandList.hidden = true;
+    customPanel.hidden = false;
+    renderIdBrowserPanel();
+    return;
+  }
+
+  if (activeView === 'mod-browser') {
+    commandList.classList.remove('is-compact-command-layout');
     commandList.hidden = true;
     customPanel.hidden = false;
     renderIdBrowserPanel();
@@ -1121,20 +1465,24 @@ function render(): void {
   customPanel.hidden = true;
   commandList.hidden = false;
   const commands = activeCommands();
+  const savedFavoriteCount = activeView === 'favorites' ? savedCustomCommands.filter((entry) => entry.favorite).length : 0;
+  const idFavoriteCount = activeView === 'favorites' ? idFavorites.length : 0;
   if (!commands.some((command) => command.id === selectedCommandId)) {
     selectedCommandId = activeView === 'commands' && commandCategory === 'Untested' && !untestedQuery.trim() ? null : commands[0]?.id ?? null;
   }
   resultCount.textContent = activeView === 'commands' && commandCategory === 'Untested' && untestedQuery.trim()
     ? `${commands.length.toLocaleString()} matching WIP commands / ${categoryCount('Untested').toLocaleString()} total`
-    : `${commands.length.toLocaleString()} command${commands.length === 1 ? '' : 's'}`;
+    : activeView === 'favorites'
+      ? `${(commands.length + savedFavoriteCount + idFavoriteCount).toLocaleString()} favorite${commands.length + savedFavoriteCount + idFavoriteCount === 1 ? '' : 's'}`
+      : `${commands.length.toLocaleString()} command${commands.length === 1 ? '' : 's'}`;
 
-  if (commands.length === 0) {
+  if (commands.length === 0 && savedFavoriteCount === 0 && idFavoriteCount === 0) {
     const message = activeView === 'commands' && commandCategory === 'Untested' && untestedQuery.trim()
       ? 'No WIP commands match this search.'
       : query
       ? 'No commands match your search.'
       : activeView === 'favorites'
-        ? 'No favorites yet. Mark commands as favorites and they will appear here.'
+        ? 'No favorites yet. Mark commands, saved command batches, or browser IDs as favorites and they will appear here.'
         : activeView === 'recent'
           ? 'No commands have been executed recently.'
           : 'Nothing is available in this category.';
@@ -1211,7 +1559,7 @@ function renderQuestBrowserSelection(entry: QuestBrowserEntry | undefined): stri
     ? `<span class="quest-browser-requirement">${escapeHtml(entry.requirement)}</span>`
     : '';
   const internal = entry.internal
-    ? '<span class="quest-browser-internal">INTERNAL / SYSTEM NAME</span>'
+    ? '<span class="quest-browser-internal">SUPPORT / INTERNAL QUEST</span>'
     : '';
   const variantLabel = questBrowserVariantLabel(entry);
   const variant = variantLabel
@@ -1344,6 +1692,7 @@ function renderCommandCard(command: CommandDefinition, detailView = false): stri
           </div>
           <span class="command-heading-tags">${testTag}${warningTag}</span>
         </div>
+        ${detailView ? `<code class="command-detail-syntax">${escapeHtml(command.command)}</code>` : ''}
         <p class="command-description">${escapeHtml(command.description)}</p>
         ${detailView && command.warning ? `<div class="command-detail-warning${command.risk === 'danger' ? ' is-danger' : ''}"><strong>${riskLabel}</strong><span>${escapeHtml(command.warning)}</span></div>` : ''}
         ${command.unavailableReason ? `<p class="command-unavailable-reason">${escapeHtml(command.unavailableReason)}</p>` : ''}
@@ -1836,8 +2185,8 @@ function renderActivityPanel(): void {
     <section class="activity-panel">
       <div class="activity-toolbar">
         <div>
-          <p class="osf-eyebrow">COMMAND HISTORY</p>
-          <p>Executed commands and captured inspection results.</p>
+          <p class="osf-eyebrow">ACTIVITY HISTORY</p>
+          <p>Executed commands, captured inspection results, and Mod Browser scans.</p>
         </div>
         <button class="osf-btn osf-btn--sm osf-btn--ghost" id="clear-activity" type="button" ${activityLog.length === 0 ? 'disabled' : ''}>Clear Log</button>
       </div>
@@ -1877,32 +2226,42 @@ function formatActivityTime(timestamp: number): string {
 
 
 function activeIdBrowserCategory() {
+  const modCatalog = modCatalogs.find((catalog) => catalog.key === idBrowserCategory);
+  if (modCatalog) return { label: modCatalog.name, value: modCatalog.key, detail: modCatalog.plugin, recordType: '', builtInCategories: [] };
+  if (activeView === 'mod-browser') return { label: 'Installed Mods', value: '', detail: '', recordType: '', builtInCategories: [] };
   return ID_BROWSER_CATEGORIES.find((category) => category.value === idBrowserCategory) ?? ID_BROWSER_CATEGORIES[0];
 }
 
 function idBrowserTextMatches(entry: IdCatalogEntry): boolean {
   if (!query) return true;
-  const haystack = [entry.label, entry.value, entry.type, entry.category, entry.detail ?? '', ...(entry.keywords ?? [])]
+  const haystack = [entry.label, entry.value, entry.localFormId ?? '', entry.editorId ?? '', entry.type, entry.category, entry.sourceName ?? '', entry.plugin ?? '', entry.detail ?? '', ...(entry.keywords ?? [])]
     .join(' ')
     .toLowerCase();
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
   return terms.every((term) => haystack.includes(term));
 }
 
-function matchingBuiltInIds(): IdCatalogEntry[] {
+function matchingIds(): IdCatalogEntry[] {
   const activeCategory = activeIdBrowserCategory();
   const categories = activeCategory.builtInCategories;
+  const modCatalog = modCatalogs.find((catalog) => catalog.key === idBrowserCategory);
   const pickerTypes = activeCatalogPicker?.browser === 'id' ? activeCatalogPicker.allowedTypes : [];
   const pickerCategories = activeCatalogPicker?.browser === 'id' ? activeCatalogPicker.allowedCategories : [];
   return idCatalog.filter((entry) => {
-    const categoryMatches = categories.includes('*')
-      || categories.includes(entry.category)
-      || (categories.length === 0 && activeCategory.recordType === entry.type.toUpperCase());
+    const categoryMatches = modCatalog
+      ? entry.plugin === modCatalog.plugin
+      : categories.includes('*')
+        || categories.includes(entry.category)
+        || (categories.length === 0 && activeCategory.recordType === entry.type.toUpperCase());
     const recordTypeMatches = !idBrowserRecordTypeFilter || entry.type.toUpperCase() === idBrowserRecordTypeFilter;
     const pickerTypeMatches = pickerTypes.length === 0 || pickerTypes.includes(entry.type.toUpperCase());
     const pickerCategoryMatches = pickerCategories.length === 0 || pickerCategories.includes(entry.category);
-    const browserScopeMatches = query ? true : categoryMatches && recordTypeMatches;
-    return browserScopeMatches && pickerTypeMatches && pickerCategoryMatches && idBrowserTextMatches(entry);
+    const searchAllMods = activeView === 'mod-browser' && query && (modSearchScope === 'all' || !modCatalog);
+    const browserScopeMatches = query ? (searchAllMods || categoryMatches) : categoryMatches && recordTypeMatches;
+    const sourceScopeMatches = activeView === 'mod-browser'
+      ? searchAllMods ? entry.source === 'mod' : Boolean(modCatalog && entry.plugin === modCatalog.plugin)
+      : entry.source !== 'mod';
+    return browserScopeMatches && sourceScopeMatches && pickerTypeMatches && pickerCategoryMatches && idBrowserTextMatches(entry);
   });
 }
 
@@ -1910,10 +2269,10 @@ function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspe
   const type = entry.type.toUpperCase();
   if (type === 'GBFM') return null;
   if (entry.action) return entry.action;
-  if (['WEAP', 'ARMO', 'AMMO', 'ALCH', 'MISC'].includes(type)) return 'additem';
+  if (['WEAP', 'ARMO', 'AMMO', 'ALCH', 'MISC', 'BOOK'].includes(type)) return 'additem';
   if (type === 'PERK') return 'addperk';
   if (type === 'SPEL') return 'addspell';
-  if (type === 'NPC_') return 'spawn';
+  if (type === 'NPC_' || type === 'FURN') return 'spawn';
   if (type === 'WTHR') return 'forceweather';
   if (type === 'CELL' && entry.keywords?.[0]) return 'teleport';
   if (type === 'LCTN') return 'findcell';
@@ -1930,7 +2289,9 @@ function renderIdBrowserSelection(): string {
     </aside>`;
   }
   const action = idBrowserAction(entry);
-  const editorId = ['CELL', 'LCTN'].includes(entry.type.toUpperCase()) ? entry.keywords?.[0] : undefined;
+  const favoriteKey = idFavoriteKey(entry);
+  const isFavorite = idFavorites.some((favorite) => favorite.favoriteKey === favoriteKey);
+  const editorId = entry.editorId ?? (['CELL', 'LCTN'].includes(entry.type.toUpperCase()) ? entry.keywords?.[0] : undefined);
   const actionLabel = action === 'additem'
     ? 'Add to Player'
     : action === 'addperk'
@@ -1954,43 +2315,106 @@ function renderIdBrowserSelection(): string {
         <dl class="id-browser-metadata">
           <div><dt>Record Type</dt><dd>${escapeHtml(entry.type)}</dd></div>
           <div><dt>Category</dt><dd>${escapeHtml(entry.category)}</dd></div>
+          ${entry.source === 'mod' ? `<div><dt>Mod</dt><dd>${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod catalog')}</dd></div>` : ''}
+          ${entry.plugin ? `<div><dt>Plugin</dt><dd>${escapeHtml(entry.plugin)}</dd></div>` : ''}
           ${entry.detail ? `<div><dt>Information</dt><dd>${escapeHtml(entry.detail)}</dd></div>` : ''}
           <div><dt>Form ID</dt><dd><code>${escapeHtml(entry.value)}</code></dd></div>
+          ${entry.localFormId ? `<div><dt>Local ID</dt><dd><code>${escapeHtml(entry.localFormId)}</code></dd></div>` : ''}
           ${editorId ? `<div><dt>Editor ID</dt><dd><code>${escapeHtml(editorId)}</code></dd></div>` : ''}
         </dl>
       </div>
       <div class="id-browser-selection-actions">
         ${activeCatalogPicker?.browser === 'id' ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-id-browser-selection>Use This ID</button>` : ''}
+        <button class="favorite-button id-browser-favorite${isFavorite ? ' is-favorite' : ''}" type="button" data-id-favorite-toggle="${escapeHtml(favoriteKey)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">${isFavorite ? '★' : '☆'}</button>
         <button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(entry.value)}">Copy ID</button>
         ${editorId ? `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(editorId)}">Copy Editor ID</button>` : ''}
-        ${action === 'additem' ? `<label class="id-browser-quantity"><span class="osf-eyebrow">QUANTITY</span><input class="osf-input" id="id-browser-quantity" type="text" value="${idBrowserQuantity}" inputmode="numeric" autocomplete="off" aria-label="Item quantity from 1 to 999999"></label>` : ''}
-        ${action ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-id-browser-action="${action}">${actionLabel}</button>` : ''}
+        ${action === 'additem'
+          ? `<div class="id-browser-add-row"><label class="id-browser-quantity"><span class="osf-eyebrow">QUANTITY</span><input class="osf-input" id="id-browser-quantity" type="text" value="${idBrowserQuantity}" inputmode="numeric" autocomplete="off" aria-label="Item quantity from 1 to 999999"></label><button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-id-browser-action="additem">Add to Player</button></div>`
+          : action ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-id-browser-action="${action}">${actionLabel}</button>` : ''}
       </div>
     </aside>`;
 }
 
 function renderIdBrowserPanel(): void {
-  const results = matchingBuiltInIds();
-  resultCount.textContent = `${results.length} shown / ${idCatalog.length} included IDs${idBrowserRecordTypeFilter ? ` / ${idBrowserRecordTypeFilter}` : ''}`;
+  const results = matchingIds();
+  const activeMod = modCatalogs.find((catalog) => catalog.key === idBrowserCategory);
+  const globalModSearch = activeView === 'mod-browser' && Boolean(query) && (modSearchScope === 'all' || !activeMod);
+  const includedTotal = activeView === 'mod-browser'
+    ? !activeMod || globalModSearch ? idCatalog.filter((entry) => entry.source === 'mod').length : activeMod.entries.length
+    : idCatalog.filter((entry) => entry.source !== 'mod').length;
+  resultCount.textContent = activeView === 'mod-browser' && !activeMod
+    ? query
+      ? `${results.length.toLocaleString()} matching IDs / ${includedTotal.toLocaleString()} scanned mod IDs`
+      : `${modCatalogs.length.toLocaleString()} scanned mods / ${includedTotal.toLocaleString()} IDs`
+    : `${results.length.toLocaleString()} shown / ${includedTotal.toLocaleString()} included IDs${idBrowserRecordTypeFilter ? ` / ${idBrowserRecordTypeFilter}` : ''}`;
 
   const renderResultRow = (entry: IdCatalogEntry, index: number) => `
-    <button class="id-browser-row${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
+    <button class="id-browser-row${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type && idBrowserSelected?.plugin === entry.plugin ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
       <strong title="${escapeHtml(entry.label)}">${escapeHtml(entry.label)}</strong>
+      ${globalModSearch ? `<span class="id-browser-row-source">${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod')}</span>` : ''}
     </button>`;
-  const visibleRows = results.map(renderResultRow).join('');
+  const visibleRows = activeView === 'mod-browser' && results.length > 0
+    ? (() => {
+        const groups = new Map<string, Array<{ entry: IdCatalogEntry; index: number }>>();
+        results.forEach((entry, index) => {
+          const category = entry.category || entry.type || 'Other';
+          const group = groups.get(category) ?? [];
+          group.push({ entry, index });
+          groups.set(category, group);
+        });
+        const categoryOrder = ['Weapons', 'Armor', 'Ammo', 'Aid', 'Resources & Miscellaneous', 'Books & Notes', 'Perks', 'Powers', 'NPCs', 'Mods', 'Factions', 'Quests', 'Cells', 'Locations', 'Ships', 'Ship Parts & Other Forms', 'Furniture', 'Weather'];
+        return [...groups.entries()]
+          .sort(([left], [right]) => {
+            const leftIndex = categoryOrder.indexOf(left);
+            const rightIndex = categoryOrder.indexOf(right);
+            if (leftIndex < 0 && rightIndex < 0) return left.localeCompare(right);
+            if (leftIndex < 0) return 1;
+            if (rightIndex < 0) return -1;
+            return leftIndex - rightIndex;
+          })
+          .map(([category, group]) => {
+            const categoryKey = `${globalModSearch ? 'all' : activeMod?.key ?? 'mods'}:${category}`;
+            const expanded = Boolean(query) || openModCategories.has(categoryKey);
+            return `<details class="id-browser-category-group" data-mod-category-key="${escapeHtml(categoryKey)}"${expanded ? ' open' : ''}>
+              <summary><span>${escapeHtml(category)}</span><span>${group.length.toLocaleString()} IDs</span></summary>
+              <div class="id-browser-category-contents">${expanded ? group.map(({ entry, index }) => renderResultRow(entry, index)).join('') : ''}</div>
+            </details>`;
+          }).join('');
+      })()
+    : results.map(renderResultRow).join('');
 
   customPanel.innerHTML = `
     <section class="id-browser-panel${activeCatalogPicker?.browser === 'id' ? ' is-selecting' : ''}">
       ${activeCatalogPicker?.browser === 'id' ? `<section class="browser-selection-banner osf-card"><div><strong>CHOOSE AN ID</strong><span>Select a matching record, then choose Use This ID. No console command will run.</span></div><button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-cancel-catalog-picker>Cancel Selection</button></section>` : ''}
       <div class="id-browser-workspace">
         <div class="id-browser-results" id="id-browser-results">
-          ${visibleRows || '<div class="id-picker-empty"><strong>No matching IDs</strong><span>Try a broader search or another category.</span></div>'}
+          ${visibleRows || (activeView === 'mod-browser' && !activeMod
+            ? query
+              ? '<div class="id-picker-empty"><strong>No matching mod IDs</strong><span>Try a broader ID name, Form ID, Editor ID, record type, or plugin name.</span></div>'
+              : '<div class="id-picker-empty"><strong>Search all scanned mod IDs</strong><span>Select Scan Mods for this session, then enter a search or choose a mod on the left.</span></div>'
+            : '<div class="id-picker-empty"><strong>No matching IDs</strong><span>Try a broader search or another category.</span></div>')}
         </div>
         ${renderIdBrowserSelection()}
       </div>
     </section>`;
 
   const resultsElement = document.querySelector('#id-browser-results');
+  resultsElement?.querySelectorAll<HTMLDetailsElement>('[data-mod-category-key]').forEach((details) => {
+    details.addEventListener('toggle', () => {
+      if (query) return;
+      const key = details.dataset.modCategoryKey;
+      if (!key || details.open === openModCategories.has(key)) return;
+      if (details.open) openModCategories.add(key);
+      else openModCategories.delete(key);
+      const scrollTop = resultsElement.scrollTop;
+      render();
+      requestAnimationFrame(() => {
+        const replacement = document.querySelector<HTMLElement>('#id-browser-results');
+        if (replacement) replacement.scrollTop = scrollTop;
+        document.querySelector<HTMLElement>(`[data-mod-category-key="${CSS.escape(key)}"] > summary`)?.focus({ preventScroll: true });
+      });
+    });
+  });
   resultsElement?.addEventListener('click', (event) => {
     const row = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-id-browser-index]');
     if (!row?.dataset.idBrowserIndex) return;
@@ -2041,6 +2465,9 @@ function renderIdBrowserPanel(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-copy-id-browser-id]').forEach((button) => button.addEventListener('click', () => {
     if (button.dataset.copyIdBrowserId) void copyResultId(button.dataset.copyIdBrowserId);
   }));
+  document.querySelector<HTMLButtonElement>('[data-id-favorite-toggle]')?.addEventListener('click', () => {
+    if (idBrowserSelected) toggleIdFavorite(idBrowserSelected);
+  });
   document.querySelector<HTMLButtonElement>('[data-use-id-browser-selection]')?.addEventListener('click', () => {
     if (idBrowserSelected) finishCatalogPicker(idBrowserSelected.value, idBrowserSelected.label);
   });
@@ -2120,6 +2547,7 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
           <span>${commands.length} command${commands.length === 1 ? '' : 's'}</span>
         </div>
         <div class="custom-saved-entry-actions">
+          <button class="favorite-button${entry.favorite ? ' is-favorite' : ''}" type="button" data-custom-favorite="${escapeHtml(entry.id)}" aria-label="${entry.favorite ? 'Remove' : 'Add'} ${escapeHtml(entry.name)} ${entry.favorite ? 'from' : 'to'} favorites" title="${entry.favorite ? 'Remove from' : 'Add to'} favorites">${entry.favorite ? '★' : '☆'}</button>
           <button class="osf-btn osf-btn--sm" type="button" data-custom-load="${escapeHtml(entry.id)}">Load</button>
           <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-custom-delete="${escapeHtml(entry.id)}">Delete</button>
         </div>
@@ -2241,6 +2669,7 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
         name,
         commands: commands.join('\n'),
         updatedAt: Date.now(),
+        favorite: existingIndex >= 0 ? savedCustomCommands[existingIndex].favorite : false,
       };
       if (existingIndex >= 0) savedCustomCommands.splice(existingIndex, 1);
       savedCustomCommands = [entry, ...savedCustomCommands].slice(0, MAX_SAVED_CUSTOM_COMMANDS);
@@ -2258,6 +2687,21 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
       nameInput.value = entry.name;
       input.focus();
       setStatus(`Loaded ${entry.name}. Review the commands before running them.`, 'success');
+    });
+  });
+
+  customPanel.querySelectorAll<HTMLButtonElement>('[data-custom-favorite]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const entry = savedCustomCommands.find((candidate) => candidate.id === button.dataset.customFavorite);
+      if (!entry) return;
+      const currentName = nameInput instanceof HTMLInputElement ? nameInput.value : '';
+      const currentCommands = input instanceof HTMLTextAreaElement ? input.value : '';
+      entry.favorite = !entry.favorite;
+      writeSavedCustomCommands();
+      setStatus(`${entry.favorite ? 'Added' : 'Removed'} ${entry.name} ${entry.favorite ? 'to' : 'from'} Favorites.`, 'success');
+      renderCustomPanel(currentName, currentCommands);
+      customPanel.querySelector<HTMLButtonElement>(`[data-custom-favorite="${CSS.escape(entry.id)}"]`)?.focus({ preventScroll: true });
+      renderNavigation();
     });
   });
 
@@ -2302,6 +2746,16 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
     setStatus(`Deleted all ${deletedCount} saved custom command entries.`, 'success');
     renderCustomPanel(currentName, currentCommands);
   });
+}
+
+function openSavedCustomCommand(entry: SavedCustomCommand): void {
+  activeView = 'custom';
+  query = '';
+  search.value = '';
+  render();
+  renderCustomPanel(entry.name, entry.commands);
+  customPanel.querySelector<HTMLTextAreaElement>('#custom-command')?.focus({ preventScroll: true });
+  setStatus(`Loaded ${entry.name}. Review the commands before running them.`, 'success');
 }
 
 function openPackagedFormSearch(definition: CommandDefinition): void {
@@ -2447,6 +2901,13 @@ function switchView(view: string): void {
     idBrowserCategory = 'common';
     idBrowserRecordTypeFilter = '';
   }
+  if (view === 'mod-browser') {
+    idBrowserCategory = '';
+    idBrowserRecordTypeFilter = '';
+    idBrowserSelected = null;
+    modSearchScope = 'all';
+    openModCategories.clear();
+  }
   if (view === 'quest-browser') {
     questBrowserSource = 'Base Game';
     questBrowserCategory = QUEST_BROWSER_CATEGORY_ORDER[0];
@@ -2456,6 +2917,12 @@ function switchView(view: string): void {
 }
 
 navigation.addEventListener('click', (event) => {
+  const scanCatalogs = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-scan-mod-catalogs]');
+  if (scanCatalogs) {
+    openModCategories.clear();
+    void scanModCatalogs();
+    return;
+  }
   const button = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-view]');
   if (button?.dataset.view) {
     switchView(button.dataset.view);
@@ -2482,6 +2949,12 @@ navigation.addEventListener('click', (event) => {
     idBrowserRecordTypeFilter = '';
     idBrowserSelected = null;
     idBrowserQuantity = 1;
+    if (activeView === 'mod-browser') {
+      query = '';
+      search.value = '';
+      modSearchScope = 'mod';
+      openModCategories.clear();
+    }
     render();
     return;
   }
@@ -2495,7 +2968,7 @@ navigation.addEventListener('click', (event) => {
   }
 });
 
-(['commands', 'id-browser', 'quest-browser', 'activity', 'custom'] as const).forEach((view) => {
+(['commands', 'id-browser', 'mod-browser', 'quest-browser', 'activity', 'custom'] as const).forEach((view) => {
   document.querySelector<HTMLButtonElement>(`[data-view="${view}"]`)?.addEventListener('click', () => switchView(view));
 });
 
@@ -2503,7 +2976,7 @@ search.addEventListener('input', () => {
   const previousQuery = query;
   query = search.value.trim();
   if (activeView === 'commands' && commandCategory === 'Untested') untestedQuery = query;
-  if (activeView === 'id-browser') {
+  if (activeView === 'id-browser' || activeView === 'mod-browser') {
     idBrowserSelected = null;
     idBrowserQuantity = 1;
     if (previousQuery && !query) {
@@ -2515,6 +2988,16 @@ search.addEventListener('input', () => {
   render();
 });
 searchClear.addEventListener('click', () => clearSearchInput(search));
+modSearchScopeControl.addEventListener('click', (event) => {
+  const button = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-mod-search-scope]');
+  const scope = button?.dataset.modSearchScope;
+  if (scope !== 'mod' && scope !== 'all') return;
+  if (scope === 'mod' && !modCatalogs.some((catalog) => catalog.key === idBrowserCategory)) return;
+  modSearchScope = scope;
+  idBrowserSelected = null;
+  idBrowserQuantity = 1;
+  render();
+});
 
 document.addEventListener('click', (event) => {
   const input = (event.target as Element | null)?.closest<HTMLInputElement>('input.osf-input');
@@ -2522,6 +3005,53 @@ document.addEventListener('click', (event) => {
 });
 
 commandList.addEventListener('click', (event) => {
+  const favoriteIdToggle = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-favorite-id-toggle]');
+  if (favoriteIdToggle?.dataset.favoriteIdToggle) {
+    const entry = idFavorites.find((candidate) => candidate.favoriteKey === favoriteIdToggle.dataset.favoriteIdToggle);
+    if (!entry) return;
+    idFavorites = idFavorites.filter((candidate) => candidate.favoriteKey !== entry.favoriteKey);
+    writeFavoriteIds();
+    render();
+    setStatus(`Removed ${entry.label} from Favorites.`, 'success');
+    return;
+  }
+
+  const openFavoriteId = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-open-favorite-id]');
+  if (openFavoriteId?.dataset.openFavoriteId) {
+    const entry = idFavorites.find((candidate) => candidate.favoriteKey === openFavoriteId.dataset.openFavoriteId);
+    if (!entry) return;
+    activeView = entry.savedFrom;
+    selectedCommandId = null;
+    query = '';
+    search.value = '';
+    idBrowserCategory = entry.savedFrom === 'mod-browser' && entry.plugin ? `mod:${entry.plugin.toLowerCase()}` : 'all';
+    idBrowserRecordTypeFilter = '';
+    idBrowserSelected = entry;
+    idBrowserQuantity = 1;
+    modSearchScope = entry.savedFrom === 'mod-browser' ? 'mod' : 'all';
+    render();
+    setStatus(`Opened favorite ID ${entry.label}: ${entry.value}`, 'success');
+    return;
+  }
+
+  const favoriteCustomToggle = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-favorite-custom-toggle]');
+  if (favoriteCustomToggle?.dataset.favoriteCustomToggle) {
+    const entry = savedCustomCommands.find((candidate) => candidate.id === favoriteCustomToggle.dataset.favoriteCustomToggle);
+    if (!entry) return;
+    entry.favorite = false;
+    writeSavedCustomCommands();
+    render();
+    setStatus(`Removed ${entry.name} from Favorites.`, 'success');
+    return;
+  }
+
+  const favoriteCustomLoad = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-favorite-custom-load]');
+  if (favoriteCustomLoad?.dataset.favoriteCustomLoad) {
+    const entry = savedCustomCommands.find((candidate) => candidate.id === favoriteCustomLoad.dataset.favoriteCustomLoad);
+    if (entry) openSavedCustomCommand(entry);
+    return;
+  }
+
   const commandRow = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-select-command]');
   if (commandRow?.dataset.selectCommand) {
     selectCommand(commandRow.dataset.selectCommand);
@@ -2599,6 +3129,9 @@ commandList.addEventListener('click', (event) => {
   const questInspectButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-quest-inspect]');
   if (questInspectButton?.dataset.questInspect && questInspectButton.dataset.questId && questInspectButton.dataset.questTitle) {
     const mode = questInspectButton.dataset.questInspect === 'history' ? 'history' : 'stage';
+    const inspectedQuestId = questInspectButton.dataset.questId;
+    resultsReturnFocus = () => [...commandList.querySelectorAll<HTMLButtonElement>('[data-quest-inspect]')]
+      .find((button) => button.dataset.questId === inspectedQuestId) ?? null;
     const questListScrollTop = commandList.querySelector<HTMLElement>('.quest-browser-list')?.scrollTop;
     void inspectQuest(questInspectButton.dataset.questId, questInspectButton.dataset.questTitle, mode, undefined, questListScrollTop);
     return;
@@ -2805,6 +3338,7 @@ function activeHelpPageId(): HelpPageId {
   if (activeView === 'recent') return 'recent';
   if (activeView === 'favorites') return 'favorites';
   if (activeView === 'id-browser') return 'id-browser';
+  if (activeView === 'mod-browser') return 'mod-browser';
   if (activeView === 'quest-browser') return 'quest-browser';
   if (activeView === 'custom') return 'custom';
   if (activeView === 'activity') return 'activity';

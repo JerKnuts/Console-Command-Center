@@ -40,7 +40,8 @@ test('controller enters selected quest details and B returns to its title row', 
 
 test('controller page cycling returns category-driven pages to their first category', () => {
   assert.match(controllerSource, /function firstCategoryButton\(\)/);
-  assert.match(controllerSource, /const categoryDriven = view === 'commands' \|\| view === 'id-browser' \|\| view === 'quest-browser'/);
+  assert.match(controllerSource, /const categoryDriven = view === 'commands' \|\| view === 'id-browser' \|\| view === 'mod-browser' \|\| view === 'quest-browser'/);
+  assert.match(controllerSource, /:not\(\[data-scan-mod-catalogs\]\)/);
   assert.match(controllerSource, /focusElement\(utilityViewTarget\(view\)\)/);
   assert.doesNotMatch(controllerSource, /if \(direction === 'right'\) focusElement\(commandAreaTarget\(\)\)/);
 });
@@ -66,6 +67,12 @@ test('controller enters reusable custom commands and the newest activity entry',
   assert.match(controllerSource, /view === 'custom'[\s\S]*?\.custom-saved-list \[data-custom-load\]/);
   assert.match(controllerSource, /view === 'activity'[\s\S]*?\.activity-list \.activity-entry/);
   assert.match(controllerSource, /active\.matches\('\.activity-entry'\)/);
+  assert.match(controllerSource, /active\.matches\('\[data-custom-favorite\]'\) && direction === 'right'/);
+  assert.match(controllerSource, /active\.matches\('\[data-custom-load\]'\)[\s\S]*?direction === 'left'[\s\S]*?direction === 'right'/);
+  assert.match(controllerSource, /customEntry\.querySelector<HTMLElement>\('\[data-custom-delete\]'\)/);
+  assert.match(controllerSource, /data-favorite-custom-toggle/);
+  assert.match(controllerSource, /data-favorite-id-toggle/);
+  assert.match(controllerSource, /data-open-favorite-id/);
 });
 
 test('controller repeats held directions, scrolls dialogs, and traps quest detail focus', () => {

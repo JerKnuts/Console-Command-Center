@@ -21,13 +21,14 @@
 
 #include "OSFUI_JSON.h"
 #include "DirectQuery.h"
+#include "ModCatalogs.h"
 
 namespace
 {
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "1.1.0";
+    constexpr const char* kBuildId = "1.1.26";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -623,6 +624,34 @@ namespace
         });
     }
 
+    void OnModCatalogs(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        try {
+            (void)request.Reply(CCC::ModCatalogs::ScanPluginFiles());
+        } catch (const std::exception& error) {
+            request.Reject("mod-catalogs-failed", error.what());
+        } catch (...) {
+            request.Reject("mod-catalogs-failed", "Could not scan loaded mod IDs.");
+        }
+    }
+
+    void OnModCatalogRecords(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        const auto plugin = request.Get<std::string>("plugin");
+        if (!plugin || plugin->empty() || plugin->size() > 260) return;
+        try {
+            (void)request.Reply(CCC::ModCatalogs::ScanPluginRecords(*plugin));
+        } catch (const std::exception& error) {
+            request.Reject("mod-catalog-records-failed", error.what());
+        } catch (...) {
+            request.Reject("mod-catalog-records-failed", "Could not scan the selected mod's IDs.");
+        }
+    }
+
     void OnSFSEMessage(SFSE::MessagingInterface::Message* message)
     {
         if (message->type != SFSE::MessagingInterface::kPostPostLoad) {
@@ -642,6 +671,8 @@ namespace
         g_ui.RegisterRequest("console.command-center.query", &OnQuery, nullptr);
         g_ui.RegisterRequest("console.command-center.questRead", &OnQuestRead, nullptr);
         g_ui.RegisterRequest("console.command-center.setEffectiveActorValue", &OnSetEffectiveActorValue, nullptr);
+        g_ui.RegisterRequest("console.command-center.modCatalogs", &OnModCatalogs, nullptr);
+        g_ui.RegisterRequest("console.command-center.modCatalogRecords", &OnModCatalogRecords, nullptr);
     }
 }
 

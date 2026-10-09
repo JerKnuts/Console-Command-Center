@@ -81,7 +81,10 @@ namespace OSFUI::API
 		{
 			if (!IsValid()) return false;
 			try {
-				const auto text = payload.dump();
+				// Plugin metadata and localized game strings are not guaranteed to be
+				// valid UTF-8. Preserve the response and replace only malformed byte
+				// sequences instead of rejecting an otherwise usable catalog.
+				const auto text = payload.dump(-1, ' ', false, Json::error_handler_t::replace);
 				_request.Reply(text.c_str());
 				return true;
 			} catch (...) {

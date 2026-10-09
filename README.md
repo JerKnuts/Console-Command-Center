@@ -6,11 +6,11 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current release: v1.1.0.** This controller-support update adds compact master/detail layouts and complete controller navigation through OSF UI 2.0. See the [v1.1.0 notes](docs/RELEASE_NOTES_v1.1.0.md) and [validation checklist](RELEASE_VALIDATION.md).
+**Current release: v1.1.26.** This source-cleanup release removes generated dependencies and build output from the source download, consolidates the release history, and trims obsolete test documentation. See the [changelog](CHANGELOG.md) and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command. Controller support covers directional navigation, activation, Back, scrolling, dialogs, and an onscreen keyboard for editable fields.
 
-Planned additions, including editable `.txt` command-batch files and optional mod-added item catalogs, are tracked in [Future features](docs/FUTURE_FEATURES.md).
+Planned additions, including editable `.txt` command-batch files, are tracked in [Future features](docs/FUTURE_FEATURES.md). Manual loaded-mod ID scanning is documented in [Mod ID catalogs](docs/MOD_ID_CATALOGS.md).
 
 Commands that rely on known curated IDs use a reusable searchable Reference ID Picker instead of crowded preset-button grids. A separate **ID Browser** searches the catalog packaged with CCC.
 
@@ -49,7 +49,8 @@ To update from v1.0.12 or earlier, remove the old `Data/SFSE/Plugins/OSFUI/views
 - Separate first-time welcome overview that remains available from each Help window
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
-- Standalone **ID Browser** with 16,528 included IDs, sidebar categories, compact selectable results, Copy ID, and conservative quick actions
+- Standalone **ID Browser** with 16,528 included IDs, sidebar categories, compact selectable results, persistent ID favorites, Copy ID, and conservative quick actions
+- Separate **Mod Browser** with manual session scanning, an Official Creations group, global ID search, readable names for known plugin files, and persistent ID favorites
 - Working **Search Form IDs** command cards that open the packaged ID Browser directly; typed `QUST` searches open Quest Browser
 - **Browse Items**, **Browse Equipment**, **Browse Base IDs**, **Browse Mods**, and **Browse Ships** controls that return packaged IDs directly to command fields without executing them
 - Filtered **ID Browser** controls for packaged perks, skills, traits, Starborn powers, and known removable environmental effects
@@ -67,7 +68,11 @@ To update from v1.0.12 or earlier, remove the old `Data/SFSE/Plugins/OSFUI/views
 
 The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It searches **16,528 included IDs** instantly by name, Form ID, type, category, and Editor ID. The catalog covers weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Location and cell selections can copy either the Form ID or Editor ID. Weather records can be applied immediately, Cell records can teleport through their Editor ID, and Location records can narrow the browser to matching teleportable Cells. Shattered Space records display an expansion requirement and use cleaned Editor IDs where a verified localized display name is unavailable. Long descriptive labels, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded. The selected sidebar category loads as one scrollable compact list. Every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous.
 
-CCC does not scan Starfield's live form memory. That experimental path caused an access violation during test9 and was removed. Expansion-only records carry a visible requirement such as **Shattered Space DLC**.
+Records created by loaded mods live in the separate **Mod Browser**. Select **Scan Mods** once per game session to discover active plugins and collect their supported IDs. Opening CCC, ID Browser, or Mod Browser never starts a scan. Bethesda `SFBGS...` plugins appear under **Official Creations**; other plugins appear under **Mods**. With no mod selected, Search All searches IDs across every scanned plugin. CCC identifies each record's owning full, medium, or small plugin from its runtime Form ID and ignores overrides owned by the base game. Known plugin filenames are translated through a bundled community name map; unknown plugins retain a clean filename-derived name. See [Mod ID catalogs](docs/MOD_ID_CATALOGS.md) and [Mod display names](docs/MOD_DISPLAY_NAMES.md) for details.
+
+Every record in ID Browser and Mod Browser can be starred. ID favorites persist between sessions and appear alongside command and saved-batch favorites. **Open** returns directly to the correct browser and record.
+
+Expansion-only packaged records carry a visible requirement such as **Shattered Space DLC**.
 
 The reusable Reference ID Picker remains the compact command-specific chooser. **Pay Bounty** opens bounty-relevant factions, companion affinity commands open Sarah Morgan, Barrett, Sam Coe, and Andreja, and weather commands open common weather records. Selecting an entry fills the normal command input; users can still type any valid hexadecimal ID manually. Inline preset-button grids are intentionally avoided.
 
@@ -83,9 +88,11 @@ setstage <QuestFormID> <Stage>
 
 Quest changes are intentionally marked **Danger** because starting, completing, or forcing a stage can skip dialogue, scripts, rewards, scenes, prerequisites, or other quest state. Use these actions on a backup or disposable save. Some quests do not appear in the mission log until a stage is activated. Reset clears recorded stages and removes the quest from the log without restarting it.
 
+Every Quest Browser entry is a real `QUST` record from a Bethesda master file. Some are player-facing missions; others run dialogue, scenes, patches, holders, and game systems without appearing as normal missions. CCC keeps every record, but moves entries with no localized title or strong support-record names into **Internal / System** to reduce clutter in the player-facing categories.
+
 Quest Browser contains 2,318 base-game and Shattered Space quest records with 16,844 recorded stage indexes. It supports searching by quest name, Editor ID, Form ID, source, and stage, plus confirmed Start, Stop, Complete, Reset, and Set Stage actions. Shattered Space entries are labeled in the interface. **Inspect Quest State** reads the current stage and completed-stage history through Starfield's quest scripting interface, then marks that progress directly on the stage list.
 
-See [`QUEST_BROWSER.md`](QUEST_BROWSER.md) for details.
+The dataset is generated from the installed Bethesda master records and matching English localization tables. Stage indexes confirm that a stage exists structurally; they do not prove that forcing it is safe for a particular save. Each quest provides state inspection, stage history, confirmed Start, Stop, Complete, Reset, Set Stage, and Copy ID actions where applicable.
 
 ## Command catalog
 
@@ -160,4 +167,4 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run check` runs the OSF UI 2.0 and TypeScript checks.
 - `npm run package` validates, tests, builds, and creates both the Nexus-ready archive and corresponding full-source archive under `artifacts/`.
 
-Release-specific changes are recorded under [`docs/`](docs/), including [`RELEASE_NOTES_v1.1.0.md`](docs/RELEASE_NOTES_v1.1.0.md).
+User-visible release history is recorded in [`CHANGELOG.md`](CHANGELOG.md). Current supporting references live under [`docs/`](docs/).

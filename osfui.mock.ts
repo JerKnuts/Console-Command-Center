@@ -105,7 +105,7 @@ export function install(ctx: MockContext): void {
       let reply: JsonValue;
       switch (name) {
         case 'console.command-center.ping':
-          reply = { ok: true, backend: 'Browser test fixture', build: '1.1.0', executor: 'native', runtime: 'browser', testedRuntime: '1.16.244', runtimeSupported: true };
+          reply = { ok: true, backend: 'Browser test fixture', build: '1.1.26', executor: 'native', runtime: 'browser', testedRuntime: '1.16.244', runtimeSupported: true };
           break;
         case 'console.command-center.execute':
           reply = { ok: true, command };
@@ -121,6 +121,35 @@ export function install(ctx: MockContext): void {
         case 'console.command-center.setEffectiveActorValue': {
           const desiredTotal = Number(payload?.desiredTotal ?? 100);
           reply = { ok: true, applied: payload?.apply === true, target: String(payload?.target ?? 'player'), actorValue: String(payload?.actorValue ?? 'Health'), desiredTotal, currentBase: 100, currentEffective: 100, modifierContribution: 0, calculatedBase: desiredTotal, resultingEffective: desiredTotal, command: `setav ${String(payload?.actorValue ?? 'Health')} ${desiredTotal}` };
+          break;
+        }
+        case 'console.command-center.modCatalogRecords':
+        case 'console.command-center.modCatalogCache':
+        case 'console.command-center.modCatalogs': {
+          const includeRecords = name === 'console.command-center.modCatalogRecords';
+          reply = {
+            ok: true,
+            directory: 'Data/SFSE/Plugins/ConsoleCommandCenter/catalogs',
+            directoryExists: true,
+            totalRecords: 3,
+            catalogs: [{
+              file: 'browser-fixture.json',
+              loaded: true,
+              name: 'Browser Fixture Arsenal',
+              plugin: 'BrowserFixture.esm',
+              pluginKind: 'small',
+              recordsLoaded: includeRecords,
+              cached: true,
+              count: 3,
+              skipped: 0,
+              errors: [],
+              records: includeRecords ? [
+                { label: 'Fixture Laser Rifle', value: 'FE042800', localFormId: '800', type: 'WEAP', category: 'Weapons', editorId: 'CCC_FixtureLaserRifle', detail: 'Browser preview weapon' },
+                { label: 'Fixture Spacesuit', value: 'FE042801', localFormId: '801', type: 'ARMO', category: 'Armor', editorId: 'CCC_FixtureSpacesuit', detail: 'Browser preview armor' },
+                { label: 'Fixture Med Pack', value: 'FE042802', localFormId: '802', type: 'ALCH', category: 'Aid', editorId: 'CCC_FixtureMedPack', detail: 'Browser preview aid item' },
+              ] : [],
+            }],
+          };
           break;
         }
         case 'console.command-center.close':

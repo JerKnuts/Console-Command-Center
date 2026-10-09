@@ -11,9 +11,18 @@ const [base, shatteredSpace] = await Promise.all([
   readFile(shatteredSpacePath, 'utf8').then(JSON.parse),
 ]);
 
+function isSupportQuest(editorID, name, hasLocalizedName) {
+  if (!hasLocalizedName) return true;
+  if (/^\s*\[[^\]]+\]\s*$/.test(name)) return true;
+  const combined = `${editorID} ${name}`;
+  if (/(?:^|[_\s-])(always[ _-]?on|support|holder|debug|patch|enabler|template|shell|spawn[ _-]?manager|tracker[ _-]?quest|showcase[ _-]?quest|master[ _-]?quest|scene|dialogue)(?:s|$|[_\s-])/i.test(combined)) return true;
+  const normalized = editorID.replace(/^SFBGS[0-9A-F]+_/i, '');
+  return /^(?:Dialogue|HV_|Council_)/i.test(normalized);
+}
+
 function categoryFor(editorID, name, hasLocalizedName) {
-  const normalized = editorID.replace(/^SFBGS\w+_/, '');
-  if (!hasLocalizedName) return 'Internal / System';
+  const normalized = editorID.replace(/^SFBGS[0-9A-F]+_/i, '');
+  if (isSupportQuest(editorID, name, hasLocalizedName)) return 'Internal / System';
   if (/^MQ/i.test(normalized)) return 'Main Quests';
   if (/^(UC|CF|FC|RI)\d|^(UC|CF|FC|RI)_/i.test(normalized)) return 'Faction Quests';
   if (/^(COM|CREW)_/i.test(normalized)) return 'Companion & Crew';
@@ -38,7 +47,7 @@ function convert(records, source, requirement) {
         source,
         requirement,
         category: categoryFor(record.editorID, name, Boolean(record.name)),
-        internal: !record.name,
+        internal: isSupportQuest(record.editorID, name, Boolean(record.name)),
       };
     });
 }

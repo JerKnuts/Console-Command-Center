@@ -1,4 +1,5 @@
 import { open } from 'node:fs/promises';
+import { basename } from 'node:path';
 import { inflateSync } from 'node:zlib';
 
 const esmPath = process.argv[2] || process.env.STARFIELD_ESM;
@@ -56,7 +57,7 @@ function parseStringsFile(data, lengthPrefixed) {
   return values;
 }
 
-async function readEnglishLocalization(ba2Path) {
+async function readEnglishLocalization(ba2Path, pluginStem) {
   if (!ba2Path) return new Map();
   const archive = await open(ba2Path, 'r');
   try {
@@ -93,7 +94,8 @@ async function readEnglishLocalization(ba2Path) {
     }
 
     const values = new Map();
-    for (const record of records.filter((entry) => /(?:^|\/)[^/]+_en\.(?:strings|dlstrings|ilstrings)$/i.test(entry.name))) {
+    const expectedNames = new Set(['strings', 'dlstrings', 'ilstrings'].map((extension) => `${pluginStem.toLowerCase()}_en.${extension}`));
+    for (const record of records.filter((entry) => expectedNames.has(entry.name.toLowerCase().split('/').at(-1)))) {
       const storedSize = record.packedSize || record.unpackedSize;
       const stored = Buffer.alloc(storedSize);
       await archive.read(stored, 0, stored.length, record.dataOffset);
@@ -107,7 +109,8 @@ async function readEnglishLocalization(ba2Path) {
   }
 }
 
-const localizedStrings = await readEnglishLocalization(localizationPath);
+const pluginStem = basename(esmPath).replace(/\.[^.]+$/, '');
+const localizedStrings = await readEnglishLocalization(localizationPath, pluginStem);
 
 const file = await open(esmPath, 'r');
 try {

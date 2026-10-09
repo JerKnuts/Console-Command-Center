@@ -15,7 +15,7 @@ Risk levels:
 
 Testing status is intentionally conservative. Only commands confirmed through Console Command Center are marked **Verified**.
 
-Latest user test report: October 3, 2026. See `docs/TEST_RESULTS_2026-09-27.md` for the accumulated in-game record.
+Latest user test report: October 3, 2026. This file is the maintained command-status record; superseded test-build notes have been removed.
 
 ## Gameplay (11)
 

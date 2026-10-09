@@ -11,7 +11,11 @@ export type IdCatalogEntry = {
   detail?: string;
   keywords?: string[];
   action?: IdCatalogAction;
-  source?: 'built-in' | 'Base Game' | 'Shattered Space';
+  source?: 'built-in' | 'Base Game' | 'Shattered Space' | 'mod';
+  sourceName?: string;
+  plugin?: string;
+  localFormId?: string;
+  editorId?: string;
 };
 
 export type IdBrowserCategory = {
