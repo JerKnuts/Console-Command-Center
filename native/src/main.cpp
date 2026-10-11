@@ -14,6 +14,8 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <mutex>
+#include <limits>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -21,14 +23,17 @@
 
 #include "OSFUI_JSON.h"
 #include "DirectQuery.h"
+#include "ScalarResult.h"
 #include "ModCatalogs.h"
+#include "CommandBatches.h"
+#include "CommandBatchAutoRun.h"
 
 namespace
 {
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "1.1.26";
+    constexpr const char* kBuildId = "1.2.18";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -47,6 +52,7 @@ namespace
     }
 
     std::atomic_bool g_captureActive{ false };
+    std::atomic_uint64_t g_loadGeneration{ 0 };
     struct CaptureLease
     {
         static std::shared_ptr<CaptureLease> TryAcquire()
@@ -245,9 +251,75 @@ namespace
         std::string command;
         std::string bufferBefore;
         std::string lastOutput;
+        std::optional<float> scalarResult;
+        std::uint32_t scalarTargetID{ 0 };
         std::uint32_t polls{ 0 };
         std::uint32_t stablePolls{ 0 };
     };
+
+    // Capture only the exact no-argument sky query. Let Starfield compile,
+    // resolve the reference, and invoke its existing execute callback normally.
+    // Do not call the condition evaluator or approximate sky exposure by cell type.
+    std::mutex g_skyQueryMutex;
+    std::weak_ptr<ConsoleQueryCapture> g_skyQueryState;
+    RE::SCRIPT_FUNCTION::ExecuteFunction_t g_originalSkyExecute{ nullptr };
+
+    bool SkyQueryExecute(const RE::SCRIPT_PARAMETER* params, const char* data,
+        RE::TESObjectREFR* object, RE::TESObjectREFR* container, RE::Script* script,
+        RE::ScriptLocals* locals, float* result, std::uint32_t* offset)
+    {
+        std::shared_ptr<ConsoleQueryCapture> state;
+        {
+            std::scoped_lock lock{ g_skyQueryMutex };
+            state = g_skyQueryState.lock();
+        }
+        const bool capture = state && object && result && object->GetFormID() == state->scalarTargetID;
+        const auto outcome = CCC::ScalarResult::CaptureBoolean(result, capture, [&] {
+            return g_originalSkyExecute(params, data, object, container, script, locals, result, offset);
+        });
+        if (outcome.value) {
+            std::scoped_lock lock{ g_skyQueryMutex };
+            state->scalarResult = *outcome.value;
+        }
+        return outcome.success;
+    }
+
+    void PrepareSkyQueryCapture(const std::shared_ptr<ConsoleQueryCapture>& state)
+    {
+        std::istringstream input(state->command);
+        std::string verb, extra;
+        input >> verb >> extra;
+        const auto dot = verb.find('.');
+        if (dot == std::string::npos || LowerASCII(verb.substr(dot + 1)) != "actorexposedtosky") return;
+        if (!extra.empty()) throw std::runtime_error("ActorExposedToSky takes no arguments.");
+        const auto target = LowerASCII(verb.substr(0, dot));
+        std::uint32_t id = 0;
+        if (target == "player") id = 0x14;
+        else {
+            const auto [end, error] = std::from_chars(target.data(), target.data() + target.size(), id, 16);
+            if (target.empty() || target.size() > 8 || error != std::errc{} || end != target.data() + target.size() || id == 0) {
+                throw std::runtime_error("Enter player. or a valid placed Actor Reference ID prefix.");
+            }
+        }
+        auto* form = RE::TESForm::LookupByID(id);
+        if (!form || !starfield_cast<RE::Actor*>(form)) throw std::runtime_error("Sky exposure requires a loaded Actor Reference ID.");
+        auto* function = RE::Script::LocateScriptCommand("ActorExposedToSky");
+        if (!function || !function->executeFunction || function->numParams != 0) {
+            throw std::runtime_error("Starfield's sky-exposure result handler is unavailable or has an unexpected signature.");
+        }
+        std::scoped_lock lock{ g_skyQueryMutex };
+        if (!g_originalSkyExecute) {
+            g_originalSkyExecute = function->executeFunction;
+            if (!REL::WriteSafeData(reinterpret_cast<std::uintptr_t>(&function->executeFunction), &SkyQueryExecute)) {
+                g_originalSkyExecute = nullptr;
+                throw std::runtime_error("Could not install the sky-exposure result capture.");
+            }
+        } else if (function->executeFunction != &SkyQueryExecute) {
+            throw std::runtime_error("Another plugin replaced the sky-exposure result handler; CCC cannot capture it safely.");
+        }
+        state->scalarTargetID = id;
+        g_skyQueryState = state;
+    }
 
     constexpr std::uint32_t kConsoleQueryMaxPolls = 40;
     constexpr auto kConsoleQueryPollDelay = std::chrono::milliseconds{ 50 };
@@ -276,6 +348,16 @@ namespace
     void PollConsoleQueryOutput(const std::shared_ptr<ConsoleQueryCapture>& state) noexcept
     {
         try {
+            std::optional<float> scalar;
+            {
+                std::scoped_lock lock{ g_skyQueryMutex };
+                scalar = state->scalarResult;
+            }
+            if (scalar) {
+                RespondConsoleQuery(state, std::format("ActorExposedToSky >> {:.2f}\n{}", *scalar,
+                    *scalar == 1.0f ? "Actor is exposed to the sky." : "Actor is not exposed to the sky."));
+                return;
+            }
             const auto output = ConsoleBufferDelta(state->bufferBefore);
 
             if (!output.empty() && output == state->lastOutput) {
@@ -347,6 +429,7 @@ namespace
             state->request = raw;
             state->command = *command;
             state->bufferBefore = ReadConsoleBuffer();
+            PrepareSkyQueryCapture(state);
 
             if (!ExecuteConsoleCommand(*command)) {
                 request.Reject("query-failed", "Native Starfield console execution failed.");
@@ -652,10 +735,130 @@ namespace
         }
     }
 
+    void OnCommandBatchList(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        try {
+            const auto& payload = request.Payload();
+            const auto legacy = payload.contains("legacyBatches") ? payload["legacyBatches"] : OSFUI::API::Json::array();
+            (void)request.Reply(CCC::CommandBatches::List(legacy));
+        } catch (const std::exception& error) {
+            request.Reject("command-batch-list-failed", error.what());
+        } catch (...) {
+            request.Reject("command-batch-list-failed", "Could not read the user Command Batches folder.");
+        }
+    }
+
+    void OnCommandBatchSave(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        const auto name = request.Get<std::string>("name");
+        const auto content = request.Get<std::string>("content");
+        if (!name || !content) return;
+        try { (void)request.Reply(CCC::CommandBatches::Save(*name, *content)); }
+        catch (const std::exception& error) { request.Reject("command-batch-save-failed", error.what()); }
+        catch (...) { request.Reject("command-batch-save-failed", "Could not save the command batch."); }
+    }
+
+    void OnCommandBatchDelete(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        const auto name = request.Get<std::string>("name");
+        if (!name) return;
+        try {
+            const auto reply = CCC::CommandBatches::Delete(*name);
+            CCC::CommandBatchAutoRun::RemoveBatch(*name);
+            (void)request.Reply(reply);
+        }
+        catch (const std::exception& error) { request.Reject("command-batch-delete-failed", error.what()); }
+        catch (...) { request.Reject("command-batch-delete-failed", "Could not delete the command batch."); }
+    }
+
+    void OnCommandBatchDeleteAll(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        try {
+            const auto reply = CCC::CommandBatches::DeleteAll();
+            CCC::CommandBatchAutoRun::ClearBatches();
+            (void)request.Reply(reply);
+        }
+        catch (const std::exception& error) { request.Reject("command-batch-delete-all-failed", error.what()); }
+        catch (...) { request.Reject("command-batch-delete-all-failed", "Could not delete the command batch files."); }
+    }
+
+    void OnCommandBatchAutoRunGet(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        try { (void)request.Reply(CCC::CommandBatchAutoRun::Get()); }
+        catch (const std::exception& error) { request.Reject("command-batch-auto-run-read-failed", error.what()); }
+        catch (...) { request.Reject("command-batch-auto-run-read-failed", "Could not read Auto Run settings."); }
+    }
+
+    void OnCommandBatchAutoRunEnable(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        const auto enabled = request.Get<bool>("enabled");
+        if (!enabled) return;
+        try { (void)request.Reply(CCC::CommandBatchAutoRun::SetEnabled(*enabled)); }
+        catch (const std::exception& error) { request.Reject("command-batch-auto-run-write-failed", error.what()); }
+        catch (...) { request.Reject("command-batch-auto-run-write-failed", "Could not update Auto Run settings."); }
+    }
+
+    void OnCommandBatchAutoRunBatch(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        const auto name = request.Get<std::string>("name");
+        const auto enabled = request.Get<bool>("enabled");
+        if (!name || !enabled) return;
+        try { (void)request.Reply(CCC::CommandBatchAutoRun::SetBatch(*name, *enabled)); }
+        catch (const std::exception& error) { request.Reject("command-batch-auto-run-write-failed", error.what()); }
+        catch (...) { request.Reject("command-batch-auto-run-write-failed", "Could not update the batch Auto Run setting."); }
+    }
+
+    void OnCommandBatchAutoRunReports(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        try { (void)request.Reply(CCC::CommandBatchAutoRun::ConsumeReports()); }
+        catch (...) { request.Reject("command-batch-auto-run-report-failed", "Could not read Auto Run reports."); }
+    }
+
+    class LoadGameEventSink final : public RE::BSTEventSink<RE::TESLoadGameEvent>
+    {
+    public:
+        RE::BSEventNotifyControl ProcessEvent(const RE::TESLoadGameEvent&, RE::BSTEventSource<RE::TESLoadGameEvent>*) override
+        {
+            const auto generation = g_loadGeneration.fetch_add(1, std::memory_order_acq_rel) + 1;
+            (void)QueueMainTaskAfter(std::chrono::seconds{ CCC::CommandBatchAutoRun::kDelaySeconds }, [generation]() noexcept {
+                if (g_loadGeneration.load(std::memory_order_acquire) != generation) return;
+                CCC::CommandBatchAutoRun::Run([](std::string_view command) noexcept {
+                    return IsSafeBridgeString(command) && ExecuteConsoleCommand(command);
+                });
+            });
+            return RE::BSEventNotifyControl::kContinue;
+        }
+    };
+
+    LoadGameEventSink g_loadGameEventSink;
+    bool g_loadGameSinkRegistered{ false };
+
     void OnSFSEMessage(SFSE::MessagingInterface::Message* message)
     {
         if (message->type != SFSE::MessagingInterface::kPostPostLoad) {
             return;
+        }
+        if (IsRuntimeSupported() && !g_loadGameSinkRegistered) {
+            if (auto* source = RE::TESLoadGameEvent::GetEventSource()) {
+                source->RegisterSink(&g_loadGameEventSink);
+                g_loadGameSinkRegistered = true;
+            }
         }
         if (!g_ui.Init()) {
             return;
@@ -673,6 +876,14 @@ namespace
         g_ui.RegisterRequest("console.command-center.setEffectiveActorValue", &OnSetEffectiveActorValue, nullptr);
         g_ui.RegisterRequest("console.command-center.modCatalogs", &OnModCatalogs, nullptr);
         g_ui.RegisterRequest("console.command-center.modCatalogRecords", &OnModCatalogRecords, nullptr);
+        g_ui.RegisterRequest("console.command-center.commandBatchList", &OnCommandBatchList, nullptr);
+        g_ui.RegisterRequest("console.command-center.commandBatchSave", &OnCommandBatchSave, nullptr);
+        g_ui.RegisterRequest("console.command-center.commandBatchDelete", &OnCommandBatchDelete, nullptr);
+        g_ui.RegisterRequest("console.command-center.commandBatchDeleteAll", &OnCommandBatchDeleteAll, nullptr);
+        g_ui.RegisterRequest("console.command-center.commandBatchAutoRunGet", &OnCommandBatchAutoRunGet, nullptr);
+        g_ui.RegisterRequest("console.command-center.commandBatchAutoRunEnable", &OnCommandBatchAutoRunEnable, nullptr);
+        g_ui.RegisterRequest("console.command-center.commandBatchAutoRunBatch", &OnCommandBatchAutoRunBatch, nullptr);
+        g_ui.RegisterRequest("console.command-center.commandBatchAutoRunReports", &OnCommandBatchAutoRunReports, nullptr);
     }
 }
 

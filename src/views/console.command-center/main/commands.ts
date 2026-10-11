@@ -66,7 +66,6 @@ export type CommandDefinition = {
     recordTypeInput?: string;
   };
   intakeGroup?:
-    | 'Ready to Test'
     | 'Executed — Effect Unconfirmed'
     | 'Executed — Issues'
     | 'Blocked — Known Crash'
@@ -132,6 +131,8 @@ export const COMMANDS: CommandDefinition[] = [
     category: 'Gameplay',
     description: 'Toggle collision so the player can move through geometry and into the air.',
     command: 'tcl',
+    warning: 'TCL can also leave nearby NPCs stuck in place while collision is disabled. Toggle it off to restore collision and check that NPC movement resumes.',
+    risk: 'caution',
     tags: ['noclip', 'movement', 'toggle'],
     testStatus: 'verified',
   },
@@ -1344,7 +1345,7 @@ export const COMMANDS: CommandDefinition[] = [
     warning: 'EXTREME DANGER: MarkForDelete is permanent after the cell reloads. There is no normal way to restore the deleted reference. Prefer this only for objects you spawned yourself and verify the exact Reference ID first. Never use it casually on vanilla, quest, ship, or persistent references.',
     risk: 'danger',
     testStatus: 'untested',
-    intakeGroup: 'Ready to Test',
+    intakeGroup: 'Script Functions',
   },
   {
     id: 'set-ref-position',

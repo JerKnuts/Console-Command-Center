@@ -39,6 +39,8 @@ type PendingExecution = {
   effectiveTotal?: EffectiveTotalRequest;
 };
 
+type CommandActionChoice = 'primary' | 'secondary';
+
 type EffectiveTotalRequest = {
   target: string;
   actorValue: string;
@@ -78,6 +80,48 @@ type SavedCustomCommand = {
   commands: string;
   updatedAt: number;
   favorite?: boolean;
+  valid?: boolean;
+  error?: string;
+};
+
+type CommandBatchListReply = {
+  ok: boolean;
+  directory: string;
+  entries: Array<{
+    id: string;
+    name: string;
+    file: string;
+    commands: string;
+    commandCount: number;
+    valid: boolean;
+    error?: string;
+  }>;
+  warnings: string[];
+  migrated: number;
+  migrationComplete: boolean;
+};
+
+type CommandBatchMutationReply = {
+  ok: boolean;
+  removed?: boolean | number;
+};
+
+type CommandBatchAutoRunReply = {
+  ok: boolean;
+  enabled: boolean;
+  batches: string[];
+  delaySeconds: number;
+};
+
+type CommandBatchAutoRunReportsReply = {
+  ok: boolean;
+  reports: Array<{
+    id: number;
+    success: boolean;
+    batchCount: number;
+    commandCount: number;
+    message: string;
+  }>;
 };
 
 type FavoriteIdEntry = IdCatalogEntry & {
@@ -151,15 +195,15 @@ const STORAGE_ID_FAVORITES = 'consoleCommandCenter.idFavorites';
 const STORAGE_RECENT = 'consoleCommandCenter.recent';
 const STORAGE_ACTIVITY = 'consoleCommandCenter.activity';
 const STORAGE_CUSTOM_COMMANDS = 'consoleCommandCenter.customCommands';
+const STORAGE_CUSTOM_COMMAND_FAVORITES = 'consoleCommandCenter.customCommandFavorites';
 const STORAGE_WELCOME_SEEN = 'consoleCommandCenter.welcomeSeen.v1';
 const MAX_RECENT = 10;
 const MAX_ACTIVITY = 100;
-const MAX_CUSTOM_BATCH_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_LENGTH = 1024;
 const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
-const ENGINE_COMMAND_LIBRARY_TOTAL = 1505;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.1.26';
+const ENGINE_COMMAND_LIBRARY_TOTAL = 1493;
+const CONSOLE_COMMAND_CENTER_VERSION = '1.2.18';
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -235,9 +279,11 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
     title: 'Build and reuse command batches',
     intro: 'Custom Command runs raw Starfield console commands that are not represented by prepared cards.',
     sections: [
-      { title: 'ENTER COMMANDS', text: 'Enter one command per line. Empty lines are ignored, and a batch can contain up to 100 commands.' },
+      { title: 'ENTER COMMANDS', text: 'Enter one command per line. Empty lines and lines beginning with # are ignored.' },
       { title: 'REVIEW THE BATCH', text: 'Review Commands shows the exact lines before CCC runs them in order. Execution stops when a command reports an error.' },
-      { title: 'SAVE A WORKFLOW', text: 'Name the current batch and save it for reuse. Load, update, or delete saved entries from the right side of the screen.' },
+      { title: 'SAVE A WORKFLOW', text: 'Each saved batch is a .txt file in your user-owned CCC folder. The filename becomes its name in CCC.' },
+      { title: 'EDIT OUTSIDE CCC', text: 'Edit or add .txt files in a text editor, then select Refresh. Empty lines and lines beginning with # are ignored.' },
+      { title: 'RUN AFTER LOADING', text: 'Select On Load beside a saved batch, then turn on the Auto-Run master switch. CCC runs selected files three seconds after an existing save finishes loading.' },
     ],
     note: 'Raw commands may have undocumented effects. Save the game before experimenting with syntax you do not recognize.',
   },
@@ -261,6 +307,16 @@ let idFavorites = readFavoriteIds();
 let recent = readStringArray(STORAGE_RECENT);
 let activityLog = readActivityLog();
 let savedCustomCommands = readSavedCustomCommands();
+let savedCustomCommandFavorites = new Set(readStringArray(STORAGE_CUSTOM_COMMAND_FAVORITES).map((name) => name.toLowerCase()));
+for (const entry of savedCustomCommands) if (entry.favorite) savedCustomCommandFavorites.add(entry.name.toLowerCase());
+let commandBatchDirectory = 'Documents\\My Games\\Starfield\\Console Command Center\\Command Batches';
+let commandBatchesLoading = false;
+let commandBatchesLoaded = false;
+let commandBatchAutoRunEnabled = false;
+let commandBatchAutoRunNames = new Set<string>();
+let commandBatchAutoRunDelaySeconds = 3;
+let customCommandDraftName = '';
+let customCommandDraft = '';
 let pendingExecution: PendingExecution | null = null;
 let activeIdPicker: ActiveIdPicker | null = null;
 let activeCatalogPicker: ActiveCatalogPicker | null = null;
@@ -272,8 +328,10 @@ let idCatalogLoading: Promise<void> | null = null;
 let modCatalogs: ModCatalogSummary[] = [];
 let modCatalogScanAllRunning = false;
 let modCatalogScanAllComplete = false;
+let modCatalogScanCancelRequested = false;
 let modCatalogSummaryScanStartedAt = 0;
 let modCatalogSummaryTimer: number | null = null;
+let modCatalogScanReturnFocus: HTMLElement | null = null;
 let modSearchScope: 'mod' | 'all' = 'mod';
 const openModCategories = new Set<string>();
 let questBrowserEntries: QuestBrowserEntry[] = [];
@@ -292,6 +350,8 @@ const questProgressSnapshots = new Map<string, QuestProgressSnapshot>();
 let selectedQuestKey: string | null = null;
 let openUntestedGroup: string | null = null;
 let selectedCommandId: string | null = null;
+const selectedCommandActions = new Map<string, CommandActionChoice>();
+const armedCommandActions = new Map<string, CommandActionChoice>();
 
 app.innerHTML = `
   <main class="command-center-shell">
@@ -354,15 +414,16 @@ app.innerHTML = `
           </div>
         </div>
 
-        <div class="mod-scan-overlay" id="mod-scan-overlay" role="status" aria-live="polite" hidden>
+        <div class="mod-scan-overlay" id="mod-scan-overlay" role="dialog" aria-modal="true" aria-labelledby="mod-scan-title" hidden>
           <section class="mod-scan-card osf-card">
             <span class="mod-scan-spinner" aria-hidden="true"></span>
             <div class="mod-scan-copy">
               <p class="osf-eyebrow">MOD BROWSER</p>
-              <h3>Updating Mod Browser</h3>
-              <p id="mod-scan-detail">Reading the active load order and plugin headers.</p>
-              <div class="mod-scan-meta"><span id="mod-scan-count">Discovering plugins…</span><span id="mod-scan-elapsed">Elapsed 0.0s</span></div>
-              <small>Cache restores are read-only. A full record scan runs only after you select Scan Mods.</small>
+              <h3 id="mod-scan-title">Updating Mod Browser</h3>
+              <p id="mod-scan-detail" aria-live="polite">Reading the active load order and plugin headers.</p>
+              <div class="mod-scan-meta"><span id="mod-scan-count" aria-live="polite">Discovering plugins…</span><span id="mod-scan-elapsed">Elapsed 0.0s</span></div>
+              <small>Cancel stops after the current plugin reply and keeps your existing Mod Browser catalog.</small>
+              <div class="mod-scan-actions"><button class="osf-btn osf-btn--sm osf-btn--ghost" id="mod-scan-cancel" type="button">Cancel Scan</button></div>
             </div>
           </section>
         </div>
@@ -650,6 +711,7 @@ const modScanOverlay = requiredElement('#mod-scan-overlay', HTMLElement);
 const modScanDetail = requiredElement('#mod-scan-detail', HTMLElement);
 const modScanCount = requiredElement('#mod-scan-count', HTMLElement);
 const modScanElapsed = requiredElement('#mod-scan-elapsed', HTMLElement);
+const modScanCancel = requiredElement('#mod-scan-cancel', HTMLButtonElement);
 const search = requiredElement('#search', HTMLInputElement);
 const searchClear = requiredElement('#search-clear', HTMLButtonElement);
 const sectionKicker = requiredElement('#section-kicker', HTMLElement);
@@ -774,12 +836,88 @@ function readSavedCustomCommands(): SavedCustomCommand[] {
   }
 }
 
-function writeSavedCustomCommands(): void {
+function writeSavedCustomCommandFavorites(): void {
+  writeStringArray(STORAGE_CUSTOM_COMMAND_FAVORITES, [...savedCustomCommandFavorites]);
+}
+
+function applyCommandBatchReply(reply: CommandBatchListReply): void {
+  commandBatchDirectory = reply.directory || commandBatchDirectory;
+  savedCustomCommands = reply.entries.map((entry) => ({
+    id: entry.id || entry.name.toLowerCase(),
+    name: entry.name,
+    commands: entry.commands,
+    updatedAt: 0,
+    favorite: savedCustomCommandFavorites.has(entry.name.toLowerCase()),
+    valid: entry.valid,
+    error: entry.error,
+  }));
+  commandBatchesLoaded = true;
+  if (reply.migrationComplete) {
+    writeSavedCustomCommandFavorites();
+    try { localStorage.removeItem(STORAGE_CUSTOM_COMMANDS); } catch { /* Retry migration next session if storage is unavailable. */ }
+  }
+}
+
+function applyCommandBatchAutoRunReply(reply: CommandBatchAutoRunReply): void {
+  commandBatchAutoRunEnabled = reply.enabled === true;
+  commandBatchAutoRunNames = new Set((reply.batches ?? []).map((name) => name.toLowerCase()));
+  commandBatchAutoRunDelaySeconds = Number.isFinite(reply.delaySeconds) ? reply.delaySeconds : 3;
+}
+
+async function refreshCommandBatchAutoRun(): Promise<void> {
+  if (!window.osfui?.request || !nativeBackendReady) return;
+  const reply = await window.osfui.request<CommandBatchAutoRunReply>('console.command-center.commandBatchAutoRunGet');
+  if (!reply?.ok || !Array.isArray(reply.batches)) throw new Error('Native backend returned invalid Auto Run settings.');
+  applyCommandBatchAutoRunReply(reply);
+}
+
+async function importCommandBatchAutoRunReports(): Promise<void> {
+  if (!window.osfui?.request || !nativeBackendReady) return;
   try {
-    localStorage.setItem(STORAGE_CUSTOM_COMMANDS, JSON.stringify(savedCustomCommands));
+    const reply = await window.osfui.request<CommandBatchAutoRunReportsReply>('console.command-center.commandBatchAutoRunReports');
+    if (!reply?.ok || !Array.isArray(reply.reports)) return;
+    for (const report of reply.reports) {
+      addActivitySummary(
+        'Automatic Batch Run',
+        'Custom Command',
+        'Run after loading save',
+        report.success ? 'success' : 'error',
+        report.message,
+      );
+    }
+    if (reply.reports.length) {
+      renderNavigation();
+      setStatus(reply.reports.at(-1)?.message ?? 'Automatic batch run finished.', reply.reports.at(-1)?.success ? 'success' : 'error');
+    }
   } catch {
-    // Saved commands remain available for the current session if persistent
-    // storage is unavailable in the in-game webview.
+    // Auto Run reports are supplementary; never block the rest of CCC startup.
+  }
+}
+
+async function refreshCommandBatches(migrateLegacy = false): Promise<void> {
+  if (commandBatchesLoading) return;
+  if (!window.osfui?.request || !nativeBackendReady) {
+    setStatus('ConsoleCommandCenter.dll is not connected, so batch files cannot be read.', 'error');
+    return;
+  }
+  commandBatchesLoading = true;
+  if (activeView === 'custom') renderCustomPanel();
+  setStatus(migrateLegacy ? 'Loading command-batch files and migrating existing saves...' : 'Refreshing command-batch files...', 'working');
+  try {
+    const legacyBatches = migrateLegacy ? readSavedCustomCommands().map(({ name, commands }) => ({ name, commands })) : [];
+    const reply = await window.osfui.request<CommandBatchListReply>('console.command-center.commandBatchList', { legacyBatches });
+    if (!reply?.ok || !Array.isArray(reply.entries)) throw new Error('Native backend returned an invalid batch-file list.');
+    applyCommandBatchReply(reply);
+    await refreshCommandBatchAutoRun();
+    const warning = reply.warnings?.[0];
+    const migrated = reply.migrated ? ` Migrated ${reply.migrated} existing ${reply.migrated === 1 ? 'batch' : 'batches'}.` : '';
+    setStatus(warning ? `Loaded ${reply.entries.length} batch files. ${warning}` : `Loaded ${reply.entries.length} batch files.${migrated}`, warning ? 'error' : 'success');
+  } catch (error) {
+    setStatus(`Could not refresh command-batch files: ${describe(error)}`, 'error');
+  } finally {
+    commandBatchesLoading = false;
+    if (activeView === 'custom') renderCustomPanel();
+    renderNavigation();
   }
 }
 
@@ -1042,14 +1180,18 @@ function updateModCatalogSummaryTimer(): void {
 
 function beginModCatalogSummaryScan(): void {
   modCatalogSummaryScanStartedAt = performance.now();
+  modCatalogScanReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   modScanDetail.textContent = 'Reading the active load order and plugin headers.';
   modScanCount.textContent = modCatalogs.length > 0
     ? `Checking ${modCatalogs.length.toLocaleString()} known plugins…`
     : 'Discovering plugins…';
   updateModCatalogSummaryTimer();
+  modScanCancel.disabled = false;
+  modScanCancel.textContent = 'Cancel Scan';
   modScanOverlay.hidden = false;
   if (modCatalogSummaryTimer !== null) window.clearInterval(modCatalogSummaryTimer);
   modCatalogSummaryTimer = window.setInterval(updateModCatalogSummaryTimer, 100);
+  requestAnimationFrame(() => modScanCancel.focus({ preventScroll: true }));
 }
 
 function setModCatalogSummaryProgress(detail: string, count: string): void {
@@ -1063,6 +1205,18 @@ function finishModCatalogSummaryScan(): void {
   modCatalogSummaryTimer = null;
   modCatalogSummaryScanStartedAt = 0;
   modScanOverlay.hidden = true;
+  const returnFocus = modCatalogScanReturnFocus;
+  modCatalogScanReturnFocus = null;
+  if (returnFocus?.isConnected) requestAnimationFrame(() => returnFocus.focus({ preventScroll: true }));
+}
+
+function cancelModCatalogScan(): void {
+  if (!modCatalogScanAllRunning || modCatalogScanCancelRequested) return;
+  modCatalogScanCancelRequested = true;
+  modScanCancel.disabled = true;
+  modScanCancel.textContent = 'Cancelling…';
+  finishModCatalogSummaryScan();
+  setStatus('Cancelling the Mod Browser scan after the current plugin reply. The existing catalog will be kept.', 'normal');
 }
 
 function paintModCatalogSummaryScan(): Promise<void> {
@@ -1112,14 +1266,17 @@ async function requestModCatalogRecords(catalog: ModCatalogSummary, index: numbe
 async function scanModCatalogs(): Promise<void> {
   if (modCatalogScanAllRunning || !nativeBackendReady || !window.osfui?.request) return;
   const scanStartedAt = performance.now();
+  const previousScanComplete = modCatalogScanAllComplete;
   modCatalogScanAllRunning = true;
   modCatalogScanAllComplete = false;
+  modCatalogScanCancelRequested = false;
   beginModCatalogSummaryScan();
   setModCatalogSummaryProgress('Scanning active mods and collecting all supported IDs.', 'This may take a while with a large load order.');
   renderNavigation();
   await paintModCatalogSummaryScan();
   try {
     const reply = await window.osfui.request<ModCatalogReply>('console.command-center.modCatalogs', {}, { timeoutMs: 0 });
+    if (modCatalogScanCancelRequested) throw new Error('Scan cancelled by the user.');
     if (!reply.ok || reply.error) throw new Error(reply.error || 'The mod scan reply was not valid.');
     const discoveredCatalogs = normalizeModCatalogs(reply);
     if (discoveredCatalogs.length === 0 && (reply.loadOrderEntries ?? reply.scannedPlugins ?? 0) > 0) {
@@ -1129,7 +1286,9 @@ async function scanModCatalogs(): Promise<void> {
     let scannedIdTotal = 0;
     let failed = 0;
     for (let index = 0; index < discoveredCatalogs.length; ++index) {
+      if (modCatalogScanCancelRequested) throw new Error('Scan cancelled by the user.');
       const loaded = await requestModCatalogRecords(discoveredCatalogs[index], index, discoveredCatalogs.length, 'Scanning IDs from', true, scannedIdTotal);
+      if (modCatalogScanCancelRequested) throw new Error('Scan cancelled by the user.');
       if (loaded) {
         scannedCatalogs.push(loaded);
         scannedIdTotal += loaded.entries.length;
@@ -1141,6 +1300,7 @@ async function scanModCatalogs(): Promise<void> {
     }
     setModCatalogSummaryProgress('Finishing the Mod Browser catalog.', `Mod ${discoveredCatalogs.length.toLocaleString()} / ${discoveredCatalogs.length.toLocaleString()} · ${scannedIdTotal.toLocaleString()} IDs found`);
     await paintModCatalogSummaryScan();
+    if (modCatalogScanCancelRequested) throw new Error('Scan cancelled by the user.');
     modCatalogs = scannedCatalogs;
     rebuildIdCatalog();
     modCatalogs.sort((left, right) => right.entries.length - left.entries.length || left.name.localeCompare(right.name));
@@ -1163,12 +1323,21 @@ async function scanModCatalogs(): Promise<void> {
     addActivitySummary('Mod Browser Scan', 'Mod Browser', 'Scan Mods', 'success', `Result: ${details}`);
     setStatus(`Scanned ${discoveredCatalogs.length.toLocaleString()} mods and loaded ${total.toLocaleString()} IDs for this session. ${empty.toLocaleString()} mods with no supported IDs are hidden${failed ? `; ${failed.toLocaleString()} mods could not be read` : ''}.`, failed ? 'normal' : 'success');
   } catch (error) {
-    const message = `Mods could not be scanned: ${describe(error)}`;
-    addActivitySummary('Mod Browser Scan', 'Mod Browser', 'Scan Mods', 'error', `${message}\nElapsed: ${((performance.now() - scanStartedAt) / 1000).toFixed(1)} seconds`);
-    setStatus(message, 'error');
+    const elapsedSeconds = ((performance.now() - scanStartedAt) / 1000).toFixed(1);
+    if (modCatalogScanCancelRequested) {
+      modCatalogScanAllComplete = previousScanComplete;
+      const message = `Mod Browser scan cancelled by the user. The existing catalog was kept.\nElapsed: ${elapsedSeconds} seconds`;
+      addActivitySummary('Mod Browser Scan', 'Mod Browser', 'Scan Mods', 'success', `Result: ${message}`);
+      setStatus('Mod Browser scan cancelled. The existing catalog was kept.', 'normal');
+    } else {
+      const message = `Mods could not be scanned: ${describe(error)}`;
+      addActivitySummary('Mod Browser Scan', 'Mod Browser', 'Scan Mods', 'error', `${message}\nElapsed: ${elapsedSeconds} seconds`);
+      setStatus(message, 'error');
+    }
   } finally {
     finishModCatalogSummaryScan();
     modCatalogScanAllRunning = false;
+    modCatalogScanCancelRequested = false;
     render();
   }
 }
@@ -1214,7 +1383,6 @@ function ensureEngineCommandLibraryLoaded(): Promise<void> {
 
 function renderUntestedCommandGroups(commands: CommandDefinition[], compact = false): string {
   const groupOrder = [
-    'Ready to Test',
     'Executed — Effect Unconfirmed',
     'Executed — Issues',
     'Blocked — Known Crash',
@@ -1223,7 +1391,7 @@ function renderUntestedCommandGroups(commands: CommandDefinition[], compact = fa
   ];
   const groups = new Map<string, CommandDefinition[]>();
   for (const command of commands) {
-    const group = command.intakeGroup ?? 'Ready to Test';
+    const group = command.intakeGroup ?? 'Script Functions';
     const entries = groups.get(group) ?? [];
     entries.push(command);
     groups.set(group, entries);
@@ -1232,11 +1400,6 @@ function renderUntestedCommandGroups(commands: CommandDefinition[], compact = fa
   const content = [...groups.entries()]
     .sort(([left], [right]) => groupOrder.indexOf(left) - groupOrder.indexOf(right))
     .map(([group, entries]) => {
-      if (group === 'Ready to Test') {
-        return `<section class="untested-group is-open is-headingless">
-          <div class="untested-group-content">${entries.map((entry) => compact ? renderCommandListRow(entry) : renderCommandCard(entry)).join('')}</div>
-        </section>`;
-      }
       const open = Boolean(untestedQuery.trim()) || openUntestedGroup === group;
       return `<section class="untested-group${open ? ' is-open' : ''}">
         <button class="untested-group-heading" type="button" data-untested-group="${escapeHtml(group)}" aria-expanded="${open}">
@@ -1339,6 +1502,7 @@ function renderIdFavorites(): string {
 function selectCommand(commandId: string, focusRow = false): void {
   const command = COMMANDS.find((entry) => entry.id === commandId);
   if (!command) return;
+  if (selectedCommandId !== commandId) armedCommandActions.clear();
   selectedCommandId = commandId;
   commandList.querySelectorAll<HTMLElement>('[data-select-command]').forEach((row) => {
     row.setAttribute('aria-selected', String(row.dataset.selectCommand === commandId));
@@ -1517,7 +1681,7 @@ function questBrowserMatches(entry: QuestBrowserEntry): boolean {
   return terms.every((term) => haystack.includes(term));
 }
 
-function questBrowserVariantLabel(entry: QuestBrowserEntry): string {
+function questBrowserVariantLabel(entry: Pick<QuestBrowserEntry, 'editorId'>): string {
   if (entry.editorId.toUpperCase() === 'MQ101') return 'ORIGINAL STORY QUEST';
   if (/^MQ401[A-J]$/i.test(entry.editorId)) return 'NEW GAME PLUS VARIANT';
   return '';
@@ -1534,7 +1698,7 @@ function renderQuestBrowserRow(entry: QuestBrowserEntry): string {
   </button>`;
 }
 
-function renderQuestBrowserSelection(entry: QuestBrowserEntry | undefined): string {
+function renderQuestBrowserSelection(entry: (Omit<QuestBrowserEntry, 'source'> & { source: string; stagesScanned?: boolean }) | undefined, modQuest = false): string {
   if (!entry) {
     return `<aside class="quest-browser-selection quest-browser-selection--empty" aria-label="Selected quest">
       <span class="osf-eyebrow">SELECTED QUEST</span>
@@ -1543,6 +1707,7 @@ function renderQuestBrowserSelection(entry: QuestBrowserEntry | undefined): stri
     </aside>`;
   }
 
+  const scannedStagesKnown = !modQuest || entry.stagesScanned === true;
   const progress = questProgressSnapshots.get(normalizedQuestId(entry.questId));
   const stages = entry.stages.map((stage) => {
     const command = `setstage ${entry.questId} ${stage}`;
@@ -1580,11 +1745,11 @@ function renderQuestBrowserSelection(entry: QuestBrowserEntry | undefined): stri
           <div><dt>Category</dt><dd>${escapeHtml(entry.category)}</dd></div>
           <div><dt>Editor ID</dt><dd><code>${escapeHtml(entry.editorId)}</code></dd></div>
           <div><dt>Form ID</dt><dd><code>${escapeHtml(entry.questId)}</code></dd></div>
-          <div><dt>Stages</dt><dd>${entry.stages.length.toLocaleString()}</dd></div>
+          <div><dt>Stages</dt><dd>${modQuest && !scannedStagesKnown ? 'Scan again to load stages' : entry.stages.length.toLocaleString()}</dd></div>
         </dl>
         <div class="quest-browser-actions">
           ${activeCatalogPicker?.browser === 'quest' ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-quest-id="${escapeHtml(entry.questId)}" data-use-quest-title="${escapeHtml(entry.quest)}">Use This Quest</button>` : ''}
-          <button class="osf-btn osf-btn--sm" type="button" data-quest-inspect="history" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Inspect Quest State</button>
+          <button class="osf-btn osf-btn--sm" type="button" data-quest-inspect="${modQuest && !scannedStagesKnown ? 'stage' : 'history'}" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Inspect Quest State</button>
           <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-copy-text="${escapeHtml(entry.questId)}">Copy Quest ID</button>
         </div>
         <div class="quest-browser-action-note"><strong>QUEST COMMANDS</strong><span>These commands change save-game state. Start may not add a visible mission until a stage is activated. Reset removes it from the log without restarting it. Make a manual save first.</span></div>
@@ -1594,8 +1759,14 @@ function renderQuestBrowserSelection(entry: QuestBrowserEntry | undefined): stri
           <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-quest-action="complete" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Complete Quest</button>
           <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-quest-action="reset" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Reset Quest</button>
         </div>
+        ${modQuest ? `<div class="mod-quest-stage-controls">
+          <label><span class="osf-eyebrow">SET QUEST STAGE</span><input class="osf-input" type="text" inputmode="numeric" pattern="[0-9]{1,5}" maxlength="5" aria-label="Quest stage number" placeholder="Known stage number" data-mod-quest-stage-input></label>
+          <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-mod-quest-set-stage data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Set Stage</button>
+          <p>${scannedStagesKnown ? 'Choose a recorded stage below, or enter a known stage number.' : 'Stage data is unavailable. Scan Mods again, or enter a known stage from the mod author.'} Setting a stage can skip scripts, dialogue, rewards, or prerequisites. Save first.</p>
+        </div>
+        ${scannedStagesKnown ? `<div class="quest-browser-stage-label"><span class="osf-eyebrow">ALL RECORDED STAGES</span></div><div class="quest-stage-grid">${stages || '<div class="quest-browser-no-stages">No explicit stage indexes were found in this quest record.</div>'}</div>` : ''}` : `
         <div class="quest-browser-stage-label"><span class="osf-eyebrow">ALL RECORDED STAGES</span><span>Setting a stage can skip scripts, dialogue, rewards, or prerequisites. Save first.</span></div>
-        <div class="quest-stage-grid">${stages || '<div class="quest-browser-no-stages">No explicit stage indexes were found in this quest record.</div>'}</div>
+        <div class="quest-stage-grid">${stages || '<div class="quest-browser-no-stages">No explicit stage indexes were found in this quest record.</div>'}</div>`}
       </div>
     </aside>`;
 }
@@ -1649,6 +1820,8 @@ function renderCommandCard(command: CommandDefinition, detailView = false): stri
   const canRunWithoutNative = Boolean(command.catalogSearch);
   const inputs = (command.inputs ?? []).map((input) => renderInput(command, input)).join('');
   const riskLabel = command.risk === 'danger' ? 'DANGER' : 'CAUTION';
+  const selectedAction = selectedCommandAction(command);
+  const displayedCommand = commandActionTemplate(command, selectedAction);
   const testTag = command.testStatus === 'untested'
     ? '<span class="command-test-tag">UNTESTED</span>'
     : command.testStatus === 'inconclusive'
@@ -1678,10 +1851,11 @@ function renderCommandCard(command: CommandDefinition, detailView = false): stri
       </span>`
     : command.secondaryAction
       ? `<span class="command-action-pair">
-          <button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}" data-command-action="primary"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${escapeHtml(command.executeLabel ?? 'Execute')}</button>
-          <button class="osf-btn execute-button execute-button--secondary" type="button" data-execute="${escapeHtml(command.id)}" data-command-action="secondary"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${escapeHtml(command.secondaryAction.label)}</button>
+          <button class="osf-btn execute-button command-action-toggle${selectedAction === 'primary' ? ' osf-btn--osf-accent is-active' : ' execute-button--secondary'}" type="button" data-execute="${escapeHtml(command.id)}" data-command-action="primary" aria-pressed="${selectedAction === 'primary'}"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${escapeHtml(command.executeLabel ?? 'Execute')}</button>
+          <button class="osf-btn execute-button command-action-toggle${selectedAction === 'secondary' ? ' osf-btn--osf-accent is-active' : ' execute-button--secondary'}" type="button" data-execute="${escapeHtml(command.id)}" data-command-action="secondary" aria-pressed="${selectedAction === 'secondary'}"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${escapeHtml(command.secondaryAction.label)}</button>
         </span>`
       : `<button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${command.catalogSearch ? 'Search IDs' : escapeHtml(command.executeLabel ?? 'Execute')}</button>`;
+  const addToBatchControl = `<button class="osf-btn add-to-batch-button" type="button" data-add-to-batch="${escapeHtml(command.id)}"${unavailable ? ' disabled' : ''}>Add to Batch</button>`;
 
   return `
     <article class="command-card${command.secondaryAction ? ' command-card--dual-action' : ''}${detailView ? ' command-card--detail' : ''}" data-command-id="${escapeHtml(command.id)}"${detailView ? '' : ' tabindex="0"'} aria-label="${escapeHtml(command.title)} command">
@@ -1692,16 +1866,18 @@ function renderCommandCard(command: CommandDefinition, detailView = false): stri
           </div>
           <span class="command-heading-tags">${testTag}${warningTag}</span>
         </div>
-        ${detailView ? `<code class="command-detail-syntax">${escapeHtml(command.command)}</code>` : ''}
+        ${detailView ? `<code class="command-detail-syntax">${escapeHtml(displayedCommand)}</code>` : ''}
         <p class="command-description">${escapeHtml(command.description)}</p>
         ${detailView && command.warning ? `<div class="command-detail-warning${command.risk === 'danger' ? ' is-danger' : ''}"><strong>${riskLabel}</strong><span>${escapeHtml(command.warning)}</span></div>` : ''}
         ${command.unavailableReason ? `<p class="command-unavailable-reason">${escapeHtml(command.unavailableReason)}</p>` : ''}
         ${inputs ? `<div class="command-inputs">${inputs}</div>` : ''}
       </div>
+      ${detailView && command.secondaryAction ? '<p class="command-action-note">Double-click the highlighted action to execute it.</p>' : ''}
       <div class="command-actions">
         <button class="favorite-button${isFavorite ? ' is-favorite' : ''}" type="button" data-favorite="${escapeHtml(command.id)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
           <span aria-hidden="true">${isFavorite ? '★' : '☆'}</span>
         </button>
+        ${addToBatchControl}
         ${executeControl}
       </div>
     </article>
@@ -1745,6 +1921,33 @@ function renderInput(command: CommandDefinition, input: CommandInput): string {
 
 function buildCommand(command: CommandDefinition): string {
   return buildCommandTemplate(command, command.command);
+}
+
+function selectedCommandAction(command: CommandDefinition): CommandActionChoice {
+  if (!command.secondaryAction) return 'primary';
+  return selectedCommandActions.get(command.id) ?? 'primary';
+}
+
+function commandActionTemplate(command: CommandDefinition, action = selectedCommandAction(command)): string {
+  return action === 'secondary' && command.secondaryAction
+    ? command.secondaryAction.command
+    : command.command;
+}
+
+function commandActionCommand(command: CommandDefinition, action = selectedCommandAction(command)): string {
+  return buildCommandTemplate(command, commandActionTemplate(command, action));
+}
+
+function commandActionDefinition(command: CommandDefinition, action = selectedCommandAction(command)): CommandDefinition {
+  if (action !== 'secondary' || !command.secondaryAction) return command;
+  return {
+    ...command,
+    title: command.secondaryAction.title,
+    command: command.secondaryAction.command,
+    warning: command.secondaryAction.warning,
+    risk: command.secondaryAction.risk,
+    secondaryAction: undefined,
+  };
 }
 
 function buildCommandTemplate(command: CommandDefinition, template: string): string {
@@ -1977,9 +2180,12 @@ async function inspectQuest(
   setStatus(`Reading ${title} quest state...`, 'working');
   try {
     await ensureQuestBrowserLoaded();
-    const entry = questBrowserEntries.find((candidate) => normalizedQuestId(candidate.questId) === questId);
+    const scannedQuest = idCatalog.find((candidate) => candidate.source === 'mod' && candidate.type === 'QUST' && normalizedQuestId(candidate.value) === questId);
+    const entry = scannedQuest && Array.isArray(scannedQuest.questStages)
+      ? { quest: scannedQuest.label, editorId: scannedQuest.editorId ?? 'Not provided', questId, stages: scannedQuest.questStages }
+      : questBrowserEntries.find((candidate) => normalizedQuestId(candidate.questId) === questId);
     if (mode === 'history' && !entry) {
-      throw new Error('Stage History needs a quest from CCC\'s packaged Quest Browser so its recorded stages are known.');
+      throw new Error('Stage History needs recorded stages. Run Scan Mods again to load mod quest stages.');
     }
 
     const currentStage = Number(await readQuestValue(questId, 'currentStage'));
@@ -1988,7 +2194,7 @@ async function inspectQuest(
     const state = completed ? 'Completed' : running ? 'Running' : 'Stopped or not started';
     const heading = [
       `Quest: ${entry?.quest ?? title}`,
-      `Editor ID: ${entry?.editorId ?? 'Not in packaged catalog'}`,
+      `Editor ID: ${entry?.editorId ?? (idBrowserSelected?.value === questId ? idBrowserSelected.editorId : undefined) ?? 'Not in packaged catalog'}`,
       `Form ID: ${questId}`,
       `State: ${state}`,
       `Current/highest completed stage: ${currentStage}`,
@@ -2015,7 +2221,7 @@ async function inspectQuest(
     setStatus('Quest inspection complete. Results saved in Activity Log.', 'success');
     if (definition) addRecent(definition.id);
     addActivity(execution, 'success', `Result: ${output}`);
-    if (activeView === 'recent' || activeView === 'activity' || activeView === 'quest-browser') {
+    if (activeView === 'recent' || activeView === 'activity' || activeView === 'quest-browser' || activeView === 'mod-browser') {
       render();
       if (activeView === 'quest-browser' && preserveScrollTop !== undefined) {
         const questList = commandList.querySelector<HTMLElement>('.quest-browser-list');
@@ -2109,7 +2315,39 @@ async function executeConsole(execution: PendingExecution): Promise<void> {
 }
 
 function parseCustomCommands(value: string): string[] {
-  return value.split(/\r?\n/).map((command) => command.trim()).filter(Boolean);
+  return value.split(/\r?\n/)
+    .map((command) => command.trim())
+    .filter((command) => Boolean(command) && !command.startsWith('#'));
+}
+
+function syncCustomCommandLineNumbers(input: HTMLTextAreaElement, gutter: HTMLElement): void {
+  const numbers = gutter.firstElementChild;
+  if (numbers instanceof HTMLElement) numbers.style.transform = `translateY(-${input.scrollTop}px)`;
+}
+
+function updateCustomCommandLineNumbers(input: HTMLTextAreaElement, gutter: HTMLElement): void {
+  const lineCount = Math.max(1, input.value.split(/\r?\n/).length);
+  gutter.innerHTML = `<span class="custom-command-line-number-content">${Array.from({ length: lineCount }, (_, index) => String(index + 1)).join('\n')}</span>`;
+  input.closest<HTMLElement>('.custom-command-editor')?.style.setProperty('--custom-gutter-width', `calc(${Math.max(2, String(lineCount).length)}ch + 16px)`);
+  syncCustomCommandLineNumbers(input, gutter);
+}
+
+function appendCommandToBatch(command: CommandDefinition): void {
+  const validationError = validateCommand(command);
+  if (validationError) {
+    setStatus(validationError, 'error');
+    return;
+  }
+  const selectedAction = selectedCommandAction(command);
+  const actionDefinition = commandActionDefinition(command, selectedAction);
+  const builtCommand = commandActionCommand(command, selectedAction);
+  if (!builtCommand || builtCommand.includes('{')) {
+    setStatus('Complete the command fields before adding it to the batch.', 'error');
+    return;
+  }
+  const currentCommands = parseCustomCommands(customCommandDraft);
+  customCommandDraft += customCommandDraft && !customCommandDraft.endsWith('\n') ? `\n${builtCommand}` : builtCommand;
+  setStatus(`Added ${actionDefinition.title} to the Custom Command batch (${currentCommands.length + 1} commands).`, 'success');
 }
 
 async function executeCustomBatch(execution: PendingExecution): Promise<void> {
@@ -2287,6 +2525,29 @@ function renderIdBrowserSelection(): string {
       <h3>Select an item</h3>
       <span>Choose a name from the compact list to see its record information and available actions.</span>
     </aside>`;
+  }
+  if (entry.source === 'mod' && entry.type.toUpperCase() === 'QUST') {
+    const quest = {
+      quest: entry.label,
+      editorId: entry.editorId ?? 'Not provided',
+      questId: entry.value,
+      stages: entry.questStages ?? [],
+      stagesScanned: Array.isArray(entry.questStages),
+      source: entry.sourceName ?? entry.plugin ?? 'Mod catalog',
+      requirement: entry.questStagesError ? `Stage scan failed: ${entry.questStagesError}` : null,
+      category: entry.category,
+      internal: false,
+    };
+    const favoriteKey = idFavoriteKey(entry);
+    const isFavorite = idFavorites.some((favorite) => favorite.favoriteKey === favoriteKey);
+    const footer = `<div class="quest-browser-actions mod-quest-id-actions">
+      ${activeCatalogPicker?.browser === 'id' ? '<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-id-browser-selection>Use This ID</button>' : ''}
+      <button class="favorite-button id-browser-favorite${isFavorite ? ' is-favorite' : ''}" type="button" data-id-favorite-toggle="${escapeHtml(favoriteKey)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">${isFavorite ? '★' : '☆'}</button>
+      ${entry.editorId ? `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(entry.editorId)}">Copy Editor ID</button>` : ''}
+    </div>`;
+    return renderQuestBrowserSelection(quest, true)
+      .replace('class="quest-browser-selection"', 'class="quest-browser-selection mod-quest-selection"')
+      .replace(/(\s*<\/div>\s*<\/aside>)$/, footer + '$1');
   }
   const action = idBrowserAction(entry);
   const favoriteKey = idFavoriteKey(entry);
@@ -2537,18 +2798,21 @@ function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): void 
   requestExecution({ command, definition, rememberRecent: false });
 }
 
-function renderCustomPanel(draftName = '', draftCommands = ''): void {
+function renderCustomPanel(): void {
   const savedEntries = savedCustomCommands.map((entry) => {
     const commands = parseCustomCommands(entry.commands);
+    const invalid = entry.valid === false;
+    const runsOnLoad = commandBatchAutoRunNames.has(entry.name.toLowerCase());
     return `
-      <article class="custom-saved-entry">
+      <article class="custom-saved-entry${invalid ? ' is-invalid' : ''}">
         <div class="custom-saved-entry-copy">
           <strong>${escapeHtml(entry.name)}</strong>
-          <span>${commands.length} command${commands.length === 1 ? '' : 's'}</span>
+          <span>${invalid ? escapeHtml(entry.error ?? 'This file cannot be used.') : `${commands.length} command${commands.length === 1 ? '' : 's'}`}</span>
         </div>
         <div class="custom-saved-entry-actions">
+          <button class="osf-btn osf-btn--sm custom-auto-run-button${runsOnLoad ? ' is-active' : ''}" type="button" data-custom-auto-run="${escapeHtml(entry.id)}" aria-pressed="${runsOnLoad}" title="${runsOnLoad ? 'Remove from' : 'Add to'} automatic save-load batches"${invalid ? ' disabled' : ''}>On Load</button>
           <button class="favorite-button${entry.favorite ? ' is-favorite' : ''}" type="button" data-custom-favorite="${escapeHtml(entry.id)}" aria-label="${entry.favorite ? 'Remove' : 'Add'} ${escapeHtml(entry.name)} ${entry.favorite ? 'from' : 'to'} favorites" title="${entry.favorite ? 'Remove from' : 'Add to'} favorites">${entry.favorite ? '★' : '☆'}</button>
-          <button class="osf-btn osf-btn--sm" type="button" data-custom-load="${escapeHtml(entry.id)}">Load</button>
+          <button class="osf-btn osf-btn--sm" type="button" data-custom-load="${escapeHtml(entry.id)}"${invalid ? ' disabled' : ''}>Load</button>
           <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-custom-delete="${escapeHtml(entry.id)}">Delete</button>
         </div>
       </article>`;
@@ -2558,26 +2822,40 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
     <section class="custom-card osf-card">
       <div class="custom-workspace">
         <div class="custom-editor-pane">
-          <p class="osf-eyebrow">RAW CONSOLE COMMANDS</p>
-          <h3>Execute commands directly</h3>
-          <p>Enter one console command per line. CCC runs nonempty lines in order.</p>
           <form id="custom-form" class="custom-form">
-            <label>
-              <span>Commands</span>
-              <textarea class="osf-input custom-command-input" id="custom-command" rows="8" autocomplete="off" spellcheck="false" placeholder="One command per line, for example:&#10;tgm&#10;player.additem 0000ABF9 4">${escapeHtml(draftCommands)}</textarea>
-            </label>
-            <button class="osf-btn osf-btn--osf-accent" type="submit" ${nativeBackendReady ? '' : 'disabled'}>Review Commands</button>
+            <div class="custom-command-field">
+              <div class="custom-command-editor">
+                <pre class="custom-command-line-numbers" aria-hidden="true"></pre>
+                <textarea class="osf-input custom-command-input" id="custom-command" aria-label="Commands" rows="8" wrap="off" autocomplete="off" spellcheck="false" placeholder="# Comments begin with # and will not run&#10;# Blank lines can separate sections&#10;&#10;# Player setup&#10;tgm&#10;player.modav carryweight 100&#10;&#10;# Add 4 of an item&#10;player.additem 0000ABF9 4">${escapeHtml(customCommandDraft)}</textarea>
+              </div>
+            </div>
+            <div class="custom-form-actions">
+              <div class="custom-format-tips" aria-label="Command formatting tips">
+                <strong>FORMAT TIPS</strong>
+                <span>One command per line</span>
+                <span><code>#</code> starts a note or section</span>
+                <span>Blank lines add spacing</span>
+                <span>No bullets, typed line numbers, or <code>&gt;</code> prompts</span>
+              </div>
+              <div class="custom-form-action-buttons">
+                <button class="osf-btn osf-btn--ghost" type="button" data-custom-clear${customCommandDraft ? '' : ' disabled'}>Clear</button>
+                <button class="osf-btn osf-btn--osf-accent" type="submit" ${nativeBackendReady ? '' : 'disabled'}>Review Commands</button>
+              </div>
+            </div>
           </form>
-          <div class="custom-note"><strong>NOTE</strong><span>Up to ${MAX_CUSTOM_BATCH_COMMANDS} commands can run in one batch. The batch stops if a command reports an error. Save before experimenting with commands you do not recognize.</span></div>
+          <div class="custom-note"><strong>NOTE</strong><span>Commands run in order, and the batch stops if a command reports an error. Save before experimenting with commands you do not recognize.</span></div>
         </div>
         <aside class="custom-saved-panel" aria-label="Saved custom commands" tabindex="0">
           <div class="custom-saved-heading">
-            <div><p class="osf-eyebrow">SAVED COMMANDS</p><h4>Reusable entries</h4></div>
+            <h4>Batch Files</h4>
             <div class="custom-saved-heading-actions">
               <span>${savedCustomCommands.length} / ${MAX_SAVED_CUSTOM_COMMANDS}</span>
+              <button class="osf-btn osf-btn--sm custom-auto-run-master${commandBatchAutoRunEnabled ? ' is-active' : ''}" type="button" data-custom-auto-run-master aria-pressed="${commandBatchAutoRunEnabled}" title="Selected batches run ${commandBatchAutoRunDelaySeconds} seconds after loading an existing save">Auto-Run ${commandBatchAutoRunEnabled ? 'On' : 'Off'}</button>
+              <button class="osf-btn osf-btn--sm" type="button" data-custom-refresh${commandBatchesLoading ? ' disabled' : ''}>${commandBatchesLoading ? 'Refreshing...' : 'Refresh'}</button>
               ${savedCustomCommands.length ? '<button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-custom-delete-all>Delete All</button>' : ''}
             </div>
           </div>
+          <div class="custom-batch-directory"><span class="osf-eyebrow">USER FOLDER</span><code title="${escapeHtml(commandBatchDirectory)}">${escapeHtml(commandBatchDirectory)}</code></div>
           <div class="custom-delete-all-confirm" data-custom-delete-all-confirm hidden>
             <strong>Delete all saved entries?</strong>
             <span>Type <b>Delete</b> to confirm. This cannot be undone.</span>
@@ -2587,12 +2865,12 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
           <form id="custom-save-form" class="custom-save-form">
             <label>
               <span>Entry Name</span>
-              <input class="osf-input" id="custom-command-name" type="text" maxlength="${MAX_CUSTOM_COMMAND_NAME_LENGTH}" autocomplete="off" placeholder="Example: Photo mode setup" value="${escapeHtml(draftName)}">
+              <input class="osf-input" id="custom-command-name" type="text" maxlength="${MAX_CUSTOM_COMMAND_NAME_LENGTH}" autocomplete="off" placeholder="Example: Photo mode setup" value="${escapeHtml(customCommandDraftName)}">
             </label>
-            <button class="osf-btn osf-btn--sm" type="submit">Save Current</button>
+            <button class="osf-btn osf-btn--sm" type="submit"${commandBatchesLoading ? ' disabled' : ''}>Save .txt File</button>
           </form>
           <div class="custom-saved-list">
-            ${savedEntries || '<div class="custom-saved-empty"><strong>No saved entries</strong><span>Name the current batch and save it here.</span></div>'}
+            ${savedEntries || `<div class="custom-saved-empty"><strong>${commandBatchesLoading ? 'Loading batch files...' : 'No batch files found'}</strong><span>${commandBatchesLoading ? 'Reading the user-owned CCC folder.' : 'Create a .txt file here or save the current batch.'}</span></div>`}
           </div>
         </aside>
       </div>
@@ -2601,19 +2879,21 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
 
   const form = customPanel.querySelector('#custom-form');
   const input = customPanel.querySelector('#custom-command');
+  const lineNumbers = customPanel.querySelector('.custom-command-line-numbers');
   const saveForm = customPanel.querySelector('#custom-save-form');
   const nameInput = customPanel.querySelector('#custom-command-name');
-  if (form instanceof HTMLFormElement && input instanceof HTMLTextAreaElement) {
+  if (form instanceof HTMLFormElement && input instanceof HTMLTextAreaElement && lineNumbers instanceof HTMLElement) {
+    updateCustomCommandLineNumbers(input, lineNumbers);
+    input.addEventListener('input', () => {
+      customCommandDraft = input.value;
+      updateCustomCommandLineNumbers(input, lineNumbers);
+    });
+    input.addEventListener('scroll', () => { syncCustomCommandLineNumbers(input, lineNumbers); });
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const commands = parseCustomCommands(input.value);
       if (commands.length === 0) {
         setStatus('Enter at least one console command.', 'error');
-        input.focus();
-        return;
-      }
-      if (commands.length > MAX_CUSTOM_BATCH_COMMANDS) {
-        setStatus(`A batch can contain up to ${MAX_CUSTOM_BATCH_COMMANDS} commands.`, 'error');
         input.focus();
         return;
       }
@@ -2630,9 +2910,19 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
       );
     });
   }
+  if (nameInput instanceof HTMLInputElement) {
+    nameInput.addEventListener('input', () => { customCommandDraftName = nameInput.value; });
+  }
+
+  customPanel.querySelector<HTMLButtonElement>('[data-custom-clear]')?.addEventListener('click', () => {
+    customCommandDraft = '';
+    renderCustomPanel();
+    customPanel.querySelector<HTMLTextAreaElement>('#custom-command')?.focus({ preventScroll: true });
+    setStatus('Cleared the current Custom Command batch.', 'success');
+  });
 
   if (saveForm instanceof HTMLFormElement && nameInput instanceof HTMLInputElement && input instanceof HTMLTextAreaElement) {
-    saveForm.addEventListener('submit', (event) => {
+    saveForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const name = nameInput.value.trim();
       const commands = parseCustomCommands(input.value);
@@ -2643,11 +2933,6 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
       }
       if (commands.length === 0) {
         setStatus('Enter at least one console command before saving.', 'error');
-        input.focus();
-        return;
-      }
-      if (commands.length > MAX_CUSTOM_BATCH_COMMANDS) {
-        setStatus(`A saved batch can contain up to ${MAX_CUSTOM_BATCH_COMMANDS} commands.`, 'error');
         input.focus();
         return;
       }
@@ -2663,21 +2948,67 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
         setStatus(`You can save up to ${MAX_SAVED_CUSTOM_COMMANDS} custom command entries. Delete one before adding another.`, 'error');
         return;
       }
-
-      const entry: SavedCustomCommand = {
-        id: existingIndex >= 0 ? savedCustomCommands[existingIndex].id : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        name,
-        commands: commands.join('\n'),
-        updatedAt: Date.now(),
-        favorite: existingIndex >= 0 ? savedCustomCommands[existingIndex].favorite : false,
-      };
-      if (existingIndex >= 0) savedCustomCommands.splice(existingIndex, 1);
-      savedCustomCommands = [entry, ...savedCustomCommands].slice(0, MAX_SAVED_CUSTOM_COMMANDS);
-      writeSavedCustomCommands();
-      setStatus(`${existingIndex >= 0 ? 'Updated' : 'Saved'} custom command entry: ${name}.`, 'success');
-      renderCustomPanel('', input.value);
+      if (!window.osfui?.request || !nativeBackendReady) {
+        setStatus('ConsoleCommandCenter.dll is not connected, so the batch file cannot be saved.', 'error');
+        return;
+      }
+      try {
+        const reply = await window.osfui.request<CommandBatchMutationReply>('console.command-center.commandBatchSave', { name, content: input.value });
+        if (!reply?.ok) throw new Error('Native backend did not confirm the saved file.');
+        setStatus(`${existingIndex >= 0 ? 'Updated' : 'Saved'} ${name}.txt in the user Command Batches folder.`, 'success');
+        customCommandDraftName = name;
+        customCommandDraft = input.value;
+        await refreshCommandBatches(false);
+      } catch (error) {
+        setStatus(`Could not save ${name}.txt: ${describe(error)}`, 'error');
+        nameInput.focus();
+      }
     });
   }
+
+  customPanel.querySelector<HTMLButtonElement>('[data-custom-refresh]')?.addEventListener('click', () => {
+    void refreshCommandBatches(false);
+  });
+
+  customPanel.querySelector<HTMLButtonElement>('[data-custom-auto-run-master]')?.addEventListener('click', async () => {
+    if (!window.osfui?.request || !nativeBackendReady) return;
+    const enabled = !commandBatchAutoRunEnabled;
+    try {
+      const reply = await window.osfui.request<CommandBatchAutoRunReply>('console.command-center.commandBatchAutoRunEnable', { enabled });
+      if (!reply?.ok) throw new Error('Native backend did not confirm the Auto Run setting.');
+      applyCommandBatchAutoRunReply(reply);
+      const selectedCount = commandBatchAutoRunNames.size;
+      setStatus(enabled
+        ? selectedCount
+          ? `Auto-Run enabled. ${selectedCount} batch file${selectedCount === 1 ? '' : 's'} will run ${commandBatchAutoRunDelaySeconds} seconds after a save loads.`
+          : 'Auto-Run enabled. Select On Load beside at least one batch file.'
+        : 'Auto-Run disabled. No batch files will run when a save loads.', 'success');
+      renderCustomPanel();
+      customPanel.querySelector<HTMLButtonElement>('[data-custom-auto-run-master]')?.focus({ preventScroll: true });
+    } catch (error) {
+      setStatus(`Could not update Auto-Run: ${describe(error)}`, 'error');
+    }
+  });
+
+  customPanel.querySelectorAll<HTMLButtonElement>('[data-custom-auto-run]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const entry = savedCustomCommands.find((candidate) => candidate.id === button.dataset.customAutoRun);
+      if (!entry || !window.osfui?.request || !nativeBackendReady) return;
+      const enabled = !commandBatchAutoRunNames.has(entry.name.toLowerCase());
+      try {
+        const reply = await window.osfui.request<CommandBatchAutoRunReply>('console.command-center.commandBatchAutoRunBatch', { name: entry.name, enabled });
+        if (!reply?.ok) throw new Error('Native backend did not confirm the batch Auto Run setting.');
+        applyCommandBatchAutoRunReply(reply);
+        setStatus(enabled
+          ? `${entry.name} will run after a save loads${commandBatchAutoRunEnabled ? '.' : ' once Auto-Run is turned on.'}`
+          : `${entry.name} will no longer run after a save loads.`, 'success');
+        renderCustomPanel();
+        customPanel.querySelector<HTMLButtonElement>(`[data-custom-auto-run="${CSS.escape(entry.id)}"]`)?.focus({ preventScroll: true });
+      } catch (error) {
+        setStatus(`Could not update ${entry.name}: ${describe(error)}`, 'error');
+      }
+    });
+  });
 
   customPanel.querySelectorAll<HTMLButtonElement>('[data-custom-load]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -2685,6 +3016,8 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
       if (!entry || !(input instanceof HTMLTextAreaElement) || !(nameInput instanceof HTMLInputElement)) return;
       input.value = entry.commands;
       nameInput.value = entry.name;
+      customCommandDraft = entry.commands;
+      customCommandDraftName = entry.name;
       input.focus();
       setStatus(`Loaded ${entry.name}. Review the commands before running them.`, 'success');
     });
@@ -2694,27 +3027,32 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
     button.addEventListener('click', () => {
       const entry = savedCustomCommands.find((candidate) => candidate.id === button.dataset.customFavorite);
       if (!entry) return;
-      const currentName = nameInput instanceof HTMLInputElement ? nameInput.value : '';
-      const currentCommands = input instanceof HTMLTextAreaElement ? input.value : '';
       entry.favorite = !entry.favorite;
-      writeSavedCustomCommands();
+      if (entry.favorite) savedCustomCommandFavorites.add(entry.name.toLowerCase());
+      else savedCustomCommandFavorites.delete(entry.name.toLowerCase());
+      writeSavedCustomCommandFavorites();
       setStatus(`${entry.favorite ? 'Added' : 'Removed'} ${entry.name} ${entry.favorite ? 'to' : 'from'} Favorites.`, 'success');
-      renderCustomPanel(currentName, currentCommands);
+      renderCustomPanel();
       customPanel.querySelector<HTMLButtonElement>(`[data-custom-favorite="${CSS.escape(entry.id)}"]`)?.focus({ preventScroll: true });
       renderNavigation();
     });
   });
 
   customPanel.querySelectorAll<HTMLButtonElement>('[data-custom-delete]').forEach((button) => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
       const entry = savedCustomCommands.find((candidate) => candidate.id === button.dataset.customDelete);
       if (!entry) return;
-      const currentName = nameInput instanceof HTMLInputElement ? nameInput.value : '';
-      const currentCommands = input instanceof HTMLTextAreaElement ? input.value : '';
-      savedCustomCommands = savedCustomCommands.filter((candidate) => candidate.id !== entry.id);
-      writeSavedCustomCommands();
-      setStatus(`Deleted saved custom command entry: ${entry.name}.`, 'success');
-      renderCustomPanel(currentName, currentCommands);
+      if (!window.osfui?.request || !nativeBackendReady) return;
+      try {
+        const reply = await window.osfui.request<CommandBatchMutationReply>('console.command-center.commandBatchDelete', { name: entry.name });
+        if (!reply?.ok) throw new Error('Native backend did not confirm the deletion.');
+        savedCustomCommandFavorites.delete(entry.name.toLowerCase());
+        writeSavedCustomCommandFavorites();
+        setStatus(`Deleted ${entry.name}.txt.`, 'success');
+        await refreshCommandBatches(false);
+      } catch (error) {
+        setStatus(`Could not delete ${entry.name}.txt: ${describe(error)}`, 'error');
+      }
     });
   });
 
@@ -2736,15 +3074,20 @@ function renderCustomPanel(draftName = '', draftCommands = ''): void {
   deleteAllCancel?.addEventListener('click', () => {
     if (deleteAllConfirm) deleteAllConfirm.hidden = true;
   });
-  deleteAllCommit?.addEventListener('click', () => {
+  deleteAllCommit?.addEventListener('click', async () => {
     if (deleteAllInput?.value !== 'Delete') return;
-    const currentName = nameInput instanceof HTMLInputElement ? nameInput.value : '';
-    const currentCommands = input instanceof HTMLTextAreaElement ? input.value : '';
     const deletedCount = savedCustomCommands.length;
-    savedCustomCommands = [];
-    writeSavedCustomCommands();
-    setStatus(`Deleted all ${deletedCount} saved custom command entries.`, 'success');
-    renderCustomPanel(currentName, currentCommands);
+    if (!window.osfui?.request || !nativeBackendReady) return;
+    try {
+      const reply = await window.osfui.request<CommandBatchMutationReply>('console.command-center.commandBatchDeleteAll');
+      if (!reply?.ok) throw new Error('Native backend did not confirm the deletion.');
+      savedCustomCommandFavorites.clear();
+      writeSavedCustomCommandFavorites();
+      setStatus(`Deleted all ${deletedCount} command-batch files.`, 'success');
+      await refreshCommandBatches(false);
+    } catch (error) {
+      setStatus(`Could not delete all command-batch files: ${describe(error)}`, 'error');
+    }
   });
 }
 
@@ -2752,8 +3095,9 @@ function openSavedCustomCommand(entry: SavedCustomCommand): void {
   activeView = 'custom';
   query = '';
   search.value = '';
+  customCommandDraftName = entry.name;
+  customCommandDraft = entry.commands;
   render();
-  renderCustomPanel(entry.name, entry.commands);
   customPanel.querySelector<HTMLTextAreaElement>('#custom-command')?.focus({ preventScroll: true });
   setStatus(`Loaded ${entry.name}. Review the commands before running them.`, 'success');
 }
@@ -2914,7 +3258,10 @@ function switchView(view: string): void {
     selectedQuestKey = null;
   }
   render();
+  if (view === 'custom') void refreshCommandBatches(!commandBatchesLoaded);
 }
+
+modScanCancel.addEventListener('click', cancelModCatalogScan);
 
 navigation.addEventListener('click', (event) => {
   const scanCatalogs = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-scan-mod-catalogs]');
@@ -3039,7 +3386,8 @@ commandList.addEventListener('click', (event) => {
     const entry = savedCustomCommands.find((candidate) => candidate.id === favoriteCustomToggle.dataset.favoriteCustomToggle);
     if (!entry) return;
     entry.favorite = false;
-    writeSavedCustomCommands();
+    savedCustomCommandFavorites.delete(entry.name.toLowerCase());
+    writeSavedCustomCommandFavorites();
     render();
     setStatus(`Removed ${entry.name} from Favorites.`, 'success');
     return;
@@ -3180,6 +3528,32 @@ commandList.addEventListener('click', (event) => {
   }
 
 
+  const modStageButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-mod-quest-set-stage]');
+  if (modStageButton?.dataset.questId && modStageButton.dataset.questTitle) {
+    const input = modStageButton.closest('.mod-quest-stage-controls')?.querySelector<HTMLInputElement>('[data-mod-quest-stage-input]');
+    const rawStage = input?.value.trim() ?? '';
+    const stage = Number(rawStage);
+    if (!/^\d{1,5}$/.test(rawStage) || !Number.isInteger(stage) || stage < 0 || stage > 65535) {
+      setStatus('Enter a quest stage from 0 through 65535.', 'error');
+      input?.focus();
+      return;
+    }
+    const command = `setstage ${modStageButton.dataset.questId} ${stage}`;
+    const definition: CommandDefinition = {
+      id: `mod-quest-stage-${modStageButton.dataset.questId}-${stage}`,
+      title: `${modStageButton.dataset.questTitle} — Stage ${stage}`,
+      category: 'Quests',
+      description: 'Set the selected mod quest to a known stage.',
+      command,
+      warning: 'SetStage can bypass dialogue, scripts, rewards, scenes, or prerequisites. A manually entered stage may not exist in this quest. Make a manual save and use a stage documented for this quest.',
+      risk: 'danger',
+      testStatus: 'untested',
+      verifyInGame: true,
+    };
+    requestExecution({ command, definition, rememberRecent: false });
+    return;
+  }
+
   const questButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-quest-command]');
   if (questButton?.dataset.questCommand && questButton.dataset.questTitle && questButton.dataset.questStage) {
     const questTitle = questButton.dataset.questTitle;
@@ -3216,28 +3590,44 @@ commandList.addEventListener('click', (event) => {
     return;
   }
 
+  const addToBatchButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-add-to-batch]');
+  if (addToBatchButton?.dataset.addToBatch) {
+    const command = COMMANDS.find((entry) => entry.id === addToBatchButton.dataset.addToBatch);
+    if (command) appendCommandToBatch(command);
+    return;
+  }
+
   const executeButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-execute]');
   if (!executeButton?.dataset.execute) return;
   const command = COMMANDS.find((entry) => entry.id === executeButton.dataset.execute);
   if (!command) return;
+  const requestedAction: CommandActionChoice = executeButton.dataset.commandAction === 'secondary' ? 'secondary' : 'primary';
+  if (command.secondaryAction && requestedAction !== selectedCommandAction(command)) {
+    selectedCommandActions.set(command.id, requestedAction);
+    armedCommandActions.set(command.id, requestedAction);
+    selectCommand(command.id);
+    requestAnimationFrame(() => {
+      commandList.querySelector<HTMLButtonElement>(`[data-execute="${CSS.escape(command.id)}"][data-command-action="${requestedAction}"]`)?.focus({ preventScroll: true });
+    });
+    const selectedLabel = requestedAction === 'secondary' ? command.secondaryAction.label : command.executeLabel ?? 'Execute';
+    setStatus(`Selected ${selectedLabel}. Select it again to review and execute it.`, 'success');
+    return;
+  }
+  if (command.secondaryAction && armedCommandActions.get(command.id) !== requestedAction) {
+    armedCommandActions.set(command.id, requestedAction);
+    const selectedLabel = requestedAction === 'secondary' ? command.secondaryAction.label : command.executeLabel ?? 'Execute';
+    setStatus(`${selectedLabel} is selected. Select it again to review and execute it.`, 'success');
+    return;
+  }
+  armedCommandActions.delete(command.id);
   const validationError = validateCommand(command);
   if (validationError) {
     setStatus(validationError, 'error');
     return;
   }
   const builtCommand = buildCommand(command);
-  const secondary = executeButton.dataset.commandAction === 'secondary' ? command.secondaryAction : undefined;
-  const actionDefinition: CommandDefinition = secondary
-    ? {
-        ...command,
-        title: secondary.title,
-        command: secondary.command,
-        warning: secondary.warning,
-        risk: secondary.risk,
-        secondaryAction: undefined,
-      }
-    : command;
-  const actionCommand = secondary ? buildCommandTemplate(command, secondary.command) : builtCommand;
+  const actionDefinition = commandActionDefinition(command, requestedAction);
+  const actionCommand = command.secondaryAction ? commandActionCommand(command, requestedAction) : builtCommand;
   if (command.catalogSearch) {
     openPackagedFormSearch(command);
     return;
@@ -3425,7 +3815,9 @@ document.addEventListener('keydown', (event) => {
   }
   if (event.key === 'Escape') {
     const openCaution = commandList.querySelector<HTMLElement>('.caution-wrap.is-open');
-    if (!helpBackdrop.hidden) {
+    if (!modScanOverlay.hidden) {
+      cancelModCatalogScan();
+    } else if (!helpBackdrop.hidden) {
       closeHelp();
     } else if (!welcomeBackdrop.hidden) {
       closeWelcome();
@@ -3495,6 +3887,7 @@ async function connectNativeBackend(): Promise<void> {
       return;
     }
     nativeBackendReady = true;
+    void importCommandBatchAutoRunReports();
     footerNativeStatus.textContent = 'READY';
     setStatus(`${reply.backend}${reply.build ? ` ${reply.build}` : ''} connected.`, 'success');
   } catch (error) {
@@ -3504,6 +3897,7 @@ async function connectNativeBackend(): Promise<void> {
   }
 
   render();
+  if (activeView === 'custom' && !commandBatchesLoaded) void refreshCommandBatches(true);
 }
 
 if (window.osfui?.request) {

@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "OSFUI_JSON.h"
+#include "QuestStages.h"
 
 namespace CCC::ModCatalogs
 {
@@ -572,6 +573,7 @@ namespace CCC::ModCatalogs
                     if (size < header.size()) break;
                     continue;
                 }
+                const auto payloadPosition = input.tellg();
                 const auto* recordType = FindRecordType(signature);
                 const auto rawFormID = ReadU32(header.data() + 12);
                 const auto flags = ReadU32(header.data() + 8);
@@ -591,6 +593,16 @@ namespace CCC::ModCatalogs
                                 { "type", recordType->signature }, { "category", recordType->category }
                             };
                             if (editorID) record["editorId"] = *editorID;
+                            if (signature == "QUST") {
+                                try {
+                                    if (size > CCC::QuestStages::kMaxRecordBytes) throw std::runtime_error("Quest record exceeds the stage-scan size limit.");
+                                    std::vector<std::byte> payload(size);
+                                    if (!input.read(reinterpret_cast<char*>(payload.data()), size)) throw std::runtime_error("Quest record payload is truncated.");
+                                    record["questStages"] = CCC::QuestStages::Parse(payload, (flags & 0x00040000u) != 0);
+                                } catch (const std::exception& error) {
+                                    record["questStagesError"] = error.what();
+                                }
+                            }
                             records.push_back(std::move(record));
                             ++totalRecords;
                         } else {
@@ -598,7 +610,7 @@ namespace CCC::ModCatalogs
                         }
                     }
                 }
-                input.seekg(static_cast<std::streamoff>(size), std::ios::cur);
+                input.seekg(payloadPosition + static_cast<std::streamoff>(size));
             }
         response["catalogs"].push_back(OSFUI::API::Json{
             { "file", plugin.path.filename().string() }, { "loaded", true },

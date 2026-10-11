@@ -25,6 +25,17 @@ const EFFECT_UNCONFIRMED_TOGGLE_IDS = [
 // behavior. Moving a command into its normal category is part of verification.
 export const UNTESTED_COMMANDS: CommandDefinition[] = [
   {
+    id: 'toggle-workshop-flycam',
+    title: 'Toggle Workshop Fly Camera',
+    category: 'Camera',
+    description: 'Toggle a free camera that can move far above the world. In-game testing confirmed it works both inside and outside Workshop mode.',
+    command: 'ToggleWorkshopFlyCam',
+    tags: ['camera', 'workshop', 'flycam', 'free camera', 'toggle'],
+    warning: 'This camera can move far away from the player and above the loaded world. Toggle it again to return before continuing normal play.',
+    risk: 'caution',
+    testStatus: 'verified',
+  },
+  {
     id: 'toggle-people-layer',
     title: 'Toggle People',
     category: 'World',
@@ -153,6 +164,7 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     warning: 'Published reports say this can reset the current appearance. Make a manual save first.',
     risk: 'danger',
     testStatus: 'untested',
+    intakeGroup: 'Script Functions',
   },
   {
     id: 'untested-kill-player',
@@ -164,6 +176,7 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     warning: 'This immediately kills the player and may trigger a reload or death sequence.',
     risk: 'danger',
     testStatus: 'untested',
+    intakeGroup: 'Script Functions',
   },
   {
     id: 'untested-start-all-quests',
@@ -175,6 +188,7 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     warning: 'Starting every quest can break progression, overload scripts, or crash the game. Use only on a disposable save.',
     risk: 'danger',
     testStatus: 'untested',
+    intakeGroup: 'Engine Console Commands',
   },
   {
     id: 'untested-complete-all-quests',
@@ -186,6 +200,7 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     warning: 'This can irreversibly damage quest state, skip story content, or crash the game. Use only on a disposable save.',
     risk: 'danger',
     testStatus: 'untested',
+    intakeGroup: 'Engine Console Commands',
   },
   {
     id: 'untested-camera-fov',
@@ -222,7 +237,7 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     warning: 'This is an unverified rendering or debug toggle. Run it again to attempt to restore the previous state.',
     risk: 'caution' as const,
     testStatus: (EFFECT_UNCONFIRMED_TOGGLE_IDS.includes(id as string) ? 'inconclusive' : 'untested') as 'inconclusive' | 'untested',
-    intakeGroup: (EFFECT_UNCONFIRMED_TOGGLE_IDS.includes(id as string) ? 'Executed — Effect Unconfirmed' : 'Ready to Test') as NonNullable<CommandDefinition['intakeGroup']>,
+    intakeGroup: (EFFECT_UNCONFIRMED_TOGGLE_IDS.includes(id as string) ? 'Executed — Effect Unconfirmed' : 'Engine Console Commands') as NonNullable<CommandDefinition['intakeGroup']>,
   })),
   {
     id: 'untested-show-subtitles',
@@ -242,6 +257,7 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     command: 'ShowSubtitle 0',
     tags: ['subtitle', 'dialogue', 'restore'],
     testStatus: 'untested',
+    intakeGroup: 'Engine Console Commands',
   },
   {
     id: 'untested-step-frame',
@@ -268,12 +284,13 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     id: 'untested-kill-projectiles',
     title: 'Remove All Projectiles',
     category: 'Untested',
-    description: 'Remove all active projectiles from the loaded area.',
+    description: 'Remove all active projectiles from the loaded area. In-game testing triggered the command but did not confirm projectile removal.',
     command: 'kap',
     tags: ['projectiles', 'combat', 'cleanup'],
     warning: 'This may interfere with active combat or scripted projectile events.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'inconclusive',
+    intakeGroup: 'Executed — Effect Unconfirmed',
   },
   {
     id: 'untested-reload-weather',
@@ -301,25 +318,26 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
   {
     id: 'untested-workshop',
     title: 'Enter Workshop Mode',
-    category: 'Untested',
-    description: 'Attempt to enter Workshop mode while inside a buildable area.',
+    category: 'World',
+    description: 'Open Workshop mode. In-game testing confirmed it opens while inside a player ship; outpost use has not yet been confirmed.',
     command: 'workshop',
     tags: ['outpost', 'workshop', 'build'],
     warning: 'This is intended for buildable areas and may behave incorrectly elsewhere.',
     risk: 'caution',
-    testStatus: 'untested',
+    testStatus: 'verified',
     closeBeforeExecute: true,
   },
   {
     id: 'untested-takeoff',
     title: 'Take Off to Space',
     category: 'Untested',
-    description: 'Attempt to make the player ship take off into space.',
+    description: 'Attempt to make the player ship take off into space. In-game testing triggered the command but the ship did not take off.',
     command: 'TakeOffToSpace',
     tags: ['ship', 'takeoff', 'space'],
     warning: 'Running this outside the expected landed-ship state may break travel or leave the player in an invalid state.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'inconclusive',
+    intakeGroup: 'Executed — Effect Unconfirmed',
     closeBeforeExecute: true,
   },
   {
@@ -333,6 +351,7 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     risk: 'danger',
     testStatus: 'untested',
     closeBeforeExecute: true,
+    intakeGroup: 'Engine Console Commands',
   },
   {
     id: 'untested-pick-ref',
@@ -358,13 +377,14 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     id: 'untested-set-at-start',
     title: 'Return Reference to Starting Position',
     category: 'Untested',
-    description: 'Move a reference back to its original position and rotation.',
+    description: 'Move a reference back to its original position and rotation. In-game testing triggered the command but references FF1E9A89 and 003CD1C6 did not return to their starting positions.',
     command: '{refId}.setatstart',
     inputs: [referenceInput('refId', 'Reference ID')],
     tags: ['reference', 'position', 'reset', 'setatstart'],
     warning: 'Moving scripted references can disrupt quests, scenes, ownership, or world state.',
     risk: 'danger',
-    testStatus: 'untested',
+    testStatus: 'inconclusive',
+    intakeGroup: 'Executed — Effect Unconfirmed',
   },
   {
     id: 'untested-start-combat',
@@ -377,6 +397,7 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     warning: 'Forced combat can alter hostility, crime, companion, and quest states.',
     risk: 'danger',
     testStatus: 'untested',
+    intakeGroup: 'Script Functions',
   },
   {
     id: 'untested-reset-dialogue',
@@ -388,6 +409,7 @@ export const UNTESTED_COMMANDS: CommandDefinition[] = [
     warning: 'Resetting dialogue flags can repeat conversations or disrupt dialogue and quest progression.',
     risk: 'danger',
     testStatus: 'untested',
+    intakeGroup: 'Engine Console Commands',
   },
   {
     id: 'untested-screenshot',

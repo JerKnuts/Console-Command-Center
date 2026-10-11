@@ -113,6 +113,12 @@ test('Mod Browser groups large catalogs and switches between current-mod and glo
 
 test('opening Mod Browser remains idle until Scan Mods is selected', () => {
   assert.match(browserSource, /id="mod-scan-overlay"/);
+  assert.match(browserSource, /id="mod-scan-cancel"/);
+  assert.match(browserSource, /function cancelModCatalogScan\(\)/);
+  assert.match(browserSource, /modCatalogScanCancelRequested = true/);
+  assert.match(browserSource, /if \(modCatalogScanCancelRequested\) throw new Error\('Scan cancelled by the user\.'\)/);
+  assert.match(browserSource, /modCatalogScanAllComplete = previousScanComplete/);
+  assert.match(browserSource, /Mod Browser scan cancelled\. The existing catalog was kept\./);
   assert.doesNotMatch(browserSource, /restoreCachedModCatalogs|modCatalogCache/);
   assert.doesNotMatch(browserSource, /if \(idCatalogLoaded\) void scanModCatalogs\(\)/);
   assert.match(browserSource, /Select Scan Mods to load this session\\'s mod IDs/);
@@ -199,4 +205,19 @@ test('native catalog replies become searchable mod entries with source metadata'
     editorId: 'Example_Rifle', keywords: ['Example Arsenal', 'ExampleArsenal.esm', '800', 'Example_Rifle'],
     source: 'mod', sourceName: 'Example Arsenal', plugin: 'ExampleArsenal.esm', localFormId: '800',
   });
+});
+
+test('mod quest stage lists preserve runtime IDs, sort unique valid stages, and retain empty lists', () => {
+  const catalogs = normalizeModCatalogs({ ok: true, directory: 'Data', totalRecords: 3, catalogs: [{
+    file: 'QuestMod.esm', loaded: true, name: 'Quest Mod', plugin: 'QuestMod.esm', pluginKind: 'small', records: [
+      { label: 'Quest A', value: 'FE123800', localFormId: '800', type: 'QUST', category: 'Quests', questStages: [100, 10, 0, 10, -1, 65536, 1.5] },
+      { label: 'Quest B', value: 'FE123801', localFormId: '801', type: 'QUST', category: 'Quests', questStages: [] },
+      { label: 'Quest C', value: 'FE123802', localFormId: '802', type: 'QUST', category: 'Quests', questStagesError: 'Truncated record' },
+    ],
+  }] });
+  assert.equal(catalogs[0].entries[0].value, 'FE123800');
+  assert.deepEqual(catalogs[0].entries[0].questStages, [0, 10, 100]);
+  assert.deepEqual(catalogs[0].entries[1].questStages, []);
+  assert.equal(catalogs[0].entries[2].questStages, undefined);
+  assert.equal(catalogs[0].entries[2].questStagesError, 'Truncated record');
 });

@@ -1,6 +1,6 @@
 # ID Catalog Sources
 
-CCC packages a static, searchable catalog instead of reading Starfield's live form map. The current source contains 16,528 unique entries: 16,358 generated records plus 170 additional reviewed records whose IDs are not already present in the generated set. IDs are normalized to eight uppercase hexadecimal characters and checked for duplicates during validation.
+The packaged ID Browser uses a static, searchable catalog. The separate Mod Browser scans active plugin records and resolves runtime IDs and names through Starfield; those session records are not included in the packaged counts below. The current source contains 16,528 unique entries: 16,358 generated records plus 170 additional reviewed records whose IDs are not already present in the generated set. IDs are normalized to eight uppercase hexadecimal characters and checked for duplicates during validation.
 
 ## Catalog generation
 
@@ -11,6 +11,8 @@ The generated data covers player-facing weapons, armor and apparel, ammunition, 
 ## Expansion labeling
 
 An expansion-only entry must name its requirement in `detail`, where it is visible in the selected-result panel. Generated Shattered Space records are labeled **Requires the Shattered Space expansion.**
+
+Quest Browser localization is generated separately using the matching base-game and Shattered Space string tables. Its quest names and stage records are not part of the packaged ID Browser item catalog.
 
 ## Safety rules
 

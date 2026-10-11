@@ -50,6 +50,8 @@ export type ModCatalogReply = {
       category: string;
       detail?: string;
       editorId?: string;
+      questStages?: number[];
+      questStagesError?: string;
     }>;
   }>;
 };
@@ -82,6 +84,10 @@ export function normalizeModCatalogs(reply: ModCatalogReply): ModCatalogSummary[
       category: modRecordCategory(record),
       detail: record.detail,
       editorId: record.editorId,
+      ...(record.type.toUpperCase() === 'QUST' && Array.isArray(record.questStages)
+        ? { questStages: [...new Set(record.questStages.filter((stage) => Number.isInteger(stage) && stage >= 0 && stage <= 65535))].sort((a, b) => a - b) }
+        : {}),
+      ...(record.type.toUpperCase() === 'QUST' && record.questStagesError ? { questStagesError: record.questStagesError } : {}),
       keywords: [...new Set([displayName, catalog.name!, catalog.plugin!, record.localFormId, record.editorId ?? ''].filter(Boolean))],
       source: 'mod',
       sourceName: displayName,

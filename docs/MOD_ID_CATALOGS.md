@@ -14,7 +14,7 @@ With no mod selected, **Search All** searches IDs across every scanned plugin. A
 
 ## What the scan reads
 
-CCC first uses Starfield's loaded plugin and record lists. On runtimes where those lists are unavailable, it automatically reads the active `loadorder.txt` and the plugin headers exposed through the game's `Data` folder. Mod Organizer 2 virtualizes both locations for the running game. Vortex and direct/Creations installations expose the same in-game load order and Data files, so they use the same scanner.
+The manual scan discovers active plugins through Starfield's loaded file list where available, with active `loadorder.txt` / `plugins.txt` discovery as a fallback. It walks supported record headers in each plugin exposed through the game's `Data` folder and resolves owned records through the running game. Mod Organizer 2 virtualizes both locations for the running game. Vortex and direct/Creations installations expose the same in-game load order and Data files, so they use the same scanner.
 
 Only record types CCC can present or act on safely are included:
 
@@ -27,8 +27,16 @@ Deleted records are skipped. CCC asks the running game for each record's localiz
 
 ## Performance and lifetime
 
-Full scanning happens only when **Scan Mods** is selected. The progress window remains visible with an elapsed timer, plugin counter, and running ID total while CCC discovers loaded plugins and reads supported records. ID Browser never loads or scans mod catalogs. The primary scanner copies pointers while holding Starfield's read lock. The fallback walks only plugin record headers, then resolves matching IDs through the running game. It does not continually scan during gameplay or modify plugin files.
+Full scanning happens only when **Scan Mods** is selected. The progress window remains visible with an elapsed timer, plugin counter, and running ID total while CCC discovers loaded plugins and reads supported records. Opening ID Browser does not start scanning; its packaged catalog stays separate from the Mod Browser. The session scan walks plugin record headers, resolves matching IDs through the running game, and reads QUST payloads for stage indexes. It does not continually scan during gameplay or modify plugin files.
 
 Every manual **Scan Mods** run creates an Activity Log entry. **Open Results** shows the active load-order count, discovered and loaded plugin counts, supported ID total, zero-ID and failed plugin counts, opened and missing plugin files, and elapsed time. Failed scans record their error and elapsed time as well.
 
 The Mod Browser tab displays the total number of scanned mod IDs. Any packaged or scanned record can be added to Favorites. CCC stores the record metadata needed to display it and reopen the correct browser. Favoriting an ID does not copy or modify its plugin and does not trigger a scan.
+
+Select **Cancel Scan** to stop after the current plugin request completes. Cancellation preserves the previously completed catalog.
+
+## Quest stages
+
+Scan Mods reads QUST stage indexes from plugin records, including zlib-compressed records. Stage numbers are sorted and deduplicated and remain attached to the current runtime quest ID. Select a scanned quest to use recorded stage buttons or inspect current, running, completed, and per-stage completion state.
+
+Stage indexes come from the scanned owning plugin file, not quest journal objectives; later plugin overrides may change those stages, and they do not guarantee that skipping a stage is safe. If stage extraction fails, the quest remains available and reports the error. Rescan after updating to a version with stage scanning.

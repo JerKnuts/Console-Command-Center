@@ -6,11 +6,11 @@ The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute 
 
 ## Project status
 
-**Current release: v1.1.26.** This update cleans the distributed source and lets the OSF UI development webview scan a configured MO2 profile and display its real mod IDs. See the [changelog](CHANGELOG.md) and [validation checklist](RELEASE_VALIDATION.md).
+**Current release: v1.2.18.** This release includes editable and automatic command batches, mod quest-stage scanning and controls, editor scrolling fixes, and a new ActorExposedToSky result-capture path. Recent native/UI changes still require the in-game checks listed in the validation checklist. See the [changelog](CHANGELOG.md) and [validation checklist](RELEASE_VALIDATION.md).
 
 The core command execution system is working in-game. The command catalog is being tested command-by-command. Controller support covers directional navigation, activation, Back, scrolling, dialogs, and an onscreen keyboard for editable fields.
 
-Planned additions, including editable `.txt` command-batch files, are tracked in [Future features](docs/FUTURE_FEATURES.md). Manual loaded-mod ID scanning is documented in [Mod ID catalogs](docs/MOD_ID_CATALOGS.md).
+Future additions are tracked in [Future features](docs/FUTURE_FEATURES.md). Manual loaded-mod ID scanning is documented in [Mod ID catalogs](docs/MOD_ID_CATALOGS.md).
 
 Commands that rely on known curated IDs use a reusable searchable Reference ID Picker instead of crowded preset-button grids. A separate **ID Browser** searches the catalog packaged with CCC.
 
@@ -42,10 +42,10 @@ To update from v1.0.12 or earlier, remove the old `Data/SFSE/Plugins/OSFUI/views
 - Searchable command library
 - Category browsing
 - Recent commands and favorites stay fixed at the top of the sidebar while the category list scrolls independently
-- Multiline custom-command batches that execute one command per line, with up to 100 named saved entries, a visible usage counter, and typed confirmation before deleting every saved entry
-- Separate **WIP** category with 40 prepared cards grouped by test result and a lazily loaded library of 1,505 engine commands and script functions
+- Editable `.txt` Custom Command batches stored in `Documents\My Games\Starfield\Console Command Center\Command Batches`, with one command per nonempty line, `#` comments, manual refresh, favorites, optional **On Load** execution, persistent in-session drafts, **Add to Batch** command-card actions, and migration from the previous browser storage
+- Separate **WIP** category with 39 prepared cards and a lazily loaded library of 1,493 engine commands and script functions, organized by command type and test result
 - Activity log
-- Contextual Help for Recent, Favorites, command categories, ID Browser, Quest Browser, Custom Command, and Activity Log
+- Contextual Help for Recent, Favorites, command categories, ID Browser, Mod Browser, Quest Browser, Custom Command, and Activity Log
 - Separate first-time welcome overview that remains available from each Help window
 - Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
 - Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
@@ -78,7 +78,7 @@ The reusable Reference ID Picker remains the compact command-specific chooser. *
 
 ## Quest Browser
 
-Commands, ID Browser, Quest Browser, Custom Command, and Activity Log live in a dedicated navigation bar directly below the CCC header. Recent and Favorites remain fixed in the left sidebar while each browser supplies its own category list.
+Commands, ID Browser, Mod Browser, Quest Browser, Custom Command, and Activity Log live in a dedicated navigation bar directly below the CCC header. Recent and Favorites remain fixed in the left sidebar while each browser supplies its own category list.
 
 Quest Browser includes recorded quest-stage selections for inspecting or advancing quest state. Every packaged Quest ID and stage number is structurally validated against its installed master file. Console Command Center uses those mappings to execute vanilla commands such as:
 
@@ -94,9 +94,19 @@ Quest Browser contains 2,318 base-game and Shattered Space quest records with 16
 
 The dataset is generated from the installed Bethesda master records and matching English localization tables. Stage indexes confirm that a stage exists structurally; they do not prove that forcing it is safe for a particular save. Each quest provides state inspection, stage history, confirmed Start, Stop, Complete, Reset, Set Stage, and Copy ID actions where applicable.
 
+## Custom Command batches
+
+Save batches as individual user-owned text files. **Load** fills the editor without executing; **Review Commands** opens confirmation. **Add to Batch** appends the prepared command from a card, and the draft remains when switching tabs. The editor has synchronized line numbers and a Clear action; its size is fixed to the available workspace.
+
+Select **On Load** on saved batches and enable the **Auto-Run** master switch to run them after existing-save loads without opening CCC. Auto-Run is off by default and stores its selections outside the mod installation. See [Command batches](docs/COMMAND_BATCHES.md) for file format, limits, migration, execution order, and repeated-toggle considerations.
+
+## Mod quest controls
+
+**Scan Mods** includes recorded QUST stage indexes, including compressed records. Select a mod quest for live state/history inspection, Start, Stop, Complete, Reset, recorded Set Stage buttons, or manual stage entry. Changes use the current runtime quest ID and require confirmation. Rescan after upgrading to populate stage lists. Stage indexes come from the scanned plugin file and may differ from later overrides; they are not journal objectives or a guarantee that skipping them is safe.
+
 ## Command catalog
 
-The established command library remains curated, while commands still under investigation live in a separate **WIP** category. CCC contains **147 established command cards** plus **1,545 WIP cards**: 40 prepared cards, 557 engine console commands, and 948 script functions. A card can contain paired actions when one command enables an override and another restores normal behavior. Prepared cards are separated into Ready to Test, Executed — Effect Unconfirmed, Executed — Issues, and Blocked — Known Crash groups. Search spans every category in the active browser; WIP searches include the complete raw engine library. Commands with an inconclusive result remain available for advanced users; known crash paths, confirmed unusable actions, and credential-handling commands remain unavailable. Hover or focus the large disabled Unavailable action to see the underlying console command. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
+The established command library remains curated, while commands still under investigation live in a separate **WIP** category. CCC contains **149 established command cards** plus **1,532 WIP entries**: 39 prepared cards and 1,493 raw engine entries (546 console commands and 947 script functions). A card can contain paired actions when one command enables an override and another restores normal behavior. Untested prepared cards appear in Engine Console Commands or Script Functions. Tested commands with uncertain effects or problems appear in Executed — Effect Unconfirmed, Executed — Issues, or Blocked — Known Crash. There is no Ready to Test group. Search spans every category in the active browser; WIP searches include the complete raw engine library. Commands with an inconclusive result remain available for advanced users; known crash paths, confirmed unusable actions, and credential-handling commands remain unavailable. Hover or focus the large disabled Unavailable action to see the underlying console command. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
 
 ## Architecture
 
@@ -136,13 +146,13 @@ npm run build
 npm run setup:deps
 ```
 
-The dependency revision is pinned in `native/setup-deps.mjs`, so fresh clones use the same CommonLibSF revision as the development build.
+The CommonLibSF revision is pinned in `native/setup-deps.mjs`. Xmake resolves nlohmann_json and the pinned static zlib 1.3.2 package. A fresh setup may prompt to download those build dependencies; `xmake f -y` accepts the dependency configuration before building.
 
 ## License and corresponding source
 
 Console Command Center is licensed under **GPL-3.0-or-later with the CommonLibSF Modding Exception and GPL-3.0 Linking Exception (with Corresponding Source)**. See [`LICENSE`](LICENSE) and [`EXCEPTIONS`](EXCEPTIONS).
 
-The native DLL links against CommonLibSF. The exact corresponding CommonLibSF revision and restoration instructions are recorded in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and `native/setup-deps.mjs`. Binary releases must be accompanied by this project's source and access to that pinned dependency source.
+The native DLL links against CommonLibSF and statically links zlib 1.3.2 for compressed quest records. The exact corresponding CommonLibSF revision and restoration instructions are recorded in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and `native/setup-deps.mjs`. Binary releases must be accompanied by this project's source and access to that pinned dependency source.
 
 ## Generated folders
 
@@ -166,6 +176,8 @@ The local `native/lib/commonlibsf/` checkout is also ignored because it can be r
 - `npm run build:native` builds only the native plugin after ensuring CommonLibSF is available.
 - `npm run setup:deps` restores CommonLibSF without starting a build.
 - `npm run check` runs the OSF UI 2.0 and TypeScript checks.
+- `xmake build QuestStagesTests` / `xmake run QuestStagesTests` check the stage parser. `xmake build ScalarResultTests` / `xmake run ScalarResultTests` check exact boolean return capture. These checks do not replace in-game validation.
+- `npm run clean` removes build scratch files while preserving release artifacts, current compiled output, local preview configuration, and dependencies.
 - `npm run package` validates, tests, builds, and creates both the Nexus-ready archive and corresponding full-source archive under `artifacts/`.
 
 User-visible release history is recorded in [`CHANGELOG.md`](CHANGELOG.md). Current supporting references live under [`docs/`](docs/).

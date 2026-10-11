@@ -12,6 +12,8 @@ const untestedCommandSource = readFileSync(new URL('../src/views/console.command
 const engineCommandSource = readFileSync(new URL('../src/views/console.command-center/main/engine-command-library.ts', import.meta.url), 'utf8');
 const engineCommandGeneratorSource = readFileSync(new URL('../scripts/build-engine-command-library.mjs', import.meta.url), 'utf8');
 const nativeSource = readFileSync(new URL('../native/src/main.cpp', import.meta.url), 'utf8');
+const commandBatchSource = readFileSync(new URL('../native/include/CommandBatches.h', import.meta.url), 'utf8');
+const commandBatchAutoRunSource = readFileSync(new URL('../native/include/CommandBatchAutoRun.h', import.meta.url), 'utf8');
 const styleSource = readFileSync(new URL('../src/views/console.command-center/main/style.css', import.meta.url), 'utf8');
 const controllerSource = readFileSync(new URL('../src/views/console.command-center/main/controller-support.ts', import.meta.url), 'utf8');
 const idCatalogSource = readFileSync(new URL('../src/views/console.command-center/main/id-catalog.ts', import.meta.url), 'utf8');
@@ -184,32 +186,77 @@ test('Activity Log uses a compact header and reports native runtime state in the
 
 test('Custom Command uses a multiline batch editor and the sidebar has no redundant heading', () => {
   assert.doesNotMatch(source, /COMMAND LIBRARY/);
+  assert.match(source, /class="custom-command-line-numbers"/);
   assert.match(source, /<textarea class="osf-input custom-command-input"/);
+  assert.match(source, /id="custom-command" aria-label="Commands"/);
+  assert.match(source, /class="custom-format-tips"/);
+  assert.match(source, /class="custom-form-action-buttons"/);
+  assert.doesNotMatch(source, /Execute commands directly/);
+  assert.doesNotMatch(source, /RAW CONSOLE COMMANDS/);
+  assert.doesNotMatch(source, /class="custom-command-field"[\s\S]{0,200}<span>Commands<\/span>/);
+  assert.match(source, /<h4>Batch Files<\/h4>/);
+  assert.doesNotMatch(source, /Command-batch files/);
+  assert.match(source, /# Comments begin with # and will not run/);
+  assert.match(source, /No bullets, typed line numbers/);
+  assert.match(source, /updateCustomCommandLineNumbers\(input, lineNumbers\)/);
+  assert.match(source, /syncCustomCommandLineNumbers\(input, lineNumbers\)/);
   assert.match(source, /if \(execution\?\.commands\) void executeCustomBatch\(execution\)/);
-  assert.deepEqual([...harness(null).sandbox.parseCustomCommands(' tgm\r\n\n player.additem 0000ABF9 4 \n')], [
+  assert.deepEqual([...harness(null).sandbox.parseCustomCommands(' tgm\r\n\n# comment\n player.additem 0000ABF9 4 \n')], [
     'tgm',
     'player.additem 0000ABF9 4',
   ]);
 });
 
-test('Custom Command can persist, load, update, and delete up to 100 named entries', () => {
+test('Custom Command batches use user-owned text files with refresh and legacy migration', () => {
   assert.match(source, /STORAGE_CUSTOM_COMMANDS = 'consoleCommandCenter\.customCommands'/);
   assert.match(source, /MAX_SAVED_CUSTOM_COMMANDS = 100/);
   assert.match(source, /\$\{savedCustomCommands\.length\} \/ \$\{MAX_SAVED_CUSTOM_COMMANDS\}/);
+  assert.match(source, /data-custom-refresh/);
   assert.match(source, /data-custom-load=/);
   assert.match(source, /data-custom-delete=/);
   assert.match(source, /data-custom-favorite=/);
   assert.match(source, /data-favorite-custom-load=/);
   assert.match(source, /savedCustomCommands\.filter\(\(entry\) => entry\.favorite\)/);
   assert.match(source, /input\.value = entry\.commands/);
-  assert.match(source, /entry\.name\.toLowerCase\(\) === name\.toLowerCase\(\)/);
-  assert.match(source, /writeSavedCustomCommands\(\)/);
+  assert.match(source, /console\.command-center\.commandBatchList/);
+  assert.match(source, /console\.command-center\.commandBatchSave/);
+  assert.match(source, /console\.command-center\.commandBatchDelete/);
+  assert.match(source, /legacyBatches/);
+  assert.match(source, /localStorage\.removeItem\(STORAGE_CUSTOM_COMMANDS\)/);
   assert.match(source, /data-custom-delete-all/);
   assert.match(source, /deleteAllInput\.value !== 'Delete'/);
-  assert.match(source, /savedCustomCommands = \[\]/);
-  assert.match(styleSource, /\.custom-workspace \{ display: grid; grid-template-columns: minmax\(260px, 1fr\) minmax\(var\(--ccc-detail-pane-min-width\), var\(--ccc-detail-pane-width\)\);/);
+  assert.match(nativeSource, /RegisterRequest\("console\.command-center\.commandBatchList"/);
+  assert.match(commandBatchSource, /Console Command Center" \/ L"Command Batches/);
+  assert.doesNotMatch(commandBatchSource, /kMaxCommands/);
+  assert.match(commandBatchSource, /kMaxFileBytes = 1024 \* 1024/);
+  assert.match(commandBatchSource, /!line\.starts_with\('#'\)/);
+  assert.match(commandBatchSource, /MoveFileExW\([\s\S]*?MOVEFILE_REPLACE_EXISTING/);
+  assert.match(commandBatchSource, /IsReservedWindowsName/);
+  assert.match(styleSource, /\.custom-workspace \{[^}]*display: grid;[^}]*grid-template-columns: minmax\(260px, 1fr\) minmax\(var\(--ccc-detail-pane-min-width\), var\(--ccc-detail-pane-width\)\);/);
+  assert.match(styleSource, /\.custom-form \{[^}]*grid-template-rows: minmax\(0, 1fr\) auto;[^}]*margin-top: 0;/);
   assert.match(styleSource, /\.custom-saved-entry-actions \{ display: flex;/);
+  assert.match(styleSource, /\.custom-saved-list \{[^}]*flex: 1 1 auto;/);
+  assert.match(styleSource, /\.custom-panel \{[^}]*height: 100%;[^}]*overflow: hidden;/);
+  assert.match(styleSource, /\.custom-card \{[^}]*height: calc\(100% - 10px\);[^}]*overflow: hidden;/);
+  assert.match(styleSource, /\.custom-saved-panel \{[^}]*min-height: 0;[^}]*overflow: hidden;/);
+  assert.match(styleSource, /\.custom-command-input \{[^}]*resize: none;/);
+  assert.match(styleSource, /\.custom-saved-entry-actions \.osf-btn \{[^}]*height: 32px;[^}]*min-height: 32px;/);
+  assert.match(styleSource, /\.custom-saved-entry-actions \.favorite-button \{[^}]*height: 32px;[^}]*min-height: 32px;/);
   assert.doesNotMatch(source, /const preview = commands\[0\]/);
+});
+
+test('selected command batches run through the native save-load lifecycle', () => {
+  assert.match(source, /data-custom-auto-run=/);
+  assert.match(source, /data-custom-auto-run-master/);
+  assert.match(source, /console\.command-center\.commandBatchAutoRunGet/);
+  assert.match(source, /Automatic Batch Run/);
+  assert.match(nativeSource, /BSTEventSink<RE::TESLoadGameEvent>/);
+  assert.match(nativeSource, /std::chrono::seconds\{ CCC::CommandBatchAutoRun::kDelaySeconds \}/);
+  assert.match(nativeSource, /RegisterRequest\("console\.command-center\.commandBatchAutoRunReports"/);
+  assert.match(commandBatchAutoRunSource, /kDelaySeconds = 3/);
+  assert.match(commandBatchAutoRunSource, /L"Auto Run\.json"/);
+  assert.match(commandBatchAutoRunSource, /CommandBatches::ReadFile/);
+  assert.match(commandBatchAutoRunSource, /CommandBatches::Commands/);
 });
 
 test('ID Browser and Mod Browser records can be saved and reopened from Favorites', () => {
@@ -306,7 +353,7 @@ test('commands under investigation remain isolated in the user-facing WIP catego
   assert.match(commandSource, /id: 'remove-item-mod'[\s\S]*?category: 'Untested'[\s\S]*?testStatus: 'inconclusive'[\s\S]*?intakeGroup: 'Executed — Effect Unconfirmed'/);
   assert.match(commandSource, /id: 'start-quest'[\s\S]*?category: 'Untested'[\s\S]*?testStatus: 'needs-adjustment'[\s\S]*?intakeGroup: 'Executed — Issues'/);
   assert.match(commandSource, /id: 'stop-actor-combat'[\s\S]*?category: 'Untested'[\s\S]*?testStatus: 'needs-adjustment'[\s\S]*?intakeGroup: 'Executed — Issues'/);
-  assert.match(commandSource, /id: 'mark-ref-for-delete'[\s\S]*?category: 'Untested'[\s\S]*?testStatus: 'untested'[\s\S]*?intakeGroup: 'Ready to Test'/);
+  assert.match(commandSource, /id: 'mark-ref-for-delete'[\s\S]*?category: 'Untested'[\s\S]*?testStatus: 'untested'[\s\S]*?intakeGroup: 'Script Functions'/);
   assert.match(commandSource, /id: 'search-form-ids'[\s\S]*?category: 'Inventory'[\s\S]*?testStatus: 'verified'/);
   assert.match(commandSource, /id: 'search-form-ids-by-type'[\s\S]*?category: 'Inventory'[\s\S]*?testStatus: 'verified'/);
 });
@@ -319,7 +366,15 @@ test('paired speech overrides share compact stacked-action cards', () => {
   assert.doesNotMatch(untestedCommandSource, /id: 'untested-restore-speech-fail'/);
   assert.match(source, /command\.secondaryAction \? ' command-card--dual-action'/);
   assert.match(source, /data-command-action="secondary"/);
-  assert.match(source, /executeButton\.dataset\.commandAction === 'secondary'/);
+  assert.match(source, /aria-pressed="\$\{selectedAction === 'secondary'\}"/);
+  assert.match(source, /const selectedCommandActions = new Map<string, CommandActionChoice>\(\)/);
+  assert.match(source, /const armedCommandActions = new Map<string, CommandActionChoice>\(\)/);
+  assert.match(source, /requestedAction !== selectedCommandAction\(command\)[\s\S]*?selectedCommandActions\.set\(command\.id, requestedAction\)[\s\S]*?selectCommand\(command\.id\)/);
+  assert.match(source, /armedCommandActions\.get\(command\.id\) !== requestedAction[\s\S]*?Select it again to review and execute it/);
+  assert.match(source, /Double-click the highlighted action to execute it/);
+  assert.match(styleSource, /\.command-action-note\s*\{/);
+  assert.match(source, /commandActionTemplate\(command, selectedAction\)/);
+  assert.match(source, /commandActionCommand\(command, selectedAction\)/);
   assert.match(source, /secondaryAction: undefined/);
   assert.doesNotMatch(styleSource, /\.command-card--dual-action[\s\S]{0,160}?grid-column:\s*1 \/ -1/);
   assert.match(styleSource, /\.command-action-pair\s*\{[\s\S]*?grid-template-columns:\s*minmax\(138px, 1fr\)/);
@@ -338,7 +393,10 @@ test('command views use a compact title list with one selected detail panel', ()
   assert.match(styleSource, /\.command-detail-panel \.command-inputs \{[\s\S]*?margin-top: auto/);
   assert.match(styleSource, /\.command-detail-panel \.command-action-pair \{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(styleSource, /\.command-detail-panel \.command-action-pair \.execute-button \{[\s\S]*?min-width: 0/);
-  assert.match(styleSource, /\.command-detail-panel \.command-card--dual-action \.command-actions \{[\s\S]*?grid-template-columns: 36px minmax\(0, 1fr\)/);
+  assert.match(styleSource, /\.command-detail-panel \.command-card--dual-action \.command-actions \{[\s\S]*?grid-template-columns: 36px minmax\(100px, auto\) minmax\(0, 1fr\)/);
+  assert.match(source, /data-add-to-batch=/);
+  assert.match(source, /function appendCommandToBatch\(command: CommandDefinition\)/);
+  assert.match(styleSource, /\.command-card \.command-actions > \.favorite-button,[\s\S]*?height: var\(--osf-control-h\)/);
   assert.match(styleSource, /\.compact-command-list \.untested-group-content \{ display: block/);
   assert.doesNotMatch(source.match(/function renderCommandListRow[\s\S]*?^}/m)?.[0] ?? '', /command-description/);
   assert.match(source, /data-clear-recent/);
@@ -381,15 +439,15 @@ test('the complete engine command reference is lazy-loaded into grouped Untested
   assert.equal(records.filter((entry) => entry.group === 'Script Functions').length, 948);
   assert.equal(new Set(records.map((entry) => `${entry.group}:${entry.name.toLowerCase()}`)).size, 1513);
 
-  assert.match(source, /const ENGINE_COMMAND_LIBRARY_TOTAL = 1505/);
+  assert.match(source, /const ENGINE_COMMAND_LIBRARY_TOTAL = 1493/);
   assert.match(source, /import\('\.\/engine-command-library'\)/);
   assert.match(source, /entries\.map\(\(entry\) => compact \? renderCommandListRow\(entry\) : renderCommandCard\(entry\)\)/);
   assert.doesNotMatch(source, /data-untested-more|untested-show-more/);
-  assert.match(source, /'Ready to Test'[\s\S]*'Executed — Effect Unconfirmed'[\s\S]*'Blocked — Known Crash'[\s\S]*'Engine Console Commands'[\s\S]*'Script Functions'/);
+  assert.match(source, /'Executed — Effect Unconfirmed'[\s\S]*'Blocked — Known Crash'[\s\S]*'Engine Console Commands'[\s\S]*'Script Functions'/);
   assert.match(source, /ENGINE_COMMAND_LIBRARY_TOTAL/);
   assert.match(engineCommandSource, /category: 'Untested'/);
   assert.match(engineCommandSource, /const PROMOTED_ENGINE_COMMANDS = new Set\([\s\S]*?'picknextactor'[\s\S]*?'picknextref'[\s\S]*?'pickrefbyid'[\s\S]*?'show1stperson'[\s\S]*?'toggleanimations'[\s\S]*?'togglegamepause'[\s\S]*?'togglehandsculled'[\s\S]*?'usenearestteleportdoor'/);
-  assert.match(engineCommandSource, /testStatus: knownCrashReason \? 'failed' : effectUnconfirmedReason \? 'inconclusive' : 'untested'/);
+  assert.match(engineCommandSource, /testStatus: knownCrashReason \? 'failed' : verifiedReadOnlyReason \? 'verified' : effectUnconfirmedReason \? 'inconclusive' : 'untested'/);
   assert.match(engineCommandSource, /toggleborders:[\s\S]*?togglematerialgeometry:[\s\S]*?togglevolumegeometry:/);
   assert.match(engineCommandSource, /label: 'Optional Arguments'/);
   assert.match(engineCommandSource, /label: 'Optional Target \/ Prefix'/);
@@ -434,8 +492,20 @@ test('Custom Command batches execute one line at a time', async () => {
   assert.equal(h.entries.length, 2);
   assert.equal(h.sandbox.status.kind, 'success');
   assert.match(source, /for \(let index = 0; index < commands\.length; index \+= 1\)/);
-  assert.match(source, /MAX_CUSTOM_BATCH_COMMANDS = 100/);
+  assert.doesNotMatch(source, /MAX_CUSTOM_BATCH_COMMANDS/);
   assert.match(source, /MAX_CUSTOM_COMMAND_LENGTH = 1024/);
+});
+
+test('Custom Command keeps its draft across pages and accepts prepared card commands', () => {
+  assert.match(source, /let customCommandDraftName = ''/);
+  assert.match(source, /let customCommandDraft = ''/);
+  assert.match(source, /id="custom-command"[\s\S]*?\$\{escapeHtml\(customCommandDraft\)\}/);
+  assert.match(source, /data-custom-clear/);
+  assert.match(source, /customCommandDraft = ''[\s\S]*?renderCustomPanel\(\)/);
+  assert.match(source, /const builtCommand = buildCommand\(command\)/);
+  assert.match(source, /\$\{currentCommands\.length \+ 1\} commands/);
+  assert.match(source, /customCommandDraft \+= customCommandDraft/);
+  assert.match(controllerSource, /active\.closest<HTMLElement>\('\.command-detail-panel \.add-to-batch-button'\)/);
 });
 
 test('Custom Command batches stop at the first reported error', async () => {
@@ -656,7 +726,7 @@ test('search fields expose clear buttons and ID Browser relies on sidebar catego
 test('command lists stay compact while the selected right panel shows raw syntax', () => {
   assert.doesNotMatch(source, /command-heading-preview|data-preview=/);
   assert.doesNotMatch(source, /function updatePreview/);
-  assert.match(source, /detailView \? `<code class="command-detail-syntax">\$\{escapeHtml\(command\.command\)\}<\/code>`/);
+  assert.match(source, /detailView \? `<code class="command-detail-syntax">\$\{escapeHtml\(displayedCommand\)\}<\/code>`/);
   assert.match(styleSource, /\.command-detail-syntax\s*\{[\s\S]*?user-select:\s*text/);
   assert.match(source, /class="confirm-command"/);
   assert.match(source, /class="activity-command"/);
@@ -841,7 +911,7 @@ test('Quest Browser exposes native inspections and confirmed state-changing acti
   assert.match(styleSource, /\.quest-browser-list\s*\{[\s\S]*?overflow-y:\s*auto;/);
   assert.match(styleSource, /\.quest-browser-selection-scroll\s*\{[\s\S]*?overflow-y:\s*auto;/);
   assert.match(styleSource, /\.quest-browser-row\s*\{[\s\S]*?min-height:\s*30px;/);
-  assert.match(source, /data-quest-inspect="history"/);
+  assert.match(source, /data-quest-inspect="\$\{modQuest && !scannedStagesKnown \? 'stage' : 'history'\}"/);
   assert.doesNotMatch(source, /data-quest-inspect="stage"/);
   assert.match(source, />Inspect Quest State<\/button>/);
   assert.match(source, /data-quest-action="start"/);

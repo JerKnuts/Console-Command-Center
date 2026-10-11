@@ -52,6 +52,18 @@ export function install(ctx: MockContext): void {
   const listeners = new Map<string, Set<Listener>>();
   let failRequests = false;
   let gamepadRaw = false;
+  const commandBatches = new Map<string, string>();
+  let commandBatchAutoRunEnabled = false;
+  const commandBatchAutoRunNames = new Set<string>();
+
+  const batchEntries = (): JsonValue[] => [...commandBatches.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([name, commands]) => ({
+    id: name.toLowerCase(),
+    name,
+    file: `${name}.txt`,
+    commands,
+    commandCount: commands.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith('#')).length,
+    valid: true,
+  }));
 
   const emit = (name: string, payload: JsonValue): void => {
     for (const listener of listeners.get(name) ?? []) listener(payload);
@@ -120,7 +132,7 @@ export function install(ctx: MockContext): void {
       let reply: JsonValue;
       switch (name) {
         case 'console.command-center.ping':
-          reply = { ok: true, backend: 'Browser test fixture', build: '1.1.26', executor: 'native', runtime: 'browser', testedRuntime: '1.16.244', runtimeSupported: true };
+          reply = { ok: true, backend: 'Browser test fixture', build: '1.2.18', executor: 'native', runtime: 'browser', testedRuntime: '1.16.244', runtimeSupported: true };
           break;
         case 'console.command-center.execute':
           reply = { ok: true, command };
@@ -172,6 +184,54 @@ export function install(ctx: MockContext): void {
           };
           break;
         }
+        case 'console.command-center.commandBatchList': {
+          const legacy = Array.isArray(payload?.legacyBatches) ? payload.legacyBatches : [];
+          for (const candidate of legacy) {
+            if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) continue;
+            const item = candidate as JsonObject;
+            const name = String(item.name ?? '').trim();
+            const commands = String(item.commands ?? '');
+            if (name && commands && !commandBatches.has(name)) commandBatches.set(name, commands);
+          }
+          reply = { ok: true, directory: 'Documents\\My Games\\Starfield\\Console Command Center\\Command Batches', entries: batchEntries(), warnings: [], migrated: legacy.length, migrationComplete: true };
+          break;
+        }
+        case 'console.command-center.commandBatchSave': {
+          const name = String(payload?.name ?? '').trim();
+          const content = String(payload?.content ?? '');
+          if (!name || !content) throw new Error('A filename and at least one command are required.');
+          commandBatches.set(name, content);
+          reply = { ok: true };
+          break;
+        }
+        case 'console.command-center.commandBatchDelete':
+          commandBatchAutoRunNames.delete(String(payload?.name ?? '').toLowerCase());
+          reply = { ok: true, removed: commandBatches.delete(String(payload?.name ?? '')) };
+          break;
+        case 'console.command-center.commandBatchDeleteAll': {
+          const removed = commandBatches.size;
+          commandBatches.clear();
+          commandBatchAutoRunNames.clear();
+          reply = { ok: true, removed };
+          break;
+        }
+        case 'console.command-center.commandBatchAutoRunGet':
+          reply = { ok: true, enabled: commandBatchAutoRunEnabled, batches: [...commandBatchAutoRunNames], delaySeconds: 3 };
+          break;
+        case 'console.command-center.commandBatchAutoRunEnable':
+          commandBatchAutoRunEnabled = payload?.enabled === true;
+          reply = { ok: true, enabled: commandBatchAutoRunEnabled, batches: [...commandBatchAutoRunNames], delaySeconds: 3 };
+          break;
+        case 'console.command-center.commandBatchAutoRunBatch': {
+          const name = String(payload?.name ?? '').trim();
+          if (payload?.enabled === true) commandBatchAutoRunNames.add(name.toLowerCase());
+          else commandBatchAutoRunNames.delete(name.toLowerCase());
+          reply = { ok: true, enabled: commandBatchAutoRunEnabled, batches: [...commandBatchAutoRunNames], delaySeconds: 3 };
+          break;
+        }
+        case 'console.command-center.commandBatchAutoRunReports':
+          reply = { ok: true, reports: [] };
+          break;
         case 'console.command-center.close':
           reply = { ok: true };
           break;

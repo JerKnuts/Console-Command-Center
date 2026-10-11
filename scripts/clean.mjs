@@ -3,7 +3,7 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const generatedPaths = ['build', '.xmake', '.osfui', 'mod', 'release'];
+const generatedPaths = ['build', '.xmake', 'release'];
 
 for (const name of generatedPaths) {
   const target = resolve(projectRoot, name);
@@ -15,4 +15,4 @@ for (const name of generatedPaths) {
   console.log(`Removed generated path: ${name}`);
 }
 
-console.log('Cleanup complete. dist/, node_modules/, native dependencies, source, tests, and Git history were preserved.');
+console.log('Cleanup complete. Compiled output, artifacts, .osfui/local.json, dependencies, source, tests, and Git history were preserved.');

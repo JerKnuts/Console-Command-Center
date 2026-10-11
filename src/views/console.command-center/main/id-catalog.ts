@@ -16,6 +16,8 @@ export type IdCatalogEntry = {
   plugin?: string;
   localFormId?: string;
   editorId?: string;
+  questStages?: number[];
+  questStagesError?: string;
 };
 
 export type IdBrowserCategory = {

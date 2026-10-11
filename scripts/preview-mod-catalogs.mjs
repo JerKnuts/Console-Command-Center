@@ -295,6 +295,7 @@ async function scanPluginRecords(state, plugin) {
           records.push({
             label, value: formId(runtimeId), localFormId: localFormId(plugin, runtimeId).toString(16).toUpperCase(),
             type, category, ...(editorId ? { editorId } : {}),
+            ...(type === 'QUST' ? { questStages: [...new Set(fields.filter((field) => field.type === 'INDX' && field.data.length >= 2).map((field) => field.data.readUInt16LE(0)))].sort((a, b) => a - b) } : {}),
           });
         } catch {
           skipped += 1;

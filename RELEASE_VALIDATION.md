@@ -1,13 +1,17 @@
-# v1.1.26 release validation
+# v1.2.18 release validation
 
 This is the maintained release checklist. It covers behavior most likely to break and avoids repeating implementation-level unit tests.
+
+## Current verification status
+
+Automated checks and native/UI builds pass. The user confirmed Auto-Run triggering, Workshop inside ships, and Workshop FlyCam inside and outside Workshop mode. The user confirmed the latest Custom Command layout looks correct. ActorExposedToSky works in the ordinary console, but its new v1.2.18 popup adapter still needs an indoor/outdoor comparison. Mod quest controls and stage progress should be checked in game before treating them as release-verified.
 
 ## Build and install
 
 1. Run `npm test`, `npm run check`, and `npm run build` successfully.
 2. Install the generated archive over the previous release without clearing OSF UI browser data.
 3. Confirm the view is under `SFSE/Plugins/OSF/UI/views/console.command-center/main` and the native DLL is under `SFSE/Plugins/`.
-4. Launch through SFSE and confirm the footer and native connection both report **v1.1.26**, **OSF UI 2.0 API**, and **NATIVE READY**.
+4. Launch through SFSE and confirm the footer and native connection both report **v1.2.18**, **OSF UI 2.0 API**, and **NATIVE READY**.
 5. Confirm existing command favorites, ID favorites, Recent entries, Activity Log entries, and saved Custom Command batches remain available.
 
 ## Navigation and layout
@@ -28,6 +32,21 @@ This is the maintained release checklist. It covers behavior most likely to brea
 4. Save, load, favorite, update, and delete a Custom Command batch without executing it during Load.
 5. With a controller focused on a saved batch, confirm Right from Load moves to Delete.
 6. Confirm saved-batch favorites appear in Favorites and open the batch for review.
+7. Confirm the Custom Command screen creates `Documents\My Games\Starfield\Console Command Center\Command Batches` and lists its `.txt` files.
+8. Add or edit a `.txt` file outside CCC, select Refresh, and confirm the filename and commands update in game.
+9. Confirm blank lines and lines beginning with `#` do not count or execute.
+10. Confirm faint line numbers stay aligned while typing and vertically scrolling in the command editor.
+11. With an empty editor, confirm the example explains comments, section labels, blank lines, and quantities; its top edge must align with the Batch Files panel, with no Raw Console Commands label above it.
+12. Confirm the right panel uses the compact Batch Files heading and its saved-batch list fills the remaining height so additional entries stay visible before scrolling.
+13. Confirm the command editor has no visible Commands label, aligns with the Batch Files panel, and has no resize handle.
+14. Confirm saved batch rows use compact spacing with the title moved upward and equal-height Favorite, Load, and Delete buttons.
+15. Create enough saved batches to overflow the right panel and confirm only the batch list scrolls; the CCC window and Custom Command workspace must remain fixed to the screen.
+16. Confirm a batch containing more than 100 commands can be saved, loaded, reviewed, and executed; commands over 1,024 characters and files over 1 MB must still show an error.
+17. Upgrade from a build with browser-stored batches and confirm every existing batch migrates without overwriting a different same-name file.
+18. Mark two safe batches **On Load**, turn **Auto-Run On**, load an existing save, and confirm both run once in filename order after the three-second delay without opening CCC.
+19. Open Activity Log after that load and confirm **Automatic Batch Run** reports the batch and command totals. Reload the same save and confirm one new run is recorded.
+20. Turn **Auto-Run Off** and confirm loading a save runs nothing. Start a new game and confirm On Load batches do not run.
+21. Delete an On Load batch and confirm it is removed from the automatic selection. Rename or make a selected file unreadable outside CCC and confirm the next load reports the problem without crashing.
 
 ## Packaged ID Browser
 
@@ -69,3 +88,18 @@ This is the maintained release checklist. It covers behavior most likely to brea
 2. Open the source ZIP and confirm it excludes `node_modules`, CommonLibSF checkout, build output, local caches, prior archives, and generated artifacts.
 3. Confirm the source ZIP includes `README.md`, `CHANGELOG.md`, license files, current docs, source, scripts, tests, package lock, and native dependency setup script.
 4. Verify the SHA-256 values in the generated package manifest.
+
+## Mod Browser quest controls
+
+1. Scan mods, select a QUST record, and confirm its runtime ID is used for Inspect, Start, Stop, Complete, Reset, and Set Stage.
+2. Inspect a mod quest and verify current stage plus running/completed state appear in Results and Activity Log.
+3. On a disposable save, confirm all quest-changing actions require confirmation; blank, fractional, negative, or greater-than-65535 stage values must be rejected.
+4. With a controller, enter mod quest details, navigate to Set Stage, and press B to return to the selected mod quest row. Confirm favorite, Copy Quest ID, and Copy Editor ID remain available.
+5. Confirm scanned mod quests show clickable recorded stages and full history after inspection; packaged quests retain their stage history.
+6. Run `xmake build QuestStagesTests` and `xmake run QuestStagesTests` to verify compressed, uncompressed, extended, duplicate, empty, and malformed stage payloads.
+
+## Sky-exposure Results popup
+
+1. Run `player.ActorExposedToSky` outdoors and inside a building. Confirm the Results popup returns 1.00 and 0.00 respectively, matching the ordinary console.
+2. Confirm the same result is retained in Activity Log. Use an invalid/non-actor reference or extra arguments and confirm a readable error.
+3. Confirm ordinary console use is unaffected and other query captures still work.

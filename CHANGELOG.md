@@ -2,8 +2,107 @@
 
 This file replaces the individual release-note documents. It records user-visible changes without repeating install and compatibility text for every version.
 
-## 1.1.26
+## 1.2.18
 
+- Added exact command-return capture for ActorExposedToSky Results popups to address the printed-console-log timeout. Zero remains a valid result; the new native path awaits in-game confirmation.
+- Updated release documentation, catalog counts, batch instructions, and cleanup behavior.
+
+## 1.2.17
+
+- Restored the Custom Command text field to the full available editor height.
+- Synchronized line numbers with command scrolling, including the end of long batches; the gutter widens for larger line counts.
+
+## 1.2.16
+
+- Scan Mods now extracts recorded quest-stage indexes, including compressed quest records.
+- Mod quests show clickable stage buttons and full stage-history inspection, with current/completed stage indicators.
+
+## 1.2.15
+
+- Added Quest Browser inspection and confirmed Start, Stop, Complete, and Reset controls to Mod Browser quest records.
+- Added manual Set Stage for mod quests using their current runtime IDs. Mod scans do not include recorded stage lists.
+
+## 1.2.14
+
+- Removed the headingless Ready to Test group and placed its commands into Engine Console Commands or Script Functions according to the engine catalog.
+
+## 1.2.13
+
+- Promoted Workshop Fly Camera to Camera after successful testing inside and outside Workshop mode.
+- Disabled FXCam after testing trapped the player in free-camera mode, froze actors, and required a game restart. Its card retains the test details.
+
+## 1.2.12
+
+- Added Results popups and Activity Log output for ten read-only WIP queries.
+- Recorded verified position, rotation, time, sky-exposure, and home-ship queries; kept five queries unconfirmed pending output testing.
+
+## 1.2.11
+
+- Fixed the Custom Command line-number gutter overlapping text and extending below the editor.
+- Added readable official plugin names from the AFK Mods module list.
+- Added the reported NPC movement side effect to Toggle Collision.
+- Verified Workshop inside ships; marked KAP, TakeOffToSpace, and SetAtStart as effect unconfirmed.
+- Recorded successful in-game Auto-Run testing.
+
+## 1.2.10
+
+- Added per-batch **On Load** selection and a master **Auto-Run** switch.
+- Selected `.txt` batches run in filename order three seconds after an existing save loads, even when CCC has not been opened.
+- Auto-Run is disabled by default, ignores new games, prevents duplicate runs from overlapping load events, and records results for the Activity Log.
+- Stored Auto-Run settings in the user-owned CCC folder so mod updates cannot replace them.
+
+## 1.2.9
+
+- Constrained the Custom Command workspace to the available screen height.
+- Saved batch files now scroll inside the Batch Files panel instead of extending the window.
+
+## 1.2.8
+
+- Removed the visible Commands label, aligned the editor with Batch Files, and disabled manual resizing.
+- Compacted saved batch rows and matched the Favorite, Load, and Delete button heights.
+
+## 1.2.7
+
+- Condensed the Saved Commands heading into a single Batch Files label.
+- Expanded the scrollable batch list to use all remaining panel height.
+
+## 1.2.6
+
+- Removed the remaining Raw Console Commands label.
+- Extended the command editor upward and enlarged it to align with the Saved Commands panel.
+
+## 1.2.5
+
+- Moved Format Tips alongside the Clear and Review Commands actions.
+- Enlarged the command editor and removed its redundant heading and description.
+
+## 1.2.4
+
+- Expanded the Custom Command example with comments, section labels, blank-line spacing, quantities, and multiple command types.
+- Added compact formatting tips beneath the editor.
+
+## 1.2.3
+
+- Added faint, synchronized line numbers to the Custom Command editor.
+- Removed the 100-command limit from active and saved batches while retaining the 1 MB file and 1,024-character per-command safeguards.
+
+## 1.2.2
+
+- Turned the Speech Challenge Success and Failure action pairs into command selectors.
+- The highlighted action now controls the displayed command, execution confirmation, and **Add to Batch** result.
+- Selecting the inactive action switches commands; selecting the highlighted action again opens execution confirmation.
+- Added an on-screen double-click instruction and requires two activations before paired Speech Challenge actions execute.
+- Added **Cancel Scan** to the Mod Browser progress window while preserving the previously completed catalog.
+
+## 1.2.1
+
+- Kept the current Custom Command draft populated while switching pages and added a nearby **Clear** action.
+- Added **Add to Batch** to command cards so prepared commands can be appended to the current batch.
+- Matched the Favorite, **Add to Batch**, and Execute button heights on command cards.
+
+## 1.2.0
+
+- Moved saved Custom Command batches into user-owned `.txt` files with refresh, `#` comments, validation, and automatic migration from browser storage.
 - Removed generated dependencies, build output, old patch manifests, superseded test-build notes, and duplicate release-note files from the distributed source archive.
 - Consolidated release history into this changelog and folded the Quest Browser guide into the README.
 - Replaced the accumulated release checklist with a shorter checklist for the current session-based Mod Browser workflow.
@@ -11,6 +110,10 @@ This file replaces the individual release-note documents. It records user-visibl
 - The preview now discovers the active MO2 profile, resolves enabled plugin files from the MO2 mods folder and stock Data folder, and calculates full, medium, and small runtime Form IDs.
 - **Scan Mods** in the webview now loads real supported records instead of the three-item fixture catalog.
 - Added explicit preview configuration for the MO2 profile and stock game Data folder when automatic detection is not appropriate.
+
+## 1.1.26
+
+- Finalized the release packaging and source cleanup, including the OSF UI webview Mod Browser preview scanner.
 
 ## 1.1.25
 

@@ -1,0 +1,34 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { stripTypeScriptTypes } from 'node:module';
+import vm from 'node:vm';
+const source = readFileSync(new URL('../src/views/console.command-center/main/main.ts', import.meta.url), 'utf8');
+const names = new Set(['renderQuestBrowserSelection', 'questBrowserVariantLabel', 'escapeHtml']);
+const functions = [...source.matchAll(/^(?:async )?function (\w+)\b[\s\S]*?^}/gm)].filter(match => names.has(match[1])).map(match => match[0]);
+const context = vm.createContext({ nativeBackendReady: true, activeCatalogPicker: null, questProgressSnapshots: new Map(), normalizedQuestId: id => id.toUpperCase() });
+vm.runInContext(stripTypeScriptTypes(functions.join('\n')), context);
+const quest = { quest: 'Mod Quest', editorId: 'ExampleQuest', questId: 'FE123800', stages: [], source: 'Example.esm', requirement: null, category: 'Quests', internal: false };
+test('mod quest selection uses runtime ID, live inspection, and confirmed stage entry instead of an invented stage list', () => {
+  const html = context.renderQuestBrowserSelection(quest, true);
+  assert.match(html, /data-quest-inspect="stage"/);
+  assert.match(html, /data-quest-id="FE123800"/);
+  for (const action of ['start', 'stop', 'complete', 'reset']) assert.ok(html.includes('data-quest-action="' + action + '"'));
+  assert.match(html, /data-mod-quest-stage-input/);
+  assert.match(html, /data-mod-quest-set-stage/);
+  assert.doesNotMatch(html, /class="quest-stage-grid"/);
+  assert.match(html, /Stage data is unavailable/);
+});
+test('packaged quest selection retains stage history and its recorded stage buttons', () => {
+  const html = context.renderQuestBrowserSelection({ ...quest, source: 'Base Game', stages: [0, 10, 100] });
+  assert.match(html, /data-quest-inspect="history"/);
+  assert.match(html, /data-quest-command="setstage FE123800 100"/);
+  assert.doesNotMatch(html, /data-mod-quest-stage-input/);
+});
+
+test('scanned mod quest stages use the runtime ID and enable full stage history', () => {
+  const html = context.renderQuestBrowserSelection({ ...quest, stages: [0, 10, 100], stagesScanned: true }, true);
+  assert.match(html, /data-quest-inspect="history"/);
+  assert.match(html, /data-quest-command="setstage FE123800 100"/);
+  assert.match(html, /ALL RECORDED STAGES/);
+});

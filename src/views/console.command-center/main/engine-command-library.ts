@@ -19,6 +19,7 @@ function commandId(label: string, index: number): string {
 }
 
 const PROMOTED_ENGINE_COMMANDS = new Set([
+  'toggleworkshopflycam',
   'picknextactor',
   'picknextref',
   'pickrefbyid',
@@ -44,6 +45,16 @@ const PROMOTED_ENGINE_COMMANDS = new Set([
 // Keep this list narrow: visual toggles often print nothing and should not be
 // reported as failures merely because the capture buffer is empty.
 const CAPTURED_ENGINE_COMMANDS = new Set([
+  'getpos',
+  'getangle',
+  'getcurrenttime',
+  'getplayergravityscale',
+  'arehostileactorsnear',
+  'actorexposedtosky',
+  'isonplayerhomespaceship',
+  'getpcisreloading',
+  'isboostpackactive',
+  'isboostpackhovering',
   'getdebugtext',
   'getselectedref',
   'printailist',
@@ -57,6 +68,14 @@ const CAPTURED_ENGINE_COMMANDS = new Set([
 
 // Legacy console diagnostics that act on an object reference accept the same
 // target prefix form used by script functions (for example, player.ShowAnim).
+const VERIFIED_READ_ONLY_COMMANDS: Readonly<Record<string, string>> = {
+  getpos: 'In-game testing confirmed the position query works.',
+  getangle: 'In-game testing confirmed the rotation query works.',
+  getcurrenttime: 'In-game testing confirmed the game-hour query works.',
+  actorexposedtosky: 'In-game console testing returned 1 outdoors and 0 inside a building. CCC now reads the exact command return value for its Results popup; the printed-log capture previously timed out.',
+  isonplayerhomespaceship: 'In-game testing returned 0 outside the home ship and 1 inside it.',
+};
+
 const TARGETED_ENGINE_COMMANDS = new Set([
   'showanim',
   'showheadtracktarget',
@@ -74,6 +93,21 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
   .map((record, index) => {
   const name = commandName(record.name);
   const normalizedName = name.toLowerCase();
+  if (normalizedName === 'togglefxcam') {
+    return {
+      id: commandId(record.name, index),
+      title: record.name,
+      category: 'Untested',
+      intakeGroup: 'Executed — Issues',
+      description: 'In-game testing activated a freely moving FX camera, froze the player and nearby NPCs, and caused some NPCs to twitch. The camera could not be exited, requiring a game restart.',
+      command: name,
+      tags: [name, record.name, record.group, 'camera', 'stuck', 'restart'],
+      warning: 'FXCam trapped the tester in free-camera mode with frozen actors. No working exit was confirmed; restarting the game was required.',
+      risk: 'danger',
+      testStatus: 'failed',
+      unavailableReason: 'Disabled after in-game testing could not exit FXCam. The player and NPCs froze, some NPCs twitched, and a game restart was required.',
+    };
+  }
   const scriptFunction = record.group === 'Script Functions';
   const acceptsTargetPrefix = scriptFunction || TARGETED_ENGINE_COMMANDS.has(normalizedName);
   const danger = severeCommand.test(`${record.name} ${record.description}`);
@@ -90,6 +124,11 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
     showsubtitle: 'In-game v0.3.11 testing produced no visible subtitle override.',
   };
   const effectUnconfirmedReasons: Record<string, string> = {
+    getplayergravityscale: 'In-game testing triggered the query without an observable result; retest using the Results popup.',
+    arehostileactorsnear: 'In-game testing produced no observable result; retest using the Results popup.',
+    getpcisreloading: 'In-game testing produced no observable result; retest using the Results popup. Pausing gameplay can affect testing the reload state.',
+    isboostpackactive: 'In-game testing produced no observable result; retest using the Results popup. Pausing gameplay can affect testing boost-pack state.',
+    isboostpackhovering: 'In-game testing produced no observable result; retest using the Results popup. Pausing gameplay can affect testing hover state.',
     printmessage: 'In-game v1.0.7 testing with visible-message arguments executed without an error but displayed no message.',
     setimagespacemodifiersenable: 'In-game testing on Starfield 1.16.244 executed without an error, but produced no confirmed visible image-space change.',
     showbones: 'In-game testing on Starfield 1.16.244 executed after selecting an actor, but displayed no visible skeleton.',
@@ -132,6 +171,7 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
   };
   const failedInGameReason = failedInGameReasons[name.toLowerCase()];
   const effectUnconfirmedReason = effectUnconfirmedReasons[name.toLowerCase()];
+  const verifiedReadOnlyReason = VERIFIED_READ_ONLY_COMMANDS[normalizedName];
   return {
     id: commandId(record.name, index),
     title: record.name,
@@ -139,7 +179,9 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
     intakeGroup: effectUnconfirmedReason
       ? 'Executed — Effect Unconfirmed'
       : record.group === 'Console Commands' ? 'Engine Console Commands' : 'Script Functions',
-    description: effectUnconfirmedReason
+    description: verifiedReadOnlyReason
+      ? `${record.description} ${verifiedReadOnlyReason}`
+      : effectUnconfirmedReason
       ? `${record.description || 'No description was included in the engine command reference.'} ${effectUnconfirmedReason}`
       : record.description || 'No description was included in the engine command reference.',
     command: acceptsTargetPrefix ? `{target}${name} {arguments}` : `${name} {arguments}`,
@@ -173,7 +215,7 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
       ? 'This unverified engine function may destroy state, terminate or stall the game, alter files, or make irreversible changes. Use only on a disposable save and review the final command carefully.'
       : 'This engine function has not been verified through CCC and may require undocumented arguments or developer context. Use a disposable save.',
     risk: danger || knownCrashReason ? 'danger' : 'caution',
-    testStatus: knownCrashReason ? 'failed' : effectUnconfirmedReason ? 'inconclusive' : 'untested',
+    testStatus: knownCrashReason ? 'failed' : verifiedReadOnlyReason ? 'verified' : effectUnconfirmedReason ? 'inconclusive' : 'untested',
     unavailableReason: knownCrashReason
       ? `Disabled after testing crashed Starfield 1.16.244. ${knownCrashReason}`
       : requiresCredentials

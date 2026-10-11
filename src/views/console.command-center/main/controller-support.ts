@@ -73,7 +73,7 @@ function currentScope(keyboard: HTMLElement): ParentNode {
   if (!keyboard.hidden) return keyboard;
   const dialog = document.querySelector<HTMLDialogElement>('dialog[open]');
   if (dialog) return dialog;
-  const backdrop = [...document.querySelectorAll<HTMLElement>('.help-backdrop, .welcome-backdrop, .id-picker-backdrop, .confirm-backdrop')]
+  const backdrop = [...document.querySelectorAll<HTMLElement>('.mod-scan-overlay, .help-backdrop, .welcome-backdrop, .id-picker-backdrop, .confirm-backdrop')]
     .find((element) => !element.hidden);
   return backdrop ?? document;
 }
@@ -333,7 +333,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   }
 
   function idDetailTarget(): HTMLElement | undefined {
-    return document.querySelector<HTMLElement>('.id-browser-selection input:not([disabled]), .id-browser-selection button:not([disabled])')
+    return document.querySelector<HTMLElement>('.id-browser-selection input:not([disabled]), .id-browser-selection button:not([disabled]), .mod-quest-selection [data-quest-inspect]:not([disabled])')
       ?? undefined;
   }
 
@@ -417,7 +417,17 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
 
     const favoriteButton = active.closest<HTMLElement>('.command-detail-panel .favorite-button');
     if (favoriteButton && direction === 'right') {
-      focusElement(document.querySelector<HTMLElement>('.command-detail-panel .execute-button:not([disabled])') ?? undefined);
+      focusElement(document.querySelector<HTMLElement>('.command-detail-panel .add-to-batch-button:not([disabled])')
+        ?? document.querySelector<HTMLElement>('.command-detail-panel .execute-button:not([disabled])')
+        ?? undefined);
+      return true;
+    }
+
+    const addToBatchButton = active.closest<HTMLElement>('.command-detail-panel .add-to-batch-button');
+    if (addToBatchButton) {
+      if (direction === 'left') focusElement(addToBatchButton.closest<HTMLElement>('.command-card')?.querySelector<HTMLElement>('.favorite-button') ?? undefined);
+      else if (direction === 'right') focusElement(addToBatchButton.closest<HTMLElement>('.command-card')?.querySelector<HTMLElement>('.execute-button:not([disabled])') ?? undefined);
+      else return false;
       return true;
     }
 
@@ -426,7 +436,8 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       const commandCard = executeButton.closest<HTMLElement>('.command-card');
       const target = executeButton.classList.contains('execute-button--secondary')
         ? commandCard?.querySelector<HTMLElement>('.execute-button:not(.execute-button--secondary):not([disabled])')
-        : commandCard?.querySelector<HTMLElement>('.favorite-button');
+        : commandCard?.querySelector<HTMLElement>('.add-to-batch-button:not([disabled])')
+          ?? commandCard?.querySelector<HTMLElement>('.favorite-button');
       focusElement(target ?? undefined);
       return true;
     }
@@ -469,8 +480,8 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
         const actionMap: Record<string, Partial<Record<'up' | 'down' | 'left' | 'right', string>>> = {
           start: { up: '[data-quest-inspect]', right: '[data-quest-action="stop"]', down: '[data-quest-action="complete"]' },
           stop: { up: '[data-copy-text]', left: '[data-quest-action="start"]', down: '[data-quest-action="reset"]' },
-          complete: { up: '[data-quest-action="start"]', right: '[data-quest-action="reset"]', down: '.quest-stage-button:not([disabled])' },
-          reset: { up: '[data-quest-action="stop"]', left: '[data-quest-action="complete"]', down: '.quest-stage-button:not([disabled])' },
+          complete: { up: '[data-quest-action="start"]', right: '[data-quest-action="reset"]', down: '.quest-stage-button:not([disabled]), [data-mod-quest-stage-input]' },
+          reset: { up: '[data-quest-action="stop"]', left: '[data-quest-action="complete"]', down: '.quest-stage-button:not([disabled]), [data-mod-quest-stage-input]' },
         };
         const selector = actionName ? actionMap[actionName]?.[direction] : undefined;
         if (selector) focusElement(questDetail.querySelector<HTMLElement>(selector) ?? undefined);
@@ -668,6 +679,13 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     if (commandCard && active !== commandCard) {
       focusElement(commandCard);
       return;
+    }
+    if (active?.closest('.mod-quest-selection')) {
+      const selectedModQuestRow = document.querySelector<HTMLElement>('#id-browser-results .id-browser-row.is-selected');
+      if (selectedModQuestRow) {
+        focusElement(selectedModQuestRow);
+        return;
+      }
     }
     if (active?.closest('.quest-browser-selection')) {
       const selectedQuestRow = document.querySelector<HTMLElement>('#command-list .quest-browser-row[aria-selected="true"]');

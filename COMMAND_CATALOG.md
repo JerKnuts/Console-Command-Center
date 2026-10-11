@@ -1,10 +1,10 @@
 # Console Command Center — Command Catalog
 
-Version: 1.0
+Version: 1.2.18
 
-Established command cards: 147
+Established command cards: 149
 
-WIP command intake: 1,545 (40 prepared cards, 557 engine console commands, 948 script functions)
+WIP command intake: 1,532 (39 prepared cards plus 1,493 raw engine entries: 546 console commands and 947 script functions)
 
 Quest Browser: 2,318 quest records with 16,844 structurally recorded stages across the base game and Shattered Space
 
@@ -13,17 +13,17 @@ Risk levels:
 - **Caution** — command can materially change gameplay/state; review the command-specific warning.
 - **Danger** — command can significantly alter quests, actors, world state, or save behavior; use a backup/disposable save.
 
-Testing status is intentionally conservative. Only commands confirmed through Console Command Center are marked **Verified**.
+Testing status is intentionally conservative. Verification records the reported in-game command result. A command working in the ordinary console does not guarantee that CCC can capture its output; adapter-specific checks remain separate.
 
-Latest user test report: October 3, 2026. This file is the maintained command-status record; superseded test-build notes have been removed.
+Latest user test reports incorporated: October 10, 2026. The user confirmed the latest editor layout looks correct; the v1.2.18 sky-result adapter still requires its indoor/outdoor in-game check. This file is the maintained command-status record; superseded test-build notes have been removed.
 
-## Gameplay (11)
+## Gameplay
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
 | God Mode | `tgm` | Normal | Verified |
 | Immortal Mode | `tim` | Normal | Verified |
-| Toggle Collision | `tcl` | Normal | Verified |
+| Toggle Collision | `tcl` | Caution | Verified; nearby NPCs were repeatedly stuck in place while TCL was enabled |
 | Toggle Detection | `tdetect` | Normal | Verified |
 | Toggle Combat AI | `tcai` | Normal | Verified |
 | Toggle All AI | `tai` | Caution | Verified |
@@ -35,7 +35,7 @@ Latest user test report: October 3, 2026. This file is the maintained command-st
 
 **Pay Bounty** uses the compact ID field + **CHOOSE FACTION** box layout. The choice list is intentionally limited to bounty-relevant faction records (including supported Shattered Space entries), while manual faction-ID entry remains available. Inline preset-button grids are not used. The command spends the player's credits; it does not erase the bounty for free.
 
-## Player (23)
+## Player
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -66,7 +66,7 @@ Latest user test report: October 3, 2026. This file is the maintained command-st
 
 **Full Character Creator warning:** `showlooksmenu player 1` resets the player's current appearance when it opens and enters the original character-creation flow. Treat it as a very dangerous command: make a manual save first and use **Open Appearance Editor** (`showlooksmenu player 2`) for safer appearance-only edits.
 
-## Inventory (13)
+## Inventory
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -87,7 +87,7 @@ Latest user test report: October 3, 2026. This file is the maintained command-st
 
 **Credits safety:** CCC limits **Add Credits** to 100,000,000 credits per execution. Starfield becomes unreliable as the total approaches or exceeds 999,999,999 credits. CCC does not know the player's current balance, so users should avoid pushing the total near that limit; the command can be run multiple times when more credits are needed.
 
-## Skills (8)
+## Skills
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -100,7 +100,7 @@ Latest user test report: October 3, 2026. This file is the maintained command-st
 | Add Power / Spell by Form ID | `player.addspell {formId}` | Danger | Verified |
 | Remove Spell / Status Effect by Form ID | `player.removespell {formId}` | Caution | Verified |
 
-## Camera (7)
+## Camera
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -112,7 +112,7 @@ Latest user test report: October 3, 2026. This file is the maintained command-st
 | Toggle First-Person Hands | `ToggleHandsCulled` | Caution | Verified — hid the held weapon/first-person hands |
 | Show First-Person Model in Third Person | `Show1stPerson` | Caution | Verified — displayed the first-person arms beside the third-person character |
 
-## World (16)
+## World
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -135,7 +135,7 @@ Latest user test report: October 3, 2026. This file is the maintained command-st
 
 **Weather choices:** both weather commands use the same compact ID field + **CHOOSE WEATHER** box layout as the companion commands. Clear, Rain, Snow, Heavy Snow, Thunderstorm, Sandstorm, Dense Mist, Light Mist, and Burning Haze are available through the chooser, while manual Weather Form IDs remain supported. No inline weather-button grid is used.
 
-## Targets (38)
+## Targets
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -183,7 +183,7 @@ Latest user test report: October 3, 2026. This file is the maintained command-st
 
 **Read-only inspection:** CCC's native query bridge powers supported reference inspection, inventory listing, Game Setting inspection, player/ship actor-value inspection, and ship-ID lookup. Known-broken Scale and quest inspections are displayed as unavailable and cannot be executed. Open-state inspection was removed because CommonLibSF does not expose a verified safe reader; the verified Open/Close action remains available. Held-object inspection was also removed because the native event source remains unresolved. Advanced users can hold an object and run `getplayergrabbedref` in Starfield's own console; testing confirmed it returns the held Reference ID and `00000000` after release. Results from supported CCC inspections are preserved in the Results window and Activity Log. This requires rebuilding `ConsoleCommandCenter.dll`.
 
-## Quests (9)
+## Quests
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -197,7 +197,7 @@ Latest user test report: October 3, 2026. This file is the maintained command-st
 | Reset Quest by ID | `resetquest {questId}` | Danger | Verified — cleared recorded stages and removed the quest from the log; quest remained Stopped |
 | Teleport to Quest Target | `movetoqt {questId}` | Caution | Verified |
 
-## Ship (26)
+## Ship
 
 | Command | Console syntax | Risk | CCC test |
 |---|---|---|---|
@@ -230,18 +230,18 @@ Latest user test report: October 3, 2026. This file is the maintained command-st
 
 **Ship workflow:** run **Get Current Ship Reference ID** while aboard the ship, then use that Reference ID with the ship actor-value commands. Use **Inspect Ship Actor Value** before changing a stat so you can record its existing value. Game Setting commands (owned-ship limit, docking/looting/transfer distance, and builder module limits) normally reset when Starfield restarts. The documented vanilla values used in CCC hints are 10 owned ships, 500 docking distance, 500 looting distance, and 130 for both ship-builder module limits; the transfer-distance default is less consistently documented, so inspect it first if exact restoration matters.
 
-## Work in Progress command intake (1,538)
+## Work in Progress command intake (1,532)
 
 Newly discovered commands enter this isolated category before they can appear alongside verified everyday, cheat, repair, or developer tools. Commands with destructive or uncertain effects retain Caution or Danger confirmation. Test them on a disposable save; successful commands can then move into their permanent category with an accurate description and warning.
 
-Prepared cards are split into four result groups: **Ready to Test** contains commands awaiting a useful in-game result, **Executed — Effect Unconfirmed** keeps commands that ran without errors but produced no observable effect, **Executed — Issues** keeps commands with confirmed usability problems, and **Blocked — Known Crash** keeps dangerous crash paths visible without allowing execution. **Engine Console Commands** contains 557 reference entries, and **Script Functions** contains 948 reference entries. The complete 1,505-entry engine library loads when WIP is opened or searched. Raw engine cards accept optional arguments, and target-scoped diagnostics and script functions also accept an optional target or prefix. Selected status commands capture their console text in CCC's Results window. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing the large disabled Unavailable action reveals the underlying console syntax for advanced manual use.
+Untested prepared cards belong to **Engine Console Commands** or **Script Functions**. **Executed — Effect Unconfirmed** keeps commands with no confirmed result, **Executed — Issues** retains confirmed usability problems, and **Blocked — Known Crash** retains disabled crash paths. There is no Ready to Test group. The raw reference contains 546 console commands and 947 script functions; test-result grouping can move individual entries out of their original group. The complete 1,493-entry engine library loads when WIP is opened or searched. Raw engine cards accept optional arguments, and target-scoped diagnostics and script functions also accept an optional target or prefix. Selected status commands capture their console text in CCC's Results window. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing the large disabled Unavailable action reveals the underlying console syntax for advanced manual use.
 
 The first intake includes:
 
 - Player body-type switching, player death, Start All Quests, and Complete All Quest Stages
 - Camera FOV plus sky, wireframe, collision-geometry, motion-blur, TAA, FSR2, VRS, rain-occlusion, lens-flare, and marker toggles
 - Subtitle overrides, one-frame advancement, projectile cleanup, and weather/climate reloads
-- Workshop entry, ship takeoff, and planetary-marker landing
+- Ship takeoff and planetary-marker landing; Workshop entry is verified inside ships
 - Returning a reference to its start position, forcing combat, resetting dialogue flags, screenshots, and named save/load commands
 
 The syntax and descriptions were imported from and cross-checked against the game-help-derived [SFSE console-command list](https://gist.github.com/eacpereira/25f00410b1940d04a24f8a49b0b1bf44) and public Starfield command references. Inclusion means “available for controlled testing,” not “verified.” The complete reference is included even when required parameters are unclear; those entries use optional raw argument fields and remain isolated from the established catalog.
@@ -263,3 +263,18 @@ Its packaged Quest IDs and 16,844 recorded stage indexes are structurally valida
 CCC executes the vanilla Starfield console command directly.
 
 Quest Browser offers confirmed `startquest`, `stopquest`, `completequest`, `resetquest`, and `setstage` actions. Every state-changing action is treated as **Danger** because it can skip dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save first. **Inspect Quest State** uses the verified native reader to show the current stage and mark completed stages without depending on console-output capture.
+
+## Latest camera and read-only findings
+
+| Command | Finding |
+|---|---|
+| ToggleWorkshopFlyCam | Verified inside and outside Workshop mode; moves freely high above the world. Promoted to Camera. |
+| workshop | Verified inside a player ship. Promoted to World; outpost use remains unconfirmed. |
+| ToggleFXCam | Disabled under Executed — Issues: free camera trapped the player, actors froze/twitched, and a restart was required. |
+| KAP | Triggered without confirmed projectile removal; Effect Unconfirmed. |
+| TakeOffToSpace | Triggered without takeoff; Effect Unconfirmed. |
+| SetAtStart | No position change on FF1E9A89 or 003CD1C6; Effect Unconfirmed. |
+| GetPos / GetAngle / GetCurrentTime | User reported working. Position and angle have direct CCC readers; time still uses printed output capture. |
+| ActorExposedToSky | Ordinary console returned 1 outside and 0 inside. Prior CCC popup timed out; v1.2.18 exact return capture is built and awaits in-game comparison. |
+| IsOnPlayerHomeSpaceShip | Ordinary query returned 0 outside and 1 inside; CCC output capture still needs verification. |
+| GetPlayerGravityScale / AreHostileActorsNear / GetPCIsReloading / IsBoostPackActive / IsBoostPackHovering | Triggered without a confirmed visible result; remain unconfirmed pending output/state testing. |
