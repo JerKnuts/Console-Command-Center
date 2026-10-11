@@ -9,7 +9,7 @@ Console Command Center therefore uses a case-insensitive filename lookup in `src
 - `du_retrograde.esm` → `Dark Universe - Retrograde`
 - `kinggathcreations_spaceship.esm` → `Watchtower`
 
-Official module aliases were updated from the [AFK Mods Starfield ESM Modules list](https://www.afkmods.com/index.php?/topic/10297-starfield-esm-modules-what-are-they/), including Free Lanes, Terran Armada, Bethesda skins, and Trackers Alliance files. Blueprint plugins retain separate filename keys. A readable alias does not change plugin ownership or the Official Creations grouping.
+Blueprint plugins retain separate filename keys. A readable alias does not change plugin ownership or the Official Creations grouping.
 
 An alias changes only the title shown in the Mod Browser. CCC still displays the raw plugin filename in Selected ID details and includes it in search keywords. If a plugin has no alias, CCC keeps the scanner's cleaned filename-derived name.
 
