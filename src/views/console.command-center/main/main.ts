@@ -1,8 +1,9 @@
 import { uiPreferences, installUiSettings, visibleIdCategory, visibleIdRecord, visibleQuestRecord, visibleCommandRecord } from './ui-preferences';
-import { reviewedReferenceNote, applyReviewedFindings } from './reviewed-id-findings';
+import { reviewedReferenceNote, applyReviewedFindings, reviewedWasTested } from './reviewed-id-findings';
 import { orderIdEntries } from './id-record-order';
 import { armorReferenceNote, applyArmorFindings } from './armor-test-findings';
-import { devFeedbackButton, installDevFeedback } from './dev-feedback';
+import { rerenderKeepingPosition } from './preserve-report-position';
+import { devFeedbackButton, installDevFeedback, devFeedbackTestedClass } from './dev-feedback';
 import { ammoReferenceNote, applyAmmoFindings } from './ammo-test-findings';
 import './style.css';
 import './light-theme.css';
@@ -216,7 +217,7 @@ const MAX_CUSTOM_COMMAND_LENGTH = 1024;
 const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1493;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.2.35';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.2.38';
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -1286,9 +1287,12 @@ function ensureIdCatalogLoaded(): Promise<void> {
       const loadOrder = await readOfficialPluginLoadOrder();
       packagedIdCatalog = resolvePackagedIdCatalog(mergeGeneratedIdCatalog(GENERATED_ID_CATALOG), loadOrder);
       idFavorites = resolvePackagedIdCatalog(idFavorites.map((favorite) => {
-        const metadata = packagedIdCatalog.find((candidate) => candidate.type === favorite.type && candidate.label === favorite.label && candidate.source === favorite.source);
-        return metadata ? { ...favorite, plugin: metadata.plugin, localFormId: metadata.localFormId, pluginKind: metadata.pluginKind } : favorite;
-      }), loadOrder).map((entry) => ({ ...entry, favoriteKey: idFavoriteKey(entry), savedFrom: entry.source === 'mod' ? 'mod-browser' : 'id-browser' }));
+        const localId = (favorite.localFormId ?? favorite.value).toUpperCase().slice(-6);
+        const metadata = packagedIdCatalog.find((candidate) => candidate.type === favorite.type
+          && (candidate.plugin ?? 'Starfield.esm').toLowerCase() === (favorite.plugin ?? 'Starfield.esm').toLowerCase()
+          && ((candidate.localFormId ?? candidate.value).toUpperCase().slice(-6) === localId || candidate.alternateFormIds?.some(id => id.slice(-6) === localId)));
+        return metadata ? { ...favorite, ...metadata } : favorite;
+      }), loadOrder).map((entry) => ({ ...entry, favoriteKey: idFavoriteKey(entry), savedFrom: entry.source === 'mod' ? 'mod-browser' as const : 'id-browser' as const })).filter((entry, index, entries) => entries.findIndex(candidate => candidate.favoriteKey === entry.favoriteKey) === index);
       writeFavoriteIds();
       idCatalog = [...packagedIdCatalog, ...modCatalogs.flatMap((catalog) => catalog.entries)];
       idCatalogLoaded = true;
@@ -1498,7 +1502,7 @@ function renderCommandListRow(command: CommandDefinition): string {
           ? 'ISSUE'
           : '';
   const risk = command.warning ? (command.risk === 'danger' ? 'DANGER' : 'CAUTION') : '';
-  return `<button class="command-list-row${unavailable ? ' is-unavailable' : ''}" type="button" data-select-command="${escapeHtml(command.id)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(command.title)} command">
+  return `<button class="command-list-row${devFeedbackTestedClass({ kind: 'Command', name: command.title, id: command.id }, Boolean(command.testStatus && command.testStatus !== 'untested'))}${unavailable ? ' is-unavailable' : ''}" type="button" data-select-command="${escapeHtml(command.id)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(command.title)} command">
     <span class="command-list-row-title">${escapeHtml(command.title)}</span>
     <span class="command-list-row-tags">${status ? `<span>${status}</span>` : ''}${risk ? `<span class="${command.risk === 'danger' ? 'is-danger' : ''}">${risk}</span>` : ''}${unavailable ? '<span>UNAVAILABLE</span>' : ''}</span>
   </button>`;
@@ -1549,7 +1553,7 @@ function renderSavedCommandFavorites(): string {
 function renderIdFavorites(): string {
   return orderIdEntries(idFavorites.filter((entry) => visibleIdRecord(entry, uiPreferences.advanced))).map((entry) => {
     const selected = entry.favoriteKey === selectedFavoriteIdKey;
-    return `<button class="command-list-row favorite-id-row${selected ? ' is-selected' : ''}" type="button" data-select-favorite-id="${escapeHtml(entry.favoriteKey)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(entry.label)} favorite ID"><span class="command-list-row-title">${escapeHtml(entry.label)}</span></button>`;
+    return `<button class="command-list-row favorite-id-row${idTestedClass(entry)}${selected ? ' is-selected' : ''}" type="button" data-select-favorite-id="${escapeHtml(entry.favoriteKey)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(entry.label)} favorite ID"><span class="command-list-row-title">${escapeHtml(entry.label)}</span></button>`;
   }).join('');
 }
 
@@ -1763,7 +1767,7 @@ function questBrowserEntryKey(entry: QuestBrowserEntry): string {
 
 function renderQuestBrowserRow(entry: QuestBrowserEntry): string {
   const key = questBrowserEntryKey(entry);
-  return `<button class="quest-browser-row${selectedQuestKey === key ? ' is-selected' : ''}" type="button" data-select-quest="${escapeHtml(key)}" role="option" aria-selected="${selectedQuestKey === key}">
+  return `<button class="quest-browser-row${devFeedbackTestedClass({ kind: 'Quest', name: entry.quest, id: entry.questId, localId: entry.localFormId, source: entry.plugin })}${selectedQuestKey === key ? ' is-selected' : ''}" type="button" data-select-quest="${escapeHtml(key)}" role="option" aria-selected="${selectedQuestKey === key}">
     <strong title="${escapeHtml(entry.quest)}">${escapeHtml(entry.quest)}</strong>
   </button>`;
 }
@@ -2546,7 +2550,7 @@ function activeIdBrowserCategory(): IdBrowserCategory {
 
 function idBrowserTextMatches(entry: IdCatalogEntry): boolean {
   if (!query) return true;
-  const haystack = [entry.label, entry.value, entry.localFormId ?? '', entry.editorId ?? '', entry.type, entry.category, entry.sourceName ?? '', entry.plugin ?? '', entry.detail ?? '', ...(entry.keywords ?? [])]
+  const haystack = [entry.label, entry.value, entry.localFormId ?? '', entry.editorId ?? '', entry.type, entry.category, entry.sourceName ?? '', entry.plugin ?? '', entry.detail ?? '', ...(entry.alternateFormIds ?? []), ...(entry.keywords ?? [])]
     .join(' ')
     .toLowerCase();
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
@@ -2578,6 +2582,10 @@ function matchingIds(): IdCatalogEntry[] {
       : entry.source !== 'mod';
     return browserScopeMatches && sourceScopeMatches && pickerTypeMatches && pickerCategoryMatches && idBrowserTextMatches(entry);
   }));
+}
+
+function idTestedClass(entry: IdCatalogEntry): string {
+  return devFeedbackTestedClass({ kind: 'ID', name: entry.label, id: entry.value, localId: entry.localFormId, source: entry.plugin ?? entry.source }, reviewedWasTested(entry) || Boolean(ammoReferenceNote(entry) || armorReferenceNote(entry)));
 }
 
 function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspell' | 'spawn' | 'forceweather' | 'teleport' | 'findcell' | null {
@@ -2657,8 +2665,10 @@ function renderIdBrowserSelection(): string {
           <div><dt>Category</dt><dd>${escapeHtml(entry.category)}</dd></div>
           ${entry.source === 'mod' ? `<div><dt>Mod</dt><dd>${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod catalog')}</dd></div>` : entry.source && entry.source !== 'built-in' ? `<div><dt>Source</dt><dd>${escapeHtml(entry.source)}</dd></div>` : ''}
           ${entry.plugin ? `<div><dt>Plugin</dt><dd>${escapeHtml(entry.plugin)}</dd></div>` : ''}
+          ${entry.originalName ? `<div><dt>Original Name</dt><dd>${escapeHtml(entry.originalName)}</dd></div>` : ''}
           ${entry.detail ? `<div><dt>Information</dt><dd>${escapeHtml(entry.detail)}</dd></div>` : ''}
           <div><dt>Form ID</dt><dd>${entry.available === false ? '<span>Not loaded</span>' : `<code>${escapeHtml(entry.value)}</code>`}</dd></div>
+          ${entry.alternateFormIds?.length ? `<div><dt>Alternate Form IDs</dt><dd>${entry.alternateFormIds.map(id => `<code>${escapeHtml(id)}</code>`).join('<br>')}</dd></div>` : ''}
           ${entry.localFormId ? `<div><dt>Local ID</dt><dd><code>${escapeHtml(entry.localFormId)}</code></dd></div>` : ''}
           ${editorId ? `<div><dt>Editor ID</dt><dd><code>${escapeHtml(editorId)}</code></dd></div>` : ''}
         </dl>
@@ -2705,7 +2715,7 @@ function renderGameSettingsPanel(): void {
     if (!rows.length) return '';
     const limit = gameSettingLimits.get(group) ?? 200;
     const open = query.trim() || openGameSettingGroups.has(group);
-    return `<details class="game-setting-group" data-setting-group="${escapeHtml(group)}"${open ? ' open' : ''}><summary>${escapeHtml(group)} <span class="nav-count">${rows.length.toLocaleString()}</span></summary>${open ? rows.slice(0, limit).map((entry) => `<button class="id-browser-row${selected?.name === entry.name ? ' is-selected' : ''}" type="button" data-select-setting="${escapeHtml(entry.name)}" aria-pressed="${selected?.name === entry.name}">${escapeHtml(entry.name)}</button>`).join('') + (rows.length > limit ? `<button class="osf-btn osf-btn--sm" type="button" data-more-settings="${escapeHtml(group)}">Show 200 More</button>` : '') : ''}</details>`;
+    return `<details class="game-setting-group" data-setting-group="${escapeHtml(group)}"${open ? ' open' : ''}><summary>${escapeHtml(group)} <span class="nav-count">${rows.length.toLocaleString()}</span></summary>${open ? rows.slice(0, limit).map((entry) => `<button class="id-browser-row${devFeedbackTestedClass({ kind: 'Setting', name: entry.name })}${selected?.name === entry.name ? ' is-selected' : ''}" type="button" data-select-setting="${escapeHtml(entry.name)}" aria-pressed="${selected?.name === entry.name}">${escapeHtml(entry.name)}</button>`).join('') + (rows.length > limit ? `<button class="osf-btn osf-btn--sm" type="button" data-more-settings="${escapeHtml(group)}">Show 200 More</button>` : '') : ''}</details>`;
   }).join('');
   const value = (v: GameSettingEntry['referenceValue']) => v === null ? 'Not supplied' : escapeHtml(String(v));
   const detail = selected ? `<aside class="id-browser-selection" aria-label="Selected game setting"><div class="id-browser-selection-copy"><span class="osf-eyebrow">GAME SETTING</span><strong>${escapeHtml(selected.name)}</strong><dl class="id-browser-metadata"><div><dt>Group</dt><dd>${escapeHtml(gameSettingGroup(selected))}</dd></div><div><dt>Category</dt><dd>${escapeHtml(selected.category)}</dd></div><div><dt>Type</dt><dd>${escapeHtml(selected.type)}</dd></div><div><dt>Form ID</dt><dd>${selected.formId ? '<code>' + escapeHtml(selected.formId) + '</code>' : 'No Form ID supplied (engine setting)'}</dd></div><div><dt>Reference value</dt><dd>${value(selected.referenceValue)}</dd></div><div><dt>Master value</dt><dd>${value(selected.masterValue)}</dd></div><div><dt>Engine default</dt><dd>${value(selected.engineValue)}</dd></div></dl><p class="game-settings-reference-note">Values above are workbook references, not live readings. Mods and the current session may change them. Inspect to read the current value. Some Creation Kit settings may not be available in the running game.</p></div><div class="id-browser-selection-actions">${devFeedbackButton({ kind: 'Setting', name: selected.name, id: selected.formId ?? undefined, category: selected.category, command: gameSettingInspectCommand(selected) })}<button class="osf-btn osf-btn--sm" type="button" data-copy-setting-name>Copy Setting Name</button><button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-inspect-setting${nativeBackendReady ? '' : ' disabled'}>Inspect Current Value</button></div></aside>` : '<aside class="id-browser-selection id-browser-selection--empty"><strong>Select a Game Setting</strong><span>Choose a name to see its reference data and inspect its current value.</span></aside>';
@@ -2764,7 +2774,7 @@ function renderIdBrowserPanel(): void {
     : `${results.length.toLocaleString()} shown / ${includedTotal.toLocaleString()} included IDs${idBrowserRecordTypeFilter ? ` / ${idBrowserRecordTypeFilter}` : ''}`;
 
   const renderResultRow = (entry: IdCatalogEntry, index: number) => `
-    <button class="id-browser-row${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type && idBrowserSelected?.plugin === entry.plugin ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
+    <button class="id-browser-row${idTestedClass(entry)}${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type && idBrowserSelected?.plugin === entry.plugin ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
       <strong title="${escapeHtml(entry.label)}">${escapeHtml(entry.label)}</strong>
       ${entry.referenceOnly ? '<span class="id-browser-reference-tag">REFERENCE ONLY</span>' : ''}
       ${globalModSearch ? `<span class="id-browser-row-source">${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod')}</span>` : ''}
@@ -4105,14 +4115,14 @@ if (!welcomeHasBeenSeen()) openWelcome();
 
 installDevFeedback({
   version: CONSOLE_COMMAND_CENTER_VERSION,
-  rerender: render,
+  rerender: () => rerenderKeepingPosition(render),
   status: (message, error = false) => setStatus(message, error ? 'error' : 'success'),
   exportText: async (content) => {
     if (previewReady || !window.osfui?.request) {
       const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
-      const link = document.createElement('a'); link.href = url; link.download = 'CCC-Dev-Feedback.txt';
+      const link = document.createElement('a'); link.href = url; link.download = `CCC-Dev-Feedback-${new Date().toISOString().replaceAll(':', '-').replaceAll('.', '-')}.txt`;
       document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-      return 'CCC-Dev-Feedback.txt (browser download)';
+      return `${link.download} (browser download)`;
     }
     const reply = await window.osfui.request<{ ok: boolean; path: string }>('console.command-center.devFeedbackExport', { content });
     if (!reply?.ok || !reply.path) throw new Error('Native export did not return a saved file.');

@@ -1,17 +1,17 @@
-# v1.2.35 release validation
+# v1.2.38 release validation
 
 This is the maintained release checklist. It covers behavior most likely to break and avoids repeating implementation-level unit tests.
 
 ## Current verification status
 
-143 automated checks and native/UI builds pass. Native export tests cover UTF-8 content and atomic replacement. Browser checks exercised both themes and Advanced Options transitions; reporting/export has been exercised in game. The user confirmed Auto-Run triggering, Workshop inside ships, and Workshop FlyCam inside and outside Workshop mode. The user confirmed the latest Custom Command layout looks correct. ActorExposedToSky works in the ordinary console, but its new v1.2.18 popup adapter still needs an indoor/outdoor comparison. Mod quest controls and stage progress should be checked in game before treating them as release-verified.
+149 automated checks and native/UI builds pass. The native export test also passes. Native export tests cover UTF-8 content and distinct timestamped exports. Browser checks exercised both themes, Advanced Options transitions, Dev Mode markers, persistence after export, and crowded ID details scrolling above fixed buttons, report submission retaining list position/selection/focus, and merged outfits with searchable alternate IDs; the previous reporting/export flow has been exercised in game; the new timestamped export and batch clearing need an in-game check. The user confirmed Auto-Run triggering, Workshop inside ships, and Workshop FlyCam inside and outside Workshop mode. The user confirmed the latest Custom Command layout looks correct. ActorExposedToSky works in the ordinary console, but its new v1.2.18 popup adapter still needs an indoor/outdoor comparison. Mod quest controls and stage progress should be checked in game before treating them as release-verified.
 
 ## Build and install
 
 1. Run `npm test`, `npm run check`, and `npm run build` successfully.
 2. Install the generated archive over the previous release without clearing OSF UI browser data.
 3. Confirm the view is under `SFSE/Plugins/OSF/UI/views/console.command-center/main` and the native DLL is under `SFSE/Plugins/`.
-4. Launch through SFSE and confirm the footer and native connection both report **v1.2.35**, **OSF UI 2.0 API**, and **NATIVE READY**.
+4. Launch through SFSE and confirm the footer and native connection both report **v1.2.38**, **OSF UI 2.0 API**, and **NATIVE READY**.
 5. Confirm existing command favorites, ID favorites, Recent entries, Activity Log entries, and saved Custom Command batches remain available.
 
 ## Navigation and layout
@@ -113,16 +113,16 @@ This is the maintained release checklist. It covers behavior most likely to brea
 2. Confirm the same result is retained in Activity Log. Use an invalid/non-actor reference or extra arguments and confirm a readable error.
 3. Confirm ordinary console use is unaffected and other query captures still work.
 
-## 1.2.35 feedback checks
+## 1.2.38 feedback checks
 
 - Settings stays at the bottom of ID Browser without a sidebar count.
 - Tested creature skin and Akila child/crowd armor show Reference Only and no Add to Player action, including old Favorites.
 - Five dot clicks enable report buttons; five more hide them without losing reports.
 - Save each result status and a multiline comment; confirm comment-only reports work and Cancel/Escape do not save.
-- Export writes one complete UTF-8 CCC-Dev-Feedback.txt in the user CCC folder; repeat export retains prior reports. Verify browser preview downloads a combined file.
+- Export writes a new timestamped UTF-8 file in the user CCC folder. Successful export clears that batch, failed export retains it, and reports added during export remain pending. Verify earlier files are preserved and browser preview downloads a timestamped file.
 - Test controller focus and text entry in the report popup.
 
-## 1.2.35 interface checks
+## 1.2.38 interface checks
 
 - Fresh preferences hide WIP, Settings, Cells, Ship Parts, reference-only items, and Internal / System. Global searches do not reveal those records.
 - Enable Advanced Options and confirm all categories return without losing Favorites. Disable while viewing an advanced category and confirm fallback to a visible view.

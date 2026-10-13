@@ -2,6 +2,22 @@
 
 This file replaces the individual release-note documents. It records user-visible changes without repeating install and compatibility text for every version.
 
+## 1.2.38
+
+- Keep the item list and detail scroll position after saving a test report.
+- Applied 33 new item tests, renamed Freestar Ambassador Suit and Bounty Hunter Seek Pack, and combined tested duplicate Andreja/Barrett outfits while preserving alternate IDs.
+
+## 1.2.37
+
+- ID detail content scrolls above fixed action buttons; long titles remain fully readable.
+
+- Dev Mode highlights tested item, quest, setting, and command rows in green. Testing history persists separately from exported reports. Earlier reviewed item findings and command test statuses are included.
+
+## 1.2.36
+
+- Applied 23 tested clothing and helmet names; preserved original names in ID details and search.
+- Report exports now create timestamped files and clear the exported batch after successful saving. Failed exports retain reports.
+
 ## 1.2.35
 
 - Moved reference-only items behind Advanced Options across ID lists, searches, and ID Favorites. Saved favorites are preserved; reference-only entries still sort last when advanced content is enabled.

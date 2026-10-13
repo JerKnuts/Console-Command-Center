@@ -1,6 +1,6 @@
 # Custom Command batches
 
-Current behavior: CCC v1.2.35.
+Current behavior: CCC v1.2.38.
 
 ## Files and editor
 

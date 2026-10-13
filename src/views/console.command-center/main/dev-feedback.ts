@@ -2,6 +2,19 @@ export type DevFeedbackRecord = { kind: string; name: string; id?: string; local
 export type DevFeedbackReport = DevFeedbackRecord & { version: string; time: string; status: string; comment: string };
 let enabled = false;
 const STORAGE_KEY = 'ccc.dev-feedback.v1';
+const TESTED_KEY = 'ccc.dev-tested.v1';
+let tested = new Set<string>();
+const sourcePlugins: Record<string, string> = { 'base game': 'starfield.esm', 'built-in': 'starfield.esm', 'shattered space': 'shatteredspace.esm', 'free lanes': 'sfbgs00d.esm', 'terran armada': 'sfbgs050.esm' };
+export function devFeedbackIdentity(record: DevFeedbackRecord): string {
+  if (record.kind === 'Command') return `Command:${record.id ?? record.name}`;
+  if (record.kind === 'Setting') return `Setting:${record.name}`;
+  const source = (record.source ?? 'Starfield.esm').toLowerCase();
+  const plugin = sourcePlugins[source] ?? source;
+  return `${record.kind}:${plugin}:${(record.localId ?? record.id ?? record.name).toUpperCase().slice(-6)}`;
+}
+export function devFeedbackTestedClass(record: DevFeedbackRecord, alreadyTested = false): string {
+  return enabled && (alreadyTested || tested.has(devFeedbackIdentity(record))) ? ' dev-tested' : '';
+}
 const escape = (value: string) => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll("'", '&#39;');
 
 export function devFeedbackResults(kind: string): string[] {
@@ -34,6 +47,13 @@ export function installDevFeedback(options: { version: string; rerender: () => v
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
     if (Array.isArray(saved)) reports = saved.filter(r => r && typeof r.name === 'string' && typeof r.kind === 'string' && typeof r.comment === 'string' && typeof r.status === 'string' && typeof r.time === 'string' && typeof r.version === 'string');
   } catch { options.status('Saved test reports could not be read.', true); }
+  try {
+    const saved = JSON.parse(localStorage.getItem(TESTED_KEY) ?? '[]');
+    tested = new Set(Array.isArray(saved) ? saved.filter(value => typeof value === 'string') : []);
+  } catch { tested = new Set(); }
+  // Migrate pending reports from earlier builds without adding them to future exports.
+  reports.forEach(record => tested.add(devFeedbackIdentity(record)));
+  try { localStorage.setItem(TESTED_KEY, JSON.stringify([...tested])); } catch { /* Pending reports still retain their identities. */ }
   let clicks = 0;
   dot?.addEventListener('click', () => {
     if (++clicks < 5) return;
@@ -46,9 +66,18 @@ export function installDevFeedback(options: { version: string; rerender: () => v
     options.status(`Dev Mode ${enabled ? 'enabled. Select Test Report on an entry; Export Reports saves all notes.' : 'disabled. Saved reports are kept.'}`);
   });
   exportButton?.addEventListener('click', async () => {
+    if (exportButton.disabled) return;
     if (!reports.length) { options.status('No test reports to export.'); return; }
     exportButton.disabled = true;
-    try { options.status(`Exported ${reports.length} test reports to ${await options.exportText(formatDevFeedback(reports))}`); }
+    const batch = [...reports];
+    try {
+      const destination = await options.exportText(formatDevFeedback(batch));
+      const remaining = reports.filter(report => !batch.includes(report));
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(remaining)); }
+      catch { options.status(`Exported ${batch.length} test reports to ${destination}, but saved reports could not be cleared.`, true); return; }
+      reports = remaining;
+      options.status(`Exported ${batch.length} test reports to ${destination}. Exported reports cleared; ${reports.length} reports ready to export.`);
+    }
     catch (error) { options.status(`Report export failed: ${error instanceof Error ? error.message : String(error)}. Your reports are still saved.`, true); }
     finally { exportButton.disabled = false; }
   });
@@ -83,7 +112,10 @@ export function installDevFeedback(options: { version: string; rerender: () => v
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
       catch { error.textContent = 'The report could not be saved. Export existing reports or free browser storage and try again.'; return; }
       reports = next;
+      tested.add(devFeedbackIdentity(record));
+      try { localStorage.setItem(TESTED_KEY, JSON.stringify([...tested])); } catch { /* The saved report restores this marker on reload. */ }
       dialog.close();
+      options.rerender();
       options.status(`Saved test report for ${record.name}. ${reports.length} reports ready to export.`);
     });
     dialog.addEventListener('close', () => { dialog.remove(); if (button.isConnected) button.focus(); });

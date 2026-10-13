@@ -24,7 +24,8 @@ test('five clicks toggle Dev Mode and export uses the persisted report collectio
  const button={hidden:true,disabled:false,addEventListener:(name,fn)=>exportEvents.set(name,fn)};
  const report={kind:'Command',name:'God Mode',version:'1.2.31',time:'now',status:'Working',comment:'OK'};
  globalThis.document={querySelector:s=>s==='#dev-mode-dot'?dot:s==='#dev-feedback-export'?button:null,addEventListener(){}};
- globalThis.localStorage={getItem:()=>JSON.stringify([report])};
+ let saved=JSON.stringify([report]);
+ globalThis.localStorage={getItem:k=>k==='ccc.dev-feedback.v1'?saved:null,setItem:(key,value)=>{if(key==='ccc.dev-feedback.v1')saved=value;}};
  assert.equal(devFeedbackButton({kind:'ID',name:'Test'}),'');
  installDevFeedback({version:'1.2.31',rerender:()=>rendered++,status(){},exportText:async t=>{exported=t;return 'file.txt';}});
  for(let i=0;i<4;i++) events.get('click')();
@@ -35,6 +36,8 @@ test('five clicks toggle Dev Mode and export uses the persisted report collectio
  assert.ok(escaped.includes('&quot;'));
  assert.ok(!escaped.includes('<test'));
  await exportEvents.get('click')();assert.ok(exported.includes('God Mode'));assert.equal(button.disabled,false);
+ assert.deepEqual(JSON.parse(saved),[]);
+ exported='';await exportEvents.get('click')();assert.equal(exported,'');
  for(let i=0;i<5;i++) events.get('click')();assert.equal(rendered,2);assert.equal(button.hidden,true);
  assert.equal(devFeedbackButton({kind:'ID',name:'Test'}),'');
  delete globalThis.document;delete globalThis.localStorage;
@@ -74,7 +77,7 @@ test('popup saves selected status and comment while Cancel leaves saved reports 
    },querySelectorAll:()=>resultButtons,formEvents,cancelEvents,resultEvents};return dialog;
  };
  globalThis.document={querySelector:s=>s==='#dev-mode-dot'?dot:s==='#dev-feedback-export'?exportButton:null,addEventListener:(n,f)=>documentEvents.set(n,f),createElement:()=>lastDialog=makeDialog(),body:{append(){}}};
- globalThis.localStorage={getItem:()=>saved,setItem:(k,v)=>saved=v};
+ globalThis.localStorage={getItem:k=>k==='ccc.dev-feedback.v1'?saved:null,setItem:(k,v)=>{if(k==='ccc.dev-feedback.v1')saved=v;}};
  installDevFeedback({version:'1.2.31',rerender(){},status(){},exportText:async()=>''});
  for(let i=0;i<5;i++)dotEvents.get('click')();
  const click={target:{closest:()=>recordButton}};
@@ -101,4 +104,16 @@ test('item and command feedback offer distinct classifications with explicit exp
  assert.ok(text.includes('Remove Add to Player, mark Reference Only'));
  assert.ok(text.includes('Nothing appeared in the player inventory'));
  assert.ok(text.includes('command executed, but no effect was observed'));
+});
+
+test('failed export keeps reports and a retry clears them only after saving',async()=>{
+ const events=new Map();let saved=JSON.stringify([{kind:'ID',name:'Crewman Outfit',version:'1.2.36',time:'now',status:'Working',comment:'OK'}]);let fail=true;let calls=0;
+ const button={disabled:false,addEventListener:(event,fn)=>events.set(event,fn)};
+ globalThis.document={querySelector:s=>s==='#dev-feedback-export'?button:null,addEventListener(){}};
+ globalThis.localStorage={getItem:k=>k==='ccc.dev-feedback.v1'?saved:null,setItem:(key,value)=>{if(key==='ccc.dev-feedback.v1')saved=value;}};
+ installDevFeedback({version:'1.2.36',rerender(){},status(){},exportText:async()=>{calls++;if(fail)throw Error('disk error');return 'new-file.txt';}});
+ await events.get('click')();assert.equal(JSON.parse(saved).length,1);assert.equal(button.disabled,false);
+ fail=false;await events.get('click')();assert.deepEqual(JSON.parse(saved),[]);assert.equal(calls,2);
+ await events.get('click')();assert.equal(calls,2);
+ delete globalThis.document;delete globalThis.localStorage;
 });

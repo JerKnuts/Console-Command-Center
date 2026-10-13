@@ -1,4 +1,4 @@
-import { applyReviewedFindings } from './reviewed-id-findings';
+import { applyReviewedFindings, reviewedDuplicate } from './reviewed-id-findings';
 import { applyArmorFindings } from './armor-test-findings';
 import { applyAmmoFindings } from './ammo-test-findings';
 import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, WEATHER_PICKER } from './reference-ids';
@@ -10,6 +10,8 @@ export type IdCatalogAction = 'additem' | 'addperk' | 'addspell' | 'spawn' | 'fo
 
 export type IdCatalogEntry = {
   label: string;
+  originalName?: string;
+  alternateFormIds?: string[];
   value: string;
   type: string;
   category: string;
@@ -506,7 +508,7 @@ export function mergeGeneratedIdCatalog(generated: GeneratedIdCatalogEntry[]): I
       detail: entry.detail ?? undefined,
       action: entry.action ?? undefined,
     })),
-  ].map(applyAmmoFindings).map(applyArmorFindings).map(applyReviewedFindings).sort((a, b) => a.label.localeCompare(b.label));
+  ].filter(entry => !reviewedDuplicate(entry)).map(applyAmmoFindings).map(applyArmorFindings).map(applyReviewedFindings).sort((a, b) => a.label.localeCompare(b.label));
 }
 
 export function runtimeFormId(localFormId: string, pluginKind: PluginLoadInfo['pluginKind'], index: number): string | null {
@@ -529,6 +531,6 @@ export function resolvePackagedIdCatalog(entries: IdCatalogEntry[], reply: Plugi
     const plugin = plugins.get(entry.plugin.toLowerCase());
     if (!plugin) return { ...entry, available: entry.plugin.toLowerCase() === 'starfield.esm' };
     const value = runtimeFormId(entry.localFormId, plugin.pluginKind, plugin.index);
-    return { ...entry, value: value ?? entry.value, pluginKind: plugin.pluginKind, available: Boolean(value) };
+    return { ...entry, value: value ?? entry.value, pluginKind: plugin.pluginKind, alternateFormIds: entry.alternateFormIds?.map(id => runtimeFormId(id.slice(-6), plugin.pluginKind, plugin.index) ?? id), available: Boolean(value) };
   });
 }

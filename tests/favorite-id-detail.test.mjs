@@ -9,7 +9,7 @@ const source=readFileSync(new URL('../src/views/console.command-center/main/main
 const names=new Set(['renderIdFavorites','renderCompactCommandLayout','escapeHtml']);
 const funcs=[...source.matchAll(/^function (\w+)\b[\s\S]*?^}/gm)].filter(m=>names.has(m[1])).map(m=>m[0]);
 const item={favoriteKey:'ammo:1',label:'Test Ammo',value:'002B5597',type:'AMMO'};
-const context=vm.createContext({uiPreferences,visibleIdRecord,orderIdEntries,activeView:'favorites',selectedCommandId:null,selectedFavoriteIdKey:'ammo:1',idFavorites:[item],idBrowserSelected:null,renderSavedCommandFavorites:()=>'',renderCommandListRow:c=>`<button>${c.title}</button>`,renderCommandDetail:()=>'<aside>Command</aside>',renderIdBrowserSelection:()=>'<aside>Selected ID controls</aside>',viewTitle:()=> 'Favorites'});
+const context=vm.createContext({uiPreferences,visibleIdRecord,orderIdEntries,idTestedClass:()=>'',activeView:'favorites',selectedCommandId:null,selectedFavoriteIdKey:'ammo:1',idFavorites:[item],idBrowserSelected:null,renderSavedCommandFavorites:()=>'',renderCommandListRow:c=>`<button>${c.title}</button>`,renderCommandDetail:()=>'<aside>Command</aside>',renderIdBrowserSelection:()=>'<aside>Selected ID controls</aside>',viewTitle:()=> 'Favorites'});
 vm.runInContext(stripTypeScriptTypes(funcs.join('\n')),context);
 test('favorite ID list shows only clickable names and keeps its controls in the detail pane',()=>{
  const rows=context.renderIdFavorites();

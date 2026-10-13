@@ -1,6 +1,6 @@
 # Future features
 
-These are candidate improvements, not promises or features of v1.2.35. Editable text batches, On Load Auto-Run, and scanned mod quest-stage controls are already implemented; see [Command batches](COMMAND_BATCHES.md) and [Mod ID catalogs](MOD_ID_CATALOGS.md).
+These are candidate improvements, not promises or features of v1.2.38. Editable text batches, On Load Auto-Run, and scanned mod quest-stage controls are already implemented; see [Command batches](COMMAND_BATCHES.md) and [Mod ID catalogs](MOD_ID_CATALOGS.md).
 
 ## Command batches
 

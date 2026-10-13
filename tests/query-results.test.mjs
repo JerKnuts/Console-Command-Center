@@ -910,7 +910,7 @@ test('Quest Browser exposes native inspections and confirmed state-changing acti
   assert.match(source, /questBrowserSource = 'Base Game'/);
   assert.match(source, /questBrowserCategory = QUEST_BROWSER_CATEGORY_ORDER\[0\]/);
   assert.match(source, /class="quest-browser-workspace"/);
-  assert.match(source, /class="quest-browser-row\$\{selectedQuestKey === key \? ' is-selected' : ''\}"/);
+  assert.match(source, /class="quest-browser-row[^\n]*selectedQuestKey === key \? ' is-selected' : ''/);
   assert.match(source, /function renderQuestBrowserSelection/);
   assert.match(source, /class="quest-browser-metadata"/);
   assert.match(styleSource, /\.quest-browser-workspace\s*\{[\s\S]*?grid-template-columns:\s*minmax\(260px, 1fr\) minmax\(var\(--ccc-detail-pane-min-width\), var\(--ccc-detail-pane-width\)\);/);

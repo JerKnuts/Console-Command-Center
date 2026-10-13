@@ -2,7 +2,7 @@
 
 Console Command Center turns Starfield console commands into a searchable in-game menu for mouse, keyboard, and controller. It provides command inputs, safety warnings, ID selection, quest tools, mod scanning, editable command batches, and read-only Results popups.
 
-**Current release: v1.2.35.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
+**Current release: v1.2.38.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
 
 ## Requirements
 
@@ -29,7 +29,7 @@ Make a manual save before changing quests or important game state. Each page has
 
 - **149 established command cards** and **1,532 WIP entries** (39 prepared cards and 1,493 engine commands/script functions).
 - Search, command and ID favorites, Recent commands, saved batch favorites, and Activity Log. Favorite IDs use compact selectable rows with their details and supported actions on the right.
-- **ID Browser: 23,319 packaged records**, including reviewed ships, vehicle forms, workshop objects, and supported Free Lanes/Terran Armada record types. Duplicate names can identify different underlying records.
+- **ID Browser: 23,317 packaged entries**, including reviewed ships, vehicle forms, workshop objects, and supported Free Lanes/Terran Armada record types. Duplicate names can identify different underlying records.
 - **Settings catalog: 8,705 game-setting references**, including 2,312 supplied Form IDs. Inspect Current Value uses a setting name; workbook values are labeled reference values, and editing is disabled.
 - **Quest Browser: 2,568 quests and 19,061 recorded stage indexes** from Base Game, Shattered Space, Free Lanes, and Terran Armada. Packaged quests are kept out of ID Browser.
 - **Mod Browser:** manually scan loaded mods and Official Creations, browse categories, search one plugin or every scanned plugin, and inspect scanned quest stages.
@@ -62,9 +62,9 @@ There is no 100-command limit. Native validation still limits file size to 1 MB 
 
 ## Dev Mode feedback
 
-Click the bottom-left dot five times to toggle Dev Mode. Test Report buttons appear in selected ID, quest, setting, and command details. Save a result and/or comment, then use **Export Reports** to write `Documents\My Games\Starfield\Console Command Center\CCC-Dev-Feedback.txt`. Browser preview exports download that filename instead.
+Click the bottom-left dot five times to toggle Dev Mode. Test Report buttons appear in selected ID, quest, setting, and command details. Save a result and/or comment, then use **Export Reports** to write `Documents\My Games\Starfield\Console Command Center\CCC-Dev-Feedback-<timestamp>_<unique>.txt`. Browser preview downloads a timestamped file instead.
 
-Item reports offer **Reference Only**; command reports offer **Executed (no effect)** alongside the ordinary result choices. These are reports for review, not automatic changes to game actions. Reports persist after exporting and after Dev Mode is disabled. See [Dev Mode](docs/DEV_MODE.md).
+Item reports offer **Reference Only**; command reports offer **Executed (no effect)** alongside the ordinary result choices. These are reports for review, not automatic changes to game actions. Successful exports clear the exported batch; failed exports retain reports. Disabling Dev Mode keeps pending reports. See [Dev Mode](docs/DEV_MODE.md).
 
 ## Build from source
 

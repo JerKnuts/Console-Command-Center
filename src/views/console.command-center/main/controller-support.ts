@@ -822,7 +822,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       candidates.push(ancestor);
       ancestor = ancestor.parentElement;
     }
-    candidates.push(...scope.querySelectorAll<HTMLElement>('#results-output:not([hidden]), .inventory-results:not([hidden]), .help-dialog, .quest-browser-selection-scroll, .activity-list, .custom-saved-list, .navigation-categories'));
+    candidates.push(...scope.querySelectorAll<HTMLElement>('#results-output:not([hidden]), .inventory-results:not([hidden]), .help-dialog, .quest-browser-selection-scroll, .id-browser-selection-copy, .activity-list, .custom-saved-list, .navigation-categories'));
     const target = candidates.find((element) => isVisible(element) && element.scrollHeight > element.clientHeight + 2);
     if (target) target.scrollTop += -axisY * 46;
   }

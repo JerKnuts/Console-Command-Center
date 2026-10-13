@@ -2247,20 +2247,23 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
   max-width: 270px;
 }
 .id-browser-selection-copy {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
   min-height: 0;
   display: grid;
+  grid-auto-rows: max-content;
   align-content: start;
   gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 .id-browser-selection-copy strong {
-  overflow: hidden;
+  overflow: visible;
   color: var(--osf-text-bright);
   font-family: var(--osf-font-display);
   font-size: 18px;
   line-height: 1.2;
-  text-overflow: ellipsis;
   overflow-wrap: anywhere;
 }
 .id-browser-metadata {
@@ -2570,4 +2573,20 @@ body.controller-active :is(.command-detail-panel, .id-browser-selection, .quest-
   background: var(--ccc-orange-soft);
   font-size: 11px;
   line-height: 1.35;
+}
+
+/* Testing history is exposed only through classes rendered in Dev Mode. */
+:root :is(.command-list-row, .id-browser-row, .quest-browser-row).dev-tested {
+  border-left: 5px solid #5fba83 !important;
+  background: linear-gradient(90deg, rgba(46, 119, 76, .34), rgba(46, 119, 76, .14)) !important;
+}
+:root[data-ccc-theme="light"] :is(.command-list-row, .id-browser-row, .quest-browser-row).dev-tested {
+  border-left-color: #276b43 !important;
+  background: #bad3bf !important;
+  color: #263b30 !important;
+}
+:root[data-ccc-theme="light"] .dev-tested :is(strong, .command-list-row-title) { color: #263b30 !important; }
+:root :is(.command-list-row, .id-browser-row, .quest-browser-row).dev-tested:is([aria-selected="true"], .is-selected) {
+  outline: 1px solid #8acfa5;
+  outline-offset: -2px;
 }
