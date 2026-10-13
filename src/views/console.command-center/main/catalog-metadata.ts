@@ -1,12 +1,12 @@
-export const ID_BROWSER_TOTAL = 16_528;
-export const QUEST_BROWSER_TOTAL = 2_318;
-export const QUEST_BROWSER_STAGE_TOTAL = 16_844;
+export const ID_BROWSER_TOTAL = 23319;
+export const QUEST_BROWSER_TOTAL = 2_568;
+export const QUEST_BROWSER_STAGE_TOTAL = 19_061;
 export const QUEST_BROWSER_CATEGORY_ORDER = [
-  'Main Quests',
-  'Faction Quests',
-  'Companion & Crew',
-  'Side Quests & Encounters',
   'Activities & Tutorials',
-  'Mission Board & Radiant',
+  'Companion & Crew',
+  'Faction Quests',
   'Internal / System',
+  'Main Quests',
+  'Mission Board & Radiant',
+  'Side Quests & Encounters',
 ] as const;

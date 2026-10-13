@@ -250,6 +250,8 @@ async function discover(projectRoot, refresh = false) {
   return discoveredState;
 }
 
+function isPackagedCatalogPlugin(name) { return BUILT_IN_PLUGINS.has(lower(name)) || ['sfbgs004.esm', 'sfbgs047.esm', 'sfbgs00d.esm', 'sfbgs050.esm'].includes(lower(name)); }
+
 function summaryCatalog(plugin) {
   return {
     file: basename(plugin.path), loaded: true, recordsLoaded: false, cached: false,
@@ -315,9 +317,17 @@ async function scanPluginRecords(state, plugin) {
   };
 }
 
+async function pluginLoadOrder(projectRoot) {
+  const state = await discover(projectRoot, true);
+  return {
+    ok: true,
+    plugins: state.plugins.map((plugin) => ({ plugin: plugin.name, pluginKind: plugin.kind, index: plugin.index })),
+  };
+}
+
 async function scanSummaries(projectRoot) {
   const state = await discover(projectRoot, true);
-  const plugins = state.plugins.filter((plugin) => !BUILT_IN_PLUGINS.has(lower(plugin.name)));
+  const plugins = state.plugins.filter((plugin) => !isPackagedCatalogPlugin(plugin.name));
   return {
     ok: true, source: 'preview-load-order-scan', directory: state.config.profilePath, directoryExists: true,
     summaryOnly: true, loadOrderEntries: state.loadOrder.length, pluginFilesOpened: state.plugins.length,
@@ -329,7 +339,7 @@ async function scanSummaries(projectRoot) {
 async function scanRecords(projectRoot, pluginName) {
   const state = await discover(projectRoot);
   const plugin = state.plugins.find((item) => lower(item.name) === lower(pluginName));
-  if (!plugin || BUILT_IN_PLUGINS.has(lower(plugin.name))) {
+  if (!plugin || isPackagedCatalogPlugin(plugin.name)) {
     return { ok: false, error: 'The selected plugin is not active in the preview load order.', directory: state.config.profilePath, totalRecords: 0, catalogs: [] };
   }
   return scanPluginRecords(state, plugin);
@@ -349,9 +359,10 @@ export function cccPreviewModCatalogPlugin(projectRoot) {
     configureServer(server) {
       server.middlewares.use(async (request, response, next) => {
         const url = new URL(request.url ?? '/', 'http://localhost');
-        if (url.pathname !== '/__ccc/mod-catalogs' && url.pathname !== '/__ccc/mod-catalog-records') return next();
+        if (url.pathname !== '/__ccc/mod-catalogs' && url.pathname !== '/__ccc/mod-catalog-records' && url.pathname !== '/__ccc/plugin-load-order') return next();
         try {
           if (url.pathname === '/__ccc/mod-catalogs') return sendJson(response, 200, await scanSummaries(projectRoot));
+          if (url.pathname === '/__ccc/plugin-load-order') return sendJson(response, 200, await pluginLoadOrder(projectRoot));
           return sendJson(response, 200, await scanRecords(projectRoot, url.searchParams.get('plugin') ?? ''));
         } catch (error) {
           return sendJson(response, 500, { ok: false, error: error instanceof Error ? error.message : String(error), totalRecords: 0, catalogs: [] });

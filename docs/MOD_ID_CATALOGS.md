@@ -4,7 +4,7 @@ Console Command Center detects supported records created by the plugins currentl
 
 Open **Mod Browser** and select **Scan Mods** to scan the active load order and collect supported IDs in one operation. Plugins remain separate from the packaged records in **ID Browser**. Opening CCC, ID Browser, or Mod Browser does not start a scan. Results remain available for the current game session; select **Scan Mods** again after restarting the game or changing the load order.
 
-Bethesda plugins whose filenames begin with `SFBGS` are included under **Official Creations**. Community plugins appear under **Mods**. Both groups are sorted by supported ID count after a scan.
+Bethesda plugins whose filenames begin with `SFBGS` are included under **Official Creations**, except modules already packaged in the official catalogs (SFBGS004, SFBGS047, SFBGS00D, and SFBGS050). Their packaged item and quest records remain in ID Browser and Quest Browser rather than appearing twice. Community plugins appear under **Mods**. Both groups are sorted by supported ID count after a scan.
 
 The native scanner reports plugin filenames because Starfield plugins do not contain a reliable Nexus or Creations page title. CCC translates known filenames through its bundled display-name map. Unknown plugins use a clean filename-derived fallback. The raw plugin filename is preserved in Selected ID details and remains searchable. See [Mod display names](MOD_DISPLAY_NAMES.md) for the lookup format and contribution guidance.
 

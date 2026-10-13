@@ -1,0 +1,86 @@
+/* Pale research-menu surfaces, teal structure, charcoal selection, yellow focus. */
+:root[data-ccc-theme="light"] {
+  color-scheme: light;
+  --ccc-orange: #356e66;
+  --ccc-orange-rgb: 53, 110, 102;
+  --ccc-orange-soft: rgba(53, 110, 102, 0.065);
+  --ccc-orange-hover: rgba(53, 110, 102, 0.14);
+  --ccc-danger: #a63c31;
+  --ccc-danger-rgb: 166, 60, 49;
+  --ccc-surface: #d8deda;
+  --ccc-surface-raised: #cbd5d0;
+  --ccc-surface-inset: #e3e8e3;
+  --ccc-surface-row: rgba(45, 70, 65, 0.045);
+  --ccc-line: #a7bbb4;
+  --ccc-line-strong: #71978b;
+  --osf-bg-canvas: #d8deda;
+  --osf-surface-card: #d5ded8;
+  --osf-surface-panel: #cbd5d0;
+  --osf-surface-input: #e6ebe6;
+  --osf-surface-overlay: rgba(58, 77, 71, 0.62);
+  --osf-text-bright: #233630;
+  --osf-text-body: #2b3d36;
+  --osf-text-muted: #435e54;
+  --osf-text-faint: #536b60;
+  --osf-line: #a7bbb4;
+  --osf-line-strong: #71978b;
+  --osf-line-bright: #356e66;
+  --osf-line-hud: #71978b;
+  --osf-accent: #557568;
+  --osf-accent-strong: #344e42;
+  --osf-accent-hover: #405e50;
+  --osf-accent-quiet: rgba(53, 110, 102, 0.1);
+  --osf-signal-go: #356543;
+  --osf-signal-warn: #826615;
+  --osf-signal-stop: #a63c31;
+}
+:root[data-ccc-theme="light"] body { background: #cad4cd; }
+:root[data-ccc-theme="light"] .command-center-shell {
+  background: radial-gradient(rgba(53, 80, 68, 0.055) 0.7px, transparent 0.8px), #d8deda;
+  background-size: 4px 4px;
+  border-color: #71978b;
+}
+:root[data-ccc-theme="light"] :is(.osf-card, .custom-card, .topbar, .utility-nav-bar, .statusbar, .sidebar, .browser-selection-banner, .mod-scan-dialog, .command-detail-panel, .id-browser-selection, .quest-browser-selection, .sidebar-mod-actions) {
+  background: #d1dcd4;
+  color: var(--osf-text-body);
+  border-color: var(--ccc-line-strong);
+}
+:root[data-ccc-theme="light"] :is(.caution-popover, .availability-popover, .command-detail-popover, .results-dialog, .confirm-dialog, .help-dialog, .welcome-dialog, .id-picker-dialog, .controller-keyboard, .dev-feedback-dialog, .ui-settings-dialog) {
+  color: var(--osf-text-body);
+  background: #d8e1d9;
+  border-color: var(--ccc-line-strong);
+}
+:root[data-ccc-theme="light"] :is(.command-list-row, .id-browser-row, .quest-browser-row, .favorite-saved-command, .custom-saved-entry) {
+  background: rgba(55, 90, 72, 0.035);
+  color: var(--osf-text-bright);
+  border-color: var(--ccc-line);
+}
+:root[data-ccc-theme="light"] :is(.command-list-row, .id-browser-row, .quest-browser-row, .favorite-saved-command, .custom-saved-entry):nth-child(even) { background: rgba(55, 90, 72, 0.095); }
+:root[data-ccc-theme="light"] :is(.command-list-row[aria-selected="true"], .id-browser-row.is-selected, .quest-browser-row[aria-selected="true"], .nav-button.is-active, .utility-nav-bar .nav-button.is-active) {
+  color: #f4f4e9;
+  background: #53695e;
+  border-color: #f2d373;
+  box-shadow: inset 3px 0 #f2d373;
+}
+:root[data-ccc-theme="light"] :is(.command-list-row[aria-selected="true"], .id-browser-row.is-selected, .quest-browser-row[aria-selected="true"], .nav-button.is-active) :is(strong, .nav-count, .id-browser-reference-tag) { color: #f4f4e9; }
+:root[data-ccc-theme="light"] :is(.osf-btn, .favorite-button, .execute-button) { color: #293d33; background: #dce6dc; border-color: #6e897c; }
+:root[data-ccc-theme="light"] :is(.osf-btn--osf-accent, .favorite-button.is-favorite, [data-toggle-advanced][aria-pressed="true"]) { color: #f5f6eb; background: #53695e; border-color: #f2d373; }
+:root[data-ccc-theme="light"] :is(button, input, textarea, summary):focus-visible { outline-color: #977419; box-shadow: inset 0 -2px #e6c967; }
+:root[data-ccc-theme="light"] :is(.osf-input, select.osf-input, select.osf-input option) { color-scheme: light; color: #233630; background-color: #e3e8e3; border-color: #7a9687; }
+:root[data-ccc-theme="light"] :is(.command-detail-syntax, #results-output, .custom-command-editor) { background: #e3e8e3; color: #284f42; border-color: #7a9687; }
+:root[data-ccc-theme="light"] .custom-command-editor .custom-command-line-numbers { background: #d2dfd3; color: #657d6b; border-right-color: #a7bbb4; }
+:root[data-ccc-theme="light"] .custom-command-editor textarea.custom-command-input { color: #233630; background: #e3e8e3; }
+:root[data-ccc-theme="light"] :is(.help-backdrop, .welcome-backdrop, .confirm-backdrop, .id-picker-backdrop, .controller-keyboard-backdrop, .mod-scan-overlay) { background: rgba(47, 68, 56, 0.65); }
+:root[data-ccc-theme="light"] :is(.dev-feedback-dialog, .ui-settings-dialog, .results-dialog)::backdrop { background: rgba(47, 68, 56, 0.65); }
+:root[data-ccc-theme="light"] :is(.quest-source-heading, .game-setting-group > summary, .mod-category-header) { color: #2e6357; background: #c7d6ca; border-color: #769783; }
+:root[data-ccc-theme="light"] :is(.command-warning-tag.is-danger, .command-test-tag.is-danger, .quest-action-danger) { color: #9c3127; }
+:root[data-ccc-theme="light"] .brand-mark { color: #f4f4e9; background: #53695e; border-color: #e6c967; }
+:root[data-ccc-theme="light"] .nav-count { color: #435e54; }
+:root[data-ccc-theme="light"] .utility-nav-bar .nav-button.is-active .nav-count { color: #f4f4e9; }
+:root[data-ccc-theme="light"] .command-detail-warning { background: rgba(221, 193, 97, 0.16); }
+
+.ui-settings-dialog { width: min(650px, 90vw); max-height: 85vh; padding: 20px; overflow: auto; color: var(--osf-text-body); background: var(--ccc-surface-raised); border: 1px solid var(--ccc-line-strong); }
+.ui-settings-dialog::backdrop { background: rgba(0, 0, 0, 0.8); }
+.ui-settings-option { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid var(--ccc-line); }
+.ui-settings-option p { color: var(--osf-text-muted); margin: 5px 0 0; line-height: 1.4; }
+.ui-settings-option button { min-width: 120px; }

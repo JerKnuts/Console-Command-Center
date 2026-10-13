@@ -1,0 +1,59 @@
+export type UiPreferences = { advanced: boolean; theme: 'dark' | 'light' };
+export function parseUiPreferences(value: unknown): UiPreferences {
+  const data = value && typeof value === 'object' ? value as Partial<UiPreferences> : {};
+  return { advanced: data.advanced === true, theme: data.theme === 'light' ? 'light' : 'dark' };
+}
+const KEY = 'ccc.ui-preferences.v1';
+function read(): UiPreferences {
+  try { return parseUiPreferences(JSON.parse(localStorage.getItem(KEY) ?? '{}')); }
+  catch { return parseUiPreferences(null); }
+}
+export const uiPreferences = read();
+
+export function visibleIdCategory(category: string, advanced: boolean): boolean {
+  return advanced || !['game-settings', 'cells', 'ship-parts'].includes(category);
+}
+export function visibleIdRecord(record: { type: string; category: string; referenceOnly?: boolean }, advanced: boolean): boolean {
+  return advanced || (!record.referenceOnly && record.type.toUpperCase() !== 'CELL' && record.category !== 'Ship Parts & Other Forms');
+}
+export function visibleQuestRecord(record: { category: string; internal: boolean }, advanced: boolean): boolean {
+  return advanced || !(record.internal || record.category === 'Internal / System');
+}
+export function visibleCommandRecord(record: { category: string }, advanced: boolean): boolean {
+  return advanced || record.category !== 'Untested';
+}
+
+export function installUiSettings(options: { changed: () => void; status: (text: string, error?: boolean) => void }): void {
+  document.documentElement.dataset.cccTheme = uiPreferences.theme;
+  document.querySelector('#open-settings')?.addEventListener('click', () => {
+    if (document.querySelector('dialog.ui-settings-dialog[open]')) return;
+    const dialog = document.createElement('dialog');
+    dialog.className = 'ui-settings-dialog osf-card';
+    dialog.setAttribute('aria-label', 'Console Command Center Settings');
+    dialog.innerHTML = `<div class="results-head"><h2>Settings</h2><button class="osf-btn osf-btn--sm" type="button" data-close-settings>Close</button></div><div class="ui-settings-option"><div><strong>Advanced Options</strong><p>Show WIP commands, Settings, Cells, Ship Parts, reference-only items, and Internal / System quests.</p></div><button class="osf-btn osf-btn--sm" type="button" data-toggle-advanced aria-pressed="${uiPreferences.advanced}">${uiPreferences.advanced ? 'On' : 'Off'}</button></div><div class="ui-settings-option"><div><strong>Appearance</strong><p>Choose the dark interface or a light research-style palette.</p></div><button class="osf-btn osf-btn--sm" type="button" data-toggle-theme aria-pressed="${uiPreferences.theme === 'light'}">${uiPreferences.theme === 'light' ? 'Light Mode' : 'Dark Mode'}</button></div>`;
+    document.body.append(dialog);
+    const persist = () => {
+      try { localStorage.setItem(KEY, JSON.stringify(uiPreferences)); }
+      catch { options.status('Settings changed for this session but could not be saved.', true); }
+      document.documentElement.dataset.cccTheme = uiPreferences.theme;
+      options.changed();
+    };
+    const advanced = dialog.querySelector<HTMLButtonElement>('[data-toggle-advanced]')!;
+    const theme = dialog.querySelector<HTMLButtonElement>('[data-toggle-theme]')!;
+    advanced.addEventListener('click', () => {
+      uiPreferences.advanced = !uiPreferences.advanced;
+      advanced.textContent = uiPreferences.advanced ? 'On' : 'Off';
+      advanced.setAttribute('aria-pressed', String(uiPreferences.advanced));
+      persist();
+    });
+    theme.addEventListener('click', () => {
+      uiPreferences.theme = uiPreferences.theme === 'dark' ? 'light' : 'dark';
+      theme.textContent = uiPreferences.theme === 'light' ? 'Light Mode' : 'Dark Mode';
+      theme.setAttribute('aria-pressed', String(uiPreferences.theme === 'light'));
+      persist();
+    });
+    dialog.querySelector('[data-close-settings]')?.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => { dialog.remove(); document.querySelector<HTMLButtonElement>('#open-settings')?.focus(); });
+    dialog.showModal();
+  });
+}

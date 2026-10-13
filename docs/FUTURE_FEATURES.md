@@ -1,6 +1,6 @@
 # Future features
 
-These are candidate improvements, not promises or features of v1.2.18. Editable text batches, On Load Auto-Run, and scanned mod quest-stage controls are already implemented; see [Command batches](COMMAND_BATCHES.md) and [Mod ID catalogs](MOD_ID_CATALOGS.md).
+These are candidate improvements, not promises or features of v1.2.35. Editable text batches, On Load Auto-Run, and scanned mod quest-stage controls are already implemented; see [Command batches](COMMAND_BATCHES.md) and [Mod ID catalogs](MOD_ID_CATALOGS.md).
 
 ## Command batches
 
@@ -15,7 +15,7 @@ These are candidate improvements, not promises or features of v1.2.18. Editable 
 - Quest bookmarks and filters for inspected running/completed state.
 - Mod scan comparisons and per-plugin visibility controls.
 - More reviewed plugin names and supported record types.
-- WIP test reporting with notes and exportable results.
+- Further Dev Mode report filtering, editing, and review tools.
 - Activity Log export, portable favorites, recent IDs, and before/after stat comparisons.
 
 ## Mod catalog caching

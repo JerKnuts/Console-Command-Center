@@ -1,12 +1,12 @@
 # Console Command Center — Command Catalog
 
-Version: 1.2.18
+Version: 1.2.35
 
 Established command cards: 149
 
 WIP command intake: 1,532 (39 prepared cards plus 1,493 raw engine entries: 546 console commands and 947 script functions)
 
-Quest Browser: 2,318 quest records with 16,844 structurally recorded stages across the base game and Shattered Space
+Quest Browser: 2,568 quest records with 19,061 structurally recorded stages across the base game, Shattered Space, Free Lanes, and Terran Armada
 
 Risk levels:
 - **Normal** — ordinary confirmation before execution.
@@ -15,7 +15,7 @@ Risk levels:
 
 Testing status is intentionally conservative. Verification records the reported in-game command result. A command working in the ordinary console does not guarantee that CCC can capture its output; adapter-specific checks remain separate.
 
-Latest user test reports incorporated: October 10, 2026. The user confirmed the latest editor layout looks correct; the v1.2.18 sky-result adapter still requires its indoor/outdoor in-game check. This file is the maintained command-status record; superseded test-build notes have been removed.
+Latest user test reports incorporated: October 12, 2026. The user confirmed the latest editor layout looks correct; the v1.2.18 sky-result adapter still requires its indoor/outdoor in-game check. This file is the maintained command-status record; superseded test-build notes have been removed.
 
 ## Gameplay
 
@@ -250,16 +250,16 @@ The syntax and descriptions were imported from and cross-checked against the gam
 
 ## ID Browser + Reference ID Picker
 
-The current source includes a standalone **ID Browser** with **16,528 included IDs** covering weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Search filters the catalog instantly by name, Form ID, type, category, and Editor ID. Location and cell selections expose separate Form ID and Editor ID copy actions. Large categories render 100 tiles at a time. Every selected result offers **Copy ID**, with conservative quick actions for supported record types, including **Change Weather** for Weather records and **Teleport Here** for Cell records. Location records can narrow the browser to matching teleportable Cells because the console's `coc` command requires a Cell Editor ID rather than a Location Form ID. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244. Shattered Space entries are labeled in their visible detail text and use cleaned Editor IDs when no verified localized name is available. Long descriptions, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded.
+The current source includes a standalone **ID Browser** with **23,319 included IDs** covering weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Search filters the catalog instantly by name, Form ID, type, category, and Editor ID. Location and cell selections expose separate Form ID and Editor ID copy actions. ID categories use compact selectable rows with a separate details panel. Active selected records offer **Copy ID**, with conservative quick actions for supported record types, including **Change Weather** for Weather records and **Teleport Here** for Cell records. Location records can narrow the browser to matching teleportable Cells because the console's `coc` command requires a Cell Editor ID rather than a Location Form ID. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244. Shattered Space entries are labeled in their visible detail text and use cleaned Editor IDs when no verified localized name is available. Free Lanes and Terran Armada include all named non-deleted records in supported types; internal/test records are reference-only.
 
 The browser supports category filtering across its packaged records and exposes conservative quick actions such as **Add to Player**, **Add Perk**, **Add Spell / Power**, **Spawn**, **Change Weather**, and **Teleport Here** where the record type makes the action reasonably clear. It does not query or scrape Starfield's live console output.
 
 The command cards continue to use the compact editable ID field + boxed **CHOOSE ...** control for known curated choices. Inline preset-button grids are intentionally avoided.
 
-## Quest Browser (2,318 quests / 16,844 recorded stages)
+## Quest Browser (2,568 quests / 19,061 recorded stages)
 
-Quest Browser is separate from the normal command catalog and groups base-game and Shattered Space records into collapsible, paginated categories.
-Its packaged Quest IDs and 16,844 recorded stage indexes are structurally validated against `Starfield.esm` and `ShatteredSpace.esm`.
+Quest Browser is separate from ID Browser and lists Base Game, Shattered Space, Free Lanes, and Terran Armada with alphabetical categories. Internal / System is visible only with Advanced Options.
+Its packaged Quest IDs and 19,061 recorded stage indexes are structurally validated against `Starfield.esm`, `ShatteredSpace.esm`, `SFBGS00D.esm`, and `SFBGS050.esm`.
 CCC executes the vanilla Starfield console command directly.
 
 Quest Browser offers confirmed `startquest`, `stopquest`, `completequest`, `resetquest`, and `setstage` actions. Every state-changing action is treated as **Danger** because it can skip dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save first. **Inspect Quest State** uses the verified native reader to show the current stage and mark completed stages without depending on console-output capture.
@@ -278,3 +278,14 @@ Quest Browser offers confirmed `startquest`, `stopquest`, `completequest`, `rese
 | ActorExposedToSky | Ordinary console returned 1 outside and 0 inside. Prior CCC popup timed out; v1.2.18 exact return capture is built and awaits in-game comparison. |
 | IsOnPlayerHomeSpaceShip | Ordinary query returned 0 outside and 1 inside; CCC output capture still needs verification. |
 | GetPlayerGravityScale / AreHostileActorsNear / GetPCIsReloading / IsBoostPackActive / IsBoostPackHovering | Triggered without a confirmed visible result; remain unconfirmed pending output/state testing. |
+
+## Current display and test findings
+
+Advanced Options is off by default. WIP and reference-only records remain in the datasets but are hidden from basic browsing/search. Settings, Cells, Ship Parts, and Internal / System quests are also advanced. Dev Mode reports include the tested item/command identity; Reference Only items have no gameplay quick action and sort last when visible.
+
+- `saq` and `caqs` ran but flooded the game with quest notifications; remain under Executed — Issues with strong warnings. `caqs` affected quests outside the journal.
+- `ShowSubtitle 0` hides all dialogue subtitles, including those enabled in Options. The card is named Hide All Dialogue Subtitles; normal-preference restoration remains unconfirmed.
+- `LandOnPlanetMarker` requires Marker Name; a valid name/context remains unconfirmed.
+- `ResetDialogueFlags` executed without a confirmed effect.
+- `Help` and `ShowGlobalVars` printed large console lists; full CCC capture completeness remains unconfirmed.
+- Companion/creature/special-effect ammo and specifically reported armor records remain reference-only. Restrictions match plugin/local ID, not display name or the presence of a Local ID. Cydonia Pack (0003B423) was reported working.

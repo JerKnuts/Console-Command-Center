@@ -1,6 +1,6 @@
 # Custom Command batches
 
-Current behavior: CCC v1.2.18.
+Current behavior: CCC v1.2.35.
 
 ## Files and editor
 
@@ -19,6 +19,10 @@ player.additem 0000ABF9 4
 There is no 100-command limit. A file may be up to 1 MB, each command may be up to 1,024 characters, and the list currently shows up to 100 batch files. The UI accepts entry names up to 50 characters; native filename validation permits up to 120 bytes and rejects reserved Windows names, path separators, control characters, and invalid filename characters. Files should be UTF-8 text; a UTF-8 BOM is accepted.
 
 Saving an existing case-insensitive batch name updates that file. Delete removes one file; Delete All requires typing Delete. Browser-stored legacy batches migrate on first load, keeping different same-name contents in separately named migrated files.
+
+## Included samples
+
+On first use, an empty batch folder receives Sample - Basic Supplies, Sample - Workshop Materials, and Sample - Ballistic Starter Kit. Samples do not overwrite existing files or enter Auto-Run automatically. A hidden setup marker prevents deleted samples from being recreated; migrated or existing batches take precedence. The browser preview includes the same examples.
 
 ## Manual execution
 

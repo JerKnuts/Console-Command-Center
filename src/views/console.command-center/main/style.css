@@ -261,12 +261,14 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
   gap: 1px;
   padding-right: 2px;
 }
+.navigation-stationary .nav-button { min-height: 32px; }
 .navigation-categories {
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
+  grid-auto-rows: max-content;
   align-content: start;
-  gap: 4px;
+  gap: 1px;
   overflow-y: auto;
   padding-right: 2px;
   scrollbar-gutter: stable;
@@ -276,19 +278,20 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
   grid-template-columns: minmax(0, 1fr) auto;
   grid-auto-rows: max-content;
   height: auto;
-  min-height: 44px;
+  max-height: none;
+  min-height: 32px;
   align-items: center;
   column-gap: 12px;
-  padding: 10px 11px;
+  padding: 5px 11px;
   box-sizing: border-box;
   border-bottom-color: rgba(126, 143, 158, 0.2);
 }
 .navigation-categories .nav-button > span:first-child {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  display: block;
+  height: auto;
+  max-height: none;
   min-width: 0;
-  min-height: 24px;
+  min-height: 20px;
   line-height: 1.35;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -309,6 +312,18 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
   text-transform: uppercase;
 }
 .sidebar-source-heading:first-child { margin-top: 2px; }
+.quest-source-heading {
+  margin: 12px 0 4px;
+  padding: 8px 10px;
+  color: var(--ccc-orange);
+  background: rgba(var(--ccc-orange-rgb), 0.09);
+  border-left: 3px solid var(--ccc-orange);
+  border-bottom-color: rgba(var(--ccc-orange-rgb), 0.3);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.1em;
+}
 .sidebar-catalog-note {
   padding: 7px 10px;
   color: var(--osf-text-faint);
@@ -1310,8 +1325,9 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
-  min-height: 50px;
-  padding: 7px 10px;
+  min-height: 40px;
+  padding: 5px 10px;
+  box-sizing: border-box;
   border: 1px solid var(--osf-line);
   border-left: 2px solid var(--ccc-orange);
   background: var(--ccc-surface-row);
@@ -1320,6 +1336,15 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
 .favorite-saved-command-copy strong { overflow: hidden; color: var(--osf-text-body); text-overflow: ellipsis; white-space: nowrap; }
 .favorite-saved-command-copy small { color: var(--osf-text-faint); font-family: var(--osf-font-mono); text-transform: uppercase; }
 .favorite-saved-command-actions { display: flex; align-items: center; gap: 5px; }
+.favorite-saved-command-actions .osf-btn,
+.favorite-saved-command-actions .favorite-button {
+  height: 32px;
+  min-height: 32px;
+  box-sizing: border-box;
+  padding: 0 8px;
+}
+.favorite-saved-command-actions .favorite-button { width: 32px; min-width: 32px; padding: 0; }
+.favorite-id-detail > .id-browser-selection { height: 100%; min-height: 0; box-sizing: border-box; }
 
 .browser-selection-banner {
   display: flex;
@@ -2147,6 +2172,26 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
 
 /* Standalone ID Browser */
 .nav-button--ids { border-color: var(--osf-line); }
+.dev-mode-dot { width: 16px; height: 20px; padding: 0; color: var(--osf-text-faint); background: transparent; border: 0; cursor: pointer; }
+.dev-mode-dot.is-active { color: var(--ccc-orange); }
+.statusbar .dev-feedback-export { height: 24px; min-height: 24px; padding: 0 7px; font-size: 9px; }
+.statusbar .dev-feedback-export[hidden] { display: none; }
+.dev-feedback-dialog { width: min(620px, 90vw); max-height: 85vh; overflow: auto; color: var(--osf-text-body); background: var(--ccc-surface-raised); border: 1px solid var(--ccc-line-strong); padding: 20px; }
+.dev-feedback-dialog::backdrop { background: rgba(0, 0, 0, 0.8); }
+.dev-feedback-dialog h3 { margin: 8px 0; overflow-wrap: anywhere; }
+.dev-feedback-dialog fieldset { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0; padding: 10px; border: 1px solid var(--ccc-line); }
+.dev-feedback-comment-label { display: grid; gap: 7px; }
+.dev-feedback-comment-label textarea { width: 100%; height: 150px; box-sizing: border-box; resize: vertical; }
+.dev-feedback-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.dev-feedback-error { color: var(--ccc-danger); }
+.id-browser-reference-tag { color: var(--ccc-orange); font-family: var(--osf-font-mono); font-size: 9px; white-space: nowrap; margin-left: auto; }
+.game-setting-group { margin-bottom: 5px; }
+.game-setting-group > summary { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; color: var(--ccc-orange); background: var(--ccc-surface-raised); border: 1px solid var(--ccc-line); cursor: pointer; font-weight: 700; }
+.game-setting-group > summary::before { content: '▶'; margin-right: 8px; font-size: 10px; }
+.game-setting-group[open] > summary::before { content: '▼'; }
+.game-setting-group > summary .nav-count { margin-left: auto; }
+.game-setting-group .id-browser-row { width: 100%; overflow-wrap: anywhere; text-align: left; }
+.game-settings-reference-note { color: var(--osf-text-muted); font-size: var(--osf-text-xs); line-height: 1.5; }
 
 .id-browser-panel {
   height: 100%;
@@ -2516,3 +2561,13 @@ body.controller-active :is(.command-detail-panel, .id-browser-selection, .quest-
 .mod-quest-stage-controls .osf-input { width: 100%; box-sizing: border-box; height: 36px; }
 .mod-quest-stage-controls .osf-btn { height: 36px; }
 .mod-quest-stage-controls p { grid-column: 1 / -1; margin: 0; color: var(--osf-text-faint); font-size: var(--osf-text-xs); }
+
+.id-browser-unavailable {
+  grid-column: 1 / -1;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--ccc-orange) 55%, var(--osf-line));
+  color: var(--osf-text-body);
+  background: var(--ccc-orange-soft);
+  font-size: 11px;
+  line-height: 1.35;
+}

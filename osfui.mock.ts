@@ -27,6 +27,54 @@ const PAD_KEYS: Record<string, string> = {
   'pad-b': 'Escape',
 };
 
+const SAMPLE_COMMAND_BATCHES: ReadonlyArray<readonly [string, string]> = [
+  ['Sample - Basic Supplies', `# SAMPLE: Basic Supplies
+# Adds a modest set of commonly used supplies.
+# Edit the quantity at the end of any command before running.
+
+# 10,000 credits
+player.additem 0000000F 10000
+
+# 25 digipicks
+player.additem 0000000A 25
+
+# 10 med packs
+player.additem 0000ABF9 10
+
+# 10 ship parts
+player.additem 0003FB19 10
+`],
+  ['Sample - Workshop Materials', `# SAMPLE: Workshop Materials
+# Adds 25 each of five useful base-game crafting resources.
+# Edit the quantities to suit your project before running.
+
+# Aluminum
+player.additem 0000557D 25
+
+# Adhesive
+player.additem 000055B1 25
+
+# Sealant
+player.additem 000055CC 25
+
+# Titanium
+player.additem 0000556D 25
+
+# Tungsten
+player.additem 0000556B 25
+`],
+  ['Sample - Ballistic Starter Kit', `# SAMPLE: Ballistic Starter Kit
+# Adds one base-game Grendel and 500 rounds of 7.77mm Caseless ammunition.
+# This is an example loadout; edit or remove either command before running.
+
+# Grendel
+player.additem 00028A02 1
+
+# 7.77mm Caseless ammunition
+player.additem 0004AD3E 500
+`],
+];
+
 function inventoryFixture(): string {
   return ['CCC_INVENTORY_V1', 'TYPE\tID\tCOUNT\tNAME',
     ...Array.from({ length: 40 }, (_, index) => `WEAP\t${(0x4716c + index).toString(16).padStart(8, '0').toUpperCase()}\t${index + 1}\tBrowser Test Item ${index + 1}`),
@@ -38,6 +86,8 @@ async function previewModCatalogRequest(name: string, payload?: JsonObject): Pro
     ? '/__ccc/mod-catalogs'
     : name === 'console.command-center.modCatalogRecords'
       ? `/__ccc/mod-catalog-records?plugin=${encodeURIComponent(String(payload?.plugin ?? ''))}`
+      : name === 'console.command-center.pluginLoadOrder'
+        ? '/__ccc/plugin-load-order'
       : null;
   if (!route) return null;
   const response = await fetch(route, { cache: 'no-store' });
@@ -52,7 +102,7 @@ export function install(ctx: MockContext): void {
   const listeners = new Map<string, Set<Listener>>();
   let failRequests = false;
   let gamepadRaw = false;
-  const commandBatches = new Map<string, string>();
+  const commandBatches = new Map<string, string>(SAMPLE_COMMAND_BATCHES);
   let commandBatchAutoRunEnabled = false;
   const commandBatchAutoRunNames = new Set<string>();
 
@@ -181,6 +231,21 @@ export function install(ctx: MockContext): void {
                 { label: 'Fixture Med Pack', value: 'FE042802', localFormId: '802', type: 'ALCH', category: 'Aid', editorId: 'CCC_FixtureMedPack', detail: 'Browser preview aid item' },
               ] : [],
             }],
+          };
+          break;
+        }
+        case 'console.command-center.pluginLoadOrder': {
+          const localLoadOrder = await previewModCatalogRequest(name, payload);
+          reply = localLoadOrder ?? {
+            ok: true,
+            plugins: [
+              { plugin: 'Starfield.esm', pluginKind: 'full', index: 0 },
+              { plugin: 'ShatteredSpace.esm', pluginKind: 'full', index: 1 },
+              { plugin: 'SFBGS00D.esm', pluginKind: 'full', index: 2 },
+              { plugin: 'SFBGS050.esm', pluginKind: 'full', index: 3 },
+              { plugin: 'SFBGS004.esm', pluginKind: 'small', index: 0 },
+              { plugin: 'SFBGS047.esm', pluginKind: 'small', index: 1 },
+            ],
           };
           break;
         }

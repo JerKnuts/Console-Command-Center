@@ -88,6 +88,13 @@ namespace CCC::ModCatalogs
             name == "oldmars.esm" || name == "constellation.esm" || name == "shatteredspace.esm";
     }
 
+    inline bool IsPackagedCatalogPlugin(std::string name)
+    {
+        const auto lower = LowerASCII(std::move(name));
+        return IsBuiltInPlugin(lower) || lower == "sfbgs004.esm" ||
+            lower == "sfbgs047.esm" || lower == "sfbgs050.esm" || lower == "sfbgs00d.esm";
+    }
+
     inline bool IsOfficialCreationPlugin(std::string name)
     {
         name = LowerASCII(std::move(name));
@@ -146,7 +153,7 @@ namespace CCC::ModCatalogs
 
     inline void AddPlugin(std::vector<CatalogBuilder>& catalogs, OwnerIndexes& owners, RE::TESFile* file, PluginKind kind)
     {
-        if (!file || file->fileName[0] == '\0' || IsBuiltInPlugin(file->fileName)) return;
+        if (!file || file->fileName[0] == '\0' || IsPackagedCatalogPlugin(file->fileName)) return;
         const auto index = catalogs.size();
         std::uint32_t pluginIndex = file->fileIndex.fullIndex;
         if (kind == PluginKind::medium) pluginIndex = file->fileIndex.mediumIndex;
@@ -440,10 +447,36 @@ namespace CCC::ModCatalogs
         if (!handler) return std::nullopt;
         const auto wanted = LowerASCII(std::string(pluginName));
         for (auto* file : handler->files) {
-            if (!file || file->fileName[0] == '\0' || IsBuiltInPlugin(file->fileName)) continue;
+            if (!file || file->fileName[0] == '\0' || IsPackagedCatalogPlugin(file->fileName)) continue;
             if (LowerASCII(file->fileName) == wanted) return RuntimePluginMetadata(*file);
         }
         return std::nullopt;
+    }
+
+    inline OSFUI::API::Json PluginLoadOrder()
+    {
+        OSFUI::API::Json response{ { "ok", true }, { "plugins", OSFUI::API::Json::array() } };
+        std::unordered_set<std::string> seen;
+        const auto append = [&](const PluginMetadata& plugin) {
+            if (!seen.insert(LowerASCII(plugin.name)).second) return;
+            response["plugins"].push_back(OSFUI::API::Json{
+                { "plugin", plugin.name }, { "pluginKind", KindName(plugin.kind) }, { "index", plugin.index }
+            });
+        };
+        if (auto* handler = RE::TESDataHandler::GetSingleton()) {
+            for (auto* file : handler->files) {
+                if (!file || file->fileName[0] == '\0') continue;
+                const auto plugin = RuntimePluginMetadata(*file);
+                if (plugin.kind == PluginKind::full && plugin.index >= 0xFD) continue;
+                if (plugin.kind == PluginKind::medium && plugin.index > 0xFF) continue;
+                if (plugin.kind == PluginKind::small && plugin.index > 0xFFF) continue;
+                append(plugin);
+            }
+        }
+        if (seen.empty()) {
+            for (const auto& plugin : CurrentPluginSet(true).plugins) append(plugin);
+        }
+        return response;
     }
 
     inline OSFUI::API::Json RestoreCachedLoadedMods()
@@ -458,7 +491,7 @@ namespace CCC::ModCatalogs
         std::size_t totalRecords = 0;
         std::unordered_set<std::string> restoredPlugins;
         const auto appendCachedPlugin = [&](const PluginMetadata& plugin, std::string_view source) {
-            if (IsBuiltInPlugin(plugin.name) || !restoredPlugins.insert(LowerASCII(plugin.name)).second) return;
+            if (IsPackagedCatalogPlugin(plugin.name) || !restoredPlugins.insert(LowerASCII(plugin.name)).second) return;
             auto records = ReadCachedRecords(plugin);
             if (!records) return;
             const auto count = records->size();
@@ -476,7 +509,7 @@ namespace CCC::ModCatalogs
             for (auto* file : handler->files) {
                 if (!file || file->fileName[0] == '\0') continue;
                 ++loadedFilesSeen;
-                if (IsBuiltInPlugin(file->fileName)) continue;
+                if (IsPackagedCatalogPlugin(file->fileName)) continue;
                 appendCachedPlugin(RuntimePluginMetadata(*file), "runtime-cache");
             }
         }
@@ -514,7 +547,7 @@ namespace CCC::ModCatalogs
         response["summaryOnly"] = true;
         std::size_t catalogCount = 0;
         for (const auto& plugin : pluginSet.plugins) {
-            if (IsBuiltInPlugin(plugin.name)) continue;
+            if (IsPackagedCatalogPlugin(plugin.name)) continue;
             ++catalogCount;
             response["catalogs"].push_back(OSFUI::API::Json{
                 { "file", plugin.path.filename().string() }, { "loaded", true },
@@ -546,7 +579,7 @@ namespace CCC::ModCatalogs
         const auto target = std::find_if(pluginSet.plugins.begin(), pluginSet.plugins.end(), [&wanted](const auto& plugin) {
             return LowerASCII(plugin.name) == wanted;
         });
-        if (target == pluginSet.plugins.end() || IsBuiltInPlugin(target->name)) {
+        if (target == pluginSet.plugins.end() || IsPackagedCatalogPlugin(target->name)) {
             response["error"] = "The selected mod is no longer active in the current load order.";
             return response;
         }

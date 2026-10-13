@@ -6,6 +6,8 @@ const projectRoot = resolve(import.meta.dirname, '..');
 const datasetPath = resolve(projectRoot, 'src/views/console.command-center/main/quest-browser.ts');
 const baseEsmPath = process.argv[2] || process.env.STARFIELD_ESM;
 const shatteredSpaceEsmPath = process.argv[3] || process.env.SHATTERED_SPACE_ESM;
+const freeLanesEsmPath = process.argv[4] || process.env.FREE_LANES_ESM;
+const terranArmadaEsmPath = process.argv[5] || process.env.TERRAN_ARMADA_ESM;
 if (!baseEsmPath) throw new Error('Pass the path to Starfield.esm or set STARFIELD_ESM.');
 
 const source = await readFile(datasetPath, 'utf8');
@@ -114,6 +116,13 @@ results.push(await validateMaster('Base Game', baseEsmPath, expectedBySource.get
 if (expectedBySource.has('Shattered Space')) {
   if (!shatteredSpaceEsmPath) throw new Error('Pass ShatteredSpace.esm as the second path or set SHATTERED_SPACE_ESM.');
   results.push(await validateMaster('Shattered Space', shatteredSpaceEsmPath, expectedBySource.get('Shattered Space')));
+}
+
+for (const [label, path] of [['Free Lanes', freeLanesEsmPath], ['Terran Armada', terranArmadaEsmPath]]) {
+  if (expectedBySource.has(label)) {
+    if (!path) throw new Error('Pass a master path for ' + label + '.');
+    results.push(await validateMaster(label, path, expectedBySource.get(label)));
+  }
 }
 
 const valid = results.every((result) => result.missingQuests.length === 0 && result.missingStages.length === 0);

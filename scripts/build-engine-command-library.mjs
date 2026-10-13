@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const inputPath = resolve(process.argv[2] || 'StarfieldSFSECompleteConsoleCommands.md');
+const inputPath = resolve(process.argv[2] || 'docs/ENGINE_COMMAND_REFERENCE.md');
 const outputPath = resolve(process.argv[3] || 'src/views/console.command-center/main/engine-command-library.ts');
 const source = await readFile(inputPath, 'utf8');
 

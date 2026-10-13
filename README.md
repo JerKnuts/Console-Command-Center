@@ -1,183 +1,88 @@
 # Console Command Center
 
-Console Command Center is an in-game console-command interface for **Starfield**. It provides a searchable menu for useful console commands without requiring the player to type them manually every time. It supports mouse and keyboard or a game controller.
+Console Command Center turns Starfield console commands into a searchable in-game menu for mouse, keyboard, and controller. It provides command inputs, safety warnings, ID selection, quest tools, mod scanning, editable command batches, and read-only Results popups.
 
-The mod uses an OSF UI frontend and a native SFSE/CommonLibSF plugin to execute commands inside Starfield.
+**Current release: v1.2.35.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
 
-## Project status
-
-**Current release: v1.2.18.** This release includes editable and automatic command batches, mod quest-stage scanning and controls, editor scrolling fixes, and a new ActorExposedToSky result-capture path. Recent native/UI changes still require the in-game checks listed in the validation checklist. See the [changelog](CHANGELOG.md) and [validation checklist](RELEASE_VALIDATION.md).
-
-The core command execution system is working in-game. The command catalog is being tested command-by-command. Controller support covers directional navigation, activation, Back, scrolling, dialogs, and an onscreen keyboard for editable fields.
-
-Future additions are tracked in [Future features](docs/FUTURE_FEATURES.md). Manual loaded-mod ID scanning is documented in [Mod ID catalogs](docs/MOD_ID_CATALOGS.md).
-
-Commands that rely on known curated IDs use a reusable searchable Reference ID Picker instead of crowded preset-button grids. A separate **ID Browser** searches the catalog packaged with CCC.
-
-Some commands can affect achievements, progression, quests, save-game state, NPCs, ships, or world objects. Make a manual save before using commands that modify important game state.
-
-## Requirements and compatibility
+## Requirements
 
 - Starfield runtime **1.16.244**
-- [Starfield Script Extender (SFSE)](https://sfse.silverlock.org/)
+- [Starfield Script Extender (SFSE)](https://sfse.silverlock.org/), matching that runtime
 - Address Library for SFSE Plugins
-- OSF Settings **1.0.0 or newer**
 - OSF UI **2.0.0 or newer**
+- OSF Settings **1.0.0 or newer**
 - Microsoft Edge WebView2 Runtime
 
-The native plugin enables its gameplay handlers only on the tested Starfield runtime. A different game version will leave CCC unavailable rather than attempting incompatible native calls. Shattered Space is optional; records from the expansion are clearly labeled and require the expansion when used.
+Optional official content is identified by its loaded plugin. Shattered Space and Terran Armada require their respective DLC; Free Lanes records require its update module. Packaged optional records can remain searchable when their plugin is absent, with runtime-ID copying, picker use, and gameplay actions disabled.
 
-In OSF Settings, bind **Open Mod Settings** to a key such as F10. Use that key in game, open **Launcher**, and select **Console Command Center**. The opening key may be unbound after installing or updating OSF Settings.
+## Install and open
 
-## Installation
+Install the Nexus-ready ZIP with a mod manager, or copy its `SFSE` folder into Starfield's `Data` folder. Launch through SFSE. Open **MOD SETTINGS** in the pause menu, or bind **Open Mod Settings** to a key such as F10 in OSF Settings, then select **Console Command Center** from the launcher.
 
-Install the release archive with a Starfield mod manager, or copy its `SFSE` folder into the game's `Data` folder. Keep the archive's folder structure intact. Launch the game through SFSE and confirm the CCC footer reports the installed version and **NATIVE READY**.
+For updates, install the complete archive, including `SFSE/Plugins/ConsoleCommandCenter.dll`, and restart the game. Updating only the web page can leave new native features unavailable. Keep OSF browser data and the user CCC folder to preserve favorites, history, reports, and batch files.
 
-To update from v1.0.12 or earlier, remove the old `Data/SFSE/Plugins/OSFUI/views/console.command-center/` folder and install the new archive. CCC v1.0.13 and newer place the view under `Data/SFSE/Plugins/OSF/UI/views/console.command-center/`. To uninstall, remove that view folder and `Data/SFSE/Plugins/ConsoleCommandCenter.dll`.
+CCC v1.0.13 and later use `SFSE/Plugins/OSF/UI/views/console.command-center/`. When upgrading from an older layout, remove the obsolete `SFSE/Plugins/OSFUI/views/console.command-center/` folder. Uninstall by removing the current view folder and DLL.
+
+Make a manual save before changing quests or important game state. Each page has contextual **Help**, and the first-time overview remains available there.
 
 ## Features
 
-- Native Starfield console-command execution
-- Native read-only results for supported inventory, reference, actor-value, Game Setting, and ship inspections
-- Searchable command library
-- Category browsing
-- Recent commands and favorites stay fixed at the top of the sidebar while the category list scrolls independently
-- Editable `.txt` Custom Command batches stored in `Documents\My Games\Starfield\Console Command Center\Command Batches`, with one command per nonempty line, `#` comments, manual refresh, favorites, optional **On Load** execution, persistent in-session drafts, **Add to Batch** command-card actions, and migration from the previous browser storage
-- Separate **WIP** category with 39 prepared cards and a lazily loaded library of 1,493 engine commands and script functions, organized by command type and test result
-- Activity log
-- Contextual Help for Recent, Favorites, command categories, ID Browser, Mod Browser, Quest Browser, Custom Command, and Activity Log
-- Separate first-time welcome overview that remains available from each Help window
-- Parameter inputs for Form IDs, amounts, values, Ref IDs, axes, and other arguments
-- Searchable Reference ID Picker for supported faction, companion, weather, and popular location commands
-- Standalone **ID Browser** with 16,528 included IDs, sidebar categories, compact selectable results, persistent ID favorites, Copy ID, and conservative quick actions
-- Separate **Mod Browser** with manual session scanning, an Official Creations group, global ID search, readable names for known plugin files, and persistent ID favorites
-- Working **Search Form IDs** command cards that open the packaged ID Browser directly; typed `QUST` searches open Quest Browser
-- **Browse Items**, **Browse Equipment**, **Browse Base IDs**, **Browse Mods**, and **Browse Ships** controls that return packaged IDs directly to command fields without executing them
-- Filtered **ID Browser** controls for packaged perks, skills, traits, Starborn powers, and known removable environmental effects
-- Confirmation before execution
-- Caution and Danger warnings
-- Complete controller navigation with A to select, B to go back, right-stick scrolling, and an onscreen keyboard
-- Compact Starfield-inspired OSF UI
-- Searchable **Quest Browser** with quest actions and recorded stage indexes
-- **Choose Quest** controls on every Quest ID field and a recorded-stage chooser for Set Quest Stage
-- Guided quest-stage skip choices with unavailable diagnostics clearly disabled
-- Curated ID choices use the same compact field + **CHOOSE ...** box used by the companion-affinity commands; manual ID entry remains available
+- **149 established command cards** and **1,532 WIP entries** (39 prepared cards and 1,493 engine commands/script functions).
+- Search, command and ID favorites, Recent commands, saved batch favorites, and Activity Log. Favorite IDs use compact selectable rows with their details and supported actions on the right.
+- **ID Browser: 23,319 packaged records**, including reviewed ships, vehicle forms, workshop objects, and supported Free Lanes/Terran Armada record types. Duplicate names can identify different underlying records.
+- **Settings catalog: 8,705 game-setting references**, including 2,312 supplied Form IDs. Inspect Current Value uses a setting name; workbook values are labeled reference values, and editing is disabled.
+- **Quest Browser: 2,568 quests and 19,061 recorded stage indexes** from Base Game, Shattered Space, Free Lanes, and Terran Armada. Packaged quests are kept out of ID Browser.
+- **Mod Browser:** manually scan loaded mods and Official Creations, browse categories, search one plugin or every scanned plugin, and inspect scanned quest stages.
+- Editable user-owned `.txt` command batches, persistent in-session drafts, synchronized line numbers, Clear, Refresh, and Add to Batch.
+- Optional **On Load Auto-Run**, controlled by a master switch and per-file selections. Fresh empty folders receive three sample batches without Auto-Run enabled.
+- Controller navigation, scrolling, dialogs, and alphabetic/numeric/hexadecimal/symbol text entry.
+- Persistent **Advanced Options** and **Light/Dark Mode**, plus **Dev Mode** test reports and a combined text export.
 
+## Interface Settings
 
-## ID Browser and Reference ID Picker
+Open **Settings** beside Help. Dark Mode and Advanced Options off are the defaults. Advanced Options reveals WIP commands, the ID Browser Settings catalog, Cells, Ship Parts / Other Forms, reference-only items, and Internal / System quests. Basic-mode searches and ID Favorites hide these records without deleting saved favorites. Locations remain separate from Cells.
 
-The standalone **ID Browser** is a dedicated utility screen for finding Form/Reference IDs without leaving CCC. It searches **16,528 included IDs** instantly by name, Form ID, type, category, and Editor ID. The catalog covers weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Location and cell selections can copy either the Form ID or Editor ID. Weather records can be applied immediately, Cell records can teleport through their Editor ID, and Location records can narrow the browser to matching teleportable Cells. Shattered Space records display an expansion requirement and use cleaned Editor IDs where a verified localized display name is unavailable. Long descriptive labels, internal factions, creature attacks, test weapons, and known subtitle collisions are excluded. The selected sidebar category loads as one scrollable compact list. Every selected result offers **Copy ID** plus a conservative quick action when the record type is unambiguous.
+Categories are alphabetical, with WIP last in Commands and Settings last in ID Browser. Quest sections are ordered Base Game, Shattered Space, Free Lanes, and Terran Armada. Reference-only records sort below normal records, alphabetically within each group, and do not offer gameplay quick actions.
 
-Records created by loaded mods live in the separate **Mod Browser**. Select **Scan Mods** once per game session to discover active plugins and collect their supported IDs. Opening CCC, ID Browser, or Mod Browser never starts a scan. Bethesda `SFBGS...` plugins appear under **Official Creations**; other plugins appear under **Mods**. With no mod selected, Search All searches IDs across every scanned plugin. CCC identifies each record's owning full, medium, or small plugin from its runtime Form ID and ignores overrides owned by the base game. Known plugin filenames are translated through a bundled community name map; unknown plugins retain a clean filename-derived name. See [Mod ID catalogs](docs/MOD_ID_CATALOGS.md) and [Mod display names](docs/MOD_DISPLAY_NAMES.md) for details.
+Dark Mode uses blue-black backgrounds, slate rows, gray selection, pale text, and muted blue detail headers. Light Mode uses pale gray surfaces, teal rules, charcoal selection, and yellow accents. Both keep distinct warning and danger indicators.
 
-Every record in ID Browser and Mod Browser can be starred. ID favorites persist between sessions and appear alongside command and saved-batch favorites. **Open** returns directly to the correct browser and record.
+## Browsers and quest tools
 
-Expansion-only packaged records carry a visible requirement such as **Shattered Space DLC**.
+ID Browser has conservative quick actions for supported record types. Ship and vehicle spawning is experimental: placement, boarding, ownership, and normal registration are not guaranteed. Reviewed ships cover 104 names and 152 unique Base IDs; components and vehicle module forms remain reference-only. See [ID catalog sources](docs/ID_CATALOG_SOURCES.md).
 
-The reusable Reference ID Picker remains the compact command-specific chooser. **Pay Bounty** opens bounty-relevant factions, companion affinity commands open Sarah Morgan, Barrett, Sam Coe, and Andreja, and weather commands open common weather records. Selecting an entry fills the normal command input; users can still type any valid hexadecimal ID manually. Inline preset-button grids are intentionally avoided.
+Opening a browser never starts a mod scan. Select **Scan Mods** once per session to collect supported records and recorded QUST stage indexes. Other Bethesda creations stay under **Official Creations** in Mod Browser; official modules already packaged with CCC are omitted from the primary scan to avoid duplication. See [Mod ID catalogs](docs/MOD_ID_CATALOGS.md) and [Mod display names](docs/MOD_DISPLAY_NAMES.md).
 
-## Quest Browser
+Packaged and scanned quests provide live inspection and confirmed Start, Stop, Complete, Reset, and Set Stage actions. Stage indexes describe the plugin's structure, not a guarantee that skipping a stage is safe. Some QUST records are internal systems rather than journal missions. Mod scan stage lists can differ from later plugin overrides.
 
-Commands, ID Browser, Mod Browser, Quest Browser, Custom Command, and Activity Log live in a dedicated navigation bar directly below the CCC header. Recent and Favorites remain fixed in the left sidebar while each browser supplies its own category list.
+## Command batches
 
-Quest Browser includes recorded quest-stage selections for inspecting or advancing quest state. Every packaged Quest ID and stage number is structurally validated against its installed master file. Console Command Center uses those mappings to execute vanilla commands such as:
+Files live in `Documents\My Games\Starfield\Console Command Center\Command Batches`. Write one command per line; blank lines and lines beginning with `#` are ignored. Load fills the editor; Review Commands opens confirmation. Existing browser-stored batches migrate without overwriting different contents. Updates do not replace user files.
 
-```text
-setstage <QuestFormID> <Stage>
-```
+There is no 100-command limit. Native validation still limits file size to 1 MB and command length to 1,024 characters; the saved-file list includes up to 100 files. On Load Auto-Run waits three seconds after existing-save loads, reads selected files fresh, and executes them alphabetically. Repeated toggles and additive commands run again on each load. See [Command batches](docs/COMMAND_BATCHES.md).
 
-Quest changes are intentionally marked **Danger** because starting, completing, or forcing a stage can skip dialogue, scripts, rewards, scenes, prerequisites, or other quest state. Use these actions on a backup or disposable save. Some quests do not appear in the mission log until a stage is activated. Reset clears recorded stages and removes the quest from the log without restarting it.
+## Dev Mode feedback
 
-Every Quest Browser entry is a real `QUST` record from a Bethesda master file. Some are player-facing missions; others run dialogue, scenes, patches, holders, and game systems without appearing as normal missions. CCC keeps every record, but moves entries with no localized title or strong support-record names into **Internal / System** to reduce clutter in the player-facing categories.
+Click the bottom-left dot five times to toggle Dev Mode. Test Report buttons appear in selected ID, quest, setting, and command details. Save a result and/or comment, then use **Export Reports** to write `Documents\My Games\Starfield\Console Command Center\CCC-Dev-Feedback.txt`. Browser preview exports download that filename instead.
 
-Quest Browser contains 2,318 base-game and Shattered Space quest records with 16,844 recorded stage indexes. It supports searching by quest name, Editor ID, Form ID, source, and stage, plus confirmed Start, Stop, Complete, Reset, and Set Stage actions. Shattered Space entries are labeled in the interface. **Inspect Quest State** reads the current stage and completed-stage history through Starfield's quest scripting interface, then marks that progress directly on the stage list.
+Item reports offer **Reference Only**; command reports offer **Executed (no effect)** alongside the ordinary result choices. These are reports for review, not automatic changes to game actions. Reports persist after exporting and after Dev Mode is disabled. See [Dev Mode](docs/DEV_MODE.md).
 
-The dataset is generated from the installed Bethesda master records and matching English localization tables. Stage indexes confirm that a stage exists structurally; they do not prove that forcing it is safe for a particular save. Each quest provides state inspection, stage history, confirmed Start, Stop, Complete, Reset, Set Stage, and Copy ID actions where applicable.
+## Build from source
 
-## Custom Command batches
+Install Node.js/npm, Git, XMake, and the SFSE/CommonLibSF C++ build prerequisites. The native build restores the CommonLibSF revision pinned in `native/setup-deps.mjs`, including submodules. XMake restores nlohmann_json and static zlib 1.3.2.
 
-Save batches as individual user-owned text files. **Load** fills the editor without executing; **Review Commands** opens confirmation. **Add to Batch** appends the prepared command from a card, and the draft remains when switching tabs. The editor has synchronized line numbers and a Clear action; its size is fixed to the available workspace.
-
-Select **On Load** on saved batches and enable the **Auto-Run** master switch to run them after existing-save loads without opening CCC. Auto-Run is off by default and stores its selections outside the mod installation. See [Command batches](docs/COMMAND_BATCHES.md) for file format, limits, migration, execution order, and repeated-toggle considerations.
-
-## Mod quest controls
-
-**Scan Mods** includes recorded QUST stage indexes, including compressed records. Select a mod quest for live state/history inspection, Start, Stop, Complete, Reset, recorded Set Stage buttons, or manual stage entry. Changes use the current runtime quest ID and require confirmation. Rescan after upgrading to populate stage lists. Stage indexes come from the scanned plugin file and may differ from later overrides; they are not journal objectives or a guarantee that skipping them is safe.
-
-## Command catalog
-
-The established command library remains curated, while commands still under investigation live in a separate **WIP** category. CCC contains **149 established command cards** plus **1,532 WIP entries**: 39 prepared cards and 1,493 raw engine entries (546 console commands and 947 script functions). A card can contain paired actions when one command enables an override and another restores normal behavior. Untested prepared cards appear in Engine Console Commands or Script Functions. Tested commands with uncertain effects or problems appear in Executed — Effect Unconfirmed, Executed — Issues, or Blocked — Known Crash. There is no Ready to Test group. Search spans every category in the active browser; WIP searches include the complete raw engine library. Commands with an inconclusive result remain available for advanced users; known crash paths, confirmed unusable actions, and credential-handling commands remain unavailable. Hover or focus the large disabled Unavailable action to see the underlying console command. Verification status is documented in [`COMMAND_CATALOG.md`](COMMAND_CATALOG.md).
-
-## Architecture
-
-```text
-Console Command Center UI
-        ↓
-OSF UI 2.0 native API
-        ↓
-ConsoleCommandCenter.dll
-        ↓
-Starfield native console executor
-        ↓
-Console command
-```
-
-The native plugin exposes direct game reads for inventory, supported reference inspection, player/companion/ship actor values, current spaceship, Game Settings, and quest state. Unsupported inspections are visibly unavailable instead of executing a known-broken adapter. Results open in a dedicated window and can be reopened from Activity Log.
-
-## Source setup
-
-Requirements include Node.js/npm, Git, XMake, and the SFSE/CommonLibSF build prerequisites. The repository includes the official OSF UI 2.0 native and browser declarations used by CCC.
-
-Install the JavaScript dependencies:
-
-```powershell
+~~~powershell
 npm install
-```
-
-Then build:
-
-```powershell
+npm test
+npm run check
 npm run build
-```
+~~~
 
-`native/lib/commonlibsf/` is intentionally not stored in this repository. The native build automatically restores the pinned CommonLibSF revision when that folder is missing, including its recursive submodules. You can also restore it explicitly with:
+`npm run setup:deps` restores the pinned native dependency explicitly. `npm run dev:game` starts the OSF preview and deploys to its configured local mod directory. `npm run package` checks, tests, builds, and creates the Nexus-ready and full-source ZIPs under `artifacts/`. `npm run clean` removes disposable build caches while preserving compiled output, artifacts, dependencies, and local preview settings.
 
-```powershell
-npm run setup:deps
-```
+Generated catalogs are committed so normal builds do not need the game data or spreadsheet. Catalog extraction inputs, dependencies, binaries, local caches, and prior ZIPs are excluded from the published source. Supporting scripts regenerate catalogs from separately supplied source inputs.
 
-The CommonLibSF revision is pinned in `native/setup-deps.mjs`. Xmake resolves nlohmann_json and the pinned static zlib 1.3.2 package. A fresh setup may prompt to download those build dependencies; `xmake f -y` accepts the dependency configuration before building.
+## License
 
-## License and corresponding source
+CCC is **GPL-3.0-or-later with the CommonLibSF Modding Exception and GPL-3.0 Linking Exception (with Corresponding Source)**. See [LICENSE](LICENSE), [EXCEPTIONS](EXCEPTIONS), and [third-party notices](THIRD_PARTY_NOTICES.md) for dependency pins, licenses, and source restoration.
 
-Console Command Center is licensed under **GPL-3.0-or-later with the CommonLibSF Modding Exception and GPL-3.0 Linking Exception (with Corresponding Source)**. See [`LICENSE`](LICENSE) and [`EXCEPTIONS`](EXCEPTIONS).
-
-The native DLL links against CommonLibSF and statically links zlib 1.3.2 for compressed quest records. The exact corresponding CommonLibSF revision and restoration instructions are recorded in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and `native/setup-deps.mjs`. Binary releases must be accompanied by this project's source and access to that pinned dependency source.
-
-## Generated folders
-
-The following are local/generated and should not be committed or included in source archives:
-
-- `node_modules/`
-- `build/`
-- `dist/`
-- `mod/`
-- `artifacts/`
-- `.xmake/`
-- `.osfui/`
-
-The local `native/lib/commonlibsf/` checkout is also ignored because it can be recreated automatically.
-
-## Development notes
-
-- `npm run build` builds both the native plugin and OSF UI frontend.
-- `npm run dev:game` opens the game-sized browser harness with simulated CCC responses, keeps the modern OSF UI view under `mod/` updated, and mirrors the compiled mod into the configured MO2 mods directory as frontend files change. It temporarily enables OSF UI author mode so a running game can reload frontend edits; locked native files are left alone until Starfield closes. The first run asks for the MO2 mods directory and saves it in `.osfui/local.json`; use `--deploy "C:\\path\\to\\mods"` to override it.
-- In the development webview, **Scan Mods** reads the active MO2 profile and parses supported records from its real plugin files. Set `profilePath` and `gameDataRoot` in `.osfui/local.json` when automatic profile or game-folder detection chooses the wrong location.
-- `npm run build:native` builds only the native plugin after ensuring CommonLibSF is available.
-- `npm run setup:deps` restores CommonLibSF without starting a build.
-- `npm run check` runs the OSF UI 2.0 and TypeScript checks.
-- `xmake build QuestStagesTests` / `xmake run QuestStagesTests` check the stage parser. `xmake build ScalarResultTests` / `xmake run ScalarResultTests` check exact boolean return capture. These checks do not replace in-game validation.
-- `npm run clean` removes build scratch files while preserving release artifacts, current compiled output, local preview configuration, and dependencies.
-- `npm run package` validates, tests, builds, and creates both the Nexus-ready archive and corresponding full-source archive under `artifacts/`.
-
-User-visible release history is recorded in [`CHANGELOG.md`](CHANGELOG.md). Current supporting references live under [`docs/`](docs/).
+Current test findings are maintained in [Command catalog](COMMAND_CATALOG.md) and [Console test findings](docs/CONSOLE_TEST_FINDINGS.md). Candidate future improvements are in [Future features](docs/FUTURE_FEATURES.md).

@@ -157,6 +157,94 @@ namespace CCC::CommandBatches
         return directory / (FromUtf8(Trim(name)).wstring() + L".txt");
     }
 
+    inline void InstallSampleBatches(const fs::path& directory, std::vector<std::string>& warnings)
+    {
+        const auto marker = directory / L".ccc-samples-v1";
+        std::error_code error;
+        if (fs::exists(marker, error) && !error) return;
+        error.clear();
+
+        bool hasBatchFiles = false;
+        for (fs::directory_iterator iterator(directory, fs::directory_options::skip_permission_denied, error), end;
+             iterator != end; iterator.increment(error)) {
+            if (error) { error.clear(); continue; }
+            if (iterator->is_regular_file(error) && !error && LowerAscii(ToUtf8(iterator->path().extension())) == ".txt") {
+                hasBatchFiles = true;
+                break;
+            }
+            error.clear();
+        }
+
+        bool installFailed = false;
+        const auto install = [&](std::string_view name, std::string_view content) {
+            const auto target = PathForName(directory, name);
+            error.clear();
+            if (fs::exists(target, error) && !error) return;
+            try { WriteFile(target, content); }
+            catch (const std::exception& exception) {
+                installFailed = true;
+                warnings.push_back("Could not create " + std::string{ name } + ".txt: " + exception.what());
+            }
+        };
+
+        if (!hasBatchFiles) {
+            install("Sample - Basic Supplies", R"(# SAMPLE: Basic Supplies
+# Adds a modest set of commonly used supplies.
+# Edit the quantity at the end of any command before running.
+
+# 10,000 credits
+player.additem 0000000F 10000
+
+# 25 digipicks
+player.additem 0000000A 25
+
+# 10 med packs
+player.additem 0000ABF9 10
+
+# 10 ship parts
+player.additem 0003FB19 10
+)");
+
+            install("Sample - Workshop Materials", R"(# SAMPLE: Workshop Materials
+# Adds 25 each of five useful base-game crafting resources.
+# Edit the quantities to suit your project before running.
+
+# Aluminum
+player.additem 0000557D 25
+
+# Adhesive
+player.additem 000055B1 25
+
+# Sealant
+player.additem 000055CC 25
+
+# Titanium
+player.additem 0000556D 25
+
+# Tungsten
+player.additem 0000556B 25
+)");
+
+            install("Sample - Ballistic Starter Kit", R"(# SAMPLE: Ballistic Starter Kit
+# Adds one base-game Grendel and 500 rounds of 7.77mm Caseless ammunition.
+# This is an example loadout; edit or remove either command before running.
+
+# Grendel
+player.additem 00028A02 1
+
+# 7.77mm Caseless ammunition
+player.additem 0004AD3E 500
+)");
+        }
+
+        if (!installFailed) {
+            try { WriteFile(marker, "CCC sample batches were considered for installation.\n"); }
+            catch (const std::exception& exception) {
+                warnings.push_back(std::string{ "Could not record sample-batch setup: " } + exception.what());
+            }
+        }
+    }
+
     inline OSFUI::API::Json Entry(const fs::path& path)
     {
         const auto name = ToUtf8(path.stem());
@@ -226,6 +314,8 @@ namespace CCC::CommandBatches
                 }
             }
         }
+
+        InstallSampleBatches(directory, warnings);
 
         std::vector<fs::path> files;
         for (fs::directory_iterator iterator(directory, fs::directory_options::skip_permission_denied, error), end; iterator != end; iterator.increment(error)) {

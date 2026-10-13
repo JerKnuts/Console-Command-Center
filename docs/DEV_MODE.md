@@ -1,0 +1,11 @@
+# Dev Mode test reports
+
+Click the small dot at the bottom left five times to toggle Dev Mode. It starts off each time CCC loads. The dot highlights when active. Five more clicks turn it off without deleting reports.
+
+Test Report buttons appear in selected ID, quest, setting, and command details, including entries with disabled gameplay actions. Reporting never runs a console command or enables a blocked action. Choose Working, Not working, or Not noticeable, and/or add a comment. Item reports also offer Reference Only (nothing appeared in inventory; requests disabling Add to Player and labeling/sorting the record as reference-only). Command reports offer Executed (no effect). These classifications are included in the exported file for review. Click the selected result again to clear it for a comment-only report. Save Report stores a new report in browser storage; repeated tests remain separate reports. Cancel or Escape discards only the unsaved popup. Controller navigation uses the existing dialog focus and text-entry support.
+
+Reports include the CCC version, time, record kind/name, runtime ID or command ID, local ID when provided, plugin/source, category, displayed command when applicable, selected result, and comment. Comment-only reports are allowed. When testing command inputs, mention the values used in the comment if they are not shown in the command text.
+
+Export Reports saves the complete collection as UTF-8 text in Documents\My Games\Starfield\Console Command Center\CCC-Dev-Feedback.txt. It replaces the previous export with the current complete report collection. The controlled native endpoint accepts text only and cannot write to arbitrary paths or the installed mod files. Exports are limited to 4 MB; failures keep stored reports and show an error. Reports are kept after a successful export so the next export includes them.
+
+In the browser preview, export downloads CCC-Dev-Feedback.txt instead. Browser reports remain in that preview's local storage; game reports remain in the game's WebView storage. Send the exported file for review. The user has supplied an in-game export, confirming reporting and file export. Controller navigation and popup behavior remain part of the release checklist.

@@ -62,3 +62,7 @@ Copyright (C) 1995-2026 Jean-loup Gailly and Mark Adler
   Comments) 1950 to 1952 at https://datatracker.ietf.org/doc/html/rfc1950
   (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 ```
+
+## Game Settings reference data
+
+The Settings catalog was imported from the supplied Starfield Game Settings Database 1.1 workbook, published at [Starfield Game Settings Database](https://www.nexusmods.com/starfield/mods/18443). The workbook itself is not included. Values describe reference engine/master data, not the active modded game state. The engine-command reference has also been reconciled with user-supplied in-game Help output.

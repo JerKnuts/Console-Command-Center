@@ -1,17 +1,17 @@
-# v1.2.18 release validation
+# v1.2.35 release validation
 
 This is the maintained release checklist. It covers behavior most likely to break and avoids repeating implementation-level unit tests.
 
 ## Current verification status
 
-Automated checks and native/UI builds pass. The user confirmed Auto-Run triggering, Workshop inside ships, and Workshop FlyCam inside and outside Workshop mode. The user confirmed the latest Custom Command layout looks correct. ActorExposedToSky works in the ordinary console, but its new v1.2.18 popup adapter still needs an indoor/outdoor comparison. Mod quest controls and stage progress should be checked in game before treating them as release-verified.
+143 automated checks and native/UI builds pass. Native export tests cover UTF-8 content and atomic replacement. Browser checks exercised both themes and Advanced Options transitions; reporting/export has been exercised in game. The user confirmed Auto-Run triggering, Workshop inside ships, and Workshop FlyCam inside and outside Workshop mode. The user confirmed the latest Custom Command layout looks correct. ActorExposedToSky works in the ordinary console, but its new v1.2.18 popup adapter still needs an indoor/outdoor comparison. Mod quest controls and stage progress should be checked in game before treating them as release-verified.
 
 ## Build and install
 
 1. Run `npm test`, `npm run check`, and `npm run build` successfully.
 2. Install the generated archive over the previous release without clearing OSF UI browser data.
 3. Confirm the view is under `SFSE/Plugins/OSF/UI/views/console.command-center/main` and the native DLL is under `SFSE/Plugins/`.
-4. Launch through SFSE and confirm the footer and native connection both report **v1.2.18**, **OSF UI 2.0 API**, and **NATIVE READY**.
+4. Launch through SFSE and confirm the footer and native connection both report **v1.2.35**, **OSF UI 2.0 API**, and **NATIVE READY**.
 5. Confirm existing command favorites, ID favorites, Recent entries, Activity Log entries, and saved Custom Command batches remain available.
 
 ## Navigation and layout
@@ -22,7 +22,7 @@ Automated checks and native/UI builds pass. The user confirmed Auto-Run triggeri
 4. Open and close Help, Results, confirmation, Reference ID Picker, inspection, and welcome windows. Focus must stay inside the active window and return to the control that opened it.
 5. Inspect quest state, close Results with B, and confirm focus returns to the right-panel **Inspect Quest State** control.
 6. Check long names in Commands, ID Browser, and Mod Browser. Rows must grow to fit, titles must be left aligned and vertically centered, counts must stay centered in their own column, and dividers must not overlap text.
-7. Confirm a focused or selected category has an orange border on all four sides.
+7. Confirm a focused or selected category has a clearly visible theme-specific border on all four sides.
 
 ## Commands and saved batches
 
@@ -50,7 +50,7 @@ Automated checks and native/UI builds pass. The user confirmed Auto-Run triggeri
 
 ## Packaged ID Browser
 
-1. Open ID Browser and confirm it reports **16,528 included IDs** without starting a mod scan.
+1. Open ID Browser and confirm it reports **23,319 included IDs** without starting a mod scan.
 2. Search by name, Editor ID, Form ID, type, and category.
 3. Select an inventory item, copy its ID, and add a quantity greater than one.
 4. Select a Cell, Location, Weather, Book/Note, and Furniture record and verify only the actions appropriate to that record appear.
@@ -68,19 +68,28 @@ Automated checks and native/UI builds pass. The user confirmed Auto-Run triggeri
 7. Open a mod with thousands of records. Confirm categories start collapsed and only the opened category creates its rows.
 8. Confirm complete ships appear under **Ships** while engines, grav drives, reactors, shields, fuel tanks, landing parts, weapons, templates, and other GBFM records remain under **Ship Parts & Other Forms**.
 9. Add or spawn a supported record from a full, medium, and small plugin and verify each runtime Form ID resolves correctly.
-10. Favorite a scanned ID and use **Open** from Favorites to return to its mod, category, and record.
+10. Favorite a scanned ID and select its Favorites row to show its record details and supported actions in the right panel without leaving Favorites.
 11. Open Activity Log and verify the **Mod Browser Scan** entry reports load-order entries, discovered and loaded mods, IDs, zero-ID mods, failures, opened and missing files, and elapsed time.
 12. Close and reopen Mod Browser in the same session and confirm the scanned catalog remains available. Restarting the game may require another manual scan.
 13. Run `npm run dev:game`, open Mod Browser in the OSF UI webview, and select **Scan Mods**. Confirm it displays the configured MO2 profile's real plugins and IDs rather than Browser Fixture Arsenal.
 
 ## Quest Browser
 
-1. Confirm the browser contains 2,318 quest records and 16,844 recorded stage indexes.
-2. Search a base-game mission, a Shattered Space mission, and an internal/system quest by name, Editor ID, and Form ID.
+1. Confirm the browser contains 2,568 quest records and 19,061 recorded stage indexes.
+2. Search a base-game mission, a Shattered Space mission, Free Lanes and Terran Armada quests, and an internal/system quest by name, Editor ID, and Form ID.
 3. Confirm Shattered Space quests show their actual quest titles rather than dialogue subtitles.
 4. Confirm obvious holder, support, patch, debug, dialogue, scene, tracker, template, and always-on records remain available under **Internal / System**.
 5. Inspect a safe quest and confirm current stage, running/completed state, and completed-stage history display correctly.
 6. On a disposable save only, confirm Start, Stop, Complete, Reset, and Set Stage always show a Danger confirmation.
+
+## Catalog and sample checks
+
+1. Confirm all v1.2.18 editor, Auto-Run, sky-result, and Mod Browser quest fixes are retained.
+2. On a fresh empty batch folder, verify the three samples appear without Auto-Run selections. Existing or migrated files must not be overwritten; deleted samples must stay deleted.
+3. Check Ships, Ship Parts / Other Forms, Workshop / Outpost Objects, and Vehicles. Components/module records must remain reference-only. Test ship/vehicle spawning only on a disposable save.
+4. Confirm official items remain in their normal categories. Disable an optional master in a disposable profile: entries must stay searchable but gameplay/copy/picker actions must be unavailable.
+5. Check official quest IDs against the active load order and verify Free Lanes/Terran Armada stage history and confirmed quest actions. Original Shattered Space quest names must remain readable.
+6. Run SampleBatchTests, QuestStagesTests, ScalarResultTests, DevFeedbackTests, and the automated UI/catalog tests before packaging.
 
 ## Release artifacts
 
@@ -103,3 +112,20 @@ Automated checks and native/UI builds pass. The user confirmed Auto-Run triggeri
 1. Run `player.ActorExposedToSky` outdoors and inside a building. Confirm the Results popup returns 1.00 and 0.00 respectively, matching the ordinary console.
 2. Confirm the same result is retained in Activity Log. Use an invalid/non-actor reference or extra arguments and confirm a readable error.
 3. Confirm ordinary console use is unaffected and other query captures still work.
+
+## 1.2.35 feedback checks
+
+- Settings stays at the bottom of ID Browser without a sidebar count.
+- Tested creature skin and Akila child/crowd armor show Reference Only and no Add to Player action, including old Favorites.
+- Five dot clicks enable report buttons; five more hide them without losing reports.
+- Save each result status and a multiline comment; confirm comment-only reports work and Cancel/Escape do not save.
+- Export writes one complete UTF-8 CCC-Dev-Feedback.txt in the user CCC folder; repeat export retains prior reports. Verify browser preview downloads a combined file.
+- Test controller focus and text entry in the report popup.
+
+## 1.2.35 interface checks
+
+- Fresh preferences hide WIP, Settings, Cells, Ship Parts, reference-only items, and Internal / System. Global searches do not reveal those records.
+- Enable Advanced Options and confirm all categories return without losing Favorites. Disable while viewing an advanced category and confirm fallback to a visible view.
+- Toggle light/dark and check all pages, Results, Help, report popups, controller keyboard, warnings, and input fields. Close/reopen to confirm preferences persist.
+- Settings Escape and controller B close only the popup.
+- Check exported reference-only items and Cydonia Pack in game.

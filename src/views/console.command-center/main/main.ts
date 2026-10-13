@@ -1,4 +1,13 @@
+import { uiPreferences, installUiSettings, visibleIdCategory, visibleIdRecord, visibleQuestRecord, visibleCommandRecord } from './ui-preferences';
+import { reviewedReferenceNote, applyReviewedFindings } from './reviewed-id-findings';
+import { orderIdEntries } from './id-record-order';
+import { armorReferenceNote, applyArmorFindings } from './armor-test-findings';
+import { devFeedbackButton, installDevFeedback } from './dev-feedback';
+import { ammoReferenceNote, applyAmmoFindings } from './ammo-test-findings';
 import './style.css';
+import './light-theme.css';
+import './dark-theme.css';
+import { gameSettingGroup, gameSettingMatches, gameSettingInspectCommand, type GameSettingEntry } from './game-settings-catalog';
 import { installControllerSupport } from './controller-support';
 import { CATEGORY_ORDER, COMMANDS, type CommandCategory, type CommandDefinition, type CommandInput } from './commands';
 import {
@@ -7,11 +16,15 @@ import {
   QUEST_BROWSER_TOTAL,
 } from './catalog-metadata';
 import type { QuestBrowserEntry } from './quest-browser';
+import { resolvePackagedQuestCatalog } from './official-quest-catalog';
 import type { ReferenceIdPicker } from './reference-ids';
 import {
   CURATED_ID_CATALOG,
   ID_BROWSER_CATEGORIES,
   mergeGeneratedIdCatalog,
+  resolvePackagedIdCatalog,
+  type IdBrowserCategory,
+  type PluginLoadOrderReply,
   type IdCatalogEntry,
 } from './id-catalog';
 import { normalizeModCatalogs, type ModCatalogReply, type ModCatalogSummary } from './mod-catalog';
@@ -203,7 +216,7 @@ const MAX_CUSTOM_COMMAND_LENGTH = 1024;
 const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1493;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.2.18';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.2.35';
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -247,6 +260,7 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
       { title: 'SEARCH AND FILTER', text: 'Choose an ID category from the left side, then search its records by name, Form ID, type, or category.' },
       { title: 'SELECT A RECORD', text: 'Choose a name from the compact list to view its information and the actions CCC can safely prepare for that record type.' },
       { title: 'COMMAND PICKERS', text: 'When a command sends you here, only compatible records appear. Selecting one returns its Form ID to the command.' },
+      { title: 'SETTINGS CATALOG', text: 'With Advanced Options enabled, open Settings for a searchable reference list grouped by the spreadsheet categories. MAIN is divided into Scanner, Ships, Combat, Camera, and Other. Select a name and Inspect Current Value. Workbook values are references, not live readings; editing is not enabled.' },
       { title: 'MOD CATALOGS', text: 'Mod records live in the separate Mod Browser. Opening ID Browser never starts a mod scan.' },
     ],
   },
@@ -266,7 +280,7 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   'quest-browser': {
     eyebrow: 'QUEST BROWSER HELP',
     title: 'Inspect and repair quest progress',
-    intro: 'Quest Browser contains packaged quest records and known stage indexes from the base game and Shattered Space.',
+    intro: 'Quest Browser contains packaged quest records and known stage indexes from the base game, Free Lanes, Shattered Space, and Terran Armada.',
     sections: [
       { title: 'FIND A QUEST', text: 'Choose a quest category from the left side, then search by quest name, Editor ID, Form ID, source, or stage number.' },
       { title: 'INSPECT QUEST STATE', text: 'Inspect reads the current stage and completed-stage history without changing the save.' },
@@ -282,6 +296,7 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
       { title: 'ENTER COMMANDS', text: 'Enter one command per line. Empty lines and lines beginning with # are ignored.' },
       { title: 'REVIEW THE BATCH', text: 'Review Commands shows the exact lines before CCC runs them in order. Execution stops when a command reports an error.' },
       { title: 'SAVE A WORKFLOW', text: 'Each saved batch is a .txt file in your user-owned CCC folder. The filename becomes its name in CCC.' },
+      { title: 'START WITH A SAMPLE', text: 'On first use, an empty batch folder receives three editable Sample files. Load one, adjust its quantities, and review it before running. Samples are never enabled for Auto-Run automatically.' },
       { title: 'EDIT OUTSIDE CCC', text: 'Edit or add .txt files in a text editor, then select Refresh. Empty lines and lines beginning with # are ignored.' },
       { title: 'RUN AFTER LOADING', text: 'Select On Load beside a saved batch, then turn on the Auto-Run master switch. CCC runs selected files three seconds after an existing save finishes loading.' },
     ],
@@ -303,7 +318,7 @@ let activeView: ViewMode = 'recent';
 let query = '';
 let untestedQuery = '';
 let favorites = readStringArray(STORAGE_FAVORITES);
-let idFavorites = readFavoriteIds();
+let idFavorites = readFavoriteIds().map(applyAmmoFindings).map(applyArmorFindings).map(applyReviewedFindings);
 let recent = readStringArray(STORAGE_RECENT);
 let activityLog = readActivityLog();
 let savedCustomCommands = readSavedCustomCommands();
@@ -325,6 +340,7 @@ let idCatalog: IdCatalogEntry[] = CURATED_ID_CATALOG;
 let packagedIdCatalog: IdCatalogEntry[] = CURATED_ID_CATALOG;
 let idCatalogLoaded = false;
 let idCatalogLoading: Promise<void> | null = null;
+let officialLoadOrderLoading: Promise<PluginLoadOrderReply | null> | null = null;
 let modCatalogs: ModCatalogSummary[] = [];
 let modCatalogScanAllRunning = false;
 let modCatalogScanAllComplete = false;
@@ -342,7 +358,15 @@ let engineCommandLibraryLoading: Promise<void> | null = null;
 let idBrowserCategory = 'common';
 let idBrowserRecordTypeFilter = '';
 let idBrowserSelected: IdCatalogEntry | null = null;
+let gameSettings: GameSettingEntry[] = [];
+let gameSettingsLoading: Promise<void> | null = null;
+let gameSettingsLoaded = false;
+let gameSettingsError: string | null = null;
+let selectedGameSetting: string | null = null;
+const openGameSettingGroups = new Set<string>(['MAIN / Scanner']);
+const gameSettingLimits = new Map<string, number>();
 let idBrowserQuantity = 1;
+let selectedFavoriteIdKey: string | null = null;
 let commandCategory = CATEGORY_ORDER[0];
 let questBrowserSource: QuestBrowserEntry['source'] | 'all' = 'Base Game';
 let questBrowserCategory = QUEST_BROWSER_CATEGORY_ORDER[0] as string;
@@ -361,6 +385,7 @@ app.innerHTML = `
         <h1>Console Command Center</h1>
       </div>
       <div class="topbar-actions">
+        <button class="osf-btn osf-btn--sm osf-btn--ghost" id="open-settings" type="button">Settings</button>
         <button class="osf-btn osf-btn--sm osf-btn--ghost" id="open-help" type="button"><span class="controller-view-hint" aria-hidden="true"><i></i><i></i></span><span>Help</span></button>
         <button class="osf-btn osf-btn--sm osf-btn--ghost" id="close-view" type="button" data-controller-hint="B">Close</button>
       </div>
@@ -440,7 +465,7 @@ app.innerHTML = `
     </section>
 
     <footer class="statusbar">
-      <div class="status-primary"><span class="osf-eyebrow">STATUS</span><span id="status">Ready.</span></div>
+      <div class="status-primary"><button id="dev-mode-dot" class="dev-mode-dot" type="button" aria-label="Toggle Dev Mode with five clicks" aria-pressed="false" title="Click five times to toggle Dev Mode">●</button><button id="dev-feedback-export" class="osf-btn osf-btn--sm dev-feedback-export" type="button" hidden>Export Reports</button><span class="osf-eyebrow">STATUS</span><span id="status">Ready.</span></div>
       <div class="status-versions" aria-label="Version information">
         <span class="version-item"><span class="version-label">CCC</span><span>v${CONSOLE_COMMAND_CENTER_VERSION}</span></span>
         <span class="version-separator">//</span>
@@ -802,8 +827,8 @@ function writeFavoriteIds(): void {
 }
 
 function idFavoriteKey(entry: IdCatalogEntry): string {
-  return entry.source === 'mod' && entry.plugin
-    ? `mod:${entry.plugin.toLowerCase()}:${(entry.localFormId ?? entry.value).toUpperCase()}:${entry.type.toUpperCase()}`
+  return entry.plugin && entry.localFormId
+    ? `${entry.source === 'mod' ? 'mod' : 'official'}:${entry.plugin.toLowerCase()}:${entry.localFormId.toUpperCase()}:${entry.type.toUpperCase()}`
     : `id:${entry.value.toUpperCase()}:${entry.type.toUpperCase()}`;
 }
 
@@ -1011,6 +1036,8 @@ function renderNavigation(): void {
     categoryLabel = 'ID CATEGORIES';
     const builtInCategories = ID_BROWSER_CATEGORIES
       .filter((category) => category.value !== 'all')
+      .filter((category) => visibleIdCategory(category.value, uiPreferences.advanced))
+      .filter((category) => !(activeCatalogPicker && category.value === 'game-settings'))
       .map((category) => ({ category, count: idBrowserCategoryCount(category.value) }))
       .filter(({ count }) => count > 0)
       .map(({ category, count }) => sidebarCategoryButton('id', category.value, category.label, count, idBrowserCategory === category.value))
@@ -1041,17 +1068,17 @@ function renderNavigation(): void {
       </div>${modState}`;
   } else if (activeView === 'quest-browser') {
     categoryLabel = 'QUEST CATEGORIES';
-    categoryContent = (['Base Game', 'Shattered Space'] as const).map((source) => {
-      const buttons = QUEST_BROWSER_CATEGORY_ORDER.map((category) => ({
+    categoryContent = (['Base Game', 'Shattered Space', 'Free Lanes', 'Terran Armada'] as const).map((source) => {
+      const buttons = QUEST_BROWSER_CATEGORY_ORDER.filter((category) => uiPreferences.advanced || category !== 'Internal / System').map((category) => ({
         category,
         count: questBrowserEntries.filter((entry) => entry.source === source && entry.category === category).length,
       })).filter(({ count }) => count > 0)
         .map(({ category, count }) => questSidebarCategoryButton(source, category, count, questBrowserSource === source && questBrowserCategory === category))
         .join('');
-      return `<div class="sidebar-source-heading">${escapeHtml(source)}</div>${buttons}`;
+      return `<div class="sidebar-source-heading quest-source-heading">${escapeHtml(source)}</div>${buttons}`;
     }).join('');
   } else if (activeView === 'commands' || activeView === 'recent' || activeView === 'favorites') {
-    categoryContent = CATEGORY_ORDER.map((category) => sidebarCategoryButton(
+    categoryContent = CATEGORY_ORDER.filter((category) => visibleCommandRecord({ category }, uiPreferences.advanced)).map((category) => sidebarCategoryButton(
       'command',
       category,
       category === 'Untested' ? 'WIP' : category,
@@ -1091,7 +1118,7 @@ function navButton(id: string, label: string, count: number): string {
 }
 
 function sidebarCategoryButton(kind: 'command' | 'id', id: string, label: string, count: number, active: boolean): string {
-  return `<button class="nav-button${active ? ' is-active' : ''}" type="button" data-${kind}-category="${escapeHtml(id)}" title="${escapeHtml(label)}"><span>${escapeHtml(label)}</span><span class="nav-count">${count.toLocaleString()}</span></button>`;
+  return `<button class="nav-button${active ? ' is-active' : ''}" type="button" data-${kind}-category="${escapeHtml(id)}" title="${escapeHtml(label)}"><span>${escapeHtml(label)}</span>${kind === 'id' && id === 'game-settings' ? '' : `<span class="nav-count">${count.toLocaleString()}</span>`}</button>`;
 }
 
 function sidebarCatalogButton(catalog: ModCatalogSummary, active: boolean): string {
@@ -1100,18 +1127,33 @@ function sidebarCatalogButton(catalog: ModCatalogSummary, active: boolean): stri
   return `<button class="nav-button${active ? ' is-active' : ''}" type="button" data-id-category="${escapeHtml(catalog.key)}" title="${escapeHtml(catalog.plugin)}"><span>${escapeHtml(catalog.name)}</span><span class="nav-count">${count}</span></button>`;
 }
 
+function selectQuestBrowserCategory(source: string | undefined, category: string | undefined): boolean {
+  if (!category || !QUEST_BROWSER_CATEGORY_ORDER.includes(category as typeof QUEST_BROWSER_CATEGORY_ORDER[number])) return false;
+  if (source !== 'Base Game' && source !== 'Shattered Space' && source !== 'Free Lanes' && source !== 'Terran Armada') return false;
+  questBrowserSource = source;
+  questBrowserCategory = category;
+  selectedQuestKey = null;
+  render();
+  return true;
+}
+
 function questSidebarCategoryButton(source: QuestBrowserEntry['source'], category: string, count: number, active: boolean): string {
   return `<button class="nav-button${active ? ' is-active' : ''}" type="button" data-quest-source="${escapeHtml(source)}" data-quest-category="${escapeHtml(category)}" title="${escapeHtml(category)}"><span>${escapeHtml(category)}</span><span class="nav-count">${count.toLocaleString()}</span></button>`;
 }
 
 function idBrowserCategoryCount(value: string): number {
-  if (value === 'all') return idCatalogLoaded ? idCatalog.length : ID_BROWSER_TOTAL;
+  if (value === 'game-settings') return 8705;
+  if (value === 'all') return idCatalogLoaded ? idCatalog.filter((entry) => entry.source !== 'mod' && visibleIdRecord(entry, uiPreferences.advanced)).length : ID_BROWSER_TOTAL;
   const modCatalog = modCatalogs.find((catalog) => catalog.key === value);
   if (modCatalog) return modCatalog.entries.length;
   const category = ID_BROWSER_CATEGORIES.find((entry) => entry.value === value);
   if (!category || !idCatalogLoaded) return 0;
-  return idCatalog.filter((entry) => category.builtInCategories.includes(entry.category)
-    || (category.builtInCategories.length === 0 && category.recordType === entry.type.toUpperCase())).length;
+  return idCatalog.filter((entry) => {
+    const sourceMatches = !category.sources?.length || category.sources.includes(entry.source);
+    const categoryMatches = category.builtInCategories.includes('*') || category.builtInCategories.includes(entry.category)
+      || (category.builtInCategories.length === 0 && category.recordType === entry.type.toUpperCase());
+    return entry.source !== 'mod' && visibleIdRecord(entry, uiPreferences.advanced) && sourceMatches && categoryMatches;
+  }).length;
 }
 
 function commandMatches(command: CommandDefinition, searchText = query): boolean {
@@ -1124,26 +1166,27 @@ function commandMatches(command: CommandDefinition, searchText = query): boolean
 }
 
 function activeCommands(): CommandDefinition[] {
-  if (query) return COMMANDS.filter((command) => commandMatches(command));
+  const visibleCommands = COMMANDS.filter((command) => visibleCommandRecord(command, uiPreferences.advanced));
+  if (query) return visibleCommands.filter((command) => commandMatches(command));
 
   if (activeView === 'commands' && commandCategory === 'Untested') {
-    return COMMANDS
+    return visibleCommands
       .filter((command) => command.category === 'Untested')
       .filter((command) => commandMatches(command, untestedQuery));
   }
 
-  let commands = COMMANDS;
+  let commands = visibleCommands;
 
   if (activeView === 'favorites') {
     commands = favorites
-      .map((id) => COMMANDS.find((command) => command.id === id))
+      .map((id) => visibleCommands.find((command) => command.id === id))
       .filter((command): command is CommandDefinition => Boolean(command));
   } else if (activeView === 'recent') {
     commands = recent
       .map((id) => COMMANDS.find((command) => command.id === id))
       .filter((command): command is CommandDefinition => Boolean(command));
   } else if (activeView === 'commands') {
-    commands = COMMANDS.filter((command) => command.category === commandCategory);
+    commands = visibleCommands.filter((command) => command.category === commandCategory);
   }
 
   return commands.filter((command) => commandMatches(command));
@@ -1223,12 +1266,30 @@ function paintModCatalogSummaryScan(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 }
 
+async function readOfficialPluginLoadOrder(): Promise<PluginLoadOrderReply | null> {
+  if (!officialLoadOrderLoading) {
+    officialLoadOrderLoading = (async () => {
+      try {
+        const reply = await window.osfui?.request<PluginLoadOrderReply>('console.command-center.pluginLoadOrder', {});
+        return reply?.ok && Array.isArray(reply.plugins) ? reply : null;
+      } catch { return null; }
+    })();
+  }
+  return officialLoadOrderLoading;
+}
+
 function ensureIdCatalogLoaded(): Promise<void> {
   if (idCatalogLoaded) return Promise.resolve();
   if (idCatalogLoading) return idCatalogLoading;
   idCatalogLoading = import('./id-browser-data')
-    .then(({ GENERATED_ID_CATALOG }) => {
-      packagedIdCatalog = mergeGeneratedIdCatalog(GENERATED_ID_CATALOG);
+    .then(async ({ GENERATED_ID_CATALOG }) => {
+      const loadOrder = await readOfficialPluginLoadOrder();
+      packagedIdCatalog = resolvePackagedIdCatalog(mergeGeneratedIdCatalog(GENERATED_ID_CATALOG), loadOrder);
+      idFavorites = resolvePackagedIdCatalog(idFavorites.map((favorite) => {
+        const metadata = packagedIdCatalog.find((candidate) => candidate.type === favorite.type && candidate.label === favorite.label && candidate.source === favorite.source);
+        return metadata ? { ...favorite, plugin: metadata.plugin, localFormId: metadata.localFormId, pluginKind: metadata.pluginKind } : favorite;
+      }), loadOrder).map((entry) => ({ ...entry, favoriteKey: idFavoriteKey(entry), savedFrom: entry.source === 'mod' ? 'mod-browser' : 'id-browser' }));
+      writeFavoriteIds();
       idCatalog = [...packagedIdCatalog, ...modCatalogs.flatMap((catalog) => catalog.entries)];
       idCatalogLoaded = true;
     })
@@ -1346,8 +1407,8 @@ function ensureQuestBrowserLoaded(): Promise<void> {
   if (questBrowserLoaded) return Promise.resolve();
   if (questBrowserLoading) return questBrowserLoading;
   questBrowserLoading = import('./quest-browser')
-    .then(({ QUEST_BROWSER_ENTRIES }) => {
-      questBrowserEntries = QUEST_BROWSER_ENTRIES;
+    .then(async ({ QUEST_BROWSER_ENTRIES }) => {
+      questBrowserEntries = resolvePackagedQuestCatalog(QUEST_BROWSER_ENTRIES, await readOfficialPluginLoadOrder());
       questBrowserLoaded = true;
     })
     .catch((error) => {
@@ -1459,12 +1520,14 @@ function renderCommandDetail(command: CommandDefinition | undefined): string {
 
 function renderCompactCommandLayout(commands: CommandDefinition[]): string {
   const selected = commands.find((command) => command.id === selectedCommandId);
+  const favoriteId = activeView === 'favorites' ? idFavorites.find((entry) => entry.favoriteKey === selectedFavoriteIdKey && visibleIdRecord(entry, uiPreferences.advanced)) : undefined;
+  if (favoriteId) idBrowserSelected = favoriteId;
   const savedFavorites = activeView === 'favorites' ? renderSavedCommandFavorites() : '';
   const idFavoriteCards = activeView === 'favorites' ? renderIdFavorites() : '';
   const list = activeView === 'commands' && commandCategory === 'Untested' && !query
     ? renderUntestedCommandGroups(commands, true)
     : `${activeView === 'recent' ? renderRecentToolbar() : ''}${savedFavorites}${idFavoriteCards}${commands.map(renderCommandListRow).join('')}`;
-  return `<div class="compact-command-list" role="listbox" aria-label="${escapeHtml(viewTitle())} commands">${list}</div>${renderCommandDetail(selected)}`;
+  return `<div class="compact-command-list" role="listbox" aria-label="${escapeHtml(viewTitle())} commands">${list}</div>${favoriteId ? `<aside class="command-detail-panel favorite-id-detail" aria-label="Selected favorite ID">${renderIdBrowserSelection()}</aside>` : renderCommandDetail(selected)}`;
 }
 
 function renderSavedCommandFavorites(): string {
@@ -1472,9 +1535,8 @@ function renderSavedCommandFavorites(): string {
     const commandCount = parseCustomCommands(entry.commands).length;
     return `<article class="favorite-saved-command">
       <div class="favorite-saved-command-copy">
-        <span class="osf-eyebrow">SAVED COMMAND</span>
         <strong>${escapeHtml(entry.name)}</strong>
-        <small>${commandCount} command${commandCount === 1 ? '' : 's'}</small>
+        <small>Saved command · ${commandCount} command${commandCount === 1 ? '' : 's'}</small>
       </div>
       <div class="favorite-saved-command-actions">
         <button class="favorite-button is-favorite" type="button" data-favorite-custom-toggle="${escapeHtml(entry.id)}" aria-label="Remove ${escapeHtml(entry.name)} from favorites" title="Remove from favorites">★</button>
@@ -1485,25 +1547,19 @@ function renderSavedCommandFavorites(): string {
 }
 
 function renderIdFavorites(): string {
-  return idFavorites.map((entry) => `
-    <article class="favorite-saved-command favorite-id-entry">
-      <div class="favorite-saved-command-copy">
-        <span class="osf-eyebrow">${entry.savedFrom === 'mod-browser' ? 'MOD ID' : 'ID BROWSER'}</span>
-        <strong>${escapeHtml(entry.label)}</strong>
-        <small>${escapeHtml(entry.sourceName ?? entry.plugin ?? entry.category)} · ${escapeHtml(entry.value)}</small>
-      </div>
-      <div class="favorite-saved-command-actions">
-        <button class="favorite-button is-favorite" type="button" data-favorite-id-toggle="${escapeHtml(entry.favoriteKey)}" aria-label="Remove ${escapeHtml(entry.label)} from favorites" title="Remove from favorites">★</button>
-        <button class="osf-btn osf-btn--sm" type="button" data-open-favorite-id="${escapeHtml(entry.favoriteKey)}">Open</button>
-      </div>
-    </article>`).join('');
+  return orderIdEntries(idFavorites.filter((entry) => visibleIdRecord(entry, uiPreferences.advanced))).map((entry) => {
+    const selected = entry.favoriteKey === selectedFavoriteIdKey;
+    return `<button class="command-list-row favorite-id-row${selected ? ' is-selected' : ''}" type="button" data-select-favorite-id="${escapeHtml(entry.favoriteKey)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(entry.label)} favorite ID"><span class="command-list-row-title">${escapeHtml(entry.label)}</span></button>`;
+  }).join('');
 }
 
 function selectCommand(commandId: string, focusRow = false): void {
   const command = COMMANDS.find((entry) => entry.id === commandId);
   if (!command) return;
+  selectedFavoriteIdKey = null;
   if (selectedCommandId !== commandId) armedCommandActions.clear();
   selectedCommandId = commandId;
+  commandList.querySelectorAll<HTMLElement>('[data-select-favorite-id]').forEach((row) => row.setAttribute('aria-selected', 'false'));
   commandList.querySelectorAll<HTMLElement>('[data-select-command]').forEach((row) => {
     row.setAttribute('aria-selected', String(row.dataset.selectCommand === commandId));
   });
@@ -1513,6 +1569,16 @@ function selectCommand(commandId: string, focusRow = false): void {
 }
 
 function render(): void {
+  if (!uiPreferences.advanced) {
+    if (commandCategory === 'Untested') commandCategory = CATEGORY_ORDER[0];
+    if (!visibleIdCategory(idBrowserCategory, false)) { idBrowserCategory = 'all'; idBrowserSelected = null; }
+    if (idBrowserSelected && !visibleIdRecord(idBrowserSelected, false)) idBrowserSelected = null;
+    if (questBrowserCategory === 'Internal / System') { questBrowserCategory = QUEST_BROWSER_CATEGORY_ORDER[0]; selectedQuestKey = null; }
+  }
+  if (activeView === 'quest-browser' && questBrowserLoaded && !query && !questBrowserEntries.some((entry) => (questBrowserSource === 'all' || entry.source === questBrowserSource) && entry.category === questBrowserCategory && visibleQuestRecord(entry, uiPreferences.advanced))) {
+    questBrowserCategory = QUEST_BROWSER_CATEGORY_ORDER.find((category) => questBrowserEntries.some((entry) => (questBrowserSource === 'all' || entry.source === questBrowserSource) && entry.category === category && visibleQuestRecord(entry, uiPreferences.advanced))) ?? QUEST_BROWSER_CATEGORY_ORDER[0];
+    selectedQuestKey = null;
+  }
   syncSearchClear(search, searchClear);
   renderNavigation();
   const activeModSelected = modCatalogs.some((catalog) => catalog.key === idBrowserCategory);
@@ -1631,7 +1697,9 @@ function render(): void {
   const commands = activeCommands();
   const savedFavoriteCount = activeView === 'favorites' ? savedCustomCommands.filter((entry) => entry.favorite).length : 0;
   const idFavoriteCount = activeView === 'favorites' ? idFavorites.length : 0;
-  if (!commands.some((command) => command.id === selectedCommandId)) {
+  if (activeView === 'favorites' && idFavorites.some((entry) => entry.favoriteKey === selectedFavoriteIdKey)) {
+    selectedCommandId = null;
+  } else if (!commands.some((command) => command.id === selectedCommandId)) {
     selectedCommandId = activeView === 'commands' && commandCategory === 'Untested' && !untestedQuery.trim() ? null : commands[0]?.id ?? null;
   }
   resultCount.textContent = activeView === 'commands' && commandCategory === 'Untested' && untestedQuery.trim()
@@ -1660,9 +1728,11 @@ function render(): void {
   }
 
   commandList.innerHTML = renderCompactCommandLayout(commands);
+  if (activeView === 'favorites' && selectedFavoriteIdKey) bindIdBrowserSelectionActions();
 }
 
 function questBrowserMatches(entry: QuestBrowserEntry): boolean {
+  if (!visibleQuestRecord(entry, uiPreferences.advanced)) return false;
   if (!query) {
     if (questBrowserSource !== 'all' && entry.source !== questBrowserSource) return false;
     if (questBrowserCategory !== 'all' && entry.category !== questBrowserCategory) return false;
@@ -1688,7 +1758,7 @@ function questBrowserVariantLabel(entry: Pick<QuestBrowserEntry, 'editorId'>): s
 }
 
 function questBrowserEntryKey(entry: QuestBrowserEntry): string {
-  return `${entry.source}::${normalizedQuestId(entry.questId)}`;
+  return `${entry.source}::${entry.plugin.toLowerCase()}:${entry.localFormId.toUpperCase()}`;
 }
 
 function renderQuestBrowserRow(entry: QuestBrowserEntry): string {
@@ -1698,7 +1768,7 @@ function renderQuestBrowserRow(entry: QuestBrowserEntry): string {
   </button>`;
 }
 
-function renderQuestBrowserSelection(entry: (Omit<QuestBrowserEntry, 'source'> & { source: string; stagesScanned?: boolean }) | undefined, modQuest = false): string {
+function renderQuestBrowserSelection(entry: (Pick<QuestBrowserEntry, 'quest' | 'editorId' | 'questId' | 'stages' | 'requirement' | 'category' | 'internal'> & { source: string; stagesScanned?: boolean; available?: boolean }) | undefined, modQuest = false): string {
   if (!entry) {
     return `<aside class="quest-browser-selection quest-browser-selection--empty" aria-label="Selected quest">
       <span class="osf-eyebrow">SELECTED QUEST</span>
@@ -1707,6 +1777,7 @@ function renderQuestBrowserSelection(entry: (Omit<QuestBrowserEntry, 'source'> &
     </aside>`;
   }
 
+  const questActionsReady = nativeBackendReady && entry.available !== false;
   const scannedStagesKnown = !modQuest || entry.stagesScanned === true;
   const progress = questProgressSnapshots.get(normalizedQuestId(entry.questId));
   const stages = entry.stages.map((stage) => {
@@ -1715,7 +1786,7 @@ function renderQuestBrowserSelection(entry: (Omit<QuestBrowserEntry, 'source'> &
     const isDone = progress?.completedStages.has(stage) ?? false;
     const stateClass = isCurrent ? ' quest-stage-button--current' : isDone ? ' quest-stage-button--done' : progress ? ' quest-stage-button--unset' : '';
     const stateLabel = isCurrent ? 'CURRENT' : isDone ? 'DONE' : progress ? 'NOT SET' : 'STAGE';
-    return `<button class="quest-stage-button${stateClass}" type="button" data-quest-command="${escapeHtml(command)}" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}" data-quest-stage="${stage}"${nativeBackendReady ? '' : ' disabled'}>
+    return `<button class="quest-stage-button${stateClass}" type="button" data-quest-command="${escapeHtml(command)}" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}" data-quest-stage="${stage}"${questActionsReady ? '' : ' disabled'}>
       <span>${stateLabel}</span><strong>${stage}</strong>
     </button>`;
   }).join('');
@@ -1744,24 +1815,25 @@ function renderQuestBrowserSelection(entry: (Omit<QuestBrowserEntry, 'source'> &
           <div><dt>Source</dt><dd>${escapeHtml(entry.source)}</dd></div>
           <div><dt>Category</dt><dd>${escapeHtml(entry.category)}</dd></div>
           <div><dt>Editor ID</dt><dd><code>${escapeHtml(entry.editorId)}</code></dd></div>
-          <div><dt>Form ID</dt><dd><code>${escapeHtml(entry.questId)}</code></dd></div>
+          <div><dt>Form ID</dt><dd>${entry.available === false ? 'Required plugin is not active' : `<code>${escapeHtml(entry.questId)}</code>`}</dd></div>
           <div><dt>Stages</dt><dd>${modQuest && !scannedStagesKnown ? 'Scan again to load stages' : entry.stages.length.toLocaleString()}</dd></div>
         </dl>
         <div class="quest-browser-actions">
-          ${activeCatalogPicker?.browser === 'quest' ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-quest-id="${escapeHtml(entry.questId)}" data-use-quest-title="${escapeHtml(entry.quest)}">Use This Quest</button>` : ''}
-          <button class="osf-btn osf-btn--sm" type="button" data-quest-inspect="${modQuest && !scannedStagesKnown ? 'stage' : 'history'}" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Inspect Quest State</button>
-          <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-copy-text="${escapeHtml(entry.questId)}">Copy Quest ID</button>
+          ${devFeedbackButton({ kind: 'Quest', name: entry.quest, id: entry.questId, source: entry.source, category: entry.category })}
+          ${activeCatalogPicker?.browser === 'quest' && entry.available !== false ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-quest-id="${escapeHtml(entry.questId)}" data-use-quest-title="${escapeHtml(entry.quest)}">Use This Quest</button>` : ''}
+          <button class="osf-btn osf-btn--sm" type="button" data-quest-inspect="${modQuest && !scannedStagesKnown ? 'stage' : 'history'}" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${questActionsReady ? '' : ' disabled'}>Inspect Quest State</button>
+          <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-copy-text="${escapeHtml(entry.questId)}"${entry.available === false ? ' disabled' : ''}>Copy Quest ID</button>
         </div>
         <div class="quest-browser-action-note"><strong>QUEST COMMANDS</strong><span>These commands change save-game state. Start may not add a visible mission until a stage is activated. Reset removes it from the log without restarting it. Make a manual save first.</span></div>
         <div class="quest-browser-state-actions">
-          <button class="osf-btn osf-btn--sm" type="button" data-quest-action="start" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Start Quest</button>
-          <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-quest-action="stop" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Stop Quest</button>
-          <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-quest-action="complete" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Complete Quest</button>
-          <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-quest-action="reset" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Reset Quest</button>
+          <button class="osf-btn osf-btn--sm" type="button" data-quest-action="start" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${questActionsReady ? '' : ' disabled'}>Start Quest</button>
+          <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-quest-action="stop" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${questActionsReady ? '' : ' disabled'}>Stop Quest</button>
+          <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-quest-action="complete" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${questActionsReady ? '' : ' disabled'}>Complete Quest</button>
+          <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-quest-action="reset" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${questActionsReady ? '' : ' disabled'}>Reset Quest</button>
         </div>
         ${modQuest ? `<div class="mod-quest-stage-controls">
           <label><span class="osf-eyebrow">SET QUEST STAGE</span><input class="osf-input" type="text" inputmode="numeric" pattern="[0-9]{1,5}" maxlength="5" aria-label="Quest stage number" placeholder="Known stage number" data-mod-quest-stage-input></label>
-          <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-mod-quest-set-stage data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${nativeBackendReady ? '' : ' disabled'}>Set Stage</button>
+          <button class="osf-btn osf-btn--sm osf-btn--danger" type="button" data-mod-quest-set-stage data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${questActionsReady ? '' : ' disabled'}>Set Stage</button>
           <p>${scannedStagesKnown ? 'Choose a recorded stage below, or enter a known stage number.' : 'Stage data is unavailable. Scan Mods again, or enter a known stage from the mod author.'} Setting a stage can skip scripts, dialogue, rewards, or prerequisites. Save first.</p>
         </div>
         ${scannedStagesKnown ? `<div class="quest-browser-stage-label"><span class="osf-eyebrow">ALL RECORDED STAGES</span></div><div class="quest-stage-grid">${stages || '<div class="quest-browser-no-stages">No explicit stage indexes were found in this quest record.</div>'}</div>` : ''}` : `
@@ -1874,6 +1946,7 @@ function renderCommandCard(command: CommandDefinition, detailView = false): stri
       </div>
       ${detailView && command.secondaryAction ? '<p class="command-action-note">Double-click the highlighted action to execute it.</p>' : ''}
       <div class="command-actions">
+        ${devFeedbackButton({ kind: 'Command', name: command.title, id: command.id, category: command.category, command: displayedCommand })}
         <button class="favorite-button${isFavorite ? ' is-favorite' : ''}" type="button" data-favorite="${escapeHtml(command.id)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
           <span aria-hidden="true">${isFavorite ? '★' : '☆'}</span>
         </button>
@@ -2188,6 +2261,7 @@ async function inspectQuest(
       throw new Error('Stage History needs recorded stages. Run Scan Mods again to load mod quest stages.');
     }
 
+    if (entry && 'available' in entry && entry.available === false) throw new Error('The required quest plugin is not active.');
     const currentStage = Number(await readQuestValue(questId, 'currentStage'));
     const running = Boolean(await readQuestValue(questId, 'isRunning'));
     const completed = Boolean(await readQuestValue(questId, 'isCompleted'));
@@ -2463,7 +2537,7 @@ function formatActivityTime(timestamp: number): string {
 }
 
 
-function activeIdBrowserCategory() {
+function activeIdBrowserCategory(): IdBrowserCategory {
   const modCatalog = modCatalogs.find((catalog) => catalog.key === idBrowserCategory);
   if (modCatalog) return { label: modCatalog.name, value: modCatalog.key, detail: modCatalog.plugin, recordType: '', builtInCategories: [] };
   if (activeView === 'mod-browser') return { label: 'Installed Mods', value: '', detail: '', recordType: '', builtInCategories: [] };
@@ -2485,12 +2559,15 @@ function matchingIds(): IdCatalogEntry[] {
   const modCatalog = modCatalogs.find((catalog) => catalog.key === idBrowserCategory);
   const pickerTypes = activeCatalogPicker?.browser === 'id' ? activeCatalogPicker.allowedTypes : [];
   const pickerCategories = activeCatalogPicker?.browser === 'id' ? activeCatalogPicker.allowedCategories : [];
-  return idCatalog.filter((entry) => {
-    const categoryMatches = modCatalog
+  return orderIdEntries(idCatalog.filter((entry) => {
+    if (!uiPreferences.advanced && entry.referenceOnly) return false;
+    if (activeView !== 'mod-browser' && !visibleIdRecord(entry, uiPreferences.advanced)) return false;
+    const sourceMatches = !activeCategory.sources?.length || activeCategory.sources.includes(entry.source);
+    const categoryMatches = sourceMatches && (modCatalog
       ? entry.plugin === modCatalog.plugin
       : categories.includes('*')
         || categories.includes(entry.category)
-        || (categories.length === 0 && activeCategory.recordType === entry.type.toUpperCase());
+        || (categories.length === 0 && activeCategory.recordType === entry.type.toUpperCase()));
     const recordTypeMatches = !idBrowserRecordTypeFilter || entry.type.toUpperCase() === idBrowserRecordTypeFilter;
     const pickerTypeMatches = pickerTypes.length === 0 || pickerTypes.includes(entry.type.toUpperCase());
     const pickerCategoryMatches = pickerCategories.length === 0 || pickerCategories.includes(entry.category);
@@ -2500,13 +2577,15 @@ function matchingIds(): IdCatalogEntry[] {
       ? searchAllMods ? entry.source === 'mod' : Boolean(modCatalog && entry.plugin === modCatalog.plugin)
       : entry.source !== 'mod';
     return browserScopeMatches && sourceScopeMatches && pickerTypeMatches && pickerCategoryMatches && idBrowserTextMatches(entry);
-  });
+  }));
 }
 
 function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspell' | 'spawn' | 'forceweather' | 'teleport' | 'findcell' | null {
+  if (entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)) return null;
+  if (entry.available === false) return null;
   const type = entry.type.toUpperCase();
-  if (type === 'GBFM') return null;
   if (entry.action) return entry.action;
+  if (type === 'FURN' && entry.category === 'Workshop / Outpost Objects') return null;
   if (['WEAP', 'ARMO', 'AMMO', 'ALCH', 'MISC', 'BOOK'].includes(type)) return 'additem';
   if (type === 'PERK') return 'addperk';
   if (type === 'SPEL') return 'addspell';
@@ -2518,7 +2597,7 @@ function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspe
 }
 
 function renderIdBrowserSelection(): string {
-  const entry = idBrowserSelected;
+  const entry = idBrowserSelected ? applyReviewedFindings(applyArmorFindings(applyAmmoFindings(idBrowserSelected))) : null;
   if (!entry) {
     return `<aside class="id-browser-selection id-browser-selection--empty" aria-label="Selected ID">
       <span class="osf-eyebrow">SELECTED ID</span>
@@ -2576,18 +2655,19 @@ function renderIdBrowserSelection(): string {
         <dl class="id-browser-metadata">
           <div><dt>Record Type</dt><dd>${escapeHtml(entry.type)}</dd></div>
           <div><dt>Category</dt><dd>${escapeHtml(entry.category)}</dd></div>
-          ${entry.source === 'mod' ? `<div><dt>Mod</dt><dd>${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod catalog')}</dd></div>` : ''}
+          ${entry.source === 'mod' ? `<div><dt>Mod</dt><dd>${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod catalog')}</dd></div>` : entry.source && entry.source !== 'built-in' ? `<div><dt>Source</dt><dd>${escapeHtml(entry.source)}</dd></div>` : ''}
           ${entry.plugin ? `<div><dt>Plugin</dt><dd>${escapeHtml(entry.plugin)}</dd></div>` : ''}
           ${entry.detail ? `<div><dt>Information</dt><dd>${escapeHtml(entry.detail)}</dd></div>` : ''}
-          <div><dt>Form ID</dt><dd><code>${escapeHtml(entry.value)}</code></dd></div>
+          <div><dt>Form ID</dt><dd>${entry.available === false ? '<span>Not loaded</span>' : `<code>${escapeHtml(entry.value)}</code>`}</dd></div>
           ${entry.localFormId ? `<div><dt>Local ID</dt><dd><code>${escapeHtml(entry.localFormId)}</code></dd></div>` : ''}
           ${editorId ? `<div><dt>Editor ID</dt><dd><code>${escapeHtml(editorId)}</code></dd></div>` : ''}
         </dl>
       </div>
       <div class="id-browser-selection-actions">
-        ${activeCatalogPicker?.browser === 'id' ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-id-browser-selection>Use This ID</button>` : ''}
+        ${devFeedbackButton({ kind: 'ID', name: entry.label, id: entry.value, localId: entry.localFormId, source: entry.plugin ?? entry.source, category: entry.category })}
+        ${activeCatalogPicker?.browser === 'id' && entry.available !== false ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-id-browser-selection>Use This ID</button>` : ''}
         <button class="favorite-button id-browser-favorite${isFavorite ? ' is-favorite' : ''}" type="button" data-id-favorite-toggle="${escapeHtml(favoriteKey)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">${isFavorite ? '★' : '☆'}</button>
-        <button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(entry.value)}">Copy ID</button>
+        ${entry.available === false ? '<span class="id-browser-unavailable">Required plugin is not active. ID actions are disabled.</span>' : `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(entry.value)}">Copy ID</button>`}
         ${editorId ? `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(editorId)}">Copy Editor ID</button>` : ''}
         ${action === 'additem'
           ? `<div class="id-browser-add-row"><label class="id-browser-quantity"><span class="osf-eyebrow">QUANTITY</span><input class="osf-input" id="id-browser-quantity" type="text" value="${idBrowserQuantity}" inputmode="numeric" autocomplete="off" aria-label="Item quantity from 1 to 999999"></label><button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-id-browser-action="additem">Add to Player</button></div>`
@@ -2596,7 +2676,81 @@ function renderIdBrowserSelection(): string {
     </aside>`;
 }
 
+function renderGameSettingsPanel(): void {
+  if (gameSettingsError) {
+    customPanel.innerHTML = '<div class="empty-state"><h3>Game Settings could not be loaded</h3><p>' + escapeHtml(gameSettingsError) + '</p></div>';
+    return;
+  }
+  if (!gameSettingsLoaded) {
+    customPanel.innerHTML = '<div class="empty-state"><h3>Loading Game Settings…</h3></div>';
+    if (!gameSettingsLoading) {
+      gameSettingsLoading = import('./game-settings-data').then(({ GAME_SETTINGS }) => {
+        gameSettings = GAME_SETTINGS;
+        gameSettingsLoaded = true;
+      }).catch((error) => {
+        gameSettingsError = describe(error);
+        setStatus(`Game Settings could not be loaded: ${describe(error)}`, 'error');
+      }).finally(() => {
+        gameSettingsLoading = null;
+        if (activeView === 'id-browser' && idBrowserCategory === 'game-settings') render();
+      });
+    }
+    return;
+  }
+  const matches = gameSettings.filter((entry) => gameSettingMatches(entry, query));
+  resultCount.textContent = `${matches.length.toLocaleString()} / ${gameSettings.length.toLocaleString()} settings`;
+  const selected = gameSettings.find((entry) => entry.name === selectedGameSetting);
+  const groups = [...new Set(matches.map(gameSettingGroup))].sort((a, b) => a.localeCompare(b)).map((group) => {
+    const rows = matches.filter((entry) => gameSettingGroup(entry) === group);
+    if (!rows.length) return '';
+    const limit = gameSettingLimits.get(group) ?? 200;
+    const open = query.trim() || openGameSettingGroups.has(group);
+    return `<details class="game-setting-group" data-setting-group="${escapeHtml(group)}"${open ? ' open' : ''}><summary>${escapeHtml(group)} <span class="nav-count">${rows.length.toLocaleString()}</span></summary>${open ? rows.slice(0, limit).map((entry) => `<button class="id-browser-row${selected?.name === entry.name ? ' is-selected' : ''}" type="button" data-select-setting="${escapeHtml(entry.name)}" aria-pressed="${selected?.name === entry.name}">${escapeHtml(entry.name)}</button>`).join('') + (rows.length > limit ? `<button class="osf-btn osf-btn--sm" type="button" data-more-settings="${escapeHtml(group)}">Show 200 More</button>` : '') : ''}</details>`;
+  }).join('');
+  const value = (v: GameSettingEntry['referenceValue']) => v === null ? 'Not supplied' : escapeHtml(String(v));
+  const detail = selected ? `<aside class="id-browser-selection" aria-label="Selected game setting"><div class="id-browser-selection-copy"><span class="osf-eyebrow">GAME SETTING</span><strong>${escapeHtml(selected.name)}</strong><dl class="id-browser-metadata"><div><dt>Group</dt><dd>${escapeHtml(gameSettingGroup(selected))}</dd></div><div><dt>Category</dt><dd>${escapeHtml(selected.category)}</dd></div><div><dt>Type</dt><dd>${escapeHtml(selected.type)}</dd></div><div><dt>Form ID</dt><dd>${selected.formId ? '<code>' + escapeHtml(selected.formId) + '</code>' : 'No Form ID supplied (engine setting)'}</dd></div><div><dt>Reference value</dt><dd>${value(selected.referenceValue)}</dd></div><div><dt>Master value</dt><dd>${value(selected.masterValue)}</dd></div><div><dt>Engine default</dt><dd>${value(selected.engineValue)}</dd></div></dl><p class="game-settings-reference-note">Values above are workbook references, not live readings. Mods and the current session may change them. Inspect to read the current value. Some Creation Kit settings may not be available in the running game.</p></div><div class="id-browser-selection-actions">${devFeedbackButton({ kind: 'Setting', name: selected.name, id: selected.formId ?? undefined, category: selected.category, command: gameSettingInspectCommand(selected) })}<button class="osf-btn osf-btn--sm" type="button" data-copy-setting-name>Copy Setting Name</button><button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-inspect-setting${nativeBackendReady ? '' : ' disabled'}>Inspect Current Value</button></div></aside>` : '<aside class="id-browser-selection id-browser-selection--empty"><strong>Select a Game Setting</strong><span>Choose a name to see its reference data and inspect its current value.</span></aside>';
+  customPanel.innerHTML = `<section class="id-browser-panel"><div class="id-browser-workspace"><div class="id-browser-results" id="game-settings-results">${groups || '<div class="empty-state">No matching settings.</div>'}</div>${detail}</div></section>`;
+  const results = customPanel.querySelector<HTMLElement>('#game-settings-results');
+  const refresh = () => {
+    const top = results?.scrollTop ?? 0;
+    renderGameSettingsPanel();
+    const replacement = customPanel.querySelector<HTMLElement>('#game-settings-results');
+    if (replacement) replacement.scrollTop = top;
+  };
+  results?.querySelectorAll<HTMLDetailsElement>('[data-setting-group]').forEach((details) => details.addEventListener('toggle', () => {
+    const group = details.dataset.settingGroup!;
+    if (query.trim() || details.open === openGameSettingGroups.has(group)) return;
+    if (details.open) openGameSettingGroups.add(group); else openGameSettingGroups.delete(group);
+    refresh();
+  }));
+  results?.addEventListener('click', (event) => {
+    const target = event.target as Element | null;
+    const more = target?.closest<HTMLButtonElement>('[data-more-settings]');
+    if (more?.dataset.moreSettings) {
+      const group = more.dataset.moreSettings;
+      gameSettingLimits.set(group, (gameSettingLimits.get(group) ?? 200) + 200);
+      refresh();
+      return;
+    }
+    const row = target?.closest<HTMLButtonElement>('[data-select-setting]');
+    if (!row?.dataset.selectSetting) return;
+    selectedGameSetting = row.dataset.selectSetting;
+    refresh();
+    customPanel.querySelector<HTMLElement>(`[data-select-setting="${CSS.escape(selectedGameSetting)}"]`)?.focus({ preventScroll: true });
+  });
+  customPanel.querySelector('[data-copy-setting-name]')?.addEventListener('click', () => { if (selected) void copyResultId(selected.name); });
+  customPanel.querySelector('[data-inspect-setting]')?.addEventListener('click', () => {
+    if (!selected || !nativeBackendReady) return;
+    const command = gameSettingInspectCommand(selected);
+    requestExecution({ command, definition: { id: 'game-setting-' + selected.name, title: 'Inspect ' + selected.name, category: 'World', description: 'Read the current game setting value.', command, captureOutput: true, testStatus: 'untested' }, rememberRecent: false });
+  });
+}
+
 function renderIdBrowserPanel(): void {
+  if (activeView === 'id-browser' && idBrowserCategory === 'game-settings') {
+    renderGameSettingsPanel();
+    return;
+  }
   const results = matchingIds();
   const activeMod = modCatalogs.find((catalog) => catalog.key === idBrowserCategory);
   const globalModSearch = activeView === 'mod-browser' && Boolean(query) && (modSearchScope === 'all' || !activeMod);
@@ -2612,6 +2766,7 @@ function renderIdBrowserPanel(): void {
   const renderResultRow = (entry: IdCatalogEntry, index: number) => `
     <button class="id-browser-row${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type && idBrowserSelected?.plugin === entry.plugin ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
       <strong title="${escapeHtml(entry.label)}">${escapeHtml(entry.label)}</strong>
+      ${entry.referenceOnly ? '<span class="id-browser-reference-tag">REFERENCE ONLY</span>' : ''}
       ${globalModSearch ? `<span class="id-browser-row-source">${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod')}</span>` : ''}
     </button>`;
   const visibleRows = activeView === 'mod-browser' && results.length > 0
@@ -2691,6 +2846,10 @@ function renderIdBrowserPanel(): void {
     if (replacement) replacement.scrollTop = scrollTop;
   });
 
+  bindIdBrowserSelectionActions();
+}
+
+function bindIdBrowserSelectionActions(): void {
   const quantityInput = document.querySelector<HTMLInputElement>('#id-browser-quantity');
   quantityInput?.addEventListener('input', () => {
     const quantity = Number(quantityInput.value);
@@ -2701,10 +2860,13 @@ function renderIdBrowserPanel(): void {
     if (!idBrowserSelected) return;
     const action = idBrowserAction(idBrowserSelected);
     if (action === 'findcell') {
+      selectedFavoriteIdKey = null;
+      activeView = 'id-browser';
       query = idBrowserSelected.label;
       search.value = query;
       activeCatalogPicker = null;
-      idBrowserCategory = 'locations';
+      if (!uiPreferences.advanced) { setStatus('Enable Advanced Options in Settings to browse Cells.', 'normal'); return; }
+      idBrowserCategory = 'cells';
       idBrowserRecordTypeFilter = 'CELL';
       idBrowserSelected = null;
       setStatus(`Showing teleportable cells matching ${query}.`, 'success');
@@ -2781,7 +2943,11 @@ function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): void 
     command = `player.placeatme ${entry.value} 1`;
     title = `Spawn ${entry.label}`;
     description = `Spawn one instance of the selected base record.`;
-    warning = 'Spawning base records can create duplicate NPCs, ships, or objects and may destabilize scripted content. Use a disposable save.';
+    warning = entry.category === 'Vehicles'
+      ? 'EXPERIMENTAL: PlaceAtMe can create a physical vehicle without registering ownership, deployment, storage, or normal ship linkage. It may be unusable or persist incorrectly. Test only outdoors on a disposable save.'
+      : entry.type.toUpperCase() === 'GBFM'
+        ? 'EXPERIMENTAL: PlaceAtMe can spawn a ship directly on the player or partly underground, leaving its boarding ramp inaccessible. Make a disposable save, enable no-clip if needed, and test only in a large open area.'
+        : 'Spawning base records can create duplicate NPCs or objects and may destabilize scripted content. Use a disposable save.';
     risk = 'danger';
   }
 
@@ -3307,12 +3473,7 @@ navigation.addEventListener('click', (event) => {
   }
 
   const questButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-quest-category]');
-  if (questButton?.dataset.questCategory && (questButton.dataset.questSource === 'Base Game' || questButton.dataset.questSource === 'Shattered Space')) {
-    questBrowserSource = questButton.dataset.questSource;
-    questBrowserCategory = questButton.dataset.questCategory;
-    selectedQuestKey = null;
-    render();
-  }
+  if (questButton) selectQuestBrowserCategory(questButton.dataset.questSource, questButton.dataset.questCategory);
 });
 
 (['commands', 'id-browser', 'mod-browser', 'quest-browser', 'activity', 'custom'] as const).forEach((view) => {
@@ -3352,6 +3513,23 @@ document.addEventListener('click', (event) => {
 });
 
 commandList.addEventListener('click', (event) => {
+  const favoriteIdRow = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-select-favorite-id]');
+  if (favoriteIdRow?.dataset.selectFavoriteId) {
+    const entry = idFavorites.find((candidate) => candidate.favoriteKey === favoriteIdRow.dataset.selectFavoriteId);
+    if (!entry) return;
+    selectedFavoriteIdKey = entry.favoriteKey;
+    selectedCommandId = null;
+    idBrowserSelected = entry;
+    idBrowserQuantity = 1;
+    const list = commandList.querySelector<HTMLElement>('.compact-command-list');
+    const scrollTop = list?.scrollTop ?? 0;
+    render();
+    const replacement = commandList.querySelector<HTMLElement>('.compact-command-list');
+    if (replacement) replacement.scrollTop = scrollTop;
+    commandList.querySelector<HTMLElement>(`[data-select-favorite-id="${CSS.escape(entry.favoriteKey)}"]`)?.focus({ preventScroll: true });
+    return;
+  }
+
   const favoriteIdToggle = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-favorite-id-toggle]');
   if (favoriteIdToggle?.dataset.favoriteIdToggle) {
     const entry = idFavorites.find((candidate) => candidate.favoriteKey === favoriteIdToggle.dataset.favoriteIdToggle);
@@ -3805,6 +3983,15 @@ confirmBackdrop.addEventListener('click', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
+  const settingsDialog = document.querySelector<HTMLDialogElement>('dialog.ui-settings-dialog[open]');
+  if (event.key === 'Escape' && settingsDialog) { event.preventDefault(); event.stopPropagation(); settingsDialog.close(); return; }
+  const devReportDialog = document.querySelector<HTMLDialogElement>('dialog.dev-feedback-dialog[open]');
+  if (event.key === 'Escape' && devReportDialog) {
+    event.preventDefault();
+    event.stopPropagation();
+    devReportDialog.close();
+    return;
+  }
   // Back can target the document instead of the focused dialog, so handle it
   // here as well as on the dialog itself.
   if (event.key === 'Escape' && resultsDialog.open) {
@@ -3915,3 +4102,22 @@ if (window.osfui?.request) {
 render();
 installControllerSupport(window.osfui);
 if (!welcomeHasBeenSeen()) openWelcome();
+
+installDevFeedback({
+  version: CONSOLE_COMMAND_CENTER_VERSION,
+  rerender: render,
+  status: (message, error = false) => setStatus(message, error ? 'error' : 'success'),
+  exportText: async (content) => {
+    if (previewReady || !window.osfui?.request) {
+      const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
+      const link = document.createElement('a'); link.href = url; link.download = 'CCC-Dev-Feedback.txt';
+      document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return 'CCC-Dev-Feedback.txt (browser download)';
+    }
+    const reply = await window.osfui.request<{ ok: boolean; path: string }>('console.command-center.devFeedbackExport', { content });
+    if (!reply?.ok || !reply.path) throw new Error('Native export did not return a saved file.');
+    return reply.path;
+  },
+});
+
+installUiSettings({ changed: render, status: (message, error = false) => setStatus(message, error ? 'error' : 'success') });

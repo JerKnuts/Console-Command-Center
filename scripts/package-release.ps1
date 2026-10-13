@@ -21,7 +21,7 @@ function Get-SourceFiles([string]$root) {
     $excludedNames = @('.id-records.json', '.id-records-shattered-space.json', '.id-records-base.err', '.id-records-ss.err')
     Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object {
         $relative = $_.FullName.Substring($root.Length + 1).Replace('\', '/')
-        if ($excludedNames -contains $_.Name) { return $false }
+        if ($excludedNames -contains $_.Name -or $_.Name -match '^\.(id|quest)-records.*\.json$' -or $_.Name -eq 'recovery-tests.tap') { return $false }
         foreach ($prefix in $excludedTopLevel) {
             if ($relative -eq $prefix -or $relative.StartsWith($prefix + '/', [StringComparison]::OrdinalIgnoreCase)) { return $false }
         }

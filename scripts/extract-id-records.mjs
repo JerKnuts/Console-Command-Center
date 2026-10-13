@@ -1,14 +1,16 @@
-import { open } from 'node:fs/promises';
+import { open, writeFile } from 'node:fs/promises';
 import { inflateSync } from 'node:zlib';
+import { basename } from 'node:path';
 
 const argumentsList = process.argv.slice(2);
 const positionalArguments = argumentsList.filter((argument) => !argument.startsWith('--'));
 const esmPath = positionalArguments[0];
 const localizationPath = positionalArguments[1];
 const allowEditorNames = argumentsList.includes('--allow-editor-names');
+const outputPath = argumentsList.find((argument) => argument.startsWith('--output='))?.slice('--output='.length);
 if (!esmPath) throw new Error('Pass the path to a Bethesda ESM file.');
 
-const INCLUDED_TYPES = new Set(['WEAP', 'ARMO', 'AMMO', 'ALCH', 'MISC', 'BOOK', 'OMOD', 'FACT', 'NPC_', 'WTHR', 'CELL', 'LCTN', 'FURN', 'GBFM']);
+const INCLUDED_TYPES = new Set(['WEAP', 'ARMO', 'AMMO', 'ALCH', 'MISC', 'BOOK', 'OMOD', 'FACT', 'NPC_', 'WTHR', 'CELL', 'LCTN', 'FURN', 'GBFM', 'PERK', 'SPEL', 'QUST']);
 const REQUIRE_LOCALIZED_NAME = new Set(['WEAP', 'ARMO', 'AMMO', 'ALCH', 'MISC', 'BOOK', 'NPC_']);
 
 function signature(buffer, offset = 0) { return buffer.toString('ascii', offset, offset + 4); }
@@ -114,6 +116,10 @@ try {
   await file.read(header, 0, 24, 0);
   if (signature(header) !== 'TES4') throw new Error('The selected file is not a Bethesda plugin file.');
   const dataStart = 24 + header.readUInt32LE(4);
+  const headerData = Buffer.alloc(header.readUInt32LE(4));
+  await file.read(headerData, 0, headerData.length, 24);
+  const masters = subrecords(headerData).filter(field => field.type === 'MAST').map(field => zString(field.data));
+  const owners = [...masters, basename(esmPath)];
 
   async function scan(start, end) {
     let position = start;
@@ -146,6 +152,7 @@ try {
               editorID,
               name: localizedName,
               type,
+              ownerPlugin: owners[formID >>> 24] ?? null,
             });
           }
         }
@@ -158,4 +165,10 @@ try {
   await file.close();
 }
 
-console.log(JSON.stringify({ esm: esmPath, recordCount: records.length, records }));
+const result = { esm: esmPath, recordCount: records.length, records };
+if (outputPath) {
+  await writeFile(outputPath, JSON.stringify(result), 'utf8');
+  console.log(JSON.stringify({ output: outputPath, esm: esmPath, recordCount: records.length }));
+} else {
+  console.log(JSON.stringify(result));
+}

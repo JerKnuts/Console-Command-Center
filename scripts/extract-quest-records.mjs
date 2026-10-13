@@ -1,10 +1,13 @@
-import { open } from 'node:fs/promises';
+import { open, writeFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { inflateSync } from 'node:zlib';
 
-const esmPath = process.argv[2] || process.env.STARFIELD_ESM;
+const argumentsList = process.argv.slice(2);
+const positionalArguments = argumentsList.filter((argument) => !argument.startsWith('--'));
+const esmPath = positionalArguments[0] || process.env.STARFIELD_ESM;
 if (!esmPath) throw new Error('Pass the path to a Bethesda ESM file or set STARFIELD_ESM.');
-const localizationPath = process.argv[3] || process.env.STARFIELD_LOCALIZATION_BA2;
+const localizationPath = positionalArguments[1] || process.env.STARFIELD_LOCALIZATION_BA2;
+const outputPath = argumentsList.find((argument) => argument.startsWith('--output='))?.slice('--output='.length);
 
 function signature(buffer, offset = 0) {
   return buffer.toString('ascii', offset, offset + 4);
@@ -171,7 +174,13 @@ try {
     position += 24 + dataSize;
   }
 
-  console.log(JSON.stringify({ esm: esmPath, questCount: quests.length, quests }, null, 2));
+  const result = { esm: esmPath, questCount: quests.length, quests };
+  if (outputPath) {
+    await writeFile(outputPath, JSON.stringify(result), 'utf8');
+    console.log(JSON.stringify({ output: outputPath, esm: esmPath, questCount: quests.length }));
+  } else {
+    console.log(JSON.stringify(result, null, 2));
+  }
 } finally {
   await file.close();
 }

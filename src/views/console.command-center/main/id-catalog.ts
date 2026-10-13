@@ -1,5 +1,10 @@
+import { applyReviewedFindings } from './reviewed-id-findings';
+import { applyArmorFindings } from './armor-test-findings';
+import { applyAmmoFindings } from './ammo-test-findings';
 import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, WEATHER_PICKER } from './reference-ids';
 import type { GeneratedIdCatalogEntry } from './id-browser-data';
+import { REVIEWED_SHIP_CATALOG } from './ship-catalog';
+import { REVIEWED_VEHICLE_CATALOG } from './vehicle-catalog';
 
 export type IdCatalogAction = 'additem' | 'addperk' | 'addspell' | 'spawn' | 'forceweather' | 'teleport' | 'findcell';
 
@@ -11,13 +16,27 @@ export type IdCatalogEntry = {
   detail?: string;
   keywords?: string[];
   action?: IdCatalogAction;
-  source?: 'built-in' | 'Base Game' | 'Shattered Space' | 'mod';
+  source?: 'built-in' | 'Base Game' | 'Shattered Space' | 'Free Lanes' | 'Terran Armada' | 'mod';
   sourceName?: string;
   plugin?: string;
   localFormId?: string;
   editorId?: string;
+  pluginKind?: 'full' | 'medium' | 'small';
+  available?: boolean;
+  referenceOnly?: boolean;
   questStages?: number[];
   questStagesError?: string;
+};
+
+export type PluginLoadInfo = {
+  plugin: string;
+  pluginKind: 'full' | 'medium' | 'small';
+  index: number;
+};
+
+export type PluginLoadOrderReply = {
+  ok: boolean;
+  plugins?: PluginLoadInfo[];
 };
 
 export type IdBrowserCategory = {
@@ -26,13 +45,14 @@ export type IdBrowserCategory = {
   detail: string;
   recordType: string;
   builtInCategories: string[];
+  sources?: IdCatalogEntry['source'][];
 };
 
 // These groups filter the reviewed catalog packaged with CCC. Expansion-only
 // records include their requirement in the visible detail text.
 export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
+  { label: 'Settings', value: 'game-settings', detail: 'Search and inspect named game settings.', recordType: 'GMST', builtInCategories: ['Game Settings'] },
   { label: 'All Categories', value: 'all', detail: 'Every ID included with CCC.', recordType: '', builtInCategories: ['*'] },
-  { label: 'Common Items', value: 'common', detail: 'Credits, digipicks, and ship parts.', recordType: '', builtInCategories: ['Common'] },
   { label: 'Weapons', value: 'weapons', detail: 'Weapons and guns.', recordType: 'WEAP', builtInCategories: ['Weapons'] },
   { label: 'Armor / Apparel', value: 'armor', detail: 'Spacesuits, helmets, packs, and clothing.', recordType: 'ARMO', builtInCategories: ['Armor', 'Apparel', 'Helmets', 'Packs', 'Spacesuits'] },
   { label: 'Ammo', value: 'ammo', detail: 'Ammunition records.', recordType: 'AMMO', builtInCategories: ['Ammo'] },
@@ -44,30 +64,32 @@ export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   { label: 'NPCs / Companions', value: 'npcs', detail: 'NPC base records and included companion references.', recordType: 'NPC_', builtInCategories: ['Companions', 'NPCs'] },
   { label: 'Weapon / Armor Mods', value: 'mods', detail: 'Weapon and armor modifier records.', recordType: 'OMOD', builtInCategories: ['Mods'] },
   { label: 'Factions', value: 'factions', detail: 'Faction records.', recordType: 'FACT', builtInCategories: ['Factions'] },
-  { label: 'Quests', value: 'quests', detail: 'Quest records.', recordType: 'QUST', builtInCategories: [] },
-  { label: 'Locations / Cells', value: 'locations', detail: 'Named location and cell records with searchable Editor IDs.', recordType: 'CELL', builtInCategories: ['Locations', 'Cells'] },
-  { label: 'Ships / Base Forms', value: 'ships', detail: 'Ships and generic base-form records.', recordType: 'GBFM', builtInCategories: ['Ships & Base Forms'] },
-  { label: 'Furniture', value: 'furniture', detail: 'Furniture and animation-marker records.', recordType: 'FURN', builtInCategories: [] },
+  { label: 'Locations', value: 'locations', detail: 'Named location records with searchable Editor IDs.', recordType: 'LCTN', builtInCategories: ['Locations'] },
+  { label: 'Cells', value: 'cells', detail: 'Named cells with searchable Editor IDs.', recordType: 'CELL', builtInCategories: ['Cells'] },
+  { label: 'Ships', value: 'ships', detail: 'Reviewed complete ship designs and their alternate Base IDs.', recordType: 'GBFM', builtInCategories: ['Ships'] },
+  { label: 'Ship Parts / Other Forms', value: 'ship-parts', detail: 'Ship modules and other named generic base-form records.', recordType: 'GBFM', builtInCategories: ['Ship Parts & Other Forms'] },
+  { label: 'Vehicles', value: 'vehicles', detail: 'Reviewed physical land vehicles and their related module records.', recordType: '', builtInCategories: ['Vehicles'] },
+  { label: 'Workshop / Outpost Objects', value: 'workshop', detail: 'Named workbenches, furniture, beds, chairs, terminals, and other usable workshop objects.', recordType: 'FURN', builtInCategories: ['Workshop / Outpost Objects'] },
   { label: 'Weather', value: 'weather', detail: 'Weather records.', recordType: 'WTHR', builtInCategories: ['Weather'] },
-];
+].sort((a, b) => {
+  if (a.value === 'all') return -1;
+  if (b.value === 'all') return 1;
+  if (a.value === 'game-settings') return 1;
+  if (b.value === 'game-settings') return -1;
+  return a.label.localeCompare(b.label);
+});
 
 const BASE_CATALOG: IdCatalogEntry[] = [
-  // COMMON
-  { label: 'Credits', value: '0000000F', type: 'MISC', category: 'Common', detail: 'Currency', keywords: ['money'], action: 'additem' },
-  { label: 'Digipick', value: '0000000A', type: 'MISC', category: 'Common', detail: 'Lockpick', keywords: ['lockpick'], action: 'additem' },
-  { label: 'Ship Parts', value: '0003FB19', type: 'ALCH', category: 'Common', detail: 'Ship repair item', keywords: ['repair'], action: 'additem' },
+  // Frequently used records remain in their normal item categories.
+  { label: 'Credits', value: '0000000F', type: 'MISC', category: 'Resources & Miscellaneous', detail: 'Currency', keywords: ['money'], action: 'additem' },
+  { label: 'Digipick', value: '0000000A', type: 'MISC', category: 'Resources & Miscellaneous', detail: 'Lockpick', keywords: ['lockpick'], action: 'additem' },
+  { label: 'Ship Parts', value: '0003FB19', type: 'ALCH', category: 'Aid', detail: 'Ship repair item', keywords: ['repair'], action: 'additem' },
 
   // SHIPS / GENERIC BASE FORMS
-  { label: 'Abyss Trekker', value: '000F31DB', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
-  { label: 'Aegis', value: '000F3078', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
-  { label: 'Discovery', value: '002E7461', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
-  { label: 'Frontier', value: '0000B730', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
-  { label: 'Gladius', value: '00147C8D', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
-  { label: 'Longsword', value: '0021C44B', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
-  { label: 'Mako', value: '001EB556', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
-  { label: 'Pterosaur', value: '000FAFDE', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
-  { label: 'Sunsail', value: '00058886', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
-  { label: 'Vagabond', value: '000F31CE', type: 'GBFM', category: 'Ships & Base Forms', action: 'spawn' },
+  ...REVIEWED_SHIP_CATALOG,
+
+  // LAND VEHICLES / VEHICLE MODULES
+  ...REVIEWED_VEHICLE_CATALOG,
 
   // AID — base game
   { label: 'Med Pack', value: '0000ABF9', type: 'ALCH', category: 'Aid', detail: 'Restores health', keywords: ['medpack', 'medicine', 'healing'], action: 'additem' },
@@ -444,6 +466,12 @@ const pickerEntries: IdCatalogEntry[] = [
     category: 'Factions',
     detail: option.detail,
     keywords: option.keywords,
+    ...(option.detail?.includes('Shattered Space') ? {
+      source: 'Shattered Space' as const,
+      plugin: 'ShatteredSpace.esm',
+      pluginKind: 'full' as const,
+      localFormId: option.value.slice(-6),
+    } : {}),
   })),
   ...CORE_COMPANION_PICKER.options.map((option) => ({
     label: option.label,
@@ -464,9 +492,7 @@ const pickerEntries: IdCatalogEntry[] = [
 ];
 
 const curatedCatalog = [...BASE_CATALOG, ...pickerEntries]
-  .map((entry) => ({ ...entry, source: 'built-in' as const }));
-const curatedIds = new Set(curatedCatalog.map((entry) => entry.value));
-
+  .map((entry) => ({ ...entry, source: entry.source ?? 'built-in' as const }));
 export const CURATED_ID_CATALOG: IdCatalogEntry[] = [...curatedCatalog]
   .sort((a, b) => a.label.localeCompare(b.label));
 
@@ -474,11 +500,35 @@ export function mergeGeneratedIdCatalog(generated: GeneratedIdCatalogEntry[]): I
   return [
     ...curatedCatalog,
     ...generated
-    .filter((entry) => !curatedIds.has(entry.value))
+    .filter((entry) => !curatedCatalog.some((curated) => curated.value === entry.value && (!curated.plugin || curated.plugin.toLowerCase() === entry.plugin.toLowerCase())))
     .map((entry) => ({
       ...entry,
       detail: entry.detail ?? undefined,
       action: entry.action ?? undefined,
     })),
-  ].sort((a, b) => a.label.localeCompare(b.label));
+  ].map(applyAmmoFindings).map(applyArmorFindings).map(applyReviewedFindings).sort((a, b) => a.label.localeCompare(b.label));
+}
+
+export function runtimeFormId(localFormId: string, pluginKind: PluginLoadInfo['pluginKind'], index: number): string | null {
+  if (!/^[0-9A-F]{1,8}$/i.test(localFormId) || !Number.isInteger(index) || index < 0) return null;
+  const local = Number.parseInt(localFormId, 16) >>> 0;
+  const localLimit = pluginKind === 'small' ? 0xFFF : pluginKind === 'medium' ? 0xFFFF : 0xFFFFFF;
+  const indexLimit = pluginKind === 'small' ? 0xFFF : pluginKind === 'medium' ? 0xFF : 0xFC;
+  if (local > localLimit || index > indexLimit) return null;
+  let value = 0;
+  if (pluginKind === 'small') value = 0xFE000000 | ((index & 0xFFF) << 12) | (local & 0xFFF);
+  else if (pluginKind === 'medium') value = 0xFD000000 | ((index & 0xFF) << 16) | (local & 0xFFFF);
+  else value = ((index & 0xFF) << 24) | (local & 0xFFFFFF);
+  return (value >>> 0).toString(16).toUpperCase().padStart(8, '0');
+}
+
+export function resolvePackagedIdCatalog(entries: IdCatalogEntry[], reply: PluginLoadOrderReply | null): IdCatalogEntry[] {
+  const plugins = new Map((reply?.ok ? reply.plugins ?? [] : []).map((plugin) => [plugin.plugin.toLowerCase(), plugin]));
+  return entries.map((entry) => {
+    if (!entry.plugin || !entry.localFormId || entry.source === 'mod') return entry;
+    const plugin = plugins.get(entry.plugin.toLowerCase());
+    if (!plugin) return { ...entry, available: entry.plugin.toLowerCase() === 'starfield.esm' };
+    const value = runtimeFormId(entry.localFormId, plugin.pluginKind, plugin.index);
+    return { ...entry, value: value ?? entry.value, pluginKind: plugin.pluginKind, available: Boolean(value) };
+  });
 }

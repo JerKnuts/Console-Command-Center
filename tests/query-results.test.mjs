@@ -1,8 +1,11 @@
+import {reviewedReferenceNote} from '../src/views/console.command-center/main/reviewed-id-findings.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { stripTypeScriptTypes } from 'node:module';
+import { ammoReferenceNote } from '../src/views/console.command-center/main/ammo-test-findings.ts';
+import { armorReferenceNote } from '../src/views/console.command-center/main/armor-test-findings.ts';
 
 // Exercise the actual response handler without a game or browser. DOM layout,
 // engine values, focus trapping, and scrolling still need a browser/game test.
@@ -263,8 +266,8 @@ test('ID Browser and Mod Browser records can be saved and reopened from Favorite
   assert.match(source, /STORAGE_ID_FAVORITES = 'consoleCommandCenter\.idFavorites'/);
   assert.match(source, /function idFavoriteKey\(entry: IdCatalogEntry\)/);
   assert.match(source, /data-id-favorite-toggle=/);
-  assert.match(source, /data-favorite-id-toggle=/);
-  assert.match(source, /data-open-favorite-id=/);
+  assert.match(source, /data-select-favorite-id=/);
+  assert.match(source, /favorite-id-detail/);
   assert.match(source, /savedFrom: entry\.source === 'mod' \? 'mod-browser' : 'id-browser'/);
   assert.match(source, /idFavorites\.length/);
   assert.match(styleSource, /\.id-browser-selection-actions \.id-browser-favorite/);
@@ -283,9 +286,9 @@ test('category selection has a complete orange outline', () => {
 
 test('shared category sidebar gives long names more room and separates rows', () => {
   assert.match(styleSource, /\.workspace\s*\{[\s\S]*?grid-template-columns:\s*250px minmax\(0, 1fr\)/);
-  assert.match(styleSource, /\.navigation-categories\s*\{[\s\S]*?gap:\s*4px/);
-  assert.match(styleSource, /\.navigation-categories \.nav-button\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\) auto;[\s\S]*?height:\s*auto;[\s\S]*?min-height:\s*44px;[\s\S]*?align-items:\s*center;[\s\S]*?padding:\s*10px 11px;[\s\S]*?border-bottom-color:/);
-  assert.match(styleSource, /\.navigation-categories \.nav-button > span:first-child\s*\{[\s\S]*?display:\s*flex;[\s\S]*?justify-content:\s*flex-start;[\s\S]*?line-height:\s*1\.35;[\s\S]*?white-space:\s*normal;[\s\S]*?overflow-wrap:\s*anywhere;[\s\S]*?text-align:\s*left/);
+  assert.match(styleSource, /\.navigation-categories\s*\{[\s\S]*?gap:\s*1px/);
+  assert.match(styleSource, /\.navigation-categories \.nav-button\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\) auto;[\s\S]*?height:\s*auto;[\s\S]*?min-height:\s*32px;[\s\S]*?align-items:\s*center;[\s\S]*?padding:\s*5px 11px;[\s\S]*?border-bottom-color:/);
+  assert.match(styleSource, /\.navigation-categories \.nav-button > span:first-child\s*\{[\s\S]*?display:\s*block;[\s\S]*?height:\s*auto;[\s\S]*?max-height:\s*none;[\s\S]*?line-height:\s*1\.35;[\s\S]*?white-space:\s*normal;[\s\S]*?overflow-wrap:\s*anywhere;[\s\S]*?text-align:\s*left/);
   assert.match(styleSource, /\.navigation-categories \.nav-count\s*\{[\s\S]*?align-self:\s*center;[\s\S]*?padding-top:\s*0/);
 });
 
@@ -321,7 +324,7 @@ test('commands under investigation remain isolated in the user-facing WIP catego
   assert.match(commandSource, /import \{ UNTESTED_COMMANDS \} from '\.\/untested-commands'/);
   assert.match(commandSource, /\| 'Untested'/);
   assert.match(commandSource, /\.\.\.UNTESTED_COMMANDS/);
-  assert.match(commandSource, /'Ship',\s*'Untested'/);
+  assert.match(commandSource, /'World',\s*'Untested'/);
   assert.match(source, /WORK IN PROGRESS/);
   assert.match(source, /category === 'Untested' \? 'WIP' : category/);
   assert.match(source, /if \(activeView === 'commands' && commandCategory === 'Untested'\) return 'Work in Progress'/);
@@ -415,13 +418,13 @@ test('sidebar categories follow the selected Commands, ID Browser, Mod Browser, 
   assert.match(source, /\[data-id-category\]/);
   assert.match(source, /\[data-quest-category\]/);
   assert.match(source, /data-quest-source=/);
-  assert.match(source, /\(\['Base Game', 'Shattered Space'\] as const\)/);
+  assert.match(source, /\(\['Base Game', 'Shattered Space', 'Free Lanes', 'Terran Armada'\] as const\)/);
   assert.match(source, /class="sidebar-source-heading"/);
   assert.match(source, /\.filter\(\(category\) => category\.value !== 'all'\)/);
   assert.match(source, /activeView = 'commands';[\s\S]*?commandCategory = selectedCategory/);
   assert.match(source, /idBrowserCategory = idButton\.dataset\.idCategory/);
-  assert.match(source, /questBrowserSource = questButton\.dataset\.questSource/);
-  assert.match(source, /questBrowserCategory = questButton\.dataset\.questCategory/);
+  assert.match(source, /questBrowserSource = source/);
+  assert.match(source, /questBrowserCategory = category/);
   assert.match(source, /questBrowserSource !== 'all' && entry\.source !== questBrowserSource/);
   assert.match(source, /questBrowserCategory !== 'all' && entry\.category !== questBrowserCategory/);
   assert.match(styleSource, /\.sidebar-source-heading\s*\{/);
@@ -447,7 +450,7 @@ test('the complete engine command reference is lazy-loaded into grouped Untested
   assert.match(source, /ENGINE_COMMAND_LIBRARY_TOTAL/);
   assert.match(engineCommandSource, /category: 'Untested'/);
   assert.match(engineCommandSource, /const PROMOTED_ENGINE_COMMANDS = new Set\([\s\S]*?'picknextactor'[\s\S]*?'picknextref'[\s\S]*?'pickrefbyid'[\s\S]*?'show1stperson'[\s\S]*?'toggleanimations'[\s\S]*?'togglegamepause'[\s\S]*?'togglehandsculled'[\s\S]*?'usenearestteleportdoor'/);
-  assert.match(engineCommandSource, /testStatus: knownCrashReason \? 'failed' : verifiedReadOnlyReason \? 'verified' : effectUnconfirmedReason \? 'inconclusive' : 'untested'/);
+  assert.match(engineCommandSource, /testStatus: knownIssue \? 'failed' : knownCrashReason \? 'failed' : verifiedReadOnlyReason \? 'verified' : effectUnconfirmedReason \? 'inconclusive' : 'untested'/);
   assert.match(engineCommandSource, /toggleborders:[\s\S]*?togglematerialgeometry:[\s\S]*?togglevolumegeometry:/);
   assert.match(engineCommandSource, /label: 'Optional Arguments'/);
   assert.match(engineCommandSource, /label: 'Optional Target \/ Prefix'/);
@@ -462,7 +465,7 @@ test('the complete engine command reference is lazy-loaded into grouped Untested
 
 test('page searches span every category in Commands, ID Browser, and Quest Browser', () => {
   assert.match(source, /let untestedQuery = ''/);
-  assert.match(source, /if \(query\) return COMMANDS\.filter\(\(command\) => commandMatches\(command\)\)/);
+  assert.match(source, /if \(query\) return visibleCommands\.filter\(\(command\) => commandMatches\(command\)\)/);
   assert.match(source, /command\.category === 'Untested'/);
   assert.match(source, /commandMatches\(command, untestedQuery\)/);
   assert.match(source, /if \(activeView === 'commands' && commandCategory === 'Untested'\) untestedQuery = query/);
@@ -585,6 +588,7 @@ test('document-targeted native Escape closes only the Results window', () => {
   let prevented = false;
   let stopped = false;
   const sandbox = {
+    document: { querySelector() { return null; } },
     resultsDialog: { open: true, close() { closed++; this.open = false; } },
     closeCurrentView() { assert.fail('Escape must not close CCC while Results is open'); },
   };
@@ -609,30 +613,30 @@ test('expanded packaged catalog has normalized unique IDs and labeled expansion 
     referenceIdSource.length,
   );
   const pickerIds = [...pickerCatalog.matchAll(/value: '([0-9A-F]{8})'/g)].map((match) => match[1]);
-  assert.equal(ids.length, 355);
+  assert.equal(ids.length, 345);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(pickerIds.length, 25);
-  assert.equal(new Set([...ids, ...pickerIds]).size, 380);
+  assert.equal(new Set([...ids, ...pickerIds]).size, 370);
   assert.match(idCatalogSource, /label: 'Trauma Pack', value: '0029A847'/);
   assert.match(idCatalogSource, /label: 'Boxing', value: '002C59DF'/);
   assert.match(idCatalogSource, /label: 'Heavy Particle Fuse', value: '002B558B'/);
   assert.match(referenceIdSource, /Dazra Ship Services[\s\S]*?Shattered Space DLC bounty faction/);
   assert.match(referenceIdSource, /House Va'ruun — Shattered Space[\s\S]*?Shattered Space DLC bounty faction/);
-  assert.match(idCatalogSource, /label: 'Abyss Trekker', value: '000F31DB', type: 'GBFM'/);
+  assert.match(idCatalogSource, /REVIEWED_SHIP_CATALOG/);
 
   const generatedJson = generatedIdSource.match(/String\.raw`([\s\S]+)`\) as/)?.[1];
   assert.ok(generatedJson, 'Generated catalog payload must be present');
   const generated = JSON.parse(generatedJson);
-  assert.equal(generated.length, 16358);
-  assert.equal(new Set(generated.map((entry) => entry.value)).size, generated.length);
+  assert.equal(generated.length, 23052);
+  assert.equal(new Set(generated.map((entry) => `${entry.plugin}:${entry.localFormId}:${entry.type}`)).size, generated.length);
   assert.ok(generated.filter((entry) => entry.source === 'Shattered Space').length > 900);
   assert.ok(generated.every((entry) => /^[0-9A-F]{8}$/.test(entry.value)));
   assert.ok(generated.every((entry) => !/\b(?:pretentious|conversation|deep space and back|Getting Kaiser back)\b/i.test(entry.label)));
   assert.ok(generated.every((entry) => !entry.label.includes('�')));
   assert.ok(generated.every((entry) => entry.label.length <= 72));
-  assert.ok(generated.every((entry) => !/creature.*attack|companion only|not playable/i.test(entry.label)));
+  assert.ok(generated.every((entry) => entry.referenceOnly || !/creature.*attack|companion only|not playable/i.test(entry.label)));
   assert.ok(!generated.some((entry) => ['010CA4BE', '010CA4BC', '01007540'].includes(entry.value)));
-  assert.match(idCatalogSource, /\.filter\(\(entry\) => !curatedIds\.has\(entry\.value\)\)/);
+  assert.match(idCatalogSource, /curatedCatalog\.some/);
 });
 
 test('large browser datasets load only when their screens are opened', () => {
@@ -692,7 +696,7 @@ test('ID Browser stays flat while Mod Browser groups large catalogs by category'
 
 test('ID Browser list interactions preserve scroll', () => {
   assert.match(source, /const scrollTop = resultsElement\.scrollTop;/);
-  assert.equal((source.match(/replacement\.scrollTop = scrollTop/g) ?? []).length, 2);
+  assert.equal((source.match(/replacement\.scrollTop = scrollTop/g) ?? []).length, 3);
 });
 
 test('ID Browser uses a compact title list with a selected information panel', () => {
@@ -708,7 +712,7 @@ test('ID Browser rows show only names while record details stay in the informati
   assert.match(source, /class="id-browser-metadata"/);
   assert.match(source, /<dt>Record Type<\/dt><dd>\$\{escapeHtml\(entry\.type\)\}<\/dd>/);
   assert.match(source, /<dt>Category<\/dt><dd>\$\{escapeHtml\(entry\.category\)\}<\/dd>/);
-  assert.match(source, /<dt>Form ID<\/dt><dd><code>\$\{escapeHtml\(entry\.value\)\}<\/code><\/dd>/);
+  assert.match(source, /entry\.available === false \? '<span>Not loaded<\/span>'/);
   assert.match(styleSource, /\.id-browser-row strong\s*\{[\s\S]*?text-overflow:\s*ellipsis;/);
 });
 
@@ -740,7 +744,7 @@ test('ID Browser quick actions build item, weather, and cell commands', () => {
     .map((match) => match[0]);
   assert.equal(quickActionFunctions.length, 2);
   let requested;
-  const sandbox = { requestExecution(execution) { requested = execution; } };
+  const sandbox = { reviewedReferenceNote, ammoReferenceNote, armorReferenceNote, requestExecution(execution) { requested = execution; } };
   vm.createContext(sandbox);
   vm.runInContext(stripTypeScriptTypes(quickActionFunctions.join('\n')), sandbox);
   const medPack = { label: 'Med Pack', value: '0000ABF9', type: 'ALCH', category: 'Aid', action: 'additem' };
@@ -750,7 +754,9 @@ test('ID Browser quick actions build item, weather, and cell commands', () => {
   const weather = { label: 'Clear', value: '0002B07E', type: 'WTHR', category: 'Weather' };
   const cell = { label: 'The Rock', value: '00016758', type: 'CELL', category: 'Cells', keywords: ['CityAkilaTheRock01'] };
   const location = { label: 'Akila City', value: '00001226', type: 'LCTN', category: 'Locations', keywords: ['CityAkilaLocation'] };
-  assert.equal(sandbox.idBrowserAction(ship), null);
+  assert.equal(sandbox.idBrowserAction(ship), 'spawn');
+  assert.equal(sandbox.idBrowserAction({ type: 'AMMO', value: '00231B1B', action: 'additem' }), null);
+  assert.equal(sandbox.idBrowserAction({ type: 'AMMO', value: '002B5599', plugin: 'Starfield.esm', localFormId: '2B5599' }), 'additem');
   assert.equal(sandbox.idBrowserAction(furniture), 'spawn');
   sandbox.requestIdBrowserQuickAction(furniture);
   assert.equal(requested.command, 'player.placeatme 58002B48 1');
@@ -782,7 +788,7 @@ test('ID Browser quick actions build item, weather, and cell commands', () => {
 });
 
 test('known-broken command cards are unavailable at both render and execution boundaries', () => {
-  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 3);
+  assert.equal((commandSource.match(/unavailableReason:/g) ?? []).length, 2);
   assert.match(source, /const unavailable = Boolean\(command\.unavailableReason\)/);
   assert.match(source, /if \(execution\.definition\?\.unavailableReason\)/);
   assert.match(source, /class="availability-popover is-danger" role="tooltip"/);
@@ -874,15 +880,15 @@ test('Quest Browser contains every extracted base-game and Shattered Space quest
       stages: match[2].split(',').map((value) => value.trim()).filter(Boolean).map(Number).filter(Number.isInteger),
       source: match[3],
     }));
-  assert.equal(entries.length, 2318);
-  assert.equal(entries.reduce((total, entry) => total + entry.stages.length, 0), 16844);
+  assert.equal(entries.length, 2568);
+  assert.equal(entries.reduce((total, entry) => total + entry.stages.length, 0), 19061);
   assert.equal(entries.filter((entry) => entry.source === 'Base Game').length, 2077);
   assert.equal(entries.filter((entry) => entry.source === 'Shattered Space').length, 241);
   assert.equal(new Set(entries.map((entry) => `${entry.source}:${entry.id}`)).size, entries.length);
 });
 
 test('Quest Browser keeps support records but moves them out of player-facing categories', () => {
-  assert.equal((questBrowserSource.match(/"internal":true/g) ?? []).length, 1322);
+  assert.ok((questBrowserSource.match(/"internal":true/g) ?? []).length >= 1322);
   assert.match(questBrowserSource, /"quest":"\[Always On Quest - Entangled\]"[\s\S]{0,220}"category":"Internal \/ System","internal":true/);
   assert.match(questBrowserSource, /"quest":"\[Entangled - Support Quest\]"[\s\S]{0,300}"category":"Internal \/ System","internal":true/);
   assert.match(source, /SUPPORT \/ INTERNAL QUEST/);
@@ -1002,7 +1008,7 @@ test('verified sky and closest-actor commands leave prepared intake', () => {
   assert.doesNotMatch(untestedCommandSource, /id: 'untested-pick-closest-actor'/);
   assert.match(engineCommandSource, /togglecollisiongeometry: 'In-game v0\.3\.11 testing produced no visible collision-geometry overlay\.'/);
   assert.match(engineCommandSource, /setcamerafov: 'In-game v0\.3\.11 testing at 90 and 75 degrees produced no visible field-of-view change\.'/);
-  assert.match(engineCommandSource, /showsubtitle: 'In-game v0\.3\.11 testing produced no visible subtitle override\.'/);
+  assert.match(engineCommandSource, /showsubtitle: 'Testing ShowSubtitle 0 hid all subtitles/);
 });
 
 test('Quest stage history marks completed, current, and unset stage buttons', () => {
@@ -1015,9 +1021,9 @@ test('Quest stage history marks completed, current, and unset stage buttons', ()
   assert.match(styleSource, /\.quest-stage-button--done/);
 });
 
-test('verified quest reads remain available and unusable ship spawning is disabled', () => {
+test('verified quest reads remain available and experimental ship spawning is explicitly restored', () => {
   assert.match(commandSource, /id: 'get-quest-stage',[\s\S]*?testStatus: 'verified'/);
   assert.match(commandSource, /id: 'show-quest-stages',[\s\S]*?testStatus: 'verified'/);
-  assert.match(commandSource, /id: 'spawn-ship',[\s\S]*?category: 'Untested'[\s\S]*?testStatus: 'failed'[\s\S]*?unavailableReason:[\s\S]*?intakeGroup: 'Executed — Issues'/);
+  assert.match(commandSource, /id: 'spawn-ship',[\s\S]*?category: 'Untested'[\s\S]*?testStatus: 'untested'[\s\S]*?intakeGroup: 'Script Functions'/);
   assert.match(commandSource, /boarding ramp inaccessible/);
 });

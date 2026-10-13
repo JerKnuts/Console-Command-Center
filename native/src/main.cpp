@@ -26,6 +26,7 @@
 #include "ScalarResult.h"
 #include "ModCatalogs.h"
 #include "CommandBatches.h"
+#include "DevFeedback.h"
 #include "CommandBatchAutoRun.h"
 
 namespace
@@ -33,7 +34,7 @@ namespace
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "1.2.18";
+    constexpr const char* kBuildId = "1.2.35";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -720,6 +721,19 @@ namespace
         }
     }
 
+    void OnPluginLoadOrder(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        try {
+            (void)request.Reply(CCC::ModCatalogs::PluginLoadOrder());
+        } catch (const std::exception& error) {
+            request.Reject("plugin-load-order-failed", error.what());
+        } catch (...) {
+            request.Reject("plugin-load-order-failed", "Could not read the active plugin load order.");
+        }
+    }
+
     void OnModCatalogRecords(const OSFUI::API::Request& raw, void*) noexcept
     {
         OSFUI::API::JsonRequest request{ raw };
@@ -733,6 +747,17 @@ namespace
         } catch (...) {
             request.Reject("mod-catalog-records-failed", "Could not scan the selected mod's IDs.");
         }
+    }
+
+    void OnDevFeedbackExport(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        const auto content = request.Get<std::string>("content");
+        if (!content) return;
+        try { (void)request.Reply(CCC::DevFeedback::Export(*content)); }
+        catch (const std::exception& error) { request.Reject("dev-feedback-export-failed", error.what()); }
+        catch (...) { request.Reject("dev-feedback-export-failed", "Could not export test reports."); }
     }
 
     void OnCommandBatchList(const OSFUI::API::Request& raw, void*) noexcept
@@ -876,6 +901,8 @@ namespace
         g_ui.RegisterRequest("console.command-center.setEffectiveActorValue", &OnSetEffectiveActorValue, nullptr);
         g_ui.RegisterRequest("console.command-center.modCatalogs", &OnModCatalogs, nullptr);
         g_ui.RegisterRequest("console.command-center.modCatalogRecords", &OnModCatalogRecords, nullptr);
+        g_ui.RegisterRequest("console.command-center.pluginLoadOrder", &OnPluginLoadOrder, nullptr);
+        g_ui.RegisterRequest("console.command-center.devFeedbackExport", &OnDevFeedbackExport, nullptr);
         g_ui.RegisterRequest("console.command-center.commandBatchList", &OnCommandBatchList, nullptr);
         g_ui.RegisterRequest("console.command-center.commandBatchSave", &OnCommandBatchSave, nullptr);
         g_ui.RegisterRequest("console.command-center.commandBatchDelete", &OnCommandBatchDelete, nullptr);
