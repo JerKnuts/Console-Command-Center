@@ -1,11 +1,25 @@
 set_project("ConsoleCommandCenter")
-set_version("1.2.38")
+set_version("1.3.0")
 set_arch("x64")
 set_languages("c++23")
 add_requires("nlohmann_json")
 add_requires("zlib 1.3.2", {configs = {shared = false}})
 
 add_rules("mode.debug", "mode.releasedbg")
+
+target("PreviewGeometryTests")
+    set_kind("binary")
+    set_default(false)
+    add_files("tests/native-preview.cpp")
+    add_includedirs("native/include")
+    add_packages("zlib")
+
+target("PreviewTriggerTests")
+    set_kind("binary")
+    set_default(false)
+    add_files("tests/native-preview-triggers.cpp")
+    add_includedirs("native/include", "native/lib/commonlibsf/lib/commonlib-shared/include")
+    add_packages("nlohmann_json")
 
 includes("native/lib/commonlibsf")
 

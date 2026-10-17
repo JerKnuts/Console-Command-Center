@@ -1,0 +1,181 @@
+{
+  "apparel": [
+    "sfbgs00d.esm:0872D8",
+    "sfbgs00d.esm:0897D1",
+    "starfield.esm:002FA4",
+    "starfield.esm:015C9D",
+    "starfield.esm:015CA8",
+    "starfield.esm:01D1D7",
+    "starfield.esm:01D1D9",
+    "starfield.esm:01D1E7",
+    "starfield.esm:027189",
+    "starfield.esm:02B5EE",
+    "starfield.esm:04008C",
+    "starfield.esm:040091",
+    "starfield.esm:09B72F",
+    "starfield.esm:09F0EF",
+    "starfield.esm:09F0F6",
+    "starfield.esm:0A6FEF",
+    "starfield.esm:0A6FFA",
+    "starfield.esm:0A7001",
+    "starfield.esm:0A7018",
+    "starfield.esm:0A701C",
+    "starfield.esm:0A7021",
+    "starfield.esm:0CC4D1",
+    "starfield.esm:0CC4F6",
+    "starfield.esm:11F3A7",
+    "starfield.esm:11F3A8",
+    "starfield.esm:11F3AC",
+    "starfield.esm:11F3AD",
+    "starfield.esm:11F3B0",
+    "starfield.esm:177492",
+    "starfield.esm:177493",
+    "starfield.esm:177494",
+    "starfield.esm:177495",
+    "starfield.esm:18B54A",
+    "starfield.esm:190D0B",
+    "starfield.esm:19F9C1",
+    "starfield.esm:1A4253",
+    "starfield.esm:1A52D1",
+    "starfield.esm:1BF2F8",
+    "starfield.esm:1C84DB",
+    "starfield.esm:2074B5",
+    "starfield.esm:208E8C",
+    "starfield.esm:21BBEC",
+    "starfield.esm:220B07",
+    "starfield.esm:223430",
+    "starfield.esm:225FC9",
+    "starfield.esm:2265B0",
+    "starfield.esm:2265B1",
+    "starfield.esm:2266A2",
+    "starfield.esm:2266A3",
+    "starfield.esm:235B7D",
+    "starfield.esm:250BC5",
+    "starfield.esm:250C86",
+    "starfield.esm:251F56",
+    "starfield.esm:2619EF",
+    "starfield.esm:2619F1",
+    "starfield.esm:26D8AA",
+    "starfield.esm:29AEAE",
+    "starfield.esm:29E171",
+    "starfield.esm:3556E7",
+    "starfield.esm:362F13",
+    "starfield.esm:362F14",
+    "starfield.esm:362F15",
+    "starfield.esm:37033D",
+    "starfield.esm:37033E",
+    "starfield.esm:37033F",
+    "starfield.esm:3B2A81",
+    "starfield.esm:3E8E7F",
+    "starfield.esm:3FDBF7"
+  ],
+  "reference": [
+    "shatteredspace.esm:05D69C",
+    "shatteredspace.esm:075187",
+    "shatteredspace.esm:075188",
+    "shatteredspace.esm:075189",
+    "starfield.esm:06ABCA",
+    "starfield.esm:06ABD5",
+    "starfield.esm:06ABD6",
+    "starfield.esm:06AC00",
+    "starfield.esm:090E5A",
+    "starfield.esm:0FBA04",
+    "starfield.esm:104634",
+    "starfield.esm:1072D4",
+    "starfield.esm:108C84",
+    "starfield.esm:13D982",
+    "starfield.esm:13D983",
+    "starfield.esm:13D984",
+    "starfield.esm:16D2C4",
+    "starfield.esm:192293",
+    "starfield.esm:192294",
+    "starfield.esm:1ED06D",
+    "starfield.esm:1ED070",
+    "starfield.esm:214769",
+    "starfield.esm:2265AE",
+    "starfield.esm:2265AF",
+    "starfield.esm:22856E"
+  ],
+  "renamed": {
+    "starfield.esm:22B8F6": {
+      "label": "Repulsing Explorer Spacesuit",
+      "original": "Explorer Spacesuit"
+    },
+    "sfbgs050.esm:0008C8": {
+      "label": "Apollo Spacesuit",
+      "original": "Spacesuit Apollo"
+    },
+    "sfbgs050.esm:0A4E1E": {
+      "label": "Armada Spacesuit",
+      "original": "Spacesuit Armada"
+    },
+    "sfbgs050.esm:0A52E9": {
+      "label": "Armada Armored Spacesuit",
+      "original": "Spacesuit Armada Armored"
+    },
+    "shatteredspace.esm:11BB9A": {
+      "label": "Chameleon Fang's Spacesuit",
+      "original": "Spacesuit Fang"
+    },
+    "sfbgs050.esm:00080F": {
+      "label": "Heavy Miner Powered Rig V1",
+      "original": "Spacesuit HMPR 01"
+    },
+    "sfbgs050.esm:0008D6": {
+      "label": "Heavy Miner Powered Rig V2",
+      "original": "Spacesuit HMPR 02"
+    },
+    "sfbgs050.esm:02FCE1": {
+      "label": "Hyper Padded Spacesuit",
+      "original": "Spacesuit Hyper Padded"
+    },
+    "sfbgs050.esm:05DBF9": {
+      "label": "Luxurious Spacesuit",
+      "original": "Spacesuit Luxurious"
+    },
+    "shatteredspace.esm:0C0AE9": {
+      "label": "Va'ruun Mining Spacesuit",
+      "original": "Spacesuit Miner Varuun"
+    },
+    "sfbgs050.esm:081761": {
+      "label": "Power Assist Armor Spacesuit",
+      "original": "Spacesuit Power Assist Armor"
+    },
+    "sfbgs050.esm:019266": {
+      "label": "Ryujin Stealth Spacesuit",
+      "original": "Spacesuit Ryujin Stealth"
+    },
+    "sfbgs050.esm:081555": {
+      "label": "Scavenger Spacesuit",
+      "original": "Spacesuit Scavenger"
+    },
+    "sfbgs050.esm:08151D": {
+      "label": "UC Tactical Agility Suit",
+      "original": "Spacesuit UC Tactical Agility Suit"
+    },
+    "shatteredspace.esm:018180": {
+      "label": "Zealot Spacesuit",
+      "original": "Spacesuit Varuun 01 Zealot"
+    },
+    "shatteredspace.esm:0300D2": {
+      "label": "Va'ruun Assault Spacesuit",
+      "original": "Spacesuit Varuun 02"
+    },
+    "shatteredspace.esm:15F302": {
+      "label": "Va'ruun Heavy Assault Spacesuit",
+      "original": "Spacesuit Varuun 02 Armored"
+    },
+    "shatteredspace.esm:016829": {
+      "label": "Zealot Assault Spacesuit",
+      "original": "Spacesuit Varuun 02 Zealot"
+    },
+    "shatteredspace.esm:00083F": {
+      "label": "Zealot Heavy Assault Spacesuit",
+      "original": "Spacesuit Varuun 02 Zealot Armored"
+    },
+    "starfield.esm:07B2B9": {
+      "label": "Sentinel's UC AntiXeno Spacesuit",
+      "original": "UC AntiXeno Spacesuit"
+    }
+  }
+}

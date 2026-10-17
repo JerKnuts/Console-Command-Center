@@ -34,14 +34,14 @@ const js = stripTypeScriptTypes(functions.join('\n'));
 function harness(reply, rejection) {
   const entries = [];
   const elements = {
-    resultsTitle: {}, resultsCommand: {}, resultsStatus: { dataset: {} }, resultsOutput: {}, resultsIdActions: {},
+    resultsTitle: {}, resultsCommand: {}, resultsStatus: { dataset: {}, setAttribute() {}, prepend() {} }, resultsOutput: {}, resultsIdActions: {},
     inventoryResultsToolbar: {}, inventoryResults: {}, resultsFooter: {},
     inventoryResultsSearch: { value: '' }, inventoryResultsSort: { value: 'type' },
   };
   const calls = [];
   const payloads = [];
   const sandbox = {
-    ...elements, Error, console,
+    ...elements, Error, console, createLoadingRing() { return {}; },
     localStorage: { getItem() { return null; }, setItem() {} },
     resultsDialog: { open: false, showModal() { this.open = true; } },
     window: { osfui: { async request(route, payload) { calls.push(route); payloads.push(payload); if (rejection) throw new Error(rejection); return typeof reply === 'function' ? reply(route, payload, calls.length) : reply; } } },
@@ -645,7 +645,7 @@ test('large browser datasets load only when their screens are opened', () => {
   assert.match(source, /import\('\.\/id-browser-data'\)/);
   assert.match(source, /import\('\.\/quest-browser'\)/);
   assert.match(source, /function clearForDatasetLoad\(\): void/);
-  assert.match(source, /commandList\.replaceChildren\(\)/);
+  assert.match(source, /commandList\.innerHTML=`[^`]*dataset-loading/);
   assert.doesNotMatch(source, /Loading \$\{escapeHtml\(label\)\}/);
 });
 

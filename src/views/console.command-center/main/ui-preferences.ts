@@ -1,7 +1,7 @@
-export type UiPreferences = { advanced: boolean; theme: 'dark' | 'light' };
+export type UiPreferences = { advanced: boolean; theme: 'dark' | 'light'; previewResolution: 'low' | 'medium' | 'high' };
 export function parseUiPreferences(value: unknown): UiPreferences {
   const data = value && typeof value === 'object' ? value as Partial<UiPreferences> : {};
-  return { advanced: data.advanced === true, theme: data.theme === 'light' ? 'light' : 'dark' };
+  return { advanced: data.advanced === true, theme: data.theme === 'light' ? 'light' : 'dark', previewResolution: data.previewResolution === 'low' || data.previewResolution === 'medium' ? data.previewResolution : 'high' };
 }
 const KEY = 'ccc.ui-preferences.v1';
 function read(): UiPreferences {
@@ -9,6 +9,11 @@ function read(): UiPreferences {
   catch { return parseUiPreferences(null); }
 }
 export const uiPreferences = read();
+export function setPreviewResolution(quality:UiPreferences['previewResolution']): boolean {
+  uiPreferences.previewResolution=quality;
+  if(typeof document!=='undefined')document.querySelectorAll<HTMLButtonElement>('[data-preview-quality]').forEach(choice=>{const selected=choice.dataset.previewQuality===quality;choice.setAttribute('aria-pressed',String(selected));choice.classList.toggle('osf-btn--osf-accent',selected);});
+  try{localStorage.setItem(KEY,JSON.stringify(uiPreferences));return true;}catch{return false;}
+}
 
 export function visibleIdCategory(category: string, advanced: boolean): boolean {
   return advanced || !['game-settings', 'cells', 'ship-parts'].includes(category);
@@ -32,6 +37,7 @@ export function installUiSettings(options: { changed: () => void; status: (text:
     dialog.setAttribute('aria-label', 'Console Command Center Settings');
     dialog.innerHTML = `<div class="results-head"><h2>Settings</h2><button class="osf-btn osf-btn--sm" type="button" data-close-settings>Close</button></div><div class="ui-settings-option"><div><strong>Advanced Options</strong><p>Show WIP commands, Settings, Cells, Ship Parts, reference-only items, and Internal / System quests.</p></div><button class="osf-btn osf-btn--sm" type="button" data-toggle-advanced aria-pressed="${uiPreferences.advanced}">${uiPreferences.advanced ? 'On' : 'Off'}</button></div><div class="ui-settings-option"><div><strong>Appearance</strong><p>Choose the dark interface or a light research-style palette.</p></div><button class="osf-btn osf-btn--sm" type="button" data-toggle-theme aria-pressed="${uiPreferences.theme === 'light'}">${uiPreferences.theme === 'light' ? 'Light Mode' : 'Dark Mode'}</button></div>`;
     document.body.append(dialog);
+    dialog.insertAdjacentHTML?.('beforeend', `<div class="ui-settings-option"><div><strong>3D Preview Resolution</strong><p>All settings preserve the original mesh. Higher settings use sharper textures and higher resolution. Every preset includes the movable light, material roughness, studio reflections and tone mapping.</p></div><div class="ui-preview-quality" role="group" aria-label="3D Preview Resolution">${(['low','medium','high'] as const).map(quality => `<button class="osf-btn osf-btn--sm${quality === uiPreferences.previewResolution ? ' osf-btn--osf-accent' : ''}" type="button" data-preview-quality="${quality}" aria-pressed="${quality === uiPreferences.previewResolution}">${quality[0].toUpperCase()+quality.slice(1)}</button>`).join('')}</div></div>`);
     const persist = () => {
       try { localStorage.setItem(KEY, JSON.stringify(uiPreferences)); }
       catch { options.status('Settings changed for this session but could not be saved.', true); }
@@ -52,6 +58,11 @@ export function installUiSettings(options: { changed: () => void; status: (text:
       theme.setAttribute('aria-pressed', String(uiPreferences.theme === 'light'));
       persist();
     });
+    dialog.querySelectorAll?.<HTMLButtonElement>('[data-preview-quality]').forEach(button => button.addEventListener('click', () => {
+      const quality=button.dataset.previewQuality;if(quality!=='low'&&quality!=='medium'&&quality!=='high')return;
+      setPreviewResolution(quality);
+      dialog.querySelectorAll<HTMLButtonElement>('[data-preview-quality]').forEach(choice=>{const selected=choice===button;choice.setAttribute('aria-pressed',String(selected));choice.classList.toggle('osf-btn--osf-accent',selected);});persist();
+    }));
     dialog.querySelector('[data-close-settings]')?.addEventListener('click', () => dialog.close());
     dialog.addEventListener('close', () => { dialog.remove(); document.querySelector<HTMLButtonElement>('#open-settings')?.focus(); });
     dialog.showModal();

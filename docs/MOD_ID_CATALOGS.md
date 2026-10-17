@@ -6,7 +6,7 @@ Open **Mod Browser** and select **Scan Mods** to scan the active load order and 
 
 Bethesda plugins whose filenames begin with `SFBGS` are included under **Official Creations**, except modules already packaged in the official catalogs (SFBGS004, SFBGS047, SFBGS00D, and SFBGS050). Their packaged item and quest records remain in ID Browser and Quest Browser rather than appearing twice. Community plugins appear under **Mods**. Both groups are sorted by supported ID count after a scan.
 
-The native scanner reports plugin filenames because Starfield plugins do not contain a reliable Nexus or Creations page title. CCC translates known filenames through its bundled display-name map. Unknown plugins use a clean filename-derived fallback. The raw plugin filename is preserved in Selected ID details and remains searchable. See [Mod display names](MOD_DISPLAY_NAMES.md) for the lookup format and contribution guidance.
+The native scanner reports plugin filenames because Starfield plugins do not contain a reliable Nexus or Creations page title. CCC translates known filenames through its bundled display-name map. Unknown plugins use a clean filename-derived fallback. The raw plugin filename is preserved in Selected ID details and remains searchable. See [Display names](#display-names) for the lookup format and contribution guidance.
 
 Large catalogs are divided into collapsible record categories such as Weapons, Armor, Ships, Ship Parts & Other Forms, and Quests. A **base form** is Starfield's generic `GBFM` data record. Mods use GBFM records for complete ships, but also for engines, grav drives, reactors, shields, fuel tanks, landing gear, weapons, templates, and other reusable definitions. CCC uses Editor ID naming to put complete ships under **Ships** and supporting GBFM records under **Ship Parts & Other Forms**. Category contents are created only when opened, which keeps very large plugins responsive.
 
@@ -40,3 +40,28 @@ Select **Cancel Scan** to stop after the current plugin request completes. Cance
 Scan Mods reads QUST stage indexes from plugin records, including zlib-compressed records. Stage numbers are sorted and deduplicated and remain attached to the current runtime quest ID. Select a scanned quest to use recorded stage buttons or inspect current, running, completed, and per-stage completion state.
 
 Stage indexes come from the scanned owning plugin file, not quest journal objectives; later plugin overrides may change those stages, and they do not guarantee that skipping a stage is safe. If stage extraction fails, the quest remains available and reports the error. Rescan after updating to a version with stage scanning.
+
+## Display names
+
+Starfield exposes loaded plugins by filename, such as `darkstar.esm`. A plugin file does not reliably contain the public title used on Nexus Mods or Creations, and the installation folder name belongs to the local mod manager rather than the running game.
+
+Console Command Center therefore uses a case-insensitive filename lookup in `src/views/console.command-center/main/mod-display-names.ts`. The bundled map includes 853 aliases generated from a broad real-world Starfield load order, with ambiguous high-profile entries reviewed by hand. Examples include:
+
+- `darkstar.esm` → `DarkStar - Total Gameplay Overhaul`
+- `Cross Heavy Industries M3.esm` → `Cross Heavy Industries - Model 3 Ship Modules`
+- `du_retrograde.esm` → `Dark Universe - Retrograde`
+- `kinggathcreations_spaceship.esm` → `Watchtower`
+
+Blueprint plugins retain separate filename keys. A readable alias does not change plugin ownership or the Official Creations grouping.
+
+An alias changes only the title shown in the Mod Browser. CCC still displays the raw plugin filename in Selected ID details and includes it in search keywords. If a plugin has no alias, CCC keeps the scanner's cleaned filename-derived name.
+
+### Adding or correcting a name
+
+Add one entry to `MOD_DISPLAY_NAMES` using the complete lowercase plugin filename as the key:
+
+```ts
+'exampleplugin.esm': 'Example Mod Title',
+```
+
+Keep `.esm`, `.esp`, or `.esl` in the key. Prefer the title published by the mod author. Do not include a version number unless it is part of the permanent mod title. The fallback means missing entries never prevent scanning or browsing.

@@ -1,3 +1,4 @@
+import type {PreviewTriggerEvent} from './preview-controller.ts';
 import type { OSFUIBridge, OSFUIGamepadButtonEvent, OSFUIGamepadStickEvent } from '../../../osfui';
 
 type GamepadPayload = OSFUIGamepadButtonEvent | OSFUIGamepadStickEvent;
@@ -112,6 +113,13 @@ function preferredInitialFocus(elements: HTMLElement[]): HTMLElement | undefined
 function focusElement(element: HTMLElement | undefined): void {
   if (!element) return;
   element.focus({ preventScroll: true });
+  const idList=element.closest<HTMLElement>('#id-browser-results');
+  if(idList){
+    const box=idList.getBoundingClientRect(),row=element.getBoundingClientRect();
+    if(row.top<box.top)idList.scrollTop+=row.top-box.top;
+    else if(row.bottom>box.bottom)idList.scrollTop+=row.bottom-box.bottom;
+    return;
+  }
   element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 }
 
@@ -132,6 +140,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   let bLongPressTimer: number | null = null;
   let bLongPressHandled = false;
   let lastPageFocus: HTMLElement | null = null;
+  let viewerShortcutHeld=false;
 
   const keyboard = document.createElement('div');
   keyboard.className = 'controller-keyboard-backdrop';
@@ -374,6 +383,18 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   }
 
   function moveMappedRegion(active: HTMLElement, direction: 'up' | 'down' | 'left' | 'right'): boolean {
+    const feedbackRow=active.closest<HTMLElement>('.dev-feedback-list-row');
+    if(feedbackRow){
+      if(direction==='left'||direction==='right'){
+        const controls=focusableElements(feedbackRow),index=controls.indexOf(active);
+        const next=controls[index+(direction==='left'?-1:1)];if(index>=0&&next)focusElement(next);
+        return true;
+      }
+      const lane=feedbackRow.closest<HTMLElement>('#id-browser-results,.compact-command-list');
+      if(lane){const rows=[...lane.querySelectorAll<HTMLElement>('.id-browser-row,.command-list-row,summary')].filter(isVisible),anchor=feedbackRow.querySelector<HTMLElement>('.id-browser-row,.command-list-row'),index=anchor?rows.indexOf(anchor):-1;
+        const next=rows[index+(direction==='up'?-1:1)];if(index>=0&&next)focusElement(next);return true;}
+    }
+
     const customEntry = active.closest<HTMLElement>('.custom-saved-entry');
     if (customEntry) {
       if (active.matches('[data-custom-favorite]') && direction === 'right') {
@@ -450,6 +471,14 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       else if (direction === 'up' && entries[0] === activityEntry) {
         focusElement(document.querySelector<HTMLElement>('#clear-activity:not([disabled])') ?? undefined);
       }
+      return true;
+    }
+
+    const idList=active.closest<HTMLElement>('#id-browser-results');
+    if(idList&&(direction==='up'||direction==='down')){
+      const rows=[...idList.querySelectorAll<HTMLElement>('.id-browser-row,summary')].filter(isVisible),index=rows.indexOf(active);
+      const next=rows[index+(direction==='up'?-1:1)];
+      if(index>=0&&next)focusElement(next);
       return true;
     }
 
@@ -558,6 +587,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   }
 
   function moveFocus(direction: 'up' | 'down' | 'left' | 'right'): void {
+    if(document.querySelector('dialog.model-preview-dialog[open]'))return;
     if (moveKeyboardGridFocus(direction)) return;
     const scope = currentScope(keyboard);
     let elements = focusableElements(scope);
@@ -580,11 +610,15 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   function ensureControllerFocus(): void {
     if (!controllerActive) return;
     const scope = currentScope(keyboard);
+    if(scope instanceof HTMLDialogElement&&scope.matches('.model-preview-dialog')){(scope.querySelector<HTMLElement>('canvas:not([hidden])')??scope).focus({preventScroll:true});return;}
     const elements = focusableElements(scope);
     const active = document.activeElement instanceof HTMLElement && elements.includes(document.activeElement)
       ? document.activeElement
       : undefined;
     if (scope === document) {
+      // Switching from mouse browsing to a controller must retain the current
+      // content focus instead of treating it as a request to return to categories.
+      if(active?.closest('.content')){contentMode=true;return;}
       if (contentMode) {
         if (active?.closest('.content')) return;
         focusElement(commandAreaTarget());
@@ -618,7 +652,9 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     }
     if (active instanceof HTMLElement && active.matches('.id-browser-row')) {
       active.click();
-      requestAnimationFrame(() => focusElement(idDetailTarget() ?? active));
+      // Selection renders synchronously. Focus the new detail before the
+      // mutation observer can fall back to the first row and reset list scroll.
+      focusElement(idDetailTarget() ?? active);
       return;
     }
     if (active instanceof HTMLElement && active.matches('.quest-browser-row')) {
@@ -668,6 +704,10 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       return;
     }
     const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if(active?.matches('[data-dev-action]')){
+      const name=active.closest('.dev-feedback-list-row')?.querySelector<HTMLElement>('.id-browser-row,.command-list-row');
+      if(name){focusElement(name);return;}
+    }
     const commandCard = active?.closest<HTMLElement>('.command-card');
     if (commandCard?.closest('.command-detail-panel')) {
       const selectedRow = document.querySelector<HTMLElement>('#command-list .command-list-row[aria-selected="true"]');
@@ -754,6 +794,17 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       focusElement(search);
       openKeyboard(search);
     });
+  }
+
+  function openSelectedModelViewer(): void {
+    if(!keyboard.hidden||currentScope(keyboard)!==document)return;
+    const buttons=[...document.querySelectorAll<HTMLButtonElement>('[data-preview-model]:not([disabled])')].filter(isVisible);
+    // Use the focused preview when several cards are present; otherwise use the
+    // visible selected-item preview shared by the ID and Mod Browser pages.
+    const active=document.activeElement;
+    const focused=active?.closest('[data-inline-preview]');
+    const button=buttons.find(button=>focused?.contains(button))??buttons[0];
+    button?.click();
   }
 
   function openContextualHelp(): void {
@@ -857,6 +908,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       return;
     }
 
+    if(keyboard.hidden&&document.querySelector('dialog.model-preview-dialog[open]'))return;
     const direction = event.key === 'ArrowUp' ? 'up'
       : event.key === 'ArrowDown' ? 'down'
         : event.key === 'ArrowLeft' ? 'left'
@@ -878,7 +930,12 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     }
   }, true);
 
+  const releaseViewerShortcut=()=>{viewerShortcutHeld=false;};
+  window.addEventListener('blur',releaseViewerShortcut);
+  window.addEventListener('gamepaddisconnected',releaseViewerShortcut);
+  document.addEventListener('visibilitychange',releaseViewerShortcut);
   document.addEventListener('pointerdown', () => {
+    viewerShortcutHeld=false;
     controllerActive = false;
     contentMode = false;
     document.body.classList.remove('controller-active');
@@ -897,10 +954,31 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   if (bridge) {
     bridge.send('osfui.gamepadRaw', { raw: true });
     bridge.send('osfui.handleBack', { handle: true });
+    bridge.on<PreviewTriggerEvent>('console.command-center.previewTriggers',payload=>{
+      const preview=document.querySelector<HTMLDialogElement>('dialog.model-preview-dialog[open]');
+      if(!preview||!keyboard.hidden||payload?.kind!=='triggers'||!payload.axes)return;
+      if(payload.axes.lt>.12||payload.axes.rt>.12){controllerActive=true;lastGamepadEvent=performance.now();document.body.classList.add('controller-active');}
+      preview.dispatchEvent(new CustomEvent('ccc-preview-gamepad',{detail:payload}));
+    });
+    bridge.on<{visible:boolean}>('ui.visibility',payload=>{
+      document.dispatchEvent(new CustomEvent('ccc-controller-visibility',{detail:payload.visible}));
+    });
     bridge.on<GamepadPayload>('ui.gamepad', (payload) => {
       controllerActive = true;
       lastGamepadEvent = performance.now();
       document.body.classList.add('controller-active');
+      if(payload.kind==='button'&&payload.button.id===BUTTON_Y&&!payload.button.down)viewerShortcutHeld=false;
+      const preview=document.querySelector<HTMLDialogElement>('dialog.model-preview-dialog[open]');
+      if(preview&&keyboard.hidden){
+        // The Y press that opened the viewer must be released before Y can open quality.
+        if(payload.kind==='button'&&payload.button.id===BUTTON_Y&&payload.button.down&&viewerShortcutHeld)return;
+        stopDirectionalRepeat();
+        if(bLongPressTimer!==null)window.clearTimeout(bLongPressTimer);
+        bPressStartedAt=null;bLongPressTimer=null;bLongPressHandled=false;
+        preview.dispatchEvent(new CustomEvent('ccc-preview-gamepad',{detail:payload}));
+        if(preview.open)(preview.querySelector<HTMLElement>('canvas:not([hidden])')??preview).focus({preventScroll:true});
+        return;
+      }
       if (payload.kind === 'button' && payload.button.id === BUTTON_B) {
         if (payload.button.down) beginControllerBackPress();
         else endControllerBackPress();
@@ -914,6 +992,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
         else if (payload.button.id === BUTTON_A) activateFocusedControl();
         else if (!keyboard.hidden && payload.button.id === BUTTON_X) backspace();
         else if (!keyboard.hidden && payload.button.id === BUTTON_Y) insertText(' ');
+        else if(payload.button.id===BUTTON_Y){if(!viewerShortcutHeld){viewerShortcutHeld=true;openSelectedModelViewer();}}
         else if (payload.button.id === BUTTON_LB) {
           if (!keyboard.hidden) moveCursor(-1);
           else cycleUtilityView(-1);

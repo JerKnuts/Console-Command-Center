@@ -66,3 +66,7 @@ Copyright (C) 1995-2026 Jean-loup Gailly and Mark Adler
 ## Game Settings reference data
 
 The Settings catalog was imported from the supplied Starfield Game Settings Database 1.1 workbook, published at [Starfield Game Settings Database](https://www.nexusmods.com/starfield/mods/18443). The workbook itself is not included. Values describe reference engine/master data, not the active modded game state. The engine-command reference has also been reconciled with user-supplied in-game Help output.
+
+## bcdec
+
+The preview DDS decoder includes the unmodified bcdec v0.985 header by Sergii Kudlai, under its MIT license option. Source: https://github.com/iOrange/bcdec. The header is native/third_party/bcdec.h and the full notice is native/third_party/LICENSE-bcdec.txt. Runtime packages also include licenses/bcdec.txt. Upstream header SHA256: 134520764d96f70a27db814173616c89ad85db95fbd3328417c7a8c77e7ca189.

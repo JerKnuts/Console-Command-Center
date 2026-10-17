@@ -56,7 +56,11 @@ export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   { label: 'Settings', value: 'game-settings', detail: 'Search and inspect named game settings.', recordType: 'GMST', builtInCategories: ['Game Settings'] },
   { label: 'All Categories', value: 'all', detail: 'Every ID included with CCC.', recordType: '', builtInCategories: ['*'] },
   { label: 'Weapons', value: 'weapons', detail: 'Weapons and guns.', recordType: 'WEAP', builtInCategories: ['Weapons'] },
-  { label: 'Armor / Apparel', value: 'armor', detail: 'Spacesuits, helmets, packs, and clothing.', recordType: 'ARMO', builtInCategories: ['Armor', 'Apparel', 'Helmets', 'Packs', 'Spacesuits'] },
+  { label: 'Suits', value: 'suits', detail: 'Spacesuits and suit records.', recordType: 'ARMO', builtInCategories: ['Spacesuits'] },
+  { label: 'Packs', value: 'packs', detail: 'Boost packs and other pack records.', recordType: 'ARMO', builtInCategories: ['Packs'] },
+  { label: 'Apparel', value: 'apparel', detail: 'Clothing, outfits, and wearable accessories.', recordType: 'ARMO', builtInCategories: ['Apparel'] },
+  { label: 'Helmets', value: 'helmets', detail: 'Helmets and protective headwear.', recordType: 'ARMO', builtInCategories: ['Helmets'] },
+  { label: 'Armor', value: 'armor', detail: 'Other armor records.', recordType: 'ARMO', builtInCategories: ['Armor'] },
   { label: 'Ammo', value: 'ammo', detail: 'Ammunition records.', recordType: 'AMMO', builtInCategories: ['Ammo'] },
   { label: 'Aid / Consumables', value: 'aid', detail: 'Medicine and consumable records.', recordType: 'ALCH', builtInCategories: ['Aid'] },
   { label: 'Resources / Miscellaneous', value: 'resources', detail: 'Resources, components, and miscellaneous items.', recordType: 'MISC', builtInCategories: ['Resources', 'Resources & Miscellaneous'] },
@@ -80,6 +84,11 @@ export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   if (b.value === 'game-settings') return -1;
   return a.label.localeCompare(b.label);
 });
+
+export function idCategoryForRecordType(type: string): string {
+  const categories = ID_BROWSER_CATEGORIES.filter(category => category.recordType === type);
+  return categories.length === 1 ? categories[0].value : 'all';
+}
 
 const BASE_CATALOG: IdCatalogEntry[] = [
   // Frequently used records remain in their normal item categories.
@@ -198,26 +207,26 @@ const BASE_CATALOG: IdCatalogEntry[] = [
   { label: 'Wakizashi', value: '0026D8A1', type: 'WEAP', category: 'Weapons', action: 'additem' },
 
   // ARMOR / SPACESUITS — common base-game examples.
-  { label: 'Bounty Hunter Spacesuit', value: '00228570', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Constellation Spacesuit', value: '001E2B18', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Deep Mining Spacesuit', value: '0005278E', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Deep Recon Spacesuit', value: '002265AE', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Deepcore Spacesuit', value: '0006AC00', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Deepseeker Spacesuit', value: '0016D2C4', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Deimos Spacesuit', value: '00026BF1', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Ecliptic Spacesuit', value: '0022856F', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Explorer Spacesuit', value: '002265AF', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Mantis Spacesuit', value: '00226299', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Mark I Spacesuit', value: '0001754D', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Mercury Spacesuit', value: '001D0F96', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Navigator Spacesuit', value: '00067C94', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Old Earth Spacesuit', value: '0003084E', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Pirate Assault Spacesuit', value: '00066821', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Pirate Charger Spacesuit', value: '00066826', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Pirate Corsair Spacesuit', value: '00066828', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Pirate Sniper Spacesuit', value: '0006682A', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Ranger Spacesuit', value: '00227CA0', type: 'ARMO', category: 'Armor', action: 'additem' },
-  { label: 'Shocktroop Spacesuit', value: '002265AD', type: 'ARMO', category: 'Armor', action: 'additem' },
+  { label: 'Bounty Hunter Spacesuit', value: '00228570', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Constellation Spacesuit', value: '001E2B18', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Deep Mining Spacesuit', value: '0005278E', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Deep Recon Spacesuit', value: '002265AE', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Deepcore Spacesuit', value: '0006AC00', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Deepseeker Spacesuit', value: '0016D2C4', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Deimos Spacesuit', value: '00026BF1', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Ecliptic Spacesuit', value: '0022856F', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Explorer Spacesuit', value: '002265AF', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Mantis Spacesuit', value: '00226299', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Mark I Spacesuit', value: '0001754D', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Mercury Spacesuit', value: '001D0F96', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Navigator Spacesuit', value: '00067C94', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Old Earth Spacesuit', value: '0003084E', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Pirate Assault Spacesuit', value: '00066821', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Pirate Charger Spacesuit', value: '00066826', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Pirate Corsair Spacesuit', value: '00066828', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Pirate Sniper Spacesuit', value: '0006682A', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Ranger Spacesuit', value: '00227CA0', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
+  { label: 'Shocktroop Spacesuit', value: '002265AD', type: 'ARMO', category: 'Spacesuits', action: 'additem' },
 
   // SKILLS — base game
   { label: 'Boxing', value: '002C59DF', type: 'PERK', category: 'Perks', detail: 'Physical skill', action: 'addperk' },

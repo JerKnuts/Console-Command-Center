@@ -1,4 +1,4 @@
-export const ID_BROWSER_TOTAL = 23317;
+export const ID_BROWSER_TOTAL = 23308;
 export const QUEST_BROWSER_TOTAL = 2_568;
 export const QUEST_BROWSER_STAGE_TOTAL = 19_061;
 export const QUEST_BROWSER_CATEGORY_ORDER = [

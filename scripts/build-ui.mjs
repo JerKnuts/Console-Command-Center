@@ -11,6 +11,8 @@ const viewRoot = resolve(outRoot, 'SFSE/Plugins/OSF/UI/views/console.command-cen
 await rm(outRoot, { recursive: true, force: true });
 await mkdir(outRoot, { recursive: true });
 await cp(resolve(projectRoot, 'mod'), outRoot, { recursive: true });
+await mkdir(resolve(outRoot, 'licenses'), { recursive: true });
+await cp(resolve(projectRoot, 'native/third_party/LICENSE-bcdec.txt'), resolve(outRoot, 'licenses/bcdec.txt'));
 
 await build({
   root: sourceRoot,

@@ -17,6 +17,7 @@ const tests = (await readdir(resolve(projectRoot, 'tests')))
   .filter((name) => name.endsWith('.test.mjs'))
   .map((name) => resolve(projectRoot, 'tests', name));
 
+await run(process.execPath, [resolve(projectRoot, 'scripts/check-release.mjs')]);
 await run(process.execPath, [resolve(projectRoot, 'scripts/check-ui.mjs')]);
 await run(process.execPath, ['--test', ...tests]);
 await run(process.execPath, [resolve(projectRoot, 'native/build.mjs')]);

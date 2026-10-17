@@ -2,6 +2,297 @@
 
 This file replaces the individual release-note documents. It records user-visible changes without repeating install and compatibility text for every version.
 
+## 1.3.0
+
+- Prepared a clean source release, excluding build products, dependency checkouts, local settings, obsolete screenshot/background experiments and deferred batch-library files.
+- Consolidated material feedback into the current model-preview guide and mod display-name guidance into the Mod Browser guide. Replaced overlapping historical validation notes with a current release checklist and documented the source layout/build workflow.
+- Hardened source packaging around explicit maintained roots, with version consistency and local documentation-link checks before packaging.
+- Retains the existing Custom Command interface and only the three original sample batches. The expanded editable batch library is reserved for a later update; existing user batch files are preserved.
+- Includes the prior preview/material, controller, catalog and Dev Mode fixes. No new rendering behavior is introduced by this source cleanup.
+
+## 1.2.86
+
+- Prepared the public update with the existing Custom Command batch interface and only its three original samples: Basic Supplies, Workshop Materials and Ballistic Starter Kit.
+- Held the expanded batch library and INCLUDED file-management update for the following release. Existing user-owned batch files are preserved.
+- Includes the default material-variant preview fix and latest catalog feedback from v1.2.82, covering the Syndicate Boss Suit and the catalog-wide template-swap route.
+
+## 1.2.82
+
+- Fixed default object-template material variants. Syndicate Boss Suit now selects its blue jacket and patterned light shirt rather than the generic white suit. Included OMOD properties and inherited default templates are bounded and plugin-remapped; addon defaults no longer block a later item variant.
+- Normalized shipped material-swap paths containing developer export directories without reading outside the game asset directory.
+- Audited 1,070 generated clothing/armor and weapon catalog records: 388 use the omitted route. All 1,606 material rules now pass the native audit. Added a repeatable audit tool and regression fixture; this does not claim visual parity for every item or mod.
+- Applied the 22:04 test report: moved three child outfits to Apparel and marked 17 reported clothing/vehicle module records Reference Only. Small-master local IDs now match reviewed findings regardless of zero padding.
+
+## 1.2.81
+
+- Applied the 21:22 feedback report: moved 68 clothing records to Apparel, marked 25 unique reported non-inventory records Reference Only, and corrected 20 suit names. The latest Va'ruun Mining Spacesuit correction wins. Owning plugin/local IDs scope every correction, and original names remain searchable.
+- Added normal-only decal rendering for the sample/bottle caps, Astra, Beaker Tongs and similar overlays. Their opacity and normal maps now modify lighting over the existing surface color. Genuine failed maps remain diagnostic-checkered; Textures Off and in-place quality changes remain supported.
+- Restored inherited replacement-enable flags and uniform material tints, including the blue dart's flight and gold shaft. Eggmund's unnamed component now uses its authored inline color instead of a false missing-texture marker.
+- Indexed miscellaneous material swaps and material-path forms. MOLM lists and MTPT-linked keys now resolve the Blue Fluted Vase's blue variant. Bio-Sensor's data-slate model was confirmed in the installed record and retained.
+- The in-game log identified missing normal-only decals on the four upgrade items' 12-piece replacement model. All ten distinct material paths reported missing in that session now resolve, including both upgrade decal families. Full in-game appearance/game shader parity still needs checking.
+
+## 1.2.80
+
+- Added bounded material-parent lookup for previews whose main surface uses an inherited Layer/TextureSet. This restores shared metal, plastic and textile surfaces on reported resources and decorations while keeping already resolved texture maps.
+- Texture archives now index authored DDS paths regardless of filename suffix, including the green crystal on the Priceless Gem. The inheritance table is built on demand and reused; original meshes are preserved.
+- Combined the two Ancient Branch entries and the two Antique Piggy Bank entries. The generic item remains selectable, while the quest variant ID is retained under Alternate Form IDs and remains searchable. Catalog count is now 23,308.
+- Reviewed both October 16 texture reports. Ecliptic's masked-layer rendering and Eggmund's material-free component remain limitations; data-slate display/game shader differences are not claimed fixed. See the feedback audit in docs.
+
+## 1.2.79
+
+- Moved Dev Mode item reports onto each item row in ID Browser, Mod Browser and ID favorites: Working, Issues and Reference Only sit beside the name.
+- Working and Reference Only save immediately. Issues opens the comment popup with Issue found / Not noticeable. Plain Working confirmations stay local and are omitted from exported reports.
+- Saving preserves list scroll, selection and action focus. Controller Left/Right selects row actions, Up/Down moves between item names, and B returns from an action to the item name. Removed the old item-details Test Report button.
+
+## 1.2.78
+
+- Applied all 59 Shattered Space book/slate title corrections from the October 16 feedback report. This completes the six Climbing Routes titles and updates the reported Dazra, Crater, Va'ruun book and Jinan recording names.
+- Corrections use the owning plugin and local Form ID, so load-order changes preserve the names. Previous labels remain searchable and appear as Original Name. Record IDs, categories, actions and reference-only flags are preserved.
+
+## 1.2.77
+
+- Fixed ID Browser controller focus after selecting an item and returning from the 3D Viewer. Selection now focuses the newly rendered details immediately, avoiding a fallback-to-first-row race that reset scrolling. Switching from mouse browsing retains content focus. Up/Down stay within the middle ID list, including its first/last rows; focusing a row scrolls only that list as needed.
+- Removed Ultra from the main settings and viewer menus. Saved Ultra choices migrate to High. Low, Medium and High now share the former Ultra lighting/shader effects: studio reflections, material roughness, tone mapping, normal maps, and movable light/brightness controls. Presets retain different texture and screen-resolution budgets and unchanged geometry.
+- Restored the Akila Security Uniform's shared glove texture family for both bodies. Its BaseGlove3 material uses BaseGloves_03 DDS names, which the previous fallback did not match. The alias is scoped to the exact base-game material path.
+- Verified the Mantis pack's main color, normal and roughness maps load. Its white shell is not a missing base-texture binding; some authored layered shader behavior remains approximated.
+
+## 1.2.76
+
+- Fixed L2/R2 zoom by adding a native trigger input path. The installed OSF raw gamepad contract forwards buttons and sticks but not triggers; the earlier simulated trigger-button tests did not cover that gap.
+- While the 3D Viewer is open, CCC reads analog trigger pressure from the XInput module already loaded by the game/framework and sends preview-only events. R2 zooms in, L2 zooms out, and lighter pressure zooms more slowly.
+- Trigger watching has a short renewable lease and stops on viewer close or native view hide/lease expiry. Releases and disconnection send zero; the browser clears stale trigger values after 350ms. Equal trigger pressure cancels zoom, and the quality chooser pauses zoom.
+
+## 1.2.75
+
+- Renamed the Full 3D button to 3D Viewer, including its accessible viewer name and inline-preview fallback message. Its controller hint is now Y.
+- Y opens the visible selected asset's 3D Viewer on any page offering the preview button, including the shared ID/Mod Browser detail panel. A focused preview takes priority if several cards are visible.
+- The opening Y press must be released before another Y press can open the viewer's quality chooser. Controller text entry retains Y for space, and unrelated dialogs block the page shortcut.
+
+## 1.2.74
+
+- Fullscreen 3D previews now use direct controller controls instead of navigating toolbar buttons: LB mannequin, RB male/female body, Y quality chooser, X textures, R3 light mode, L3 brightness mode, left stick pan, right stick rotate, L2 zoom out and R2 zoom in.
+- In light mode, the left stick orbits the light; in brightness mode, left-stick up/down adjusts brightness. Click the stick again to return to object movement. Light/brightness controls require High or Ultra, with an on-screen hint on lower presets.
+- The quality chooser accepts D-pad or left-stick choices, A to apply and B to cancel; applying updates the shared quality setting. B otherwise closes only the preview. Other toolbar navigation is suppressed, while mouse controls remain available.
+- Movement is continuous and frame-time based, with a stick dead zone. Held input clears on close, blur, visibility changes, mouse interaction or controller disconnection. Controller hints identify the active left-stick mode.
+
+## 1.2.73
+
+- Dev Mode flags the exact Ecliptic backpack material as a known incomplete preview. Its base color loads, but the renderer does not reconstruct its referenced masked textile/paint layers. This is an explicit scoped diagnostic, not a general missing-texture heuristic.
+- Full 3D status now reports unavailable material layers for flagged meshes, including during sharper-texture loading. Normal viewing and Textures Off retain their appearance.
+- Unrelated layered materials stay textured. This update marks the known limitation; it does not restore masked-layer rendering or automatically detect every incomplete material.
+
+## 1.2.72
+
+- Fixed the v1.2.71 Dev Mode regression that covered correctly textured models in checks. Multiple authored material layers are no longer treated as evidence of a missing texture.
+- The checker still marks unresolved surfaces and declared color textures that fail to load, including solid-color fallback cases. Successfully loaded color maps remain visible. This does not restore missing shader layers.
+
+## 1.2.71
+
+- Dev Mode now checks for incomplete layered materials even when a base color texture loads. This includes the Ecliptic backpack, whose additional authored material layers are not reconstructed by the preview renderer.
+- Declared color textures that fail to load remain marked incomplete even if a solid-color fallback is supplied. The checker highlights the affected mesh, not individual missing layer regions. Normal viewing and Textures Off retain their existing appearance.
+- This update improves diagnostics; it does not restore the missing material layers.
+
+## 1.2.70
+
+- Dev Mode highlights unresolved, untextured model surfaces with small bright red/blue checker cells in both inline and fullscreen previews. The procedural pattern is stable in model coordinates and needs no texture download. Mannequins, glass and authored solid-color/textured materials are excluded. Textures Off hides the checker; normal mode keeps the shaded fallback.
+- Plain Working confirmations keep the persistent green status without entering the export queue. Working comments, Issues and Reference Only reports remain exportable. Existing plain confirmations migrate into local status history before being removed from the pending report queue.
+- Saved outcomes include their update time so an older pending issue cannot overwrite a newer local Working confirmation after restart.
+- Applied the report's Black Graviplas Helmet and Black Open Graviplas Helmet Apparel corrections and nine working confirmations. Remaining texture comments are retained as diagnostic follow-up context; the checker does not claim to restore missing assets.
+
+## 1.2.69
+
+- Test Report now offers Working, Issues and Reference Only for IDs. Issues includes an Issue result selector for an issue found or Not noticeable; command/quest/settings reports offer the applicable Working and Issues choices.
+- Dev Mode rows show result-specific bars and icons: green/checkmark for Working, yellow/exclamation for Issues, orange/question mark for Not noticeable, and dark gray/struck-through names for Reference Only. Both themes retain clear selection outlines.
+- Latest explicit outcomes are stored separately from pending exports, so exporting reports and restarting retain the colors. Comment-only reports keep the previous result. Legacy Not working and Executed (no effect) reports migrate to their matching issue/uncertain styling; unclassified tested records remain neutral.
+
+## 1.2.68
+
+- Fullscreen panning now shifts the projection instead of moving geometry off the perspective axis. The item retains its shape at the sides; pointer zoom and 3D light placement use the matching projection.
+- Corrected origin-attachment precision handling for helmet flashlights, including Ground Crew, Mercury and Trackers Alliance. Small exporter rotation differences no longer leave lights below the helmet.
+- Restored Constellation helmet color lookup, authored constant light colors and the Power Assist helmet's shared material source. Audited all reported base-game helmet families; Mercury resolves every piece's material.
+- Applied all 24 helmet reports: one exact Deepseeker variant becomes Reference Only; 23 working records are marked tested; Gray/Teal Graviplas names are corrected; eight Graviplas headwear records move to Apparel. Original names remain searchable.
+- Removed the forced empty Armor category from the ID Browser sidebar.
+
+## 1.2.67
+
+- Fixed a native crash when opening Beowulf or another modular weapon before the preview record reader had been initialized. Every record-backed geometry/material path now obtains an initialized reader through one shared accessor.
+- Added native coverage for a fresh weapon cache, warm reuse, recovery after a missing weapon record and initialization after cache invalidation. Standalone Beowulf checks open fresh at Low, High and Ultra.
+
+## 1.2.66
+
+- Restored the missing UC Navy torso texture used by SY-920 Ensign Fatigues by resolving its authored material/TextureSet naming mismatch. All five outfit pieces now load color textures.
+- Restored Ultra in Settings and the viewer. It preserves original geometry and adds up to 4K color/normal maps within a bounded budget, archived roughness maps for material highlights, analytic studio reflections and bounce light, trilinear/anisotropic filtering and higher supersampled resolution. Texture detail remains limited by the installed source assets.
+- Moving the light now projects the cursor onto its 3D orbit, accounting for zoom and pan. Shift-drag selects the far side; points beyond the orbit's projected edge clamp to its rim. Arrow controls remain available.
+- Low-texture-first loading and seamless quality changes continue to preserve geometry, camera and toggles.
+
+## 1.2.65
+
+- Included the 22:55 pack feedback revision: 15 exact Starfield pack records are Reference Only with Add to Player disabled and sort below usable items; five working records remain usable and marked tested. Ten pack names are corrected, scoped by owning plugin and local ID, with original names retained for search.
+
+- Fixed the v1.2.64 regression reporting “Unsupported embedded model stream” for ordinary game models. External mesh paths and embedded version-2 streams are identified from their payload instead of their shared layout value.
+- Added native regression checks for external and embedded streams with the same layout value, plus mismatched and truncated embedded headers.
+
+## 1.2.64
+
+- Reused the CCC loading ring for Mod Browser scans, record loading, inspections, settings reads, saved command files and inline previews.
+- Enabled inline and Full 3D previews for supported Mod Browser assets in ordinary mode, with support for embedded version-2 mod geometry.
+- Weapon previews now follow default weapon attachment records and their connection points instead of guessing model filenames. Cutter and Microgun load their production assemblies; scoped material lookup prevents same-name materials from borrowing another weapon's textures.
+- Applied the October 14 feedback: ten exact base-game records are Reference Only, two tested outfits remain available, and four Shattered Space helmets have reviewed display names. Previous names remain searchable.
+
+## 1.2.63
+
+- Fixed the global search shortcut intercepting slash input in test comments and other text fields. Forward slash and backslash now type and save normally.
+- Corrected male/female armor-addon material swap fields, restoring the Astral Lounge Charmwear coat material. Balanced mip levels across all materials so early textures/normal maps do not starve later pieces of color.
+- Cap and Barrett previews use original archive textures instead of the reported loose Nike/Just Do It cap and black Barrett replacements. Installed mods are unchanged; unrelated overrides and new assets are retained.
+- Replaced the flat light icon with a small illuminated sphere at the light's actual 3D orbit position, with scene depth testing. High uses the matching positional light direction across the model.
+- Added a lightweight rotating split-ring loading indicator with CCC at its center, at the lower right of the preview. It clears on completion, failure or closing.
+- Removed Ultra from the viewer and main Settings. Existing Ultra preferences fall back to High; Low, Medium and High retain seamless switching.
+
+## 1.2.62
+
+- Quality changes update the existing viewer and textures without rebuilding geometry or resetting the camera. Medium/High/Ultra begin with Low textures; failed upgrades retain the textured preview.
+- Defaulted every preview to mannequin off and added a Textures On/Off toggle that retains cutout/glass shapes.
+- Added a visible light marker while Move Light is enabled, and wheel zoom anchored to the surface under the pointer in both viewers.
+- Reduced transfer pressure with two concurrent 32 KiB ranges and 16/8 KiB retries, draining outstanding replies before another transfer starts.
+- Composed matching color and normal-only decal passes with their opacity masks, fixing Artifact PI's dark rectangles and opaque symbol overlay.
+- Applied October 14 feedback: eight Reference Only records, four merged aid pairs with searchable alternate IDs, and nine corrected food/drink/note names. Fed's later Reference Only correction overrides the earlier merge request.
+
+## 1.2.61
+
+- Fixed normal-map details disappearing at close zoom and corrected two-sided normal facing.
+- Added a biased decal depth pass to reduce flickering surface markings while rotating.
+- Applied supported per-item material swaps, including cap body colors and logos.
+- Added stored material colors, broader creation material lookup and a shared vehicle-material fallback for unresolved Moonjumper surfaces. Vehicle and workshop coverage improves; complex material layers remain approximate.
+- High/Ultra now show an interactive basic model before loading sharper textures. Texture upgrades preserve the camera and leave the basic model available if an upgrade fails.
+- Cached reusable geometry and excluded dedicated voice/sound archives from preview indexing to reduce cold-load work.
+
+## 1.2.60
+
+- Restored original highest-detail geometry on all presets, fixing malformed hands and other low-detail mesh artifacts. Lower presets reduce texture/rendering cost and multisampling instead.
+- Added bounded concurrent 64 KiB transfers with smaller retry chunks, plus recent full-preview and compressed native caches to speed repeat loads.
+- Added previews for supported workshop/outpost furniture, statics, activators, containers, doors, recipes and ship parts.
+- Ship-part previews follow linked pack-in cells and assemble supported placed models with their transforms. Editor-only markers are excluded.
+
+## 1.2.59
+
+- Fixed zero-valued material tint turning textured caps solid black.
+- Added signed/unsigned BC5 normal maps on High/Ultra and ambient-occlusion texture detail, including the Mantis pack.
+- Added tinted glass handling for visor materials and removed the unsupported opaque helmet-glow overlay that covered them.
+- Slightly inset the static mannequin surface to reduce clothing intersections.
+- Quality presets select progressively lower authored mesh LODs where available. Ultra retains original geometry.
+- Raised Low to 512-pixel textures and a 1536-pixel canvas limit. Added movable lighting to High.
+
+## 1.2.58
+
+- Moved mannequin, body, quality and Ultra lighting controls to the upper right above the preview, extending the canvas down to the bottom of the window.
+- Removed Reset controls, scene backgrounds and scene motion. Double-click still restores the model view.
+- Hats, helmets and packs now start without a mannequin in both small and full previews; full previews retain the option to enable it.
+- Corrected origin-positioned wearable geometry using installed body bind transforms, including Green Neocity Formwear and the Homesteader Scout Hat.
+
+## 1.2.57
+
+- Replaced fullscreen rotation, tilt and zoom buttons with a quality dropdown. Quality changes apply immediately and update the main Settings preference.
+- Fixed stretched proportions in Low quality on wide preview windows.
+- Fixed the Mantis helmet visor appearing at the mannequin's feet.
+- Added DLC material database and texture-field support for affected packs, including Armada and Luxurious backpacks.
+
+## 1.2.56
+
+- Fixed helmet shells and decals disappearing while rotating, including Gran-Gran's Space Helmet. Cutout textures now retain solid depth writes and two-sided drawing instead of being treated as glass.
+- Glass and broadly translucent materials retain their separate blended pass; drink pouch transparency remains supported.
+
+## 1.2.55
+
+- Added four clean preview backgrounds: Industrial, Concourse, Lodge and Apartment, plus Plain.
+- Backgrounds move gently with item rotation and blur more at close zoom while the item stays sharp. Scene motion can be disabled; both choices persist.
+- Transparent model surfaces composite over the selected scene. Inline previews retain their plain low-cost background.
+
+## 1.2.54
+
+- Fixed rigid head attachments such as broken helmet visors and cap decals appearing at the feet, using matching bone bind transforms. Hidden blank decals remain invisible.
+- Ultra now uses color-correct lighting, a warm movable key light, cool fill and filmic tone mapping.
+- Added Ultra-only Move Light, brightness and Reset Light controls. Normal pan/orbit/zoom controls remain available.
+
+## 1.2.53
+
+- Small previews always use the male body and no longer show a body-selection button.
+- Replaced that button with Full 3D inside the preview and removed the separate Preview 3D action. The expanded viewer retains its Male/Female switch.
+
+## 1.2.52
+
+- Reduced the info-panel preview and placed it alongside the item metadata, keeping the information above the fixed action buttons.
+- Added separate opacity-map decoding and transparent rendering so outer plastic and glass no longer hide colored contents. Supports BC4 and R8 opacity textures.
+- Corrected material tint ownership so color values apply to their named material instead of the following material.
+
+## 1.2.51
+
+- Expanded 3D previews to nearly the entire screen, with a small outer margin and a model canvas that fills the remaining space above the controls.
+- Added a lightweight info-panel preview with left-drag rotation and scroll zoom. It uses Low quality, delays loading while browsing, and releases the previous renderer when the selection changes.
+- Added Male/Female body switches to inline and expanded previews, selecting matching outfit models with fallback when a variant is missing.
+- Expanded color loading to older mod texture archives, loose material databases and additional color-map names; unreadable candidates no longer block fallbacks. Added missing-color diagnostics.
+
+## 1.2.50
+
+- Added an optional Ultra preview preset: up to 4096-pixel textures for simple models, 2048 for complex models, stronger supersampling and an 8192-pixel canvas limit.
+- Ultra uses trilinear filtering and up to 16x anisotropic filtering when supported. High remains the default; source model geometry is preserved.
+
+## 1.2.49
+
+- Left-hold drag pans, wheel-hold drag orbits, and right-hold drag up/down zooms. Wheel scrolling still zooms.
+- Added persistent Low, Medium and High preview resolution choices in Settings; High is the default.
+- Added material-database color texture and tint lookup for Aid, Ammo and other items.
+- Expanded NIF exporter-header compatibility for Sanctum Priest Headwear.
+- Compressed model transfers, reduced chunk sizes, retried failed chunks and removed reply locking to address preview transfer timeouts such as Rokov's Uniform.
+
+## 1.2.48
+
+- Hold the mouse wheel and drag to pan item previews; Reset restores position.
+- Increased close-up zoom range, improved smooth shading, increased texture dimensions to 512–1024 pixels and increased the canvas resolution limit.
+- Shared repeated texture data to keep higher-detail previews within transfer limits.
+- Removed book/note model previews; a book reader is planned for a future release.
+
+## 1.2.47
+
+- Added supported color textures and a toggleable static mannequin for clothing and armor previews.
+- Added a base-model fallback for Beowulf and similarly named modular weapons that expose dummy receivers.
+- Applied 62 more item reports: 45 working records and 17 reference-only records.
+
+## 1.2.46
+
+- Combined the experimental v1.2.45 model viewer with 142 additional item test results: 100 reference-only records and 42 working records.
+- Corrected four item names and merged the duplicate Sam Coe and Sarah Morgan outfits while preserving alternate IDs.
+
+## 1.2.45
+
+- Added an experimental, manual 3D model viewer under Advanced Options. Reads installed model geometry locally and supports rotation/zoom; this first pass is untextured.
+- Preview work does not execute inventory commands. Existing item reports and browsing remain unchanged.
+
+## 1.2.44
+
+- Removed the temporary Akila item pictures and enlarged-image viewer. Item previews are now future work; all feedback changes remain.
+
+## 1.2.43
+
+- Added local image previews and an enlarged viewer for Akila Security Hat and Akila Security Uniform.
+- Applied the accompanying item feedback batch, preserving original names and reference-only restrictions.
+
+## 1.2.42
+
+- Applied 144 new item reports: 90 reference-only records and 54 working records. Updated the tested markers.
+
+## 1.2.41
+
+- Simplified the action confirmation button label to Execute.
+
+## 1.2.40
+
+- Applied 81 new item reports: 28 corrected display names and 27 reference-only records. Original names remain in details/search.
+- Combined the two tested Explorer Adventure Hats into one entry with both Form IDs. All reported records are marked tested in Dev Mode.
+
+## 1.2.39
+
+- Split Armor / Apparel into alphabetical Apparel, Armor, Helmets, Packs, and Suits categories. Armor command pickers still include all five groups.
+
 ## 1.2.38
 
 - Keep the item list and detail scroll position after saving a test report.

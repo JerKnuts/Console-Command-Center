@@ -27,6 +27,8 @@
 #include "ModCatalogs.h"
 #include "CommandBatches.h"
 #include "DevFeedback.h"
+#include "ModelPreview.h"
+#include "PreviewTriggerInput.h"
 #include "CommandBatchAutoRun.h"
 
 namespace
@@ -34,7 +36,7 @@ namespace
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "1.2.38";
+    constexpr const char* kBuildId = "1.3.0";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -902,6 +904,9 @@ namespace
         g_ui.RegisterRequest("console.command-center.modCatalogs", &OnModCatalogs, nullptr);
         g_ui.RegisterRequest("console.command-center.modCatalogRecords", &OnModCatalogRecords, nullptr);
         g_ui.RegisterRequest("console.command-center.pluginLoadOrder", &OnPluginLoadOrder, nullptr);
+        g_ui.RegisterRequest("console.command-center.previewModel", &CCC::ModelPreview::OnModel, nullptr);
+        g_ui.RegisterRequest("console.command-center.previewChunk", &CCC::ModelPreview::OnChunk, nullptr);
+        CCC::PreviewTriggerInput::Install(g_ui);
         g_ui.RegisterRequest("console.command-center.devFeedbackExport", &OnDevFeedbackExport, nullptr);
         g_ui.RegisterRequest("console.command-center.commandBatchList", &OnCommandBatchList, nullptr);
         g_ui.RegisterRequest("console.command-center.commandBatchSave", &OnCommandBatchSave, nullptr);

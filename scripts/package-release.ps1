@@ -17,21 +17,33 @@ $sourceRootName = "console-command-center-v$version"
 New-Item -ItemType Directory -Force -Path $artifactRoot | Out-Null
 
 function Get-SourceFiles([string]$root) {
-    $excludedTopLevel = @('.git', '.xmake', '.osfui', 'artifacts', 'build', 'dist', 'mod', 'native/lib', 'node_modules', 'release')
-    $excludedNames = @('.id-records.json', '.id-records-shattered-space.json', '.id-records-base.err', '.id-records-ss.err')
-    Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object {
-        $relative = $_.FullName.Substring($root.Length + 1).Replace('\', '/')
-        if ($excludedNames -contains $_.Name -or $_.Name -match '^\.(id|quest)-records.*\.json$' -or $_.Name -eq 'recovery-tests.tap') { return $false }
-        foreach ($prefix in $excludedTopLevel) {
-            if ($relative -eq $prefix -or $relative.StartsWith($prefix + '/', [StringComparison]::OrdinalIgnoreCase)) { return $false }
+    # Explicit maintained roots prevent local experiments and generated trees
+    # from silently entering the published source archive.
+    $rootFiles = @('.gitignore', 'CHANGELOG.md', 'COMMAND_CATALOG.md', 'EXCEPTIONS', 'LICENSE',
+        'README.md', 'RELEASE_VALIDATION.md', 'THIRD_PARTY_NOTICES.md', 'osfui.config.ts',
+        'osfui.mock.ts', 'package.json', 'package-lock.json', 'tsconfig.json', 'xmake.lua')
+    foreach ($name in $rootFiles) {
+        $path = Join-Path $root $name
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Required source file missing: $name" }
+        Get-Item -LiteralPath $path
+    }
+    function Get-MaintainedFiles([string]$directory) {
+        foreach ($item in Get-ChildItem -LiteralPath $directory) {
+            if ($item.PSIsContainer) {
+                if ($item.Name -in @('lib', 'node_modules', '.git', '.xmake', '.osfui', '__pycache__')) { continue }
+                Get-MaintainedFiles $item.FullName
+            } elseif ($item.Name -notmatch '(?i)\.(zip|log|err|pyc|obj|pdb|dll|exe)$' -and
+                $item.Name -notin @('Thumbs.db', 'Desktop.ini', '.DS_Store')) {
+                $item
+            }
         }
-        return -not ($relative.EndsWith('.zip', [StringComparison]::OrdinalIgnoreCase) -or
-            $relative.EndsWith('.log', [StringComparison]::OrdinalIgnoreCase) -or
-            $relative.EndsWith('.err', [StringComparison]::OrdinalIgnoreCase))
+    }
+    foreach ($name in @('src', 'native', 'scripts', 'tests', 'docs')) {
+        Get-MaintainedFiles (Join-Path $root $name)
     }
 }
 
-$sourceFiles = @(Get-SourceFiles $projectRoot)
+$sourceFiles = @(Get-SourceFiles $projectRoot | Sort-Object FullName)
 if (Test-Path -LiteralPath $sourceZip) {
     Remove-Item -LiteralPath $sourceZip -Force
 }
@@ -67,7 +79,7 @@ $manifest = @(
     ''
     "Included source files: $($sourceFiles.Count)"
     ''
-    'Extract the project, then run npm install and npm run build.'
+    'Extract the project, then run npm ci and npm run build. See docs/DEVELOPMENT.md.'
 )
 Set-Content -LiteralPath $manifestPath -Value $manifest -Encoding UTF8
 

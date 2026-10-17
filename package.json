@@ -1,6 +1,6 @@
 {
   "name": "console-command-center",
-  "version": "1.2.38",
+  "version": "1.3.0",
   "private": true,
   "license": "GPL-3.0-or-later",
   "type": "module",
@@ -14,7 +14,8 @@
     "package": "node scripts/package.mjs",
     "setup:deps": "node native/setup-deps.mjs",
     "validate:quests": "node scripts/validate-quest-browser.mjs",
-    "build:native": "node native/build.mjs"
+    "build:native": "node native/build.mjs",
+    "check:release": "node scripts/check-release.mjs"
   },
   "devDependencies": {
     "@osfui/cli": "0.1.0",

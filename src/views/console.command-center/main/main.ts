@@ -1,9 +1,11 @@
-import { uiPreferences, installUiSettings, visibleIdCategory, visibleIdRecord, visibleQuestRecord, visibleCommandRecord } from './ui-preferences';
+import { createLoadingRing, loadingRingHtml } from './loading-ring';
+import { canPreviewModel, installModelPreview } from './model-preview';
+import { uiPreferences, installUiSettings, setPreviewResolution, visibleIdCategory, visibleIdRecord, visibleQuestRecord, visibleCommandRecord } from './ui-preferences';
 import { reviewedReferenceNote, applyReviewedFindings, reviewedWasTested } from './reviewed-id-findings';
 import { orderIdEntries } from './id-record-order';
 import { armorReferenceNote, applyArmorFindings } from './armor-test-findings';
 import { rerenderKeepingPosition } from './preserve-report-position';
-import { devFeedbackButton, installDevFeedback, devFeedbackTestedClass } from './dev-feedback';
+import { devFeedbackButton, devFeedbackRow, installDevFeedback, devFeedbackTestedClass } from './dev-feedback';
 import { ammoReferenceNote, applyAmmoFindings } from './ammo-test-findings';
 import './style.css';
 import './light-theme.css';
@@ -22,6 +24,7 @@ import type { ReferenceIdPicker } from './reference-ids';
 import {
   CURATED_ID_CATALOG,
   ID_BROWSER_CATEGORIES,
+  idCategoryForRecordType,
   mergeGeneratedIdCatalog,
   resolvePackagedIdCatalog,
   type IdBrowserCategory,
@@ -217,7 +220,7 @@ const MAX_CUSTOM_COMMAND_LENGTH = 1024;
 const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1493;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.2.38';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.3.0';
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -442,7 +445,7 @@ app.innerHTML = `
 
         <div class="mod-scan-overlay" id="mod-scan-overlay" role="dialog" aria-modal="true" aria-labelledby="mod-scan-title" hidden>
           <section class="mod-scan-card osf-card">
-            <span class="mod-scan-spinner" aria-hidden="true"></span>
+            ${loadingRingHtml()}
             <div class="mod-scan-copy">
               <p class="osf-eyebrow">MOD BROWSER</p>
               <h3 id="mod-scan-title">Updating Mod Browser</h3>
@@ -619,7 +622,7 @@ function showResults(title: string, command: string, output: string, state: 'loa
   resultsStatus.textContent = state === 'loading' ? 'Reading game data…'
     : state === 'error' ? 'Inspection failed — no value was verified.'
     : `${output.length.toLocaleString()} characters • saved in Activity Log`;
-  resultsStatus.dataset.state = state;
+  resultsStatus.dataset.state = state;resultsStatus.setAttribute('aria-busy',String(state==='loading'));if(state==='loading')resultsStatus.prepend(createLoadingRing('small'));
   const isInventory = state === 'ready' && output.startsWith('CCC_INVENTORY_V1\n');
   const resultIds = state === 'ready' && !isInventory ? extractResultIds(output) : [];
   resultsIdActions.hidden = resultIds.length === 0;
@@ -1040,7 +1043,7 @@ function renderNavigation(): void {
       .filter((category) => visibleIdCategory(category.value, uiPreferences.advanced))
       .filter((category) => !(activeCatalogPicker && category.value === 'game-settings'))
       .map((category) => ({ category, count: idBrowserCategoryCount(category.value) }))
-      .filter(({ count }) => count > 0)
+      .filter(({ category, count }) => count > 0)
       .map(({ category, count }) => sidebarCategoryButton('id', category.value, category.label, count, idBrowserCategory === category.value))
       .join('');
     categoryContent = builtInCategories;
@@ -1213,7 +1216,7 @@ function viewTitle(): string {
 
 function clearForDatasetLoad(): void {
   resultCount.textContent = '';
-  commandList.replaceChildren();
+  commandList.innerHTML=`<div class="dataset-loading" role="status">${loadingRingHtml()}<span>Loading records…</span></div>`;
 }
 
 function updateModCatalogSummaryTimer(): void {
@@ -1553,7 +1556,7 @@ function renderSavedCommandFavorites(): string {
 function renderIdFavorites(): string {
   return orderIdEntries(idFavorites.filter((entry) => visibleIdRecord(entry, uiPreferences.advanced))).map((entry) => {
     const selected = entry.favoriteKey === selectedFavoriteIdKey;
-    return `<button class="command-list-row favorite-id-row${idTestedClass(entry)}${selected ? ' is-selected' : ''}" type="button" data-select-favorite-id="${escapeHtml(entry.favoriteKey)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(entry.label)} favorite ID"><span class="command-list-row-title">${escapeHtml(entry.label)}</span></button>`;
+    return devFeedbackRow(`<button class="command-list-row favorite-id-row${idTestedClass(entry)}${selected ? ' is-selected' : ''}" type="button" data-select-favorite-id="${escapeHtml(entry.favoriteKey)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(entry.label)} favorite ID"><span class="command-list-row-title">${escapeHtml(entry.label)}</span></button>`,{kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category});
   }).join('');
 }
 
@@ -2155,7 +2158,7 @@ function showConfirmation(execution: PendingExecution, message: string, risk: 'n
       : 'Execute Custom Command?';
   confirmMessage.textContent = message;
   confirmCommand.textContent = execution.command;
-  confirmRun.textContent = danger ? 'Execute Dangerous Command' : caution ? 'Execute Anyway' : 'Execute';
+  confirmRun.textContent = 'Execute';
   confirmRun.classList.toggle('osf-btn--danger', caution || danger);
   confirmRun.classList.toggle('osf-btn--osf-accent', !caution && !danger);
   confirmBackdrop.hidden = false;
@@ -2473,7 +2476,7 @@ function describe(error: unknown): string {
 
 function setStatus(message: string, kind: 'normal' | 'working' | 'success' | 'error' = 'normal'): void {
   status.textContent = message;
-  status.dataset.kind = kind;
+  status.dataset.kind = kind;status.setAttribute('aria-busy',String(kind==='working'));if(kind==='working')status.prepend(createLoadingRing('small'));
 }
 
 
@@ -2585,7 +2588,7 @@ function matchingIds(): IdCatalogEntry[] {
 }
 
 function idTestedClass(entry: IdCatalogEntry): string {
-  return devFeedbackTestedClass({ kind: 'ID', name: entry.label, id: entry.value, localId: entry.localFormId, source: entry.plugin ?? entry.source }, reviewedWasTested(entry) || Boolean(ammoReferenceNote(entry) || armorReferenceNote(entry)));
+  return devFeedbackTestedClass({ kind: 'ID', name: entry.label, id: entry.value, localId: entry.localFormId, source: entry.plugin ?? entry.source, referenceOnly: Boolean(entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)) }, reviewedWasTested(entry) || Boolean(ammoReferenceNote(entry) || armorReferenceNote(entry)));
 }
 
 function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspell' | 'spawn' | 'forceweather' | 'teleport' | 'findcell' | null {
@@ -2660,6 +2663,8 @@ function renderIdBrowserSelection(): string {
       <div class="id-browser-selection-copy">
         <span class="osf-eyebrow">SELECTED ID</span>
         <strong>${escapeHtml(entry.label)}</strong>
+        <div class="id-browser-detail-body">
+        ${canPreviewModel(entry, uiPreferences.advanced) ? `<div class="inline-model-preview" data-inline-preview="${escapeHtml(entry.value)}" data-preview-label="${escapeHtml(entry.label)}" data-preview-type="${escapeHtml(entry.type.toUpperCase())}" data-preview-category="${escapeHtml(entry.category)}" aria-label="Item model preview"></div>` : ''}
         <dl class="id-browser-metadata">
           <div><dt>Record Type</dt><dd>${escapeHtml(entry.type)}</dd></div>
           <div><dt>Category</dt><dd>${escapeHtml(entry.category)}</dd></div>
@@ -2672,9 +2677,10 @@ function renderIdBrowserSelection(): string {
           ${entry.localFormId ? `<div><dt>Local ID</dt><dd><code>${escapeHtml(entry.localFormId)}</code></dd></div>` : ''}
           ${editorId ? `<div><dt>Editor ID</dt><dd><code>${escapeHtml(editorId)}</code></dd></div>` : ''}
         </dl>
+        </div>
       </div>
       <div class="id-browser-selection-actions">
-        ${devFeedbackButton({ kind: 'ID', name: entry.label, id: entry.value, localId: entry.localFormId, source: entry.plugin ?? entry.source, category: entry.category })}
+
         ${activeCatalogPicker?.browser === 'id' && entry.available !== false ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-id-browser-selection>Use This ID</button>` : ''}
         <button class="favorite-button id-browser-favorite${isFavorite ? ' is-favorite' : ''}" type="button" data-id-favorite-toggle="${escapeHtml(favoriteKey)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">${isFavorite ? '★' : '☆'}</button>
         ${entry.available === false ? '<span class="id-browser-unavailable">Required plugin is not active. ID actions are disabled.</span>' : `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(entry.value)}">Copy ID</button>`}
@@ -2692,7 +2698,7 @@ function renderGameSettingsPanel(): void {
     return;
   }
   if (!gameSettingsLoaded) {
-    customPanel.innerHTML = '<div class="empty-state"><h3>Loading Game Settings…</h3></div>';
+    customPanel.innerHTML = `<div class="empty-state dataset-loading" role="status">${loadingRingHtml()}<h3>Loading Game Settings…</h3></div>`;
     if (!gameSettingsLoading) {
       gameSettingsLoading = import('./game-settings-data').then(({ GAME_SETTINGS }) => {
         gameSettings = GAME_SETTINGS;
@@ -2773,12 +2779,12 @@ function renderIdBrowserPanel(): void {
       : `${modCatalogs.length.toLocaleString()} scanned mods / ${includedTotal.toLocaleString()} IDs`
     : `${results.length.toLocaleString()} shown / ${includedTotal.toLocaleString()} included IDs${idBrowserRecordTypeFilter ? ` / ${idBrowserRecordTypeFilter}` : ''}`;
 
-  const renderResultRow = (entry: IdCatalogEntry, index: number) => `
+  const renderResultRow = (entry: IdCatalogEntry, index: number) => devFeedbackRow(`
     <button class="id-browser-row${idTestedClass(entry)}${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type && idBrowserSelected?.plugin === entry.plugin ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
       <strong title="${escapeHtml(entry.label)}">${escapeHtml(entry.label)}</strong>
       ${entry.referenceOnly ? '<span class="id-browser-reference-tag">REFERENCE ONLY</span>' : ''}
       ${globalModSearch ? `<span class="id-browser-row-source">${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod')}</span>` : ''}
-    </button>`;
+    </button>`, {kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category});
   const visibleRows = activeView === 'mod-browser' && results.length > 0
     ? (() => {
         const groups = new Map<string, Array<{ entry: IdCatalogEntry; index: number }>>();
@@ -3046,7 +3052,7 @@ function renderCustomPanel(): void {
             <button class="osf-btn osf-btn--sm" type="submit"${commandBatchesLoading ? ' disabled' : ''}>Save .txt File</button>
           </form>
           <div class="custom-saved-list">
-            ${savedEntries || `<div class="custom-saved-empty"><strong>${commandBatchesLoading ? 'Loading batch files...' : 'No batch files found'}</strong><span>${commandBatchesLoading ? 'Reading the user-owned CCC folder.' : 'Create a .txt file here or save the current batch.'}</span></div>`}
+            ${savedEntries || `<div class="custom-saved-empty">${commandBatchesLoading?loadingRingHtml():''}<strong>${commandBatchesLoading ? 'Loading batch files...' : 'No batch files found'}</strong><span>${commandBatchesLoading ? 'Reading the user-owned CCC folder.' : 'Create a .txt file here or save the current batch.'}</span></div>`}
           </div>
         </aside>
       </div>
@@ -3303,7 +3309,7 @@ function openPackagedFormSearch(definition: CommandDefinition): void {
   activeView = 'id-browser';
   idBrowserRecordTypeFilter = recordType;
   idBrowserCategory = recordType
-    ? (ID_BROWSER_CATEGORIES.find((category) => category.recordType === recordType)?.value ?? 'all')
+    ? idCategoryForRecordType(recordType)
     : 'all';
   idBrowserSelected = null;
   idBrowserQuantity = 1;
@@ -3350,7 +3356,7 @@ function openCatalogPicker(command: CommandDefinition, input: CommandInput): voi
   activeView = 'id-browser';
   idBrowserRecordTypeFilter = '';
   idBrowserCategory = activeCatalogPicker.allowedTypes.length === 1
-    ? (ID_BROWSER_CATEGORIES.find((category) => category.recordType === activeCatalogPicker?.allowedTypes[0])?.value ?? 'all')
+    ? idCategoryForRecordType(activeCatalogPicker.allowedTypes[0])
     : 'all';
   idBrowserSelected = null;
   idBrowserQuantity = 1;
@@ -3993,6 +3999,8 @@ confirmBackdrop.addEventListener('click', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
+  const modelDialog = document.querySelector<HTMLDialogElement>('dialog.model-preview-dialog[open]');
+  if (event.key === 'Escape' && modelDialog) { event.preventDefault(); event.stopPropagation(); modelDialog.close(); return; }
   const settingsDialog = document.querySelector<HTMLDialogElement>('dialog.ui-settings-dialog[open]');
   if (event.key === 'Escape' && settingsDialog) { event.preventDefault(); event.stopPropagation(); settingsDialog.close(); return; }
   const devReportDialog = document.querySelector<HTMLDialogElement>('dialog.dev-feedback-dialog[open]');
@@ -4031,18 +4039,20 @@ document.addEventListener('keydown', (event) => {
       void closeCurrentView();
     }
   }
-  if (event.key === '/' && idPickerBackdrop.hidden && helpBackdrop.hidden && welcomeBackdrop.hidden && confirmBackdrop.hidden && activeView !== 'custom' && activeView !== 'activity' && document.activeElement !== search) {
+  const activeElement = document.activeElement;
+  const isEditable = activeElement instanceof HTMLInputElement
+    || activeElement instanceof HTMLTextAreaElement
+    || activeElement instanceof HTMLSelectElement
+    || (activeElement instanceof HTMLElement && activeElement.isContentEditable);
+
+  if (event.key === '/' && !isEditable && !document.querySelector('dialog[open]') && idPickerBackdrop.hidden && helpBackdrop.hidden && welcomeBackdrop.hidden && confirmBackdrop.hidden && activeView !== 'custom' && activeView !== 'activity' && document.activeElement !== search) {
     event.preventDefault();
     search.focus({ preventScroll: true });
     search.select();
     return;
   }
 
-  const activeElement = document.activeElement;
-  const isEditable = activeElement instanceof HTMLInputElement
-    || activeElement instanceof HTMLTextAreaElement
-    || activeElement instanceof HTMLSelectElement
-    || (activeElement instanceof HTMLElement && activeElement.isContentEditable);
+
 
   if (
     event.key.length === 1
@@ -4129,5 +4139,10 @@ installDevFeedback({
     return reply.path;
   },
 });
+
+installModelPreview(async (name, payload) => {
+  if (previewReady || !window.osfui?.request) throw new Error('Live model loading requires the in-game native plugin.');
+  return window.osfui.request(name, payload, { timeoutMs: name.endsWith('previewChunk') ? 12000 : 120000 });
+}, { quality: () => uiPreferences.previewResolution, setQuality: quality => { setPreviewResolution(quality); } });
 
 installUiSettings({ changed: render, status: (message, error = false) => setStatus(message, error ? 'error' : 'success') });

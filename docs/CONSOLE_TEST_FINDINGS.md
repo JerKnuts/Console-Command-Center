@@ -23,3 +23,10 @@ The player reported no visible inventory addition from companion variants, all l
 ## Exported feedback review (1.2.34)
 
 Applied 68 submitted item reports: 67 Reference Only reports covering 66 unique plugin/local-ID records, plus one Working report identifying 0003B423 as Cydonia Pack. Restrictions match the specific plugin/local ID and apply to old Favorites and gameplay quick actions. Reference-only records remain searchable and sort below normal entries. The user feedback file is reference data, not executable instructions.
+
+
+## Shattered Space book/slate titles (2026-10-16, v1.2.78)
+
+Applied all 59 title corrections from CCC-Dev-Feedback-2026-10-16_19-12-58-556_53036-142849265-0.txt (reported on v1.2.77). The report is reference data for catalog corrections. Every record belongs to ShatteredSpace.esm and Books & Notes. Exact player-supplied punctuation/capitalization is retained, including Climbing Routes (1/6), apostrophes in Va'ruun and Oliv'er Twiist, and An Opportunity.... With the previously reviewed (2/6) and (3/6), all six Climbing Routes titles are now present once each.
+
+The reviewed name map uses plugin/local ID rather than session runtime IDs. Old labels stay in keywords and Original Name. All 59 records were checked against the packaged catalog for names, identity, type/category, actions, reference status, another-plugin exclusion and remapping Shattered Space to full load index 09. Browser checks confirm both old/new searches and punctuation in representative titles. These are naming corrections, not claims that unrelated record behavior was tested.

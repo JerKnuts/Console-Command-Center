@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {formatDevFeedback,devFeedbackButton,installDevFeedback,devFeedbackResults} from '../src/views/console.command-center/main/dev-feedback.ts';
+import {formatDevFeedback,devFeedbackButton,installDevFeedback,devFeedbackResults,devFeedbackExportable} from '../src/views/console.command-center/main/dev-feedback.ts';
 import {armorReferenceNote,applyArmorFindings} from '../src/views/console.command-center/main/armor-test-findings.ts';
 import {readFileSync} from 'node:fs';
 import {stripTypeScriptTypes} from 'node:module';
@@ -15,8 +15,8 @@ test('tested armor is reference-only and restrictions do not cross plugin owners
  assert.equal(armorReferenceNote({...record,type:'WEAP'}),null);
 });
 test('feedback export preserves record identity, all results, Unicode and multiline comments',()=>{
- const text=formatDevFeedback([{kind:'ID',name:'Test armor',id:'001EB731',localId:'1EB731',source:'Starfield.esm',category:'Armor',command:'player.additem 001EB731 1',version:'1.2.31',time:'2026-10-12T00:00:00Z',status:'Not working',comment:'No item\nTried twice — same result.'},{kind:'Quest',name:'Test quest',version:'1.2.31',time:'now',status:'',comment:'Need to retry'}]);
- for(const value of ['ID: 001EB731','Local ID: 1EB731','Source: Starfield.esm','Not working','Tried twice — same result.','Comment only','Report 2']) assert.ok(text.includes(value));
+ const text=formatDevFeedback([{kind:'ID',name:'Test armor',id:'001EB731',localId:'1EB731',source:'Starfield.esm',category:'Armor',command:'player.additem 001EB731 1',version:'1.2.31',time:'2026-10-12T00:00:00Z',status:'Not working',comment:'No item\nTried twice â€” same result.'},{kind:'Quest',name:'Test quest',version:'1.2.31',time:'now',status:'',comment:'Need to retry'}]);
+ for(const value of ['ID: 001EB731','Local ID: 1EB731','Source: Starfield.esm','Not working','Tried twice â€” same result.','Comment only','Report 2']) assert.ok(text.includes(value));
 });
 test('five clicks toggle Dev Mode and export uses the persisted report collection',async()=>{
  const events=new Map(); const exportEvents=new Map();let rendered=0;let exported='';
@@ -82,9 +82,9 @@ test('popup saves selected status and comment while Cancel leaves saved reports 
  for(let i=0;i<5;i++)dotEvents.get('click')();
  const click={target:{closest:()=>recordButton}};
  documentEvents.get('click')(click);
- lastDialog.resultEvents.get('Not working')();
+ lastDialog.resultEvents.get('Issues')();
  lastDialog.formEvents.get('submit')({preventDefault(){}});
- assert.equal(JSON.parse(saved)[0].status,'Not working');
+ assert.equal(JSON.parse(saved)[0].status,'Issues');
  assert.equal(JSON.parse(saved)[0].comment,'Tried twice\nNo inventory item');
  assert.equal(JSON.parse(saved)[0].id,'00123456');
  documentEvents.get('click')(click);lastDialog.cancelEvents.get('click')();
@@ -96,7 +96,8 @@ test('popup saves selected status and comment while Cancel leaves saved reports 
 test('item and command feedback offer distinct classifications with explicit export meanings',()=>{
  assert.ok(devFeedbackResults('ID').includes('Reference Only'));
  assert.ok(!devFeedbackResults('ID').includes('Executed (no effect)'));
- assert.ok(devFeedbackResults('Command').includes('Executed (no effect)'));
+ assert.deepEqual(devFeedbackResults('ID'),['Working','Issues','Reference Only']);
+ assert.deepEqual(devFeedbackResults('Command'),['Working','Issues']);
  assert.ok(!devFeedbackResults('Command').includes('Reference Only'));
  assert.ok(!devFeedbackResults('Quest').includes('Reference Only'));
  const common={name:'Test',version:'1.2.33',time:'now',comment:''};
@@ -116,4 +117,13 @@ test('failed export keeps reports and a retry clears them only after saving',asy
  fail=false;await events.get('click')();assert.deepEqual(JSON.parse(saved),[]);assert.equal(calls,2);
  await events.get('click')();assert.equal(calls,2);
  delete globalThis.document;delete globalThis.localStorage;
+});
+
+
+test('plain Working confirmations stay local while comments and issues remain exportable',()=>{
+ const report={kind:'ID',name:'Example',version:'new',time:'now',status:'Working',comment:''};
+ assert.equal(devFeedbackExportable(report),false);assert.equal(devFeedbackExportable({...report,comment:'   '}),false);
+ assert.equal(devFeedbackExportable({...report,comment:'Useful detail'}),true);assert.equal(devFeedbackExportable({...report,status:'Issues'}),true);assert.equal(devFeedbackExportable({...report,status:'Reference Only'}),true);
+ const output=formatDevFeedback([report,{...report,name:'Issue',status:'Issues'},{...report,name:'Working with comment',comment:'Extra detail'}]);
+ assert.ok(!output.includes('Name: Example'));assert.ok(output.includes('Name: Issue'));assert.ok(output.includes('Working with comment'));assert.ok(output.includes('Report 2'));
 });
