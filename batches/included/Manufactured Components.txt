@@ -1,0 +1,90 @@
+# Manufactured Components
+# Adds 25 each of 29 catalogued manufactured components for crafting and building.
+# Running this batch again adds another copy of the listed supplies.
+
+# Adaptive Frame
+player.additem 00246B6A 25
+
+# Aldumite Drilling Rig
+player.additem 00202F5A 25
+
+# Austenitic Manifold
+player.additem 00246B7C 25
+
+# Comm Relay
+player.additem 00246B64 25
+
+# Control Rod
+player.additem 00246B7B 25
+
+# Drilling Rig
+player.additem 0020A02F 25
+
+# Indicite Wafer
+player.additem 00203EB4 25
+
+# Isocentered Magnet
+player.additem 00246B77 25
+
+# Isotopic Coolant
+player.additem 00246B76 25
+
+# Mag Pressure Tank
+player.additem 00246B70 25
+
+# Microsecond Regulator
+player.additem 00246B5F 25
+
+# Molecular Sieve
+player.additem 00246B75 25
+
+# Monopropellant
+player.additem 00246B74 25
+
+# Nuclear Fuel Rod
+player.additem 00246B79 25
+
+# Paramagnon Conductor
+player.additem 00246B73 25
+
+# Polytextile
+player.additem 00246B72 25
+
+# Positron Battery
+player.additem 00246B71 25
+
+# Power Circuit
+player.additem 00246B5C 25
+
+# Reactive Gauge
+player.additem 00246B6F 25
+
+# Semimetal Wafer
+player.additem 00246B6D 25
+
+# Sterile Nanotubes
+player.additem 00246B6C 25
+
+# Substrate Molecule Sieve
+player.additem 00202782 25
+
+# Supercooled Magnet
+player.additem 00246B69 25
+
+# Tasine Superconductor
+player.additem 00203EAF 25
+
+# Tau Grade Rheostat
+player.additem 00246B68 25
+
+# Veryl-Treated Manifold
+player.additem 00203EB0 25
+
+# Vytinium Fuel Rod
+player.additem 00203EB3 25
+
+# Zero Wire
+player.additem 00246B65 25
+
+# Zero-G Gimbal
+player.additem 00246B66 25

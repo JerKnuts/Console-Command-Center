@@ -66,7 +66,7 @@ void OnModel(const OSFUI::API::Request& raw,void*) noexcept {
     bool ownsBusy = false;
     try {
         const auto text=request.Get<std::string>("formId");std::uint32_t id=0;const bool showMannequin=request.Get<unsigned>("mannequin").value_or(0)==1;
-        const auto requestedQuality=request.Get<std::string>("quality").value_or("high");const unsigned quality=requestedQuality=="low"?1:requestedQuality=="medium"?2:3;
+        const auto requestedQuality=request.Get<std::string>("quality").value_or("high");const unsigned quality=requestedQuality=="low"?1:requestedQuality=="medium"?2:requestedQuality=="ultra"?4:3;
         const bool male=request.Get<std::string>("sex").value_or("female")=="male";const bool geometryOnly=request.Get<std::string>("stage").value_or("complete")=="geometry";
         if(!text||text->size()!=8){request.Reject("invalid-form","A valid loaded Form ID is required.");return;}
         const auto parsed=std::from_chars(text->data(),text->data()+text->size(),id,16);
@@ -102,7 +102,7 @@ void OnModel(const OSFUI::API::Request& raw,void*) noexcept {
                             if(size<=24u*1024*1024){std::size_t held=size;for(const auto& prior:state.geometry)held+=prior.bytes;while(!state.geometry.empty()&&(held>24u*1024*1024||state.geometry.size()>=3)){held-=state.geometry.front().bytes;state.geometry.pop_front();}state.geometry.push_back({geometryKey,meshes,size});}
                         }
                         if(!geometryOnly&&!assembly){Preview::EnsureRecordScenes(state.scenes,directory,scenePlugins).ApplyMaterialSwaps(modelId,meshes,male);}
-                        if(meshes.size()>128)throw std::runtime_error("Too many model pieces.");
+                        if(meshes.size()>Preview::MaxPieces)throw std::runtime_error("Too many model pieces.");
                         if(!geometryOnly)state.textures->Apply(meshes,quality);auto bytes=Preview::Pack(meshes,(quality==4?256u:64u)*1024*1024);const auto decodedBytes=bytes.size();
                         Preview::Bytes compressed(compressBound(bytes.size()));uLongf compressedLength=compressed.size();
                         if(compress2(compressed.data(),&compressedLength,bytes.data(),bytes.size(),Z_BEST_SPEED)!=Z_OK)throw std::runtime_error("Model transfer compression failed.");compressed.resize(compressedLength);bytes=std::move(compressed);

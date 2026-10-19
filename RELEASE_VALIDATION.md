@@ -1,53 +1,26 @@
-# Release validation — 1.3.0
+# Release validation — 1.3.15
 
-## Scope
+Release artifacts validated locally; see GitHub for publication status.
 
-This release cleans and documents the maintained source without changing preview or command behavior. It retains the existing Custom Command interface and only Basic Supplies, Workshop Materials and Ballistic Starter Kit. The expanded INCLUDED batch library and comment-parser update are deferred. User Documents files and installed game/mod files are not replaced by this cleanup.
+## This release
 
-## Repeatable build checks
+- All 245 JavaScript tests passed; UI/TypeScript checks passed. Reset migration coverage includes edited sources, deleted defaults, destination collisions, repeat setup and filename validation. Existing batch command checks confirm unchanged preset/reset values.
+- Included reset defaults use suffix RESET. Boostpack Explosions and its RESET file sort together. The existing native included-file setup performs equivalent validated migration; saved batch/Auto-Run files are untouched.
+- Mod grouping uses the existing plugin view or category counts across scanned records. Tests verify cross-plugin category aggregation, exact filtering, reference visibility and exclusion of packaged records.
+- Browser fixture checks confirmed category grouping, cross-plugin source labels, selection and global search. The switch-back assertion needed a render-frame wait; the corrected full browser run remains pending because the permission-review service was unavailable and sandboxed Edge could not launch. Complete the final switching check in the game.
+- UI production build, release metadata checks and native release build passed. The native build used a workspace-local dependency cache. Native SampleBatchTests passed, including edited-file migration, deletion handling, repeated migration and destination collisions. Installable and source archives are built from the maintained source roots; generated caches and test executables are excluded.
+- No live game files were modified during development.
 
-Run from the source root on Windows with the toolchain in [Development](docs/DEVELOPMENT.md):
+## Previous preview validation retained (1.3.11)
 
-```powershell
-npm ci
-npm run check:release
-npm run package
-xmake build PreviewGeometryTests
-.\build\windows\x64\release\PreviewGeometryTests.exe
-xmake build SampleBatchTests
-.\build\windows\x64\release\SampleBatchTests.exe
-```
+- All 232 JavaScript tests, UI/TypeScript and release checks passed; native preview fixtures passed for 1.3.11. These prior checks cover the preview changes retained in this release.
+- Native Ultra asset check produced a 101,099,772-byte Mauling Axe packet with two 2048-pixel color/normal/metal sets. The packet decoded and rendered without WebGL errors using the Ultra transfer path. Source texture sizes remain respected.
+- Browser pixel checks confirm bloom outside a bright object, greater blur away from the focus plane, subtle three-level grain on a flat midtone, allocation-failure fallback, and zero retained postprocess textures/framebuffers/programs/shaders/VAOs after disposal.
+- Real-model browser checks cover Ultra, quality switching, light marker, camera controls and Textures Off without WebGL errors.
+- Geometry-first browser checks hold material replies pending and verify visible pixels before the first texture request. Inline-to-fullscreen reuse works while inline textures remain pending. Low-to-Ultra updates preserve the rotation matrix; failed upgrades retain the visible model.
+- Ultra is available in both quality menus and saved preferences; controller quality selection uses the same option list. Other presets keep their existing limits.
+- Temporary game-asset test files were removed from the application source before packaging. No game assets are distributed.
 
-`package` validates release metadata and documentation links, type-checks the UI, runs the automated test suite, builds native/UI output and packages both archives. Check that the source ZIP contains only maintained source, tests, fixtures, scripts, documentation and licenses; no dependencies, local settings, build products, game assets or deferred batch modules. Check that the runtime contains the DLL, current OSF UI view and bcdec license, with no legacy OSFUI view.
+## In-game check still required
 
-## Completed for 1.3.0
-
-- Release versions agree across package metadata, lockfile, native build ID, UI and XMake. All 31 local Markdown file links resolve.
-- All 197 automated tests pass; UI type-checking and native/UI release builds pass.
-- PreviewGeometryTests and SampleBatchTests pass, including material/geometry safeguards and sample edit/deletion/existing-folder preservation.
-- Both release ZIPs were inspected for deferred modules/APIs and obsolete/generated source files. The source contains 133 maintained files; required licenses, fixtures and dependency bootstrap scripts are present. Only the three original native sample definitions are included.
-- The unpacked source is checked against the packaged source bytes. The native/UI package uses the current OSF UI view path and includes the decoder license.
-
-The existing lazy-loaded ID catalog still produces Vite's large-chunk advisory; this is not a build failure. No game installation, user Documents files or published GitHub/Nexus release was changed. Historical feature changes remain in [Changelog](CHANGELOG.md).
-
-## Existing audit evidence
-
-The catalog material-variant audit scanned 977 ARMO and 93 WEAP records across four official plugins. All 1,606 rules for 388 default-variant entries pass the native reader; the fixture is retained. Both Syndicate Boss Suit body types were rendered with their three authored materials in prior browser checks. This establishes the corrected selection route, not complete game shader equivalence. See [Variant audit](docs/PREVIEW_VARIANT_AUDIT.md).
-
-Prior material/overlay checks resolve the reported resource assets, authored inline colors and normal-only decals. The Ecliptic masked-layer limitation remains documented in [Model previews](docs/MODEL_PREVIEWS.md). Catalog expectations and regression fixtures remain part of the automated suite.
-
-## In-game release smoke test
-
-Install the complete 1.3.0 archive and restart Starfield through SFSE; do not clear OSF browser data or the user CCC folder.
-
-- Confirm footer and native connection report 1.3.0, OSF UI 2.0 API and Native Ready. Confirm favorites, history and user batches survive.
-- Browse Commands, ID Browser, Mod Browser, Quest Browser, Custom Command and Activity Log with mouse and controller. B closes one layer and restores selection/scroll; long lists remain within their panel.
-- Inspect one read-only result, copy an ID and review a harmless command. Confirm blocked/reference-only records do not gain gameplay actions.
-- Scan mods manually; inspect a community asset and an Official Creation. Opening a browser must not start a scan.
-- Open a 3D Viewer using Y. Check pan without side stretching, rotate, pointer zoom, L2/R2 zoom, light marker tracking, brightness, texture toggle and Low/Medium/High upgrades. Close/reopen from Apparel and verify focus returns to the same list row.
-- Compare Syndicate Boss Suit, Akila Security Uniform/gloves, a cap, Beowulf and representative miscellaneous objects to their intended game appearance. Test both bodies and mannequin toggles. Check documented layered/glass limitations separately.
-- In Dev Mode, mark an item Working, Issues, Not noticeable and Reference Only; check green/check, yellow/exclamation, orange/question and gray/strikethrough. Only Issues needs text entry on item rows. Export a report; successful export clears pending reports without resetting row outcomes. Plain Working stays local.
-- Save/load/refresh a user .txt batch, preserving edits. Blank/full-line # comments are ignored. Load must populate the editor before execution confirmation. Verify the three originals only seed an empty folder, and existing files/deletions are preserved.
-- With a harmless selected batch, check Auto-Run once after an existing-save load and no run with the master switch off; this changes game state and must be checked deliberately in game.
-
-These live checks are not claimed completed by source/package verification.
+Install both DLL and UI. Compare Ultra to High on a weapon and an outfit; confirm geometry appears before material loading, and verify performance in the OSF webview. The attached report provides matching live current-cell evidence for ten accepted names, confirming the current-area tool returned names during play. Outstanding furniture material limitations remain documented.

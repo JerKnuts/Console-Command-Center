@@ -1,0 +1,30 @@
+# Medical Supplies
+# Adds healing supplies and treatments: 20 Med Packs, 10 Trauma Packs, 5 Emergency Kits, and 10 each of six treatments.
+# Running this batch again adds another copy of the listed supplies.
+
+# Med Pack
+player.additem 0000ABF9 20
+
+# Trauma Pack
+player.additem 0029A847 10
+
+# Emergency Kit
+player.additem 002A9DE8 5
+
+# Antibiotics
+player.additem 002F4436 10
+
+# Bandages
+player.additem 002F4459 10
+
+# Heal Paste
+player.additem 002F445C 10
+
+# Immobilizer
+player.additem 002F445B 10
+
+# Injector
+player.additem 002F445A 10
+
+# Snake Oil
+player.additem 0029A850 10

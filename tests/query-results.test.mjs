@@ -10,7 +10,7 @@ import { armorReferenceNote } from '../src/views/console.command-center/main/arm
 // Exercise the actual response handler without a game or browser. DOM layout,
 // engine values, focus trapping, and scrolling still need a browser/game test.
 const source = readFileSync(new URL('../src/views/console.command-center/main/main.ts', import.meta.url), 'utf8');
-const commandSource = readFileSync(new URL('../src/views/console.command-center/main/commands.ts', import.meta.url), 'utf8');
+const commandSource = readFileSync(new URL('../src/views/console.command-center/main/commands.ts', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 const untestedCommandSource = readFileSync(new URL('../src/views/console.command-center/main/untested-commands.ts', import.meta.url), 'utf8');
 const engineCommandSource = readFileSync(new URL('../src/views/console.command-center/main/engine-command-library.ts', import.meta.url), 'utf8');
 const engineCommandGeneratorSource = readFileSync(new URL('../scripts/build-engine-command-library.mjs', import.meta.url), 'utf8');
@@ -199,7 +199,7 @@ test('Custom Command uses a multiline batch editor and the sidebar has no redund
   assert.doesNotMatch(source, /class="custom-command-field"[\s\S]{0,200}<span>Commands<\/span>/);
   assert.match(source, /<h4>Batch Files<\/h4>/);
   assert.doesNotMatch(source, /Command-batch files/);
-  assert.match(source, /# Comments begin with # and will not run/);
+  assert.match(source, /# Comments begin with # or ; and will not run/);
   assert.match(source, /No bullets, typed line numbers/);
   assert.match(source, /updateCustomCommandLineNumbers\(input, lineNumbers\)/);
   assert.match(source, /syncCustomCommandLineNumbers\(input, lineNumbers\)/);
@@ -232,7 +232,7 @@ test('Custom Command batches use user-owned text files with refresh and legacy m
   assert.match(commandBatchSource, /Console Command Center" \/ L"Command Batches/);
   assert.doesNotMatch(commandBatchSource, /kMaxCommands/);
   assert.match(commandBatchSource, /kMaxFileBytes = 1024 \* 1024/);
-  assert.match(commandBatchSource, /!line\.starts_with\('#'\)/);
+  assert.match(commandBatchSource, /ch == '#' \|\| ch == ';'/);
   assert.match(commandBatchSource, /MoveFileExW\([\s\S]*?MOVEFILE_REPLACE_EXISTING/);
   assert.match(commandBatchSource, /IsReservedWindowsName/);
   assert.match(styleSource, /\.custom-workspace \{[^}]*display: grid;[^}]*grid-template-columns: minmax\(260px, 1fr\) minmax\(var\(--ccc-detail-pane-min-width\), var\(--ccc-detail-pane-width\)\);/);
@@ -324,7 +324,7 @@ test('commands under investigation remain isolated in the user-facing WIP catego
   assert.match(commandSource, /import \{ UNTESTED_COMMANDS \} from '\.\/untested-commands'/);
   assert.match(commandSource, /\| 'Untested'/);
   assert.match(commandSource, /\.\.\.UNTESTED_COMMANDS/);
-  assert.match(commandSource, /'World',\s*'Untested'/);
+  assert.match(commandSource, /'World',\s*'Advanced Settings',\s*'Untested'/);
   assert.match(source, /WORK IN PROGRESS/);
   assert.match(source, /category === 'Untested' \? 'WIP' : category/);
   assert.match(source, /if \(activeView === 'commands' && commandCategory === 'Untested'\) return 'Work in Progress'/);
@@ -711,7 +711,7 @@ test('ID Browser rows show only names while record details stay in the informati
   assert.doesNotMatch(source, /class="id-browser-row-detail"/);
   assert.match(source, /class="id-browser-metadata"/);
   assert.match(source, /<dt>Record Type<\/dt><dd>\$\{escapeHtml\(entry\.type\)\}<\/dd>/);
-  assert.match(source, /<dt>Category<\/dt><dd>\$\{escapeHtml\(entry\.category\)\}<\/dd>/);
+  assert.match(source, /<dt>Category<\/dt><dd>\$\{escapeHtml\(displayedCategory\)\}<\/dd>/);
   assert.match(source, /entry\.available === false \? '<span>Not loaded<\/span>'/);
   assert.match(styleSource, /\.id-browser-row strong\s*\{[\s\S]*?text-overflow:\s*ellipsis;/);
 });
@@ -778,11 +778,9 @@ test('ID Browser quick actions build item, weather, and cell commands', () => {
   assert.equal(requested.definition.category, 'World');
   assert.equal(requested.definition.testStatus, 'verified');
   assert.equal(requested.definition.risk, 'danger');
-  assert.equal(sandbox.idBrowserAction(location), 'findcell');
+  assert.equal(sandbox.idBrowserAction(location), null);
   assert.match(source, /\? 'Change Weather'/);
   assert.match(source, /\? 'Teleport Here'/);
-  assert.match(source, /\? 'Find Teleportable Cell'/);
-  assert.match(source, /idBrowserRecordTypeFilter = 'CELL'/);
   assert.match(source, /id="id-browser-quantity" type="text"/);
   assert.match(source, /Number\.isInteger\(quantity\) && quantity >= 1 && quantity <= 999999/);
 });

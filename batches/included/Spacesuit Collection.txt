@@ -1,0 +1,48 @@
+# Spacesuit Collection
+# Adds five matching suit, helmet and pack sets: Constellation, Deep Mining, Mark I, Mantis, and UC Marine.
+# Adds one of each piece to inventory. It does not equip items or complete their associated quests.
+
+# Constellation Spacesuit
+player.additem 001E2B18 1
+
+# Constellation Space Helmet
+player.additem 001E2B17 1
+
+# Constellation
+player.additem 001E2B19 1
+
+# Deep Mining Spacesuit
+player.additem 0005278E 1
+
+# Deep Mining Space Helmet
+player.additem 00052792 1
+
+# Deep Mining
+player.additem 002EDF1F 1
+
+# Mark I Spacesuit
+player.additem 0001754D 1
+
+# Mark I Space Helmet
+player.additem 0001754F 1
+
+# Mark I
+player.additem 0001754E 1
+
+# Mantis Spacesuit
+player.additem 00226299 1
+
+# Mantis Space Helmet
+player.additem 0016640A 1
+
+# Mantis
+player.additem 0016640B 1
+
+# UC Marine Spacesuit
+player.additem 00257805 1
+
+# UC Marine Space Helmet
+player.additem 00257806 1
+
+# UC Marine
+player.additem 00257807 1

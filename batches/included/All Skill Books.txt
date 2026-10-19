@@ -1,0 +1,312 @@
+# All Skill Books
+# Adds one copy of each of the 145 listed skill books and magazines to your current character's inventory.
+# Each entry identifies the magazine title and issue added by its command.
+
+# Colonization Guide 01
+player.additem 2009E3 1
+# Colonization Guide 02
+player.additem 2009E2 1
+# Colonization Guide 03
+player.additem 2009E1 1
+# Colonization Guide 04
+player.additem 2009E0 1
+# Colonization Guide 05
+player.additem 2009DF 1
+# Colonization Guide 06
+player.additem 2009DE 1
+# Colonization Guide 07
+player.additem 2009DD 1
+# Colonization Guide 08
+player.additem 2009DC 1
+# Colonization Guide 09
+player.additem 2009DB 1
+# Colonization Guide 10
+player.additem 2009DA 1
+
+# CombaTech Catalog 01
+player.additem 212940 1
+# CombaTech Catalog 02
+player.additem 21293E 1
+# CombaTech Catalog 03
+player.additem 21293D 1
+# CombaTech Catalog 04
+player.additem 21293C 1
+# CombaTech Catalog 05
+player.additem 21293B 1
+
+# Constellation Guide 01
+player.additem 208E91 1
+# Constellation Guide 02
+player.additem 208E90 1
+# Constellation Guide 03
+player.additem 208E8F 1
+# Constellation Guide 04
+player.additem 208E8E 1
+# Constellation Guide 05
+player.additem 208E8D 1
+
+# Cyber Runner's Cipher 01
+player.additem 208D8E 1
+# Cyber Runner's Cipher 02
+player.additem 208D8D 1
+# Cyber Runner's Cipher 03
+player.additem 208D8C 1
+# Cyber Runner's Cipher 04
+player.additem 208D8B 1
+# Cyber Runner's Cipher 05
+player.additem 208D8A 1
+
+# Dragonstar Force Vol 1
+player.additem 23E972 1
+# Dragonstar Force Vol 2
+player.additem 23E931 1
+# Dragonstar Force Vol 3
+player.additem 23E930 1
+# Dragonstar Force Vol 4
+player.additem 23E92F 1
+# Dragonstar Force Vol 5
+player.additem 23E92E 1
+# Dragonstar Force Vol 6
+player.additem 23E92D 1
+# Dragonstar Force Vol 7
+player.additem 23E92C 1
+# Dragonstar Force Vol 8
+player.additem 23E92B 1
+# Dragonstar Force Vol 9
+player.additem 23E92A 1
+# Dragonstar Force Vol 10
+player.additem 23E929 1
+# Dragonstar Force Vol 11
+player.additem 23E928 1
+# Dragonstar Force Vol 12
+player.additem 23E927 1
+# Dragonstar Force Vol 13
+player.additem 23E926 1
+# Dragonstar Force Vol 14
+player.additem 23E925 1
+# Dragonstar Force Vol 15
+player.additem 23E924 1
+# Dragonstar Force Vol 16
+player.additem 23E923 1
+# Dragonstar Force Vol 17
+player.additem 23E922 1
+# Dragonstar Force Vol 18
+player.additem 23E921 1
+# Dragonstar Force Vol 19
+player.additem 23E920 1
+# Dragonstar Force Vol 20
+player.additem 23E91F 1
+# Dragonstar Force Vol 21
+player.additem 23E91E 1
+# Dragonstar Force Vol 22
+player.additem 23E91D 1
+# Dragonstar Force Vol 23
+player.additem 23E91C 1
+# Dragonstar Force Vol 24
+player.additem 23E91B 1
+# Dragonstar Force Vol 25
+player.additem 23E91A 1
+# Dragonstar Force Vol 26
+player.additem 23E919 1
+# Dragonstar Force Vol 27
+player.additem 23E918 1
+# Dragonstar Force Vol 28
+player.additem 23E917 1
+# Dragonstar Force Vol 29
+player.additem 23E916 1
+# Dragonstar Force Vol 30
+player.additem 23E915 1
+
+# Freestar Captain's Log 01
+player.additem 201BD7 1
+# Freestar Captain's Log 02
+player.additem 201BD6 1
+# Freestar Captain's Log 03
+player.additem 201BD5 1
+# Freestar Captain's Log 04
+player.additem 201BD4 1
+# Freestar Captain's Log 05
+player.additem 201BD3 1
+
+# GRUNT Issue 01
+player.additem 21D05A 1
+# GRUNT Issue 02
+player.additem 21B050 1
+# GRUNT Issue 03
+player.additem 21B04F 1
+# GRUNT Issue 04
+player.additem 21B04E 1
+# GRUNT Issue 05
+player.additem 21B04D 1
+# GRUNT Issue 06
+player.additem 21B04C 1
+# GRUNT Issue 07
+player.additem 21B04B 1
+# GRUNT Issue 08
+player.additem 21B04A 1
+# GRUNT Issue 09
+player.additem 21B049 1
+# GRUNT Issue 10
+player.additem 21B048 1
+
+# Gunslinger's Guide 01
+player.additem 20BB30 1
+# Gunslinger's Guide 02
+player.additem 20BB2F 1
+# Gunslinger's Guide 03
+player.additem 20BB2E 1
+# Gunslinger's Guide 04
+player.additem 20BB2D 1
+# Gunslinger's Guide 05
+player.additem 20BB2C 1
+
+# Kryx's Journal Entry 01
+player.additem 209093 1
+# Kryx's Journal Entry 02
+player.additem 209092 1
+# Kryx's Journal Entry 03
+player.additem 209091 1
+# Kryx's Journal Entry 04
+player.additem 209090 1
+# Kryx's Journal Entry 05
+player.additem 20908F 1
+
+# Mining Monthly Issue 01
+player.additem 20B4B5 1
+# Mining Monthly Issue 02
+player.additem 20B4B4 1
+# Mining Monthly Issue 03
+player.additem 20B4B3 1
+# Mining Monthly Issue 04
+player.additem 20B4B2 1
+# Mining Monthly Issue 05
+player.additem 20B4B1 1
+# Mining Monthly Issue 06
+player.additem 20B4B0 1
+# Mining Monthly Issue 07
+player.additem 20B4AF 1
+# Mining Monthly Issue 08
+player.additem 20B4AE 1
+# Mining Monthly Issue 09
+player.additem 20B4AD 1
+# Mining Monthly Issue 10
+player.additem 20B4AC 1
+
+# Neon Nights 01
+player.additem 200A88 1
+# Neon Nights 02
+player.additem 200A87 1
+# Neon Nights 03
+player.additem 200A86 1
+# Neon Nights 04
+player.additem 200A85 1
+# Neon Nights 05
+player.additem 200A84 1
+
+# Nova Galactic Manual 01
+player.additem 2009B6 1
+# Nova Galactic Manual 02
+player.additem 2009B5 1
+# Nova Galactic Manual 03
+player.additem 2009B4 1
+# Nova Galactic Manual 04
+player.additem 2009B3 1
+# Nova Galactic Manual 05
+player.additem 2009B2 1
+# Nova Galactic Manual 06
+player.additem 2009B1 1
+# Nova Galactic Manual 07
+player.additem 2009B0 1
+# Nova Galactic Manual 08
+player.additem 2009AF 1
+# Nova Galactic Manual 09
+player.additem 2009AE 1
+# Nova Galactic Manual 10
+player.additem 2009AD 1
+
+# Peak Performance 01
+player.additem 202D9E 1
+# Peak Performance 02
+player.additem 202D9D 1
+# Peak Performance 03
+player.additem 202D9C 1
+# Peak Performance 04
+player.additem 202D9B 1
+# Peak Performance 05
+player.additem 202D9A 1
+
+# Solomon's Adventures 01
+player.additem 208D89 1
+# Solomon's Adventures 02
+player.additem 208D88 1
+# Solomon's Adventures 03
+player.additem 208D87 1
+# Solomon's Adventures 04
+player.additem 208D86 1
+# Solomon's Adventures 05
+player.additem 208D85 1
+
+# The New Atlantian 01
+player.additem 1FF726 1
+# The New Atlantian 02
+player.additem 1FF725 1
+# The New Atlantian 03
+player.additem 1FF724 1
+# The New Atlantian 04
+player.additem 1FF723 1
+# The New Atlantian 05
+player.additem 1FF722 1
+
+# Trackers Primer 01
+player.additem 20909B 1
+# Trackers Primer 02
+player.additem 20909A 1
+# Trackers Primer 03
+player.additem 209099 1
+# Trackers Primer 04
+player.additem 209098 1
+# Trackers Primer 05
+player.additem 209097 1
+
+# UC Defense Manual 01
+player.additem 209FBA 1
+# UC Defense Manual 02
+player.additem 209FB9 1
+# UC Defense Manual 03
+player.additem 209FB8 1
+# UC Defense Manual 04
+player.additem 209FB7 1
+# UC Defense Manual 05
+player.additem 209FB6 1
+
+# Va'ruun Scripture 01
+player.additem 20A924 1
+# Va'ruun Scripture 02
+player.additem 20A923 1
+# Va'ruun Scripture 03
+player.additem 20A922 1
+# Va'ruun Scripture 04
+player.additem 20A921 1
+# Va'ruun Scripture 05
+player.additem 20A920 1
+# Va'ruun Scripture 06
+player.additem 20A91F 1
+# Va'ruun Scripture 07
+player.additem 20A91E 1
+# Va'ruun Scripture 08
+player.additem 20A91D 1
+# Va'ruun Scripture 09
+player.additem 20A91C 1
+# Va'ruun Scripture 10
+player.additem 20A91B 1
+
+# Vanguard Space Tactics 01
+player.additem 2009D8 1
+# Vanguard Space Tactics 02
+player.additem 2009D7 1
+# Vanguard Space Tactics 03
+player.additem 2009D6 1
+# Vanguard Space Tactics 04
+player.additem 2009D5 1
+# Vanguard Space Tactics 05
+player.additem 2009D4 1

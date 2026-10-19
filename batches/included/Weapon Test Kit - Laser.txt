@@ -1,0 +1,15 @@
+# Weapon Test Kit - Laser
+# Adds an Equinox and Solstice with 500 rounds of each matching laser cartridge.
+# Adds base weapons without legendary effects. It does not equip or fire them.
+
+# Equinox
+player.additem 0001BC4F 1
+
+# 3kV LZR Cartridge
+player.additem 0000E8EC 500
+
+# Solstice
+player.additem 0026D961 1
+
+# 1.5kV LZR Cartridge
+player.additem 002BAE3F 500

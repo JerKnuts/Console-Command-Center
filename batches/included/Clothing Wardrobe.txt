@@ -1,0 +1,36 @@
+# Clothing Wardrobe
+# Adds 11 selected outfits and matching headwear from Akila Security, Delgado, Neon Security, and Ryujin.
+# Adds one of each piece to inventory without equipping it or advancing faction quests.
+
+# Akila Security Uniform
+player.additem 00227720 1
+
+# Akila Security Hat
+player.additem 0012B4B3 1
+
+# Delgado's Outfit
+player.additem 0022771F 1
+
+# Neon Security Uniform
+player.additem 00225D9E 1
+
+# Neon Security Helmet
+player.additem 001F73EF 1
+
+# Ryujin Guard Uniform
+player.additem 0037A34E 1
+
+# Ryujin Guard Helmet
+player.additem 0037A34F 1
+
+# Ryujin Lab Outfit
+player.additem 00034110 1
+
+# Ryujin R&D Outfit
+player.additem 00034114 1
+
+# Ryujin Lab Worker Outfit
+player.additem 001823CC 1
+
+# Ryujin Lab Worker Hood
+player.additem 001823CB 1

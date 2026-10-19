@@ -27,6 +27,7 @@ namespace CCC::Preview
     using Bytes = std::vector<std::uint8_t>;
     constexpr std::size_t MaxAssetBytes = 32 * 1024 * 1024;
     constexpr std::size_t MaxVertices = 400000;
+    constexpr std::size_t MaxPieces = 512;
     constexpr std::size_t MaxIndices = 1800000;
     struct Reader {
         std::span<const std::uint8_t> bytes; std::size_t at = 0;
@@ -138,7 +139,7 @@ namespace CCC::Preview
     inline Matrix Multiply(const Matrix& a, const Matrix& b) {
         Matrix out{}; for (int row = 0; row < 4; ++row) for (int col = 0; col < 4; ++col) for (int k = 0; k < 4; ++k) out[row*4+col] += a[row*4+k]*b[k*4+col]; return out;
     }
-    struct Mesh { std::string name; std::vector<float> positions; std::vector<std::uint32_t> indices; std::vector<float> uv; std::string material; std::uint32_t textureWidth=0,textureHeight=0; Bytes pixels; bool mannequin=false; std::array<float,3> tint{1,1,1};bool tinted=false; std::uint32_t normalWidth=0,normalHeight=0; Bytes normalPixels; bool glass=false; bool decal=false; bool incompleteMaterial=false; bool normalOnly=false; };
+    struct Mesh { std::string name; std::vector<float> positions; std::vector<std::uint32_t> indices; std::vector<float> uv; std::string material; std::uint32_t textureWidth=0,textureHeight=0; Bytes pixels; bool mannequin=false; std::array<float,3> tint{1,1,1};bool tinted=false; std::uint32_t normalWidth=0,normalHeight=0; Bytes normalPixels; bool glass=false; bool decal=false; bool incompleteMaterial=false; bool normalOnly=false;std::uint32_t metalWidth=0,metalHeight=0;Bytes metalPixels; };
     struct GeometryRef { std::string name, path; Matrix transform; std::string material; std::string bone; Matrix bind=Identity(); bool rigid=false; Bytes embedded; std::optional<std::array<float,3>> inlineTint; };
     inline Matrix InverseAffine(const Matrix& m) {
         const float a=m[0],b=m[1],c=m[2],d=m[4],e=m[5],f=m[6],g=m[8],h=m[9],i=m[10];const float det=a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g);
@@ -253,7 +254,7 @@ namespace CCC::Preview
             if(scene){scene->nodes[node.name]=world;if(!child[i])scene->root=world; if(std::abs(world[3])+std::abs(world[7])+std::abs(world[11])>.25f)for(std::size_t k=0;k<std::min(node.boneNames.size(),node.binds.size());++k)scene->bones.try_emplace(node.boneNames[k],Multiply(world,InverseAffine(node.binds[k])));}
             if(!node.geometry.empty()||!node.embedded.empty()) {
                 std::string key;if(!node.geometry.empty()){key=AssetKey(node.geometry); if(!key.starts_with("geometries/")) key="geometries/"+key; if(!key.ends_with(".mesh")) key+=".mesh";}
-                out.push_back({node.name,std::move(key),world,node.material,node.bone,node.bind,node.rigid,node.embedded,node.inlineTint}); if(out.size()>128) throw std::runtime_error("Too many model pieces.");
+                out.push_back({node.name,std::move(key),world,node.material,node.bone,node.bind,node.rigid,node.embedded,node.inlineTint}); if(out.size()>MaxPieces) throw std::runtime_error("Too many model pieces.");
             }
             for(const auto c:node.children) queue.emplace_back(c,world);
         }
@@ -288,12 +289,18 @@ namespace CCC::Preview
         return out;
     }
     inline bool AttachmentSlotEqual(const std::string& a,const std::string& b){return a.size()==b.size()&&std::equal(a.begin(),a.end(),b.begin(),[](char x,char y){return (x>='A'&&x<='Z'?char(x+32):x)==(y>='A'&&y<='Z'?char(y+32):y);});}
+    inline bool AttachmentMountMatches(const std::string& path,const std::string& child,const std::string& parent){
+        if(AttachmentSlotEqual(child,parent))return true;
+        // XM-2311's authored scope mount says ScopeMount, while its receiver
+        // exposes Scope. Use that actual parent transform for this asset only.
+        return AssetKey(path)=="meshes/weapons/m1919/m1919_scope_mount.nif"&&AttachmentSlotEqual(child,"ScopeMount")&&AttachmentSlotEqual(parent,"Scope");
+    }
     inline std::vector<Mesh> Load(AssetStore& store, const std::vector<std::string>& models,unsigned quality=4) {
         std::vector<Mesh> out; std::size_t totalVertices=0,totalIndices=0;
-        struct Part{ModelScene scene;std::vector<GeometryRef> geometry;Matrix placement=Identity();bool placed=false;};std::vector<Part> parts;
+        struct Part{std::string path;ModelScene scene;std::vector<GeometryRef> geometry;Matrix placement=Identity();bool placed=false;};std::vector<Part> parts;
         for(auto path:models) {
             path=AssetKey(path); if(!path.starts_with("meshes/"))path="meshes/"+path;
-            Part part;part.geometry=ReadNif(store.Read(path),&part.scene,quality);part.placed=models.size()==1||part.scene.slots.empty();parts.push_back(std::move(part));
+            Part part;part.path=path;part.geometry=ReadNif(store.Read(path),&part.scene,quality);part.placed=models.size()==1||part.scene.slots.empty();parts.push_back(std::move(part));
         }
         // Origin-authored wearable pieces need the installed body's bind pose even
         // when the mannequin is hidden. Already positioned pieces remain untouched.
@@ -303,7 +310,7 @@ namespace CCC::Preview
             for(auto& part:parts)ResolveRigidAttachments(part.geometry,bones);
         }
         for(std::size_t pass=0;pass<parts.size();++pass)for(auto& part:parts)if(!part.placed) {
-            for(const auto& parent:parts)if(parent.placed&&!part.placed)for(const auto& mount:parent.scene.mounts)if(mount.slot.starts_with("P-")&&std::any_of(part.scene.slots.begin(),part.scene.slots.end(),[&](const auto& slot){return AttachmentSlotEqual(slot,mount.slot.substr(2));})) {
+            for(const auto& parent:parts)if(parent.placed&&!part.placed)for(const auto& mount:parent.scene.mounts)if(mount.slot.starts_with("P-")&&std::any_of(part.scene.slots.begin(),part.scene.slots.end(),[&](const auto& slot){return AttachmentMountMatches(part.path,slot,mount.slot.substr(2));})) {
                 const auto host=parent.scene.nodes.find(mount.host);if(!mount.host.empty()&&host==parent.scene.nodes.end())continue;
                 part.placement=Multiply(parent.placement,Multiply(host==parent.scene.nodes.end()?parent.scene.root:host->second,mount.transform));part.placed=true;break;
             }
@@ -315,7 +322,7 @@ namespace CCC::Preview
                 auto mesh=ReadMesh(ref.embedded.empty()?store.Read(ref.path):ref.embedded,ref); totalVertices+=mesh.positions.size()/3; totalIndices+=mesh.indices.size();
                 if(totalVertices>MaxVertices||totalIndices>MaxIndices)throw std::runtime_error("This model exceeds the experimental preview size limit.");
                 out.push_back(std::move(mesh));
-                if(out.size()>128)throw std::runtime_error("Too many model pieces.");
+                if(out.size()>MaxPieces)throw std::runtime_error("Too many model pieces.");
             }
         }
         if(out.empty())throw std::runtime_error("No preview geometry was found."); return out;
@@ -338,8 +345,9 @@ namespace CCC::Preview
     template<class T> inline void Append(Bytes& output, const T& value) { const auto* p=reinterpret_cast<const std::uint8_t*>(&value); output.insert(output.end(),p,p+sizeof(T)); }
     inline Bytes Pack(const std::vector<Mesh>& meshes,std::size_t maxBytes=64*1024*1024) {
         std::size_t vertices=0,indices=0;for(const auto& mesh:meshes){vertices+=mesh.positions.size()/3;indices+=mesh.indices.size();}
-        if(meshes.empty()||meshes.size()>128||vertices>MaxVertices||indices>MaxIndices)throw std::runtime_error("This combined model exceeds the preview limits.");
-        Bytes out; Append(out,std::uint32_t(0x50504343)); Append(out,std::uint32_t(std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.normalOnly;})?8:7)); Append(out,std::uint32_t(meshes.size()));
+        if(meshes.empty()||meshes.size()>MaxPieces||vertices>MaxVertices||indices>MaxIndices)throw std::runtime_error("This combined model exceeds the preview limits.");
+        const bool hasMetal=std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return !mesh.metalPixels.empty();});
+        Bytes out; Append(out,std::uint32_t(0x50504343)); Append(out,std::uint32_t(std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return !mesh.metalPixels.empty();})?9:std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.normalOnly;})?8:7)); Append(out,std::uint32_t(meshes.size()));
         struct PackedTexture{std::uint32_t width,height;const Bytes* pixels;};std::vector<PackedTexture> textures;
         const auto textureId=[&](std::uint32_t width,std::uint32_t height,const Bytes& pixels)->std::uint32_t{
             if(pixels.empty())return 0;if(!width||!height||width>4096||height>4096||pixels.size()!=std::size_t(width)*height*4)throw std::runtime_error("Invalid model texture.");
@@ -348,7 +356,7 @@ namespace CCC::Preview
         };
         for(const auto& mesh:meshes){Append(out,std::uint32_t(mesh.positions.size()/3));Append(out,std::uint32_t(mesh.indices.size()));for(auto v:mesh.positions)Append(out,v);for(auto i:mesh.indices)Append(out,i);
             const auto color=textureId(mesh.textureWidth,mesh.textureHeight,mesh.pixels),normal=textureId(mesh.normalWidth,mesh.normalHeight,mesh.normalPixels);
-            Append(out,std::uint32_t(mesh.mannequin?1:0)|(mesh.tinted?2u:0u)|(mesh.glass?4u:0u)|((mesh.decal||[&]{auto name=mesh.material;for(auto& c:name)if(c>='A'&&c<='Z')c+=32;return name;}().find("decal")!=std::string::npos)?8u:0u)|(mesh.incompleteMaterial?16u:0u)|(mesh.normalOnly?32u:0u));Append(out,color);for(auto c:mesh.tint)Append(out,c);Append(out,normal);
+            Append(out,std::uint32_t(mesh.mannequin?1:0)|(mesh.tinted?2u:0u)|(mesh.glass?4u:0u)|((mesh.decal||[&]{auto name=mesh.material;for(auto& c:name)if(c>='A'&&c<='Z')c+=32;return name;}().find("decal")!=std::string::npos)?8u:0u)|(mesh.incompleteMaterial?16u:0u)|(mesh.normalOnly?32u:0u));Append(out,color);for(auto c:mesh.tint)Append(out,c);Append(out,normal);if(hasMetal)Append(out,textureId(mesh.metalWidth,mesh.metalHeight,mesh.metalPixels));
             for(std::size_t i=0;i<mesh.positions.size()/3*2;++i)Append(out,mesh.uv.size()>i?mesh.uv[i]:0.f);
         }
         Append(out,std::uint32_t(textures.size()));for(const auto& texture:textures){Append(out,texture.width);Append(out,texture.height);out.insert(out.end(),texture.pixels->begin(),texture.pixels->end());}

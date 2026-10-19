@@ -1,0 +1,51 @@
+# Ammunition - 500 of Each Type
+# Adds 500 rounds of each of the 23 ammo types listed below to your current character's inventory.
+# Includes 22 base-game ammo types
+# Running this batch again adds another 500 of each type.
+
+# Base Game
+
+# .27 Caliber
+player.additem 002B559C 500
+# .43 MI Array
+player.additem 002B559A 500
+# .43 Ultramag
+player.additem 002B5599 500
+# .45 Caliber ACP
+player.additem 002B5598 500
+# .50 Caliber Caseless
+player.additem 002B5597 500
+# .50 MI Array
+player.additem 002B5596 500
+# 1.5kV LZR Cartridge
+player.additem 002BAE3F 500
+# 11mm Caseless
+player.additem 002B5595 500
+# 12.5mm ST Rivet
+player.additem 002B5594 500
+# 12g Shotgun Shell
+player.additem 000547A1 500
+# 15x25 CLL Shotgun Shell
+player.additem 002B4AFC 500
+# 3kV LZR Cartridge
+player.additem 0000E8EC 500
+# 40mm XPL
+player.additem 002B5592 500
+# 6.5mm CT
+player.additem 002B5590 500
+# 6.5mm MI Array
+player.additem 002B558F 500
+# 7.5mm Whitehot
+player.additem 002B558E 500
+# 7.62x39mm
+player.additem 002B558D 500
+# 7.77mm Caseless
+player.additem 0004AD3E 500
+# 9x39mm
+player.additem 002B559B 500
+# Caseless Shotgun Shell
+player.additem 002B4AFB 500
+# Heavy Particle Fuse
+player.additem 002B558B 500
+# Light Particle Fuse
+player.additem 002B558A 500

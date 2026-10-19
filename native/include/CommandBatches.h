@@ -98,7 +98,15 @@ namespace CCC::CommandBatches
         for (std::size_t start = 0; start <= content.size();) {
             const auto end = content.find('\n', start);
             auto line = Trim(content.substr(start, end == std::string_view::npos ? content.size() - start : end - start));
-            if (!line.empty() && !line.starts_with('#')) commands.push_back(std::move(line));
+            bool quoted = false, escaped = false;
+            for (std::size_t i = 0; i < line.size(); ++i) {
+                const auto ch = line[i];
+                if (escaped) { escaped = false; continue; }
+                if (quoted && ch == '\\') { escaped = true; continue; }
+                if (ch == '"') { quoted = !quoted; continue; }
+                if (!quoted && (ch == '#' || ch == ';')) { line = Trim(std::string_view{line}.substr(0, i)); break; }
+            }
+            if (!line.empty()) commands.push_back(std::move(line));
             if (end == std::string_view::npos) break;
             start = end + 1;
         }
@@ -262,6 +270,75 @@ player.additem 0004AD3E 500
             entry["error"] = *problem;
         }
         return entry;
+    }
+
+    inline fs::path IncludedDirectory() { return UserDirectory().parent_path() / L"Included Batches"; }
+
+    inline void SeedIncluded(const fs::path& directory, const OSFUI::API::Json& samples)
+    {
+        if (!samples.is_array() || samples.size() > kMaxFiles) throw std::runtime_error("Invalid included batch list.");
+        fs::create_directories(directory);
+        const auto marker = directory / L".ccc-included-v1.json";
+        auto installed = OSFUI::API::Json::array();
+        if (fs::exists(marker)) {
+            installed = OSFUI::API::Json::parse(ReadFile(marker));
+            if (!installed.is_array() || installed.size() > 1000) throw std::runtime_error("Invalid included batch installation record.");
+        }
+        for (const auto& item : samples) {
+            const auto name = item.at("name").get<std::string>(), content = item.at("commands").get<std::string>();
+            if (const auto error = ValidateName(name)) throw std::runtime_error(*error);
+            if (const auto error = ValidateContent(content)) throw std::runtime_error(*error);
+            const auto key = LowerAscii(name);
+            if (std::find(installed.begin(), installed.end(), key) != installed.end()) continue;
+            const auto path = PathForName(directory, name);
+            const auto previousName = item.value("previousName", std::string{});
+            if (!previousName.empty()) {
+                if (const auto error = ValidateName(previousName)) throw std::runtime_error(*error);
+                const auto previous = PathForName(directory, previousName);
+                if (LowerAscii(previousName) == key) throw std::runtime_error("Invalid batch rename.");
+                if (fs::exists(previous)) {
+                    // Never replace either file when both names contain user content.
+                    if (!fs::exists(path)) {
+                        fs::copy_file(previous, path, fs::copy_options::none);
+                        fs::remove(previous);
+                    }
+                    installed.push_back(key);
+                    continue;
+                }
+                if (std::find(installed.begin(), installed.end(), LowerAscii(previousName)) != installed.end()) {
+                    installed.push_back(key); // Honor a user-deleted default across the rename.
+                    continue;
+                }
+            }
+            // User files and deleted examples remain user-owned across updates.
+            if (!fs::exists(path)) WriteFile(path, content);
+            installed.push_back(key);
+        }
+        WriteFile(marker, installed.dump(2));
+    }
+
+    inline OSFUI::API::Json Included(const OSFUI::API::Json& payload)
+    {
+        const auto directory = IncludedDirectory();
+        if (payload.contains("samples")) SeedIncluded(directory, payload.at("samples"));
+        OSFUI::API::Json reply{{"ok", true}, {"directory", ToUtf8(directory)}};
+        const auto name = payload.value("name", std::string{});
+        if (!name.empty()) {
+            if (const auto error = ValidateName(name)) throw std::runtime_error(*error);
+            reply["entry"] = Entry(PathForName(directory, name));
+        }
+        if (name.empty()) {
+            std::vector<fs::path> files;
+            if (fs::exists(directory)) for (const auto& file : fs::directory_iterator(directory))
+                if (file.is_regular_file() && LowerAscii(ToUtf8(file.path().extension())) == ".txt") files.push_back(file.path());
+            std::sort(files.begin(), files.end(), [](const auto& a, const auto& b){return LowerAscii(ToUtf8(a.filename())) < LowerAscii(ToUtf8(b.filename()));});
+            reply["entries"] = OSFUI::API::Json::array();
+            for (const auto& file : files) {
+                if (reply["entries"].size() >= kMaxFiles) break;
+                try { auto entry = Entry(file); entry.erase("commands"); reply["entries"].push_back(entry); } catch (...) {}
+            }
+        }
+        return reply;
     }
 
     inline std::string SafeMigratedName(std::string_view rawName)

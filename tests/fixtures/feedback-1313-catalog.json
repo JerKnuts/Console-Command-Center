@@ -1,0 +1,149 @@
+{
+  "report": "CCC-Dev-Feedback-2026-10-18_21-56-40-015_103560-325465640-0.txt",
+  "renamed": {
+    "shatteredspace.esm:078079": {
+      "label": "Dazra Outskirts",
+      "original": "Free Cell"
+    },
+    "starfield.esm:2BF625": {
+      "label": "Neon: Freestar Rangers Station",
+      "original": "Freestar Rangers Outpost"
+    },
+    "starfield.esm:2A07D3": {
+      "label": "Akila City GalBank",
+      "original": "GalBank"
+    },
+    "starfield.esm:285EBF": {
+      "label": "Generdyne Power Facility",
+      "original": "Generdyne Industries"
+    },
+    "shatteredspace.esm:092763": {
+      "label": "Dazra: Goods Exchange",
+      "original": "Goods Exchange"
+    },
+    "shatteredspace.esm:04C1E8": {
+      "label": "Dazra Outskirts",
+      "original": "Grove1"
+    },
+    "shatteredspace.esm:04C1D7": {
+      "label": "Dazra Outskirts",
+      "original": "Grove3"
+    },
+    "starfield.esm:244CA8": {
+      "label": "Paradiso Hotel",
+      "original": "Hotel Paradiso"
+    },
+    "starfield.esm:017305": {
+      "label": "Va'ruun Embassy",
+      "original": "House Va'ruun Embassy"
+    },
+    "starfield.esm:2C19AB": {
+      "label": "Infinity LTD",
+      "original": "Infinity Limited HQ"
+    },
+    "starfield.esm:045B25": {
+      "label": "Family Home",
+      "original": "Kid Stuff Apartment"
+    },
+    "shatteredspace.esm:052B3B": {
+      "label": "Dazra Lakes",
+      "original": "Lakes01Start"
+    },
+    "starfield.esm:2BF5F4": {
+      "label": "Neon: Madame Sauvage's Place",
+      "original": "Madame Sauvage's Place"
+    },
+    "shatteredspace.esm:0923F8": {
+      "label": "Dazra: Meat House",
+      "original": "Meat House"
+    },
+    "starfield.esm:2AABC5": {
+      "label": "Freestar Mech Factory",
+      "original": "Mech Factory - Assembly"
+    },
+    "starfield.esm:2AABC6": {
+      "label": "Freestar Mech Factory",
+      "original": "Mech Factory - Command Center"
+    },
+    "starfield.esm:29A41A": {
+      "label": "Freestar Mech Factory",
+      "original": "Mech Factory - Smelting"
+    },
+    "shatteredspace.esm:04C26B": {
+      "label": "Dazra Mesas 01",
+      "original": "Mesas01Start"
+    },
+    "shatteredspace.esm:04D86D": {
+      "label": "Dazra Mesas 02",
+      "original": "Mesas02Start"
+    },
+    "starfield.esm:27DE73": {
+      "label": "MAST Military Wing",
+      "original": "Military Wing"
+    },
+    "starfield.esm:2BF5F6": {
+      "label": "Neon: Neon Security",
+      "original": "Neon Security"
+    },
+    "starfield.esm:211B97": {
+      "label": "Nova Galactic Staryard",
+      "original": "Nova Galactic Shipyard"
+    },
+    "starfield.esm:2BF5F5": {
+      "label": "Neon: Nyx's Apartment",
+      "original": "Nyx's Apartment"
+    },
+    "starfield.esm:26B713": {
+      "label": "NeuraDyne Botany Laboratory",
+      "original": "Plant Research Facility"
+    },
+    "starfield.esm:117A0B": {
+      "label": "The Core Residence",
+      "original": "Player House The Core"
+    },
+    "starfield.esm:11FC1D": {
+      "label": "The Stretch Apartment",
+      "original": "Player House The Stretch"
+    },
+    "shatteredspace.esm:04C281": {
+      "label": "Dazra Pools",
+      "original": "Pools Start"
+    },
+    "shatteredspace.esm:054D6E": {
+      "label": "Dazra Pools 02",
+      "original": "Pools02Start"
+    }
+  },
+  "reference": [
+    "starfield.esm:1D702F",
+    "starfield.esm:24CBC3",
+    "starfield.esm:2C6001",
+    "starfield.esm:1A8B63",
+    "starfield.esm:249FF2",
+    "sfbgs00d.esm:08556E",
+    "starfield.esm:2BF4E3",
+    "starfield.esm:26E6FD",
+    "starfield.esm:03625A",
+    "starfield.esm:138C3D",
+    "starfield.esm:13D0AE",
+    "sfbgs00d.esm:078982",
+    "starfield.esm:1E1761",
+    "starfield.esm:13D0B2",
+    "starfield.esm:2C8678",
+    "starfield.esm:06C8C4",
+    "starfield.esm:2CBD45",
+    "starfield.esm:26AE8D",
+    "starfield.esm:276174",
+    "starfield.esm:257671",
+    "starfield.esm:239710",
+    "starfield.esm:219520",
+    "sfbgs00d.esm:01E533",
+    "starfield.esm:01753C",
+    "starfield.esm:2BACF6",
+    "sfbgs00d.esm:004C37",
+    "starfield.esm:2CBD4B",
+    "starfield.esm:1C115F",
+    "starfield.esm:21966F",
+    "starfield.esm:286B00"
+  ]
+}

@@ -1,13 +1,14 @@
+import { createPreviewPost } from './preview-post.ts';
 export type PreviewCamera={yaw:number;pitch:number;zoom:number;panX:number;panY:number;lightYaw:number;lightPitch:number;lightPower:number};
-export type PreviewMesh = { positions: Float32Array; indices: Uint32Array; uv?: Float32Array; texture?: { width: number; height: number; pixels: Uint8Array }; normalTexture?: {width:number;height:number;pixels:Uint8Array}; glass?:boolean; decal?:boolean; mannequin?: boolean; incompleteMaterial?:boolean;normalOnly?:boolean; tint?: [number,number,number] };
+export type PreviewMesh = { positions: Float32Array; indices: Uint32Array; uv?: Float32Array; texture?: { width: number; height: number; pixels: Uint8Array }; normalTexture?: {width:number;height:number;pixels:Uint8Array}; metalTexture?: {width:number;height:number;pixels:Uint8Array}; glass?:boolean; decal?:boolean; mannequin?: boolean; incompleteMaterial?:boolean;normalOnly?:boolean; tint?: [number,number,number] };
 export function decodePreview(buffer: ArrayBuffer, quality: 'low'|'medium'|'high'|'ultra' = 'high'): PreviewMesh[] {
   if (buffer.byteLength > (quality==='ultra'?256:64) * 1024 * 1024 || buffer.byteLength < 12) throw new Error('Invalid model transfer size.');
   const view = new DataView(buffer); let at = 0;
   const uint = () => { if (at + 4 > buffer.byteLength) throw new Error('Incomplete model transfer.'); const v = view.getUint32(at, true); at += 4; return v; };
   if (uint() !== 0x50504343) throw new Error('Unsupported model transfer format.');
-  const version = uint(); if (![1,2,3,4,5,6,7,8].includes(version)) throw new Error('Unsupported model transfer format.');
-  const count = uint(); if (!count || count > 128) throw new Error('Invalid number of model pieces.');
-  const meshes: PreviewMesh[] = []; const textureIds: number[] = [],normalIds:number[]=[]; let vertices = 0, indices = 0;
+  const version = uint(); if (![1,2,3,4,5,6,7,8,9].includes(version)) throw new Error('Unsupported model transfer format.');
+  const count = uint(); if (!count || count > 512) throw new Error('Invalid number of model pieces.');
+  const meshes: PreviewMesh[] = []; const textureIds: number[] = [],normalIds:number[]=[],metalIds:number[]=[]; let vertices = 0, indices = 0;
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
   for (let part = 0; part < count; part++) {
     const nv = uint(), ni = uint(); vertices += nv; indices += ni;
@@ -26,7 +27,7 @@ export function decodePreview(buffer: ArrayBuffer, quality: 'low'|'medium'|'high
       const width = version === 2 ? uint() : 0, height = version === 2 ? uint() : 0;
       textureIds.push(textureId);
       if(version>=4){if(at+12>buffer.byteLength)throw new Error('Incomplete material color.');const tint: [number,number,number]=[view.getFloat32(at,true),view.getFloat32(at+4,true),view.getFloat32(at+8,true)];at+=12;if(tint.some(c=>!Number.isFinite(c)||c<0||c>1))throw new Error('Invalid material color.');if(flags&2)mesh.tint=tint;}
-      normalIds.push(version>=5?uint():0);mesh.glass=Boolean(flags&4);mesh.decal=Boolean(flags&8);
+      normalIds.push(version>=5?uint():0);metalIds.push(version>=9?uint():0);mesh.glass=Boolean(flags&4);mesh.decal=Boolean(flags&8);
       if (flags > (version>=8?63:version>=7?31:version>=6?15:version>=5?7:version===4?3:1) || width > 4096 || height > 4096 || Boolean(width) !== Boolean(height) || at + nv * 8 + width * height * 4 > buffer.byteLength) throw new Error('Invalid preview texture.');
       mesh.incompleteMaterial=Boolean(flags&16);mesh.normalOnly=Boolean(flags&32);mesh.mannequin = Boolean(flags&1); mesh.uv = new Float32Array(nv * 2);
       for (let i = 0; i < mesh.uv.length; ++i) { const value = view.getFloat32(at, true); at += 4; if (!Number.isFinite(value) || Math.abs(value) > 10000) throw new Error('Invalid texture coordinates.'); mesh.uv[i] = value; }
@@ -35,10 +36,10 @@ export function decodePreview(buffer: ArrayBuffer, quality: 'low'|'medium'|'high
     meshes.push(mesh);
   }
   if(version >= 3){
-    const count=uint();if(count>256)throw new Error('Invalid preview texture count.');
+    const count=uint();if(count>(version>=9?1536:1024))throw new Error('Invalid preview texture count.');
     const textures: NonNullable<PreviewMesh['texture']>[]=[];
     for(let i=0;i<count;++i){const width=uint(),height=uint();if(!width||!height||width>4096||height>4096||at+width*height*4>buffer.byteLength)throw new Error('Invalid preview texture.');textures.push({width,height,pixels:new Uint8Array(buffer,at,width*height*4)});at+=width*height*4;}
-    meshes.forEach((mesh,i)=>{const id=textureIds[i];if(id>textures.length)throw new Error('Invalid preview texture reference.');if(id)mesh.texture=textures[id-1];const normal=normalIds[i];if(normal>textures.length)throw new Error('Invalid normal texture reference.');if(normal)mesh.normalTexture=textures[normal-1];});
+    meshes.forEach((mesh,i)=>{const id=textureIds[i];if(id>textures.length)throw new Error('Invalid preview texture reference.');if(id)mesh.texture=textures[id-1];const normal=normalIds[i];if(normal>textures.length)throw new Error('Invalid normal texture reference.');if(normal)mesh.normalTexture=textures[normal-1];const metal=metalIds[i];if(metal>textures.length)throw new Error('Invalid metal texture reference.');if(metal)mesh.metalTexture=textures[metal-1];});
   }
   if(meshes.some(mesh=>mesh.normalOnly&&(!mesh.decal||!mesh.texture||!mesh.normalTexture)))throw new Error('Invalid normal-only decal.');
   if (at !== buffer.byteLength) throw new Error('Unexpected bytes after model data.');
@@ -61,10 +62,11 @@ export function previewAlphaMode(pixels: Uint8Array): 'opaque'|'cutout'|'blend' 
   // solid depth and two-sided geometry instead of entering the glass pass.
   return fractional>count*.125?'blend':clear?'cutout':'opaque';
 }
-export function previewCanvasSize(width:number,height:number,ratio:number,limit:number) {
+export function previewCanvasSize(width:number,height:number,ratio:number,limit:number,pixelBudget=Infinity) {
   width=Number.isFinite(width)?Math.max(1,width):1;height=Number.isFinite(height)?Math.max(1,height):1;
   ratio=Number.isFinite(ratio)?Math.max(1,ratio):1;limit=Number.isFinite(limit)?Math.max(1,limit):1024;
-  const scale=Math.min(ratio,limit/width,limit/height);
+  pixelBudget=Number.isFinite(pixelBudget)?Math.max(1,pixelBudget):Infinity;
+  const scale=Math.min(ratio,limit/width,limit/height,Math.sqrt(pixelBudget/(width*height)));
   return {width:Math.max(1,Math.round(width*scale)),height:Math.max(1,Math.round(height*scale))};
 }
 export function smoothNormals(mesh: PreviewMesh): Float32Array {
@@ -77,8 +79,8 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
   const gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: true, preserveDrawingBuffer: true });
   if (!gl) throw new Error('This OSF UI installation does not provide WebGL 2. Model previews are unavailable.');
   const buffers: WebGLBuffer[] = [], shaders: WebGLShader[] = [], textures: WebGLTexture[] = []; let program: WebGLProgram | null = null;
-  let observer: ResizeObserver | undefined; let disposed = false;
-  const cleanup = () => { if (disposed) return; disposed = true; observer?.disconnect(); for (const b of buffers) gl.deleteBuffer(b); for (const s of shaders) gl.deleteShader(s); for (const t of textures) gl.deleteTexture(t); if (program) gl.deleteProgram(program); };
+  let observer: ResizeObserver | undefined; let disposed = false;let post:ReturnType<typeof createPreviewPost>|undefined,postFailed=false;
+  const cleanup = () => { if (disposed) return; disposed = true; observer?.disconnect();post?.dispose(); for (const b of buffers) gl.deleteBuffer(b); for (const s of shaders) gl.deleteShader(s); for (const t of textures) gl.deleteTexture(t); if (program) gl.deleteProgram(program); };
   try {
     const compile = (type: number, source: string) => {
       const shader = gl.createShader(type); if (!shader) throw new Error('Could not create preview shader.'); shaders.push(shader); gl.shaderSource(shader, source); gl.compileShader(shader);
@@ -120,9 +122,12 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
       uniform bool u_cutout;
       uniform bool u_ultra;
       uniform bool u_cinematic;
+      uniform bool u_detail;
       uniform bool u_glass;
       uniform bool u_has_normal;
       uniform sampler2D u_normal_texture;
+      uniform sampler2D u_metal_texture;
+      uniform bool u_has_metal;
       uniform vec3 u_light;
       uniform float u_light_strength;
       out vec4 color;
@@ -156,20 +161,27 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
           vec3 hdr=base*illumination+vec3(highlight);
           if(u_cinematic){
             float roughness=u_glass?.12:(u_has_normal&&u_show_textures?clamp(texture(u_normal_texture,v_uv).a,.08,1.0):.65);
+            float metalness=u_has_metal&&u_show_textures?clamp(texture(u_metal_texture,v_uv).r,0.0,1.0):0.0;
+            vec3 f0=mix(vec3(.04),base,metalness);
             float nv=max(dot(n,view),.001),nl=max(dot(n,key),0.0);
             vec3 halfVector=normalize(key+view);float nh=max(dot(n,halfVector),0.0),vh=max(dot(view,halfVector),0.0);
             float a=roughness*roughness,a2=a*a,denom=nh*nh*(a2-1.0)+1.0;
             float distribution=a2/(3.141593*denom*denom+.0001);
             float k=(roughness+1.0)*(roughness+1.0)/8.0;
             float geometry=(nv/(nv*(1.0-k)+k))*(nl/(nl*(1.0-k)+k));
-            vec3 fresnel=vec3(.04)+(vec3(1.0)-vec3(.04))*pow(1.0-vh,5.0);
+            vec3 fresnel=f0+(vec3(1.0)-f0)*pow(1.0-vh,5.0);
             vec3 specular=distribution*geometry*fresnel/max(4.0*nv*max(nl,.001),.001);
             vec3 reflection=reflect(-view,n);
             float softbox=pow(max(dot(reflection,normalize(vec3(-.6,.85,1.0))),0.0),mix(96.0,4.0,roughness));
             vec3 environment=mix(vec3(.06,.045,.03),vec3(.22,.30,.42),reflection.y*.5+.5)+vec3(1.0,.94,.82)*softbox;
-            vec3 edgeFresnel=vec3(.04)+vec3(.96)*pow(1.0-nv,5.0);
-            hdr=base*illumination+specular*vec3(1.0,.94,.84)*nl*u_light_strength+environment*edgeFresnel*(1.0-roughness*.65);
-            hdr+=base*vec3(.035,.025,.016)*max(-n.y,0.0);
+            if(u_detail&&u_show_textures){
+              float sidebox=pow(max(dot(reflection,normalize(vec3(.85,.4,.75))),0.0),mix(160.0,5.0,roughness));
+              float topstrip=pow(max(dot(reflection,normalize(vec3(.05,.98,.2))),0.0),mix(220.0,7.0,roughness));
+              environment+=vec3(.65,.78,1.0)*sidebox*.8+vec3(1.0,.92,.79)*topstrip*.7;
+            }
+            vec3 edgeFresnel=f0+(vec3(1.0)-f0)*pow(1.0-nv,5.0);
+            hdr=base*illumination*(1.0-metalness)+specular*vec3(1.0,.94,.84)*nl*u_light_strength+environment*edgeFresnel*(1.0-roughness*.65);
+            hdr+=base*vec3(.035,.025,.016)*max(-n.y,0.0)*(1.0-metalness);
           }
           vec3 mapped=clamp((hdr*(2.51*hdr+0.03))/(hdr*(2.43*hdr+0.59)+0.14),0.0,1.0);
           color=vec4(pow(mapped,vec3(1.0/2.2)),albedo.a);
@@ -182,17 +194,19 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
     const normal = gl.getAttribLocation(program, 'a_normal'), pan = gl.getUniformLocation(program, 'u_pan');
     const uv = gl.getAttribLocation(program, 'a_uv'), textured = gl.getUniformLocation(program, 'u_textured'), sampler = gl.getUniformLocation(program, 'u_texture'), cutout=gl.getUniformLocation(program,'u_cutout');
     const rotation = gl.getUniformLocation(program, 'u_rotation'), aspect = gl.getUniformLocation(program, 'u_aspect'), zoom = gl.getUniformLocation(program, 'u_zoom'), color = gl.getUniformLocation(program, 'u_color');
-    const cinematic=gl.getUniformLocation(program,'u_cinematic');
+    const cinematic=gl.getUniformLocation(program,'u_cinematic'),detail=gl.getUniformLocation(program,'u_detail');
+    const hasMetal=gl.getUniformLocation(program,'u_has_metal'),metalSampler=gl.getUniformLocation(program,'u_metal_texture');
     const ultra = gl.getUniformLocation(program,'u_ultra'), light = gl.getUniformLocation(program,'u_light'), strength = gl.getUniformLocation(program,'u_light_strength');
     const hasNormal=gl.getUniformLocation(program,'u_has_normal'),normalSampler=gl.getUniformLocation(program,'u_normal_texture'),glass=gl.getUniformLocation(program,'u_glass');
     const textureCache = new Map<NonNullable<PreviewMesh['texture']>, { texture: WebGLTexture; mode: ReturnType<typeof previewAlphaMode> }>();
+    const metalCache=new Map<NonNullable<PreviewMesh['metalTexture']>,WebGLTexture>();
     const normalCache=new Map<NonNullable<PreviewMesh['normalTexture']>,WebGLTexture>();
     const anisotropy = gl.getExtension('EXT_texture_filter_anisotropic');
     const sceneSampler=gl.getUniformLocation(program,'u_scene_color'),sceneSize=gl.getUniformLocation(program,'u_scene_size'),normalOnlyUniform=gl.getUniformLocation(program,'u_normal_only');let sceneTexture:WebGLTexture|null=null,sceneWidth=0,sceneHeight=0;
     const missingTexture=gl.getUniformLocation(program,'u_missing_texture');let missingTexturesEnabled=false;
     const showTextures=gl.getUniformLocation(program,'u_show_textures');let texturesEnabled=true;
     const markerUniform=gl.getUniformLocation(program,'u_light_marker'),offsetUniform=gl.getUniformLocation(program,'u_offset');let markerVisible=false;
-    const canvasLimit=Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) as number,8192);
+    const canvasLimit=Math.min(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) as number,gl.getParameter(gl.MAX_TEXTURE_SIZE) as number,8192);
     const uploadMaterial=(mesh:PreviewMesh)=>{
       let texture: WebGLTexture | null = null;
       let mode: ReturnType<typeof previewAlphaMode> = 'opaque';
@@ -205,7 +219,9 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
       }
       let normalTexture:WebGLTexture|null=null;
       if(mesh.normalTexture){normalTexture=normalCache.get(mesh.normalTexture)??null;if(!normalTexture){normalTexture=gl.createTexture();if(!normalTexture)throw new Error('Could not allocate normal texture.');normalCache.set(mesh.normalTexture,normalTexture);textures.push(normalTexture);gl.bindTexture(gl.TEXTURE_2D,normalTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,mesh.normalTexture.width,mesh.normalTexture.height,0,gl.RGBA,gl.UNSIGNED_BYTE,mesh.normalTexture.pixels);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);gl.generateMipmap(gl.TEXTURE_2D);}}
-      return {texture,normalTexture,glass:mesh.glass,decal:mesh.decal,normalOnly:mesh.normalOnly,transparent:Boolean(mesh.normalOnly)||mode==='blend',mode,mannequin:mesh.mannequin,incompleteMaterial:mesh.incompleteMaterial,tint:mesh.tint};
+      let metalTexture:WebGLTexture|null=null;
+      if(mesh.metalTexture){metalTexture=metalCache.get(mesh.metalTexture)??null;if(!metalTexture){metalTexture=gl.createTexture();if(!metalTexture)throw new Error('Could not allocate metal texture.');textures.push(metalTexture);metalCache.set(mesh.metalTexture,metalTexture);gl.bindTexture(gl.TEXTURE_2D,metalTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,mesh.metalTexture.width,mesh.metalTexture.height,0,gl.RGBA,gl.UNSIGNED_BYTE,mesh.metalTexture.pixels);gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);}}
+      return {texture,normalTexture,metalTexture,glass:mesh.glass,decal:mesh.decal,normalOnly:mesh.normalOnly,transparent:Boolean(mesh.normalOnly)||mode==='blend',mode,mannequin:mesh.mannequin,incompleteMaterial:mesh.incompleteMaterial,tint:mesh.tint};
     };
     const parts = meshes.map(mesh => {
       const vertices = gl.createBuffer(), indices = gl.createBuffer(); if (!vertices || !indices) throw new Error('Could not allocate model geometry.');
@@ -231,13 +247,16 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
     const draw = () => {
       if (disposed) return;
       const box = canvas.getBoundingClientRect(), ratio = quality==='low'?1:quality==='medium'?Math.min(window.devicePixelRatio||1,2):quality==='ultra'?Math.min(Math.max(window.devicePixelRatio||1,3),4):Math.min(Math.max(window.devicePixelRatio||1,2),3),limit=quality==='low'?1536:quality==='medium'?2048:quality==='ultra'?8192:4096;
-      const {width:w,height:h}=previewCanvasSize(box.width,box.height,ratio,Math.min(canvasLimit,limit));
+      const {width:w,height:h}=previewCanvasSize(box.width,box.height,ratio,Math.min(canvasLimit,limit),quality==='ultra'?24*1024*1024:Infinity);
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+      let postActive=false;
+      if(quality==='ultra'&&!postFailed){try{post??=createPreviewPost(gl);postActive=post.begin(w,h);if(!postActive)postFailed=true;}catch{post?.dispose();post=undefined;postFailed=true;}}
+      if(!postActive)gl.bindFramebuffer(gl.FRAMEBUFFER,null);
       gl.viewport(0, 0, w, h); gl.depthMask(true); gl.disable(gl.BLEND); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE); gl.useProgram(program);
       const cy = Math.cos(state.yaw), sy = Math.sin(state.yaw), cp = Math.cos(state.pitch), sp = Math.sin(state.pitch);
       gl.uniformMatrix3fv(rotation, false, new Float32Array([cy, sp * sy, -cp * sy, 0, cp, sp, sy, -sp * cy, cp * cy]));
       gl.uniform1i(markerUniform,0);gl.uniform3f(offsetUniform,0,0,0);gl.uniform1f(aspect, box.width/Math.max(1,box.height)); gl.uniform1f(zoom, state.zoom);gl.uniform2f(pan,panX,panY); gl.enableVertexAttribArray(position); gl.enableVertexAttribArray(uv);gl.enableVertexAttribArray(normal); gl.activeTexture(gl.TEXTURE0); gl.uniform1i(sampler, 0);
-      gl.uniform1i(showTextures,texturesEnabled?1:0);gl.uniform1i(ultra,1);gl.uniform1i(cinematic,1);const point=lightPoint();gl.uniform3f(light,point[0],point[1],point[2]);gl.uniform1f(strength,lightPower);
+      gl.uniform1i(showTextures,texturesEnabled?1:0);gl.uniform1i(ultra,1);gl.uniform1i(cinematic,1);gl.uniform1i(detail,quality==='ultra'?1:0);const point=lightPoint();gl.uniform3f(light,point[0],point[1],point[2]);gl.uniform1f(strength,lightPower);
       const depth=(part: typeof parts[number])=>-cp*sy*part.center[0]+sp*part.center[1]+cp*cy*part.center[2];
       const ordered=[...parts.filter(part=>!part.transparent&&!part.decal),...parts.filter(part=>!part.transparent&&part.decal),...parts.filter(part=>part.normalOnly),...parts.filter(part=>part.transparent&&!part.normalOnly).sort((a,b)=>depth(a)-depth(b))];
       ordered.forEach((part, index) => {
@@ -248,21 +267,22 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
           gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,sceneTexture);
           if(sceneWidth!==w||sceneHeight!==h){gl.copyTexImage2D(gl.TEXTURE_2D,0,gl.RGBA,0,0,w,h,0);sceneWidth=w;sceneHeight=h;gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);}else gl.copyTexSubImage2D(gl.TEXTURE_2D,0,0,0,0,0,w,h);
         }
-        gl.activeTexture(gl.TEXTURE0);gl.disable(gl.POLYGON_OFFSET_FILL);if(!part.transparent){gl.disable(gl.BLEND);gl.disable(gl.CULL_FACE);gl.depthMask(!part.decal);if(part.decal){gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(-1,-2);}} if(part.transparent){gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);}if(part.decal){gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(-1,-2);}const variation = (index % 4) * .035;const c=part.tint??(part.texture?[1,1,1]:part.mannequin?[.58,.61,.61]:[.65+variation,.72+variation,.75+variation]);gl.uniform1i(missingTexture,missingTexturesEnabled&&!part.mannequin&&(part.incompleteMaterial||!part.texture&&!part.tint&&!part.glass)?1:0);gl.uniform3f(color,c[0],c[1],c[2]);gl.uniform1i(cutout,!normalOverlay&&part.mode!=='blend'?1:0); gl.uniform1i(textured, part.texture ? 1 : 0); gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,part.normalTexture);gl.uniform1i(normalSampler,1);gl.uniform1i(hasNormal,part.normalTexture?1:0);gl.uniform1i(glass,part.glass?1:0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D, part.texture);
+        gl.activeTexture(gl.TEXTURE0);gl.disable(gl.POLYGON_OFFSET_FILL);if(!part.transparent){gl.disable(gl.BLEND);gl.disable(gl.CULL_FACE);gl.depthMask(!part.decal);if(part.decal){gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(-1,-2);}} if(part.transparent){gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);}if(part.decal){gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(-1,-2);}const variation = (index % 4) * .035;const c=part.tint??(part.texture?[1,1,1]:part.mannequin?[.58,.61,.61]:[.65+variation,.72+variation,.75+variation]);gl.uniform1i(missingTexture,missingTexturesEnabled&&!part.mannequin&&(part.incompleteMaterial||!part.texture&&!part.tint&&!part.glass)?1:0);gl.uniform3f(color,c[0],c[1],c[2]);gl.uniform1i(cutout,!normalOverlay&&part.mode!=='blend'?1:0); gl.uniform1i(textured, part.texture ? 1 : 0); gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,part.normalTexture);gl.uniform1i(normalSampler,1);gl.uniform1i(hasNormal,part.normalTexture?1:0);gl.uniform1i(glass,part.glass?1:0);gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,part.metalTexture);gl.uniform1i(metalSampler,3);gl.uniform1i(hasMetal,part.metalTexture?1:0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D, part.texture);
         gl.bindBuffer(gl.ARRAY_BUFFER, part.texcoords); gl.vertexAttribPointer(uv, 2, gl.FLOAT, false, 0, 0);
         gl.bindBuffer(gl.ARRAY_BUFFER, part.normals); gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, 0, 0);
         gl.bindBuffer(gl.ARRAY_BUFFER, part.vertices); gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, part.indices); gl.drawElements(gl.TRIANGLES, part.count, gl.UNSIGNED_INT, 0); });
       gl.depthMask(true);gl.disable(gl.POLYGON_OFFSET_FILL);gl.disable(gl.BLEND);gl.disable(gl.CULL_FACE);
       if(markerVisible){gl.uniform1i(missingTexture,0);gl.uniform1i(markerUniform,1);gl.uniformMatrix3fv(rotation,false,new Float32Array([1,0,0,0,1,0,0,0,1]));gl.uniform3f(offsetUniform,point[0],point[1],point[2]);gl.disableVertexAttribArray(uv);gl.vertexAttrib2f(uv,0,0);gl.disableVertexAttribArray(normal);gl.vertexAttrib3f(normal,0,0,1);gl.bindBuffer(gl.ARRAY_BUFFER,bulbVertices);gl.vertexAttribPointer(position,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,bulbTriangles);gl.drawElements(gl.TRIANGLES,bulbIndices.length,gl.UNSIGNED_INT,0);}
+      if(postActive)post!.present(w/Math.max(1,box.width),texturesEnabled);
 
     };
-    const setQuality=(value:typeof quality)=>{quality=value;for(const part of parts)for(const texture of [part.texture,part.normalTexture])if(texture){gl.bindTexture(gl.TEXTURE_2D,texture);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);if(anisotropy)gl.texParameterf(gl.TEXTURE_2D,anisotropy.TEXTURE_MAX_ANISOTROPY_EXT,Math.min(16,gl.getParameter(anisotropy.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number));}draw();};
+    const setQuality=(value:typeof quality)=>{if(value!=='ultra'&&post){post.dispose();post=undefined;}if(value!==quality)postFailed=false;quality=value;for(const part of parts)for(const texture of [part.texture,part.normalTexture,part.metalTexture])if(texture){gl.bindTexture(gl.TEXTURE_2D,texture);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);if(anisotropy)gl.texParameterf(gl.TEXTURE_2D,anisotropy.TEXTURE_MAX_ANISOTROPY_EXT,Math.min(16,gl.getParameter(anisotropy.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number));}draw();};
     const updateMaterials=(next:PreviewMesh[])=>{
       // The packet must describe the same geometry. Quality updates never replace buffers.
       if(next.length!==meshes.length||next.some((m,i)=>m.positions.length!==meshes[i].positions.length||m.indices.length!==meshes[i].indices.length||m.positions.some((v,j)=>v!==meshes[i].positions[j])||m.indices.some((v,j)=>v!==meshes[i].indices[j])||m.uv?.length!==meshes[i].uv?.length||Boolean(m.uv?.some((v,j)=>v!==meshes[i].uv?.[j]))))return false;
-      const oldCount=textures.length;textureCache.clear();normalCache.clear();
+      const oldCount=textures.length;textureCache.clear();normalCache.clear();metalCache.clear();
       try{const materials=next.map(uploadMaterial);materials.forEach((material,i)=>Object.assign(parts[i],material));}
-      catch(error){for(const texture of textures.splice(oldCount))gl.deleteTexture(texture);textureCache.clear();normalCache.clear();throw error;}
+      catch(error){for(const texture of textures.splice(oldCount))gl.deleteTexture(texture);textureCache.clear();normalCache.clear();metalCache.clear();throw error;}
       for(const texture of textures.splice(0,oldCount)){if(texture===sceneTexture)textures.push(texture);else gl.deleteTexture(texture);}
       meshes=next;setQuality(quality);return true;
     };

@@ -47,7 +47,7 @@ test('Settings sidebar has no counter and Escape closes a dev report without clo
  const source=readFileSync(new URL('../src/views/console.command-center/main/main.ts',import.meta.url),'utf8');
  const functions=[...source.matchAll(/^function (\w+)\b[\s\S]*?^}/gm)].filter(m=>['sidebarCategoryButton','escapeHtml'].includes(m[1])).map(m=>m[0]);
  const context=vm.createContext({});vm.runInContext(stripTypeScriptTypes(functions.join('\n')),context);
- assert.doesNotMatch(context.sidebarCategoryButton('id','game-settings','Settings',8705,false),/nav-count|8,705/);
+ assert.doesNotMatch(context.sidebarCategoryButton('command','Advanced Settings','Advanced Settings',8705,false),/nav-count|8,705/);
  assert.match(context.sidebarCategoryButton('id','ammo','Ammo',66,false),/nav-count/);
  let closed=0;
  context.document={querySelector:()=>({close:()=>closed++})};
@@ -102,8 +102,8 @@ test('item and command feedback offer distinct classifications with explicit exp
  assert.ok(!devFeedbackResults('Quest').includes('Reference Only'));
  const common={name:'Test',version:'1.2.33',time:'now',comment:''};
  const text=formatDevFeedback([{...common,kind:'ID',status:'Reference Only'},{...common,kind:'Command',status:'Executed (no effect)'}]);
- assert.ok(text.includes('Remove Add to Player, mark Reference Only'));
- assert.ok(text.includes('Nothing appeared in the player inventory'));
+ assert.ok(text.includes('Mark Reference Only, hide outside Advanced Options'));
+ assert.ok(!text.includes('Nothing appeared in the player inventory'));
  assert.ok(text.includes('command executed, but no effect was observed'));
 });
 

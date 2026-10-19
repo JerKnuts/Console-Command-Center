@@ -1,0 +1,10 @@
+# Scanner Visibility
+# Extends hand-scanner base range to 100 and scan range to 50 for easier spotting and scanning.
+# Keeps highlight colors unchanged. Existing skills and mods may further modify range.
+# Use Reset Scanner Visibility for the documented base-game values.
+
+# Scanner base range
+setgs fHandScannerBaseRange 100
+
+# Scanning range
+setgs fHandScannerScanRange 50

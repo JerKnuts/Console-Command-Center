@@ -64,13 +64,9 @@ const INTERNAL_WEAPON = /^cct_weapon|creature.*attack|(?:space|ship).*turret|spa
 const INTERNAL_FURNITURE = /(?:furniture|idle|landing|interaction)marker|^(?:SFBGS\d+_)?(?:NPC|DefaultNPC)|(?:^|_)NPCOnly(?:_|$)|NoSit|NoActivate|NoFrontActivate|MustExit|ExitOnly|Scene/i;
 
 function displayLabel(record, source) {
-  // This installation does not provide a separate Shattered Space STRINGS
-  // table that can be safely paired with its records. Reusing base-game
-  // string keys can attach unrelated dialogue to DLC records, so prefer the
-  // record's cleaned Editor ID until a verified DLC localization source is
-  // available.
-  const candidate = source === 'Base Game' ? (record.name || readableEditorID(record.editorID)) : readableEditorID(record.editorID);
-  return candidate.length > 72 ? `${candidate.slice(0, 69).trimEnd()}…` : candidate;
+  // Only names extracted from this plugin's own STRINGS table are trusted.
+  const candidate = record.name || readableEditorID(record.editorID);
+  return candidate.length > 72 ? `${candidate.slice(0, 69).trimEnd()}â€¦` : candidate;
 }
 
 function isPlayerFacing(record, source) {
@@ -90,7 +86,7 @@ function convert(dataset, source) {
     ? PLAYER_FACING_TYPES.has(record.type) && Boolean(record.editorID)
       && record.ownerPlugin?.toLowerCase() === metadata.plugin.toLowerCase()
     : isPlayerFacing(record, source)).map((record) => ({
-    label: displayLabel(record, source),
+    label: displayLabel(source === 'Base Game' || dataset.localizationPlugin?.toLowerCase() === metadata.plugin.toLowerCase() ? record : {...record, name: null}, source),
     value: record.formID,
     type: record.type,
     category: categoryFor(record),

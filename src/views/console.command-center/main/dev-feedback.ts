@@ -1,5 +1,8 @@
-export type DevFeedbackRecord = { kind: string; name: string; id?: string; localId?: string; source?: string; category?: string; command?: string; referenceOnly?: boolean };
-export type DevFeedbackReport = DevFeedbackRecord & { version: string; time: string; status: string; comment: string };
+import { showAreaIdentification } from './area-identification-dialog.ts';
+import { commitAreaNameChange } from './area-name-overrides.ts';
+import type { CurrentArea } from './area-identification.ts';
+export type DevFeedbackRecord = { kind: string; name: string; id?: string; localId?: string; source?: string; category?: string; command?: string; referenceOnly?: boolean; recordType?: string; editorId?: string };
+export type DevFeedbackReport = DevFeedbackRecord & { version: string; time: string; status: string; comment: string; originalName?:string; acceptedName?:string; area?:CurrentArea; nameBasis?:string };
 let enabled = false;
 export function isDevModeEnabled():boolean{return enabled;}
 export function devFeedbackExportable(report:DevFeedbackReport):boolean{return report.status!=="Working"||Boolean(report.comment.trim());}
@@ -7,6 +10,12 @@ const STORAGE_KEY = 'ccc.dev-feedback.v1';
 const TESTED_KEY = 'ccc.dev-tested.v1';
 const OUTCOMES_KEY = 'ccc.dev-outcomes.v1';
 let outcomes = new Map<string,{status:string;time:string}>();
+export function devFeedbackCommandOutcome(id: string): string | undefined {
+  return outcomes.get(`Command:${id}`)?.status;
+}
+export function hasEngineCommandFeedback(): boolean {
+  return [...outcomes.keys()].some(key => key.startsWith('Command:engine-'));
+}
 export function devFeedbackOutcome(status:string):string {
   if(status==='Working')return 'working';
   if(status==='Issues'||status==='Not working')return 'issues';
@@ -26,7 +35,7 @@ export function devFeedbackIdentity(record: DevFeedbackRecord): string {
 export function devFeedbackTestedClass(record: DevFeedbackRecord, alreadyTested = false): string {
   if(!enabled)return '';
   const identity=devFeedbackIdentity(record);
-  const outcome=outcomes.get(identity)?.status??(record.referenceOnly?'reference':alreadyTested?'working':'');
+  const outcome=record.referenceOnly?'reference':outcomes.get(identity)?.status??(alreadyTested?'working':'');
   return outcome?' dev-tested dev-'+outcome:tested.has(identity)?' dev-tested':'';
 }
 
@@ -43,7 +52,7 @@ export function devFeedbackButton(record: DevFeedbackRecord): string {
 export function devFeedbackRow(row:string,record:DevFeedbackRecord):string {
   if(!enabled)return row;
   const outcome=outcomes.get(devFeedbackIdentity(record))?.status;
-  const buttons=devFeedbackResults(record.kind).map(value=>`<button class="osf-btn osf-btn--sm dev-feedback-row-button" type="button" data-dev-record="${escape(JSON.stringify(record))}" data-dev-action="${value}" aria-pressed="${devFeedbackOutcome(value)===outcome}">${value}</button>`).join('');
+  const buttons=devFeedbackResults(record.kind).map(value=>`<button class="osf-btn osf-btn--sm dev-feedback-row-button" type="button" data-dev-record="${escape(JSON.stringify(record))}" data-dev-action="${value}" aria-pressed="${devFeedbackOutcome(value)===outcome}">${value}</button>${value==='Working'&&record.kind==='ID'&&record.recordType==='CELL'?`<button class="osf-btn osf-btn--sm dev-feedback-row-button dev-identify-area" type="button" data-dev-record="${escape(JSON.stringify(record))}" data-dev-action="Identify Current Area">Identify Current Area</button>`:''}`).join('');
   return `<div class="dev-feedback-list-row">${row}<span class="dev-feedback-row-actions" role="group" aria-label="Test result for ${escape(record.name)}">${buttons}</span></div>`;
 }
 
@@ -52,14 +61,15 @@ export function formatDevFeedback(reports: DevFeedbackReport[]): string {
     `Report ${index + 1}`, `Time: ${r.time}`, `CCC: ${r.version}`, `Kind: ${r.kind}`, `Name: ${r.name}`,
     ...(r.id ? [`ID: ${r.id}`] : []), ...(r.localId ? [`Local ID: ${r.localId}`] : []),
     ...(r.source ? [`Source: ${r.source}`] : []), ...(r.category ? [`Category: ${r.category}`] : []),
-    ...(r.command ? [`Command: ${r.command}`] : []), `Result: ${r.status || 'Comment only'}`,
-    ...(r.status === 'Reference Only' ? ['Observation: Nothing appeared in the player inventory.', 'Requested change: Remove Add to Player, mark Reference Only, and sort below normal items.'] : []),
+    ...(r.command ? [`Command: ${r.command}`] : []),
+    ...(r.acceptedName ? [`Original name: ${r.originalName??r.name}`, `Accepted name: ${r.acceptedName}`, `Name source: ${r.nameBasis??'Current area'}`, `Area evidence: ${JSON.stringify(r.area)}`] : []), `Result: ${r.status || 'Comment only'}`,
+    ...(r.status === 'Reference Only' ? ['Requested change: Mark Reference Only, hide outside Advanced Options, and sort below normal items.'] : []),
     ...(r.status === 'Executed (no effect)' ? ['Observation: The command executed, but no effect was observed.'] : []),
     'Comment:', r.comment || '(none)', '----------------------------------------', '',
   ].join('\r\n')).join('\r\n');
 }
 
-export function installDevFeedback(options: { version: string; rerender: () => void; status: (text: string, error?: boolean) => void; exportText: (text: string) => Promise<string> }): void {
+export function installDevFeedback(options: { version: string; rerender: () => void; status: (text: string, error?: boolean) => void; exportText: (text: string) => Promise<string>; identifyArea?:()=>Promise<CurrentArea>; nameChanged?:()=>void }): void {
   const dot = document.querySelector<HTMLButtonElement>('#dev-mode-dot');
   const exportButton = document.querySelector<HTMLButtonElement>('#dev-feedback-export');
   let reports: DevFeedbackReport[] = [];
@@ -80,7 +90,7 @@ export function installDevFeedback(options: { version: string; rerender: () => v
     }
   }catch{outcomes=new Map();}
   // Migrate pending reports from earlier builds without adding them to future exports.
-  reports.forEach(record => {const identity=devFeedbackIdentity(record);tested.add(identity);const outcome=devFeedbackOutcome(record.status);if(outcome&&(!outcomes.has(identity)||record.time>=outcomes.get(identity)!.time))outcomes.set(identity,{status:outcome,time:record.time});});
+  reports.filter(record=>record.status!=='Name Change Accepted').forEach(record => {const identity=devFeedbackIdentity(record);tested.add(identity);const outcome=devFeedbackOutcome(record.status);if(outcome&&(!outcomes.has(identity)||record.time>=outcomes.get(identity)!.time))outcomes.set(identity,{status:outcome,time:record.time});});
   try{localStorage.setItem(OUTCOMES_KEY,JSON.stringify(Object.fromEntries(outcomes)));}catch{/* Pending reports retain outcomes until storage is available. */}
   try { localStorage.setItem(TESTED_KEY, JSON.stringify([...tested])); } catch { /* Pending reports still retain their identities. */ }
   reports=reports.filter(devFeedbackExportable);
@@ -131,6 +141,17 @@ export function installDevFeedback(options: { version: string; rerender: () => v
     let record: DevFeedbackRecord;
     try { record = JSON.parse(button.dataset.devRecord!); } catch { return; }
     const action=button.dataset.devAction;
+    if(action==='Identify Current Area'){
+      if(record.kind!=='ID'||record.recordType!=='CELL'||document.querySelector('dialog.area-identification-dialog[open]'))return;
+      void showAreaIdentification(record,{
+        identify:async()=>{if(!options.identifyArea)throw new Error('Current-area identification requires the updated in-game plugin.');return options.identifyArea();},
+        accept:(name,area,proposal)=>{
+          const report:DevFeedbackReport={...record,status:'Name Change Accepted',comment:'Accepted the name proposed from the current game area.',version:options.version,time:new Date().toISOString(),originalName:record.name,acceptedName:name,area,nameBasis:proposal.basis};
+          reports=commitAreaNameChange({label:record.name,value:record.id??'',localFormId:record.localId,plugin:sourcePlugins[(record.source??'Starfield.esm').toLowerCase()]??record.source},name,reports,report);
+          options.nameChanged?.();options.rerender();options.status(`Renamed ${record.name} to ${name}. Name-change entry saved for Export Reports.`);
+        },closed:()=>{if(button.isConnected)button.focus({preventScroll:true});}
+      });return;
+    }
     if(action==='Working'||action==='Reference Only'){
       if(!devFeedbackResults(record.kind).includes(action))return;
       if(saveFeedback(record,action,''))options.rerender();
@@ -141,7 +162,7 @@ export function installDevFeedback(options: { version: string; rerender: () => v
     dialog.className = 'dev-feedback-dialog osf-card';
     let selectedStatus = directIssue?'Issues':'',selectedGroup=directIssue?'Issues':'';
     dialog.setAttribute('aria-label', 'Test report for ' + record.name);
-    dialog.innerHTML = `<form method="dialog"><p class="osf-eyebrow">DEV MODE TEST REPORT</p><h3>${escape(record.name)}</h3><p>${escape(record.kind)}${record.id ? ' · ' + escape(record.id) : ''}</p>${directIssue?'':`<fieldset><legend>Result (optional)</legend>${devFeedbackResults(record.kind).map(value => `<button class="osf-btn osf-btn--sm" type="button" data-dev-result="${value}" aria-pressed="false">${value}</button>`).join('')}</fieldset>`}<label class="dev-feedback-issue-detail"${directIssue?'':' hidden'}>Issue result<select class="osf-input" data-issue-result aria-label="Issue result"><option value="Issues">Issue found</option><option value="Not noticeable">Not noticeable</option></select></label>${record.kind === 'ID'&&!directIssue ? '<p class="game-settings-reference-note">Reference Only: nothing appeared in inventory. Requests removal of Add to Player and a Reference Only label.</p>' : ''}<label class="dev-feedback-comment-label">Comment (optional)<textarea class="osf-input" name="comment" rows="5" maxlength="4000" aria-label="Test comment"></textarea></label><p class="dev-feedback-error" role="alert"></p><div class="dev-feedback-actions"><button class="osf-btn osf-btn--sm" type="button" data-cancel-report>Cancel</button><button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="submit">Save Report</button></div></form>`;
+    dialog.innerHTML = `<form method="dialog"><p class="osf-eyebrow">DEV MODE TEST REPORT</p><h3>${escape(record.name)}</h3><p>${escape(record.kind)}${record.id ? ' · ' + escape(record.id) : ''}</p>${directIssue?'':`<fieldset><legend>Result (optional)</legend>${devFeedbackResults(record.kind).map(value => `<button class="osf-btn osf-btn--sm" type="button" data-dev-result="${value}" aria-pressed="false">${value}</button>`).join('')}</fieldset>`}<label class="dev-feedback-issue-detail"${directIssue?'':' hidden'}>Issue result<select class="osf-input" data-issue-result aria-label="Issue result"><option value="Issues">Issue found</option><option value="Not noticeable">Not noticeable</option></select></label>${record.kind === 'ID'&&!directIssue ? '<p class="game-settings-reference-note">Reference Only: hide this entry outside Advanced Options and sort it below normal entries.</p>' : ''}<label class="dev-feedback-comment-label">Comment (optional)<textarea class="osf-input" name="comment" rows="5" maxlength="4000" aria-label="Test comment"></textarea></label><p class="dev-feedback-error" role="alert"></p><div class="dev-feedback-actions"><button class="osf-btn osf-btn--sm" type="button" data-cancel-report>Cancel</button><button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="submit">Save Report</button></div></form>`;
     document.body.append(dialog);
     const resultButtons = dialog.querySelectorAll<HTMLButtonElement>('[data-dev-result]');
     resultButtons.forEach((resultButton) => resultButton.addEventListener('click', () => {

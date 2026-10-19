@@ -1,0 +1,245 @@
+# For All, Into the Starfield / Enter Space for the First Time
+CallGlobalFunction "Game.AddAchievement" 1
+
+#Join Constellation
+CallGlobalFunction "Game.AddAchievement" 2
+
+#Complete "Into the Unknown"
+CallGlobalFunction "Game.AddAchievement" 3
+
+#Complete "All That Money Can Buy"
+CallGlobalFunction "Game.AddAchievement" 4
+
+#Complete "Further Into the Unknown"
+CallGlobalFunction "Game.AddAchievement" 5
+
+#Complete "High Price to Pay"
+CallGlobalFunction "Game.AddAchievement" 6
+
+#Complete "In Their Footsteps"
+CallGlobalFunction "Game.AddAchievement" 7
+
+#Complete "Entangled"
+CallGlobalFunction "Game.AddAchievement" 8
+
+#Complete "Unearthed"
+CallGlobalFunction "Game.AddAchievement" 9
+
+#Complete "One Giant Leap"
+CallGlobalFunction "Game.AddAchievement" 10
+
+#Join the UC Vanguard
+CallGlobalFunction "Game.AddAchievement" 11
+
+#Complete "The Devils You Know"
+CallGlobalFunction "Game.AddAchievement" 12
+
+#Complete "A Legacy Forged"
+CallGlobalFunction "Game.AddAchievement" 13
+
+#Join the Freestar Rangers
+CallGlobalFunction "Game.AddAchievement" 14
+
+#Complete "Surgical Strike"
+CallGlobalFunction "Game.AddAchievement" 15
+
+#Complete "The Hammer Falls"
+CallGlobalFunction "Game.AddAchievement" 16
+
+#Join Ryujin Industries
+CallGlobalFunction "Game.AddAchievement" 17
+
+#Complete "Guilty Parties"
+CallGlobalFunction "Game.AddAchievement" 18
+
+#Complete "Executive Level"
+CallGlobalFunction "Game.AddAchievement" 19
+
+#Join the Crimson Fleet
+CallGlobalFunction "Game.AddAchievement" 20
+
+#Complete "The Best There Is"
+CallGlobalFunction "Game.AddAchievement" 21
+
+#Complete "Legacy's End"
+CallGlobalFunction "Game.AddAchievement" 22
+
+#Build an Outpost
+CallGlobalFunction "Game.AddAchievement" 23
+
+#Connect 5 Outposts with Cargo Links
+CallGlobalFunction "Game.AddAchievement" 24
+
+#Produce 500 Total Resources from Outposts
+CallGlobalFunction "Game.AddAchievement" 25
+
+#Modify a Ship
+CallGlobalFunction "Game.AddAchievement" 26
+
+#Visit 20 Star Systems
+CallGlobalFunction "Game.AddAchievement" 27
+
+#Visit all Star Systems
+CallGlobalFunction "Game.AddAchievement" 28
+
+#Land on 100 Planets
+CallGlobalFunction "Game.AddAchievement" 29
+
+#Complete 30 Activities
+CallGlobalFunction "Game.AddAchievement" 30
+
+#Complete 30 Terminal or Misc. Missions
+CallGlobalFunction "Game.AddAchievement" 31
+
+#Gather 500 Organic Resources
+CallGlobalFunction "Game.AddAchievement" 32
+
+#Gather 500 Inorganic Resources
+CallGlobalFunction "Game.AddAchievement" 33
+
+#Bypass 50 Digital Locks
+CallGlobalFunction "Game.AddAchievement" 34
+
+#Access 50 Computers
+CallGlobalFunction "Game.AddAchievement" 35
+
+#Mod 50 Weapons
+CallGlobalFunction "Game.AddAchievement" 36
+
+#Craft 100 Items
+CallGlobalFunction "Game.AddAchievement" 37
+
+#Recruit 10 Separate Companions
+CallGlobalFunction "Game.AddAchievement" 38
+
+#Reach Maximum Relationship Level with a Companion
+CallGlobalFunction "Game.AddAchievement" 39
+
+#Collect 20 Quantum Essence
+CallGlobalFunction "Game.AddAchievement" 40
+
+#Collect 10 Ships
+CallGlobalFunction "Game.AddAchievement" 41
+
+#Read 20 Skill Magazines
+CallGlobalFunction "Game.AddAchievement" 42
+
+#Eliminate 300 Human Enemies
+CallGlobalFunction "Game.AddAchievement" 43
+
+#Eliminate 300 Creatures
+CallGlobalFunction "Game.AddAchievement" 44
+
+#Successfully Smuggle Contraband
+CallGlobalFunction "Game.AddAchievement" 45
+
+#Reach Level 5
+CallGlobalFunction "Game.AddAchievement" 46
+
+#Reach Level 10
+CallGlobalFunction "Game.AddAchievement" 47
+
+#Reach Level 25
+CallGlobalFunction "Game.AddAchievement" 48
+
+#Reach Level 50
+CallGlobalFunction "Game.AddAchievement" 49
+
+#Reach Level 100
+CallGlobalFunction "Game.AddAchievement" 50
+
+#Complete "What Remains"
+CallGlobalFunction "Game.AddAchievement" 51
+
+#Complete "The Promised, Broken"
+CallGlobalFunction "Game.AddAchievement" 52
+
+#Complete "Zealous Overreach"
+CallGlobalFunction "Game.AddAchievement" 53
+
+#Complete "Conflict in Conviction"
+CallGlobalFunction "Game.AddAchievement" 54
+
+#Complete "Exhuming the Past"
+CallGlobalFunction "Game.AddAchievement" 55
+
+#Complete "The Other Side"
+CallGlobalFunction "Game.AddAchievement" 56
+
+#Complete "The Scaled Citadel"
+CallGlobalFunction "Game.AddAchievement" 57
+
+#Discover 50 Locations on Va'ruun'kai
+CallGlobalFunction "Game.AddAchievement" 58
+
+#Defeat 25 Vortex Horrors
+CallGlobalFunction "Game.AddAchievement" 59
+
+#Defeat 10 Redeemed
+CallGlobalFunction "Game.AddAchievement" 60
+
+#Craft one of each type of Vortex Grenade
+CallGlobalFunction "Game.AddAchievement" 61
+
+#Aid the People of Va'ruun'kai
+CallGlobalFunction "Game.AddAchievement" 62
+
+#Complete "Lost Luxury"
+CallGlobalFunction "Game.AddAchievement" 63
+
+#Complete "Into the VOID"
+CallGlobalFunction "Game.AddAchievement" 64
+
+#Complete "Battle of the Unifier"
+CallGlobalFunction "Game.AddAchievement" 65
+
+#Build out and hand over an outpost to a faction
+CallGlobalFunction "Game.AddAchievement" 66
+
+#Convince Delta that you are worthy of the title Captain
+CallGlobalFunction "Game.AddAchievement" 67
+
+#Prove the superiority of artificial life
+CallGlobalFunction "Game.AddAchievement" 68
+
+#Clear out 5 Incursions
+CallGlobalFunction "Game.AddAchievement" 69
+
+#Clear out 15 Incursions
+CallGlobalFunction "Game.AddAchievement" 70
+
+#Clear out 30 Incursions
+CallGlobalFunction "Game.AddAchievement" 71
+
+#Fully upgrade Delta
+CallGlobalFunction "Game.AddAchievement" 72
+
+#Let Sarah Morgan know about her action figure
+CallGlobalFunction "Game.AddAchievement" 73
+
+#Find a spaceship equipment module schematic and install an equipment module on your ship
+CallGlobalFunction "Game.AddAchievement" 74
+
+#Apply a Rank 4 Legendary Effect to a piece of your equipment
+CallGlobalFunction "Game.AddAchievement" 75
+
+#Eat the questionable food offered by a spacefaring Old Woman
+CallGlobalFunction "Game.AddAchievement" 76
+
+#Collect all Action Figures
+CallGlobalFunction "Game.AddAchievement" 77
+
+#Kill 10 targets for the Arbitrator
+CallGlobalFunction "Game.AddAchievement" 78
+
+#Stop Bernhard from killing Caruso
+CallGlobalFunction "Game.AddAchievement" 79
+
+#Use a magnet to destroy the robot for Ivica in New Babylon
+CallGlobalFunction "Game.AddAchievement" 80
+
+#Prevent any deaths by answering riddles
+CallGlobalFunction "Game.AddAchievement" 81
+
+#Retrieve your inventory from another universe
+CallGlobalFunction "Game.AddAchievement" 82

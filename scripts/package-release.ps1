@@ -38,7 +38,7 @@ function Get-SourceFiles([string]$root) {
             }
         }
     }
-    foreach ($name in @('src', 'native', 'scripts', 'tests', 'docs')) {
+    foreach ($name in @('src', 'native', 'scripts', 'tests', 'docs', 'batches')) {
         Get-MaintainedFiles (Join-Path $root $name)
     }
 }

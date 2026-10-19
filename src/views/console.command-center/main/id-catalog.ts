@@ -6,7 +6,7 @@ import type { GeneratedIdCatalogEntry } from './id-browser-data';
 import { REVIEWED_SHIP_CATALOG } from './ship-catalog';
 import { REVIEWED_VEHICLE_CATALOG } from './vehicle-catalog';
 
-export type IdCatalogAction = 'additem' | 'addperk' | 'addspell' | 'spawn' | 'forceweather' | 'teleport' | 'findcell';
+export type IdCatalogAction = 'additem' | 'addperk' | 'addspell' | 'spawn' | 'forceweather' | 'teleport';
 
 export type IdCatalogEntry = {
   label: string;
@@ -53,7 +53,6 @@ export type IdBrowserCategory = {
 // These groups filter the reviewed catalog packaged with CCC. Expansion-only
 // records include their requirement in the visible detail text.
 export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
-  { label: 'Settings', value: 'game-settings', detail: 'Search and inspect named game settings.', recordType: 'GMST', builtInCategories: ['Game Settings'] },
   { label: 'All Categories', value: 'all', detail: 'Every ID included with CCC.', recordType: '', builtInCategories: ['*'] },
   { label: 'Weapons', value: 'weapons', detail: 'Weapons and guns.', recordType: 'WEAP', builtInCategories: ['Weapons'] },
   { label: 'Suits', value: 'suits', detail: 'Spacesuits and suit records.', recordType: 'ARMO', builtInCategories: ['Spacesuits'] },
@@ -70,8 +69,8 @@ export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   { label: 'NPCs / Companions', value: 'npcs', detail: 'NPC base records and included companion references.', recordType: 'NPC_', builtInCategories: ['Companions', 'NPCs'] },
   { label: 'Weapon / Armor Mods', value: 'mods', detail: 'Weapon and armor modifier records.', recordType: 'OMOD', builtInCategories: ['Mods'] },
   { label: 'Factions', value: 'factions', detail: 'Faction records.', recordType: 'FACT', builtInCategories: ['Factions'] },
-  { label: 'Locations', value: 'locations', detail: 'Named location records with searchable Editor IDs.', recordType: 'LCTN', builtInCategories: ['Locations'] },
-  { label: 'Cells', value: 'cells', detail: 'Named cells with searchable Editor IDs.', recordType: 'CELL', builtInCategories: ['Cells'] },
+  { label: 'Locations (Reference Only)', value: 'locations', detail: 'Reference-only area metadata; not teleport destinations.', recordType: 'LCTN', builtInCategories: ['Locations'] },
+  { label: 'Cells / Teleport', value: 'cells', detail: 'Teleport destinations with searchable Editor IDs.', recordType: 'CELL', builtInCategories: ['Cells'] },
   { label: 'Ships', value: 'ships', detail: 'Reviewed complete ship designs and their alternate Base IDs.', recordType: 'GBFM', builtInCategories: ['Ships'] },
   { label: 'Ship Parts / Other Forms', value: 'ship-parts', detail: 'Ship modules and other named generic base-form records.', recordType: 'GBFM', builtInCategories: ['Ship Parts & Other Forms'] },
   { label: 'Vehicles', value: 'vehicles', detail: 'Reviewed physical land vehicles and their related module records.', recordType: '', builtInCategories: ['Vehicles'] },
@@ -80,8 +79,6 @@ export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
 ].sort((a, b) => {
   if (a.value === 'all') return -1;
   if (b.value === 'all') return 1;
-  if (a.value === 'game-settings') return 1;
-  if (b.value === 'game-settings') return -1;
   return a.label.localeCompare(b.label);
 });
 

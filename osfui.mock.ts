@@ -249,6 +249,13 @@ export function install(ctx: MockContext): void {
           };
           break;
         }
+        case 'console.command-center.includedBatch': {
+          const response = await fetch('/__ccc/included-batches', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload ?? {})});
+          const result = await response.json() as JsonObject;
+          if (!response.ok || !result.ok) throw new Error(String(result.error ?? 'Could not read Included Batches.'));
+          reply = result;
+          break;
+        }
         case 'console.command-center.commandBatchList': {
           const legacy = Array.isArray(payload?.legacyBatches) ? payload.legacyBatches : [];
           for (const candidate of legacy) {

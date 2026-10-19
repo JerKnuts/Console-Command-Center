@@ -13,3 +13,7 @@ Export Reports saves the current batch as UTF-8 text in Documents\My Games\Starf
 In the browser preview, export downloads a timestamped CCC-Dev-Feedback file instead. Browser reports remain in that preview's local storage; game reports remain in the game's WebView storage. Send the exported file for review. The user has supplied an in-game export, confirming reporting and file export. Controller navigation and popup behavior remain part of the release checklist.
 
 In Dev Mode, rows show the latest saved result: green/check for Working, yellow/exclamation for Issues, orange/question mark for Not noticeable, and dark gray/strikethrough for Reference Only. Reviewed working items also receive green markers. Outcomes persist separately from pending reports, so exporting does not reset row colors. Markers and row report buttons are hidden when Dev Mode is off.
+
+## Current-area name review
+
+Cell rows place **Identify Current Area** next to Working. Stand in the selected cell, review the game-provided names, and accept or decline. Accepted changes persist as local CCC names and are included in Export Reports. See [the tool guide](CURRENT_AREA.md).

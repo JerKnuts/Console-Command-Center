@@ -1,0 +1,178 @@
+# All Research
+# Completes the 75 research projects listed below for your current character.
+# Marks those projects as researched; projects not listed here are not included.
+
+# Performance Enhancement 1
+completeresearch 00389eef
+# Performance Enhancement 2
+completeresearch 00389ef0
+# Performance Enhancement 3
+completeresearch 00389ef1
+# Performance Enhancement 4
+completeresearch 00389ef2
+
+# Medical Treatment 1
+completeresearch 00389eea
+# Medical Treatment 2
+completeresearch 00389eeb
+# Medical Treatment 3
+completeresearch 00389eec
+# Medical Treatment 4
+completeresearch 00389eed
+
+# Innovative Synthesis 1
+completeresearch 00389ef4
+# Innovative Synthesis 2
+completeresearch 00389ef5
+# Innovative Synthesis 3
+completeresearch 00389ef6
+
+# Old Earth Cuisine 1
+completeresearch 00389f01
+# Old Earth Cuisine 2
+completeresearch 00389f02
+# Old Earth Cuisine 3
+completeresearch 00389f03
+# Old Earth Cuisine 4
+completeresearch 00389f04
+
+# Exotic Recipes 1
+completeresearch 00389f05
+# Exotic Recipes 2
+completeresearch 00389f06
+# Exotic Recipes 3
+completeresearch 00389f07
+# Exotic Recipes 4
+completeresearch 00389f08
+
+# Beverage Development 1
+completeresearch 00389efd
+# Beverage Development 2
+completeresearch 00389efe
+# Beverage Development 3
+completeresearch 00389eff
+# Beverage Development 4
+completeresearch 00389f00
+
+# Mixology 1
+completeresearch 00389ef9
+# Mixology 2
+completeresearch 00389efa
+# Mixology 3
+completeresearch 00389efb
+# Mixology 4
+completeresearch 00389efc
+
+# Manufacturing 1
+completeresearch 00389f11
+# Manufacturing 2
+completeresearch 00389f12
+# Manufacturing 3
+completeresearch 00389f13
+
+# Resource Extraction 1
+completeresearch 00389f0b
+# Resource Extraction 2
+completeresearch 00389f0c
+
+# Decoration 1
+completeresearch 00100b8b
+# Decoration 2
+completeresearch 00100b8a
+# Decoration 3
+completeresearch 00100b8c
+
+# Horticulture 1
+completeresearch 00389f09
+# Horticulture 2
+completeresearch 00389f0a
+
+# Domestication 1
+completeresearch 003e3d4d
+# Domestication 2
+completeresearch 003e3d4e
+
+# Power Generation 1
+completeresearch 00389f14
+# Power Generation 2
+completeresearch 00389f15
+# Power Generation 3
+completeresearch 00389f16
+# Power Generation 4
+
+completeresearch 00389f17
+# Robots 1
+completeresearch 00389f0f
+# Robots 2
+completeresearch 00389f10
+
+# Outpost Defense 1
+completeresearch 00389f0d
+# Outpost Defense 2
+completeresearch 00389f0e
+
+# Helmet Mods 1
+completeresearch 00178d1b
+# Helmet Mods 2
+completeresearch 00178d1c
+# Helmet Mods 3
+completeresearch 00178d1d
+
+# Spacesuit Mods 1
+completeresearch 001520b9
+# Spacesuit Mods 2
+completeresearch 00178d03
+# Spacesuit Mods 3
+completeresearch 00178d1a
+
+# Pack Mods 1
+completeresearch 000c11a5
+# Pack Mods 2
+completeresearch 000c11a6
+# Pack Mods 3
+completeresearch 000c11a7
+
+# Barrel Mods 1
+completeresearch 00389f18
+# Barrel Mods 2
+completeresearch 00389f19
+
+# Grip and Stock Mods 1
+completeresearch 00389f22
+# Grip and Stock Mods 2
+completeresearch 00389f23
+# Grip and Stock Mods 3
+completeresearch 00389f24
+
+# Optic and Laser Mods 1
+completeresearch 00389f1c
+# Optic and Laser Mods 2
+completeresearch 00389f1d
+# Optic and Laser Mods 3
+completeresearch 00389f1e
+
+# Muzzle Mods 1
+completeresearch 00389f27
+# Muzzle Mods 2
+completeresearch 00389f28
+# Muzzle Mods 3
+completeresearch 00389f29
+
+# Magazine and Battery Mods 1
+completeresearch 00389f1a
+# Magazine and Battery Mods 2
+completeresearch 00389f1b
+# Magazine and Battery Mods 3
+completeresearch 00380c4d
+
+# Internal Mods 1
+completeresearch 00389f1f
+# Internal Mods 2
+completeresearch 00389f20
+# Internal Mods 3
+completeresearch 00389f21
+
+# Receiver Mods 1
+completeresearch 00389f25
+# Receiver Mods 2
+completeresearch 00389f26

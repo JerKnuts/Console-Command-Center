@@ -1,0 +1,33 @@
+# All Baseball Caps
+# Adds one of each of the 10 base-game baseball caps to your inventory, including the Batball Cap and nine branded caps.
+# Items are added only; nothing is equipped. Running this again adds another copy of each item.
+
+# Batball Cap
+player.additem 0019219C 1
+
+# Chunks Cap
+player.additem 00185A6F 1
+
+# Deimos Cap
+player.additem 00185A6E 1
+
+# Freestar Collective Cap
+player.additem 00185A6D 1
+
+# HopeTech Cap
+player.additem 00185A6C 1
+
+# Nova Galactic Cap
+player.additem 00185A6B 1
+
+# Stroud-Eklund Cap
+player.additem 00185A6A 1
+
+# Taiyo Astroneering Cap
+player.additem 00185A69 1
+
+# Trident Luxury Lines Cap
+player.additem 00185A68 1
+
+# United Colonies Cap
+player.additem 00185A67 1

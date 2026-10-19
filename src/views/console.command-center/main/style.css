@@ -1261,7 +1261,33 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
 .custom-command-line-number-content { display: block; box-sizing: border-box; padding: 12px 7px; will-change: transform; }
 .custom-command-editor:focus-within .custom-command-line-numbers { border-right-color: rgba(255, 126, 24, 0.24); color: rgba(151, 169, 184, 0.46); }
 .custom-command-input { width: 100%; height: 100%; min-height: 0; resize: none; }
-.custom-command-editor textarea.custom-command-input { height: 100%; min-height: 0; max-height: none; align-self: stretch; display: block; min-width: 0; box-sizing: border-box; margin: 0; padding: 12px; border: 0; font-family: var(--osf-font-mono); font-size: var(--osf-text-sm); line-height: 1.45; white-space: pre; overflow: auto; }
+.custom-command-editor textarea.custom-command-input { height: 100%; min-height: 0; max-height: none; align-self: stretch; display: block; min-width: 0; box-sizing: border-box; margin: 0; padding: 12px; border: 0; font-family: var(--osf-font-mono); font-size: var(--osf-text-sm); line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: hidden; overflow-y: auto; }
+.custom-command-editor { --syntax-command: #8fd3ff; --syntax-target: #e7c78c; --syntax-id: #c7b5ff; --syntax-number: #f3cd75; --syntax-string: #9bd9b3; --syntax-comment: #9eb1c0; }
+.custom-command-editor .custom-command-highlight,
+.custom-command-editor textarea.custom-command-input { grid-area: 1 / 2; font-family: var(--osf-font-mono); font-size: var(--osf-text-sm); font-weight: 400; font-style: normal; line-height: 1.45; letter-spacing: 0; tab-size: 4; font-variant-ligatures: none; }
+.custom-command-editor .custom-command-highlight { position: relative; z-index: 2; visibility: hidden; min-width: 0; min-height: 0; max-width: 100%; max-height: 100%; margin: 0; padding: 0; border: 0; overflow: hidden; pointer-events: none; user-select: none; color: var(--osf-color-text, #e4edf1); background: transparent; }
+.custom-command-highlight-content { display: block; width: 100%; min-width: 0; box-sizing: border-box; margin: 0; padding: 12px; font: inherit; white-space: normal; will-change: transform; }
+.custom-command-highlight-content.is-placeholder { opacity: 0.65; }
+.custom-command-editor textarea.custom-command-input { position: relative; z-index: 1; caret-color: #e4edf1; }
+.custom-command-editor.has-command-highlighting .custom-command-highlight { visibility: visible; }
+.custom-command-editor.has-command-highlighting textarea.custom-command-input { color: transparent; -webkit-text-fill-color: transparent; }
+.custom-command-editor.has-command-highlighting textarea.custom-command-input::placeholder { color: transparent; opacity: 0; }
+.custom-command-editor textarea.custom-command-input::selection { background: rgba(89, 146, 184, 0.38); }
+.command-syntax-command { color: var(--syntax-command); font-weight: 700; }
+.command-syntax-target { color: var(--syntax-target); }
+.command-syntax-id { color: var(--syntax-id); }
+.command-syntax-number { color: var(--syntax-number); }
+.command-syntax-string { color: var(--syntax-string); }
+.command-syntax-keyword { color: var(--syntax-command); }
+.command-syntax-comment { color: var(--syntax-comment); font-style: italic; }
+:root[data-ccc-theme="light"] .custom-command-editor { --syntax-command: #164f8c; --syntax-target: #804500; --syntax-id: #6530a1; --syntax-number: #855400; --syntax-string: #1c633b; --syntax-comment: #52665c; }
+:root[data-ccc-theme="light"] .custom-command-editor .custom-command-highlight { color: #172f37; }
+:root[data-ccc-theme="light"] .custom-command-editor textarea.custom-command-input { caret-color: #172f37; }
+@media (forced-colors: active) {
+  .custom-command-editor.has-command-highlighting .custom-command-highlight { visibility: hidden; }
+  .custom-command-editor.has-command-highlighting textarea.custom-command-input { color: CanvasText; -webkit-text-fill-color: CanvasText; caret-color: CanvasText; }
+  .custom-command-editor.has-command-highlighting textarea.custom-command-input::placeholder { color: GrayText; opacity: 1; }
+}
 .custom-format-tips { min-width: 0; display: flex; flex: 1 1 auto; flex-wrap: wrap; gap: 3px 14px; color: var(--osf-text-faint); font-family: var(--osf-font-mono); font-size: var(--osf-text-xs); line-height: 1.35; }
 .custom-format-tips strong { color: var(--ccc-orange); letter-spacing: 0.08em; }
 .custom-format-tips span::before { content: "•"; margin-right: 6px; color: rgba(151, 169, 184, 0.42); }
@@ -1501,7 +1527,7 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
 .confirm-backdrop[hidden],
 .welcome-backdrop[hidden],
 .help-backdrop[hidden] { display: none; }
-.confirm-dialog { width: min(560px, 90vw); padding: 20px; box-shadow: var(--osf-shadow); overflow: hidden; }
+.confirm-dialog { display: flex; flex-direction: column; width: min(560px, 90vw); max-height: calc(100vh - 40px); padding: 20px; box-shadow: var(--osf-shadow); overflow: hidden; }
 .confirm-dialog h2 { margin: 3px 0 8px; font-size: var(--osf-text-2xl); }
 .confirm-dialog > p:not(.osf-eyebrow) { margin: 0; color: var(--osf-text-muted); }
 .confirm-label { color: var(--ccc-orange); }
@@ -1509,8 +1535,8 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
 .confirm-dialog.is-danger .confirm-label { color: var(--ccc-danger); }
 .confirm-command { display: grid; gap: 5px; margin: 12px 0; padding: 9px; background: var(--ccc-surface-inset); border: 1px solid var(--ccc-line); }
 .confirm-command span { color: var(--osf-text-faint); font-family: var(--osf-font-mono); font-size: 9px; letter-spacing: 0.12em; }
-.confirm-command code { overflow-wrap: anywhere; color: var(--ccc-orange); font-family: var(--ccc-console-font); font-weight: 600; letter-spacing: 0.025em; }
-.confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.confirm-command code { display: block; max-height: 40vh; min-height: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ccc-orange); font-family: var(--ccc-console-font); font-weight: 600; letter-spacing: 0.025em; }
+.confirm-actions { flex-shrink: 0; display: flex; justify-content: flex-end; gap: 8px; }
 
 .welcome-dialog { width: min(760px, 92vw); padding: 22px; box-shadow: var(--osf-shadow); overflow: hidden; }
 .welcome-dialog h2 { margin: 4px 0 7px; font-size: var(--osf-text-2xl); }
@@ -2675,3 +2701,23 @@ body.controller-active .model-preview-controller-hint { display: block; }
 :root[data-ccc-theme="light"] .dev-feedback-list-row:has(> .dev-issues) { background: #f4e6a9; }
 :root[data-ccc-theme="light"] .dev-feedback-list-row:has(> .dev-uncertain) { background: #f6d4b0; }
 :root[data-ccc-theme="light"] .dev-feedback-list-row:has(> .dev-reference) { background: #aeb5bb; }
+
+.game-settings-value { display: grid; gap: 0.4rem; width: 100%; }
+.game-settings-value .osf-input { min-width: 0; width: 100%; }
+
+/* Reviewed WIP groups stay orange even outside the test-report interface. */
+:root .dev-tested.wip-status {--report-color:#f39b44;--report-fill:rgba(153,79,20,.35);}
+:root[data-ccc-theme="light"] .dev-tested.wip-status {--report-color:#a14c0d;--report-fill:#f6d4b0;}
+
+.dev-feedback-row-actions .dev-identify-area { max-width: 125px; white-space: normal; }
+.area-identification-dialog { width: min(760px, 92vw); max-height: 85vh; overflow: auto; }
+.area-identification-evidence div { display: grid; grid-template-columns: 125px minmax(0,1fr); gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--osf-border, #52646c); }
+.area-identification-evidence dd { margin: 0; overflow-wrap: anywhere; }
+.area-identification-dialog [data-area-proposed] { width: 100%; margin-top: 7px; }
+
+/* Logical source lines wrap visually while keeping command boundaries intact. */
+.command-source-line { display: block; min-height: 1.45em; white-space: pre-wrap; overflow-wrap: anywhere; }
+.custom-command-line-number { display: block; min-height: 1.45em; }
+
+.sidebar-mod-sort { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 4px; margin: 4px 0 10px; }
+.sidebar-mod-sort .nav-button { justify-content: center; text-align: center; white-space: normal; padding: 8px 5px; font-size: var(--osf-text-xs); }

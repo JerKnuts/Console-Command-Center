@@ -1,0 +1,12 @@
+# Weapon Test Kit - Ballistic
+# Adds an Eon and Grendel with 500 rounds of their shared 7.77mm ammunition.
+# Adds base weapons without legendary effects. It does not equip or fire them.
+
+# Eon
+player.additem 000476C4 1
+
+# Grendel
+player.additem 00028A02 1
+
+# 7.77mm Caseless
+player.additem 0004AD3E 500

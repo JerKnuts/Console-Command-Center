@@ -65,3 +65,7 @@ Add one entry to `MOD_DISPLAY_NAMES` using the complete lowercase plugin filenam
 ```
 
 Keep `.esm`, `.esp`, or `.esl` in the key. Prefer the title published by the mod author. Do not include a version number unless it is part of the permanent mod title. The fallback means missing entries never prevent scanning or browsing.
+
+## Browser grouping (1.3.15)
+
+Below Scan Mods, Sort by Mod shows the existing plugin list. Sort by Category shows record categories across all scanned mods, with counts and an All Categories option. Selecting a category lists its items with source-mod labels. Switching grouping does not rescan or execute commands. Search All searches all scanned records; Search Mod is enabled when a plugin is selected in the mod view. Reference visibility still follows Advanced Options.

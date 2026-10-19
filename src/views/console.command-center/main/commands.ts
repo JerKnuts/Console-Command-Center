@@ -11,6 +11,7 @@ export type CommandCategory =
   | 'Targets'
   | 'Quests'
   | 'Ship'
+  | 'Advanced Settings'
   | 'Untested';
 
 export type CommandRisk = 'caution' | 'danger';
@@ -2055,5 +2056,6 @@ export const CATEGORY_ORDER: CommandCategory[] = [
   'Skills',
   'Targets',
   'World',
+  'Advanced Settings',
   'Untested',
 ];

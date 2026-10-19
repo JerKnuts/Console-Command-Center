@@ -79,7 +79,7 @@ test('one manual Scan Mods action discovers mods, captures IDs, and sorts the se
   assert.match(browserSource, /return rightCount - leftCount \|\| left\.name\.localeCompare\(right\.name\)/);
   assert.match(browserSource, /availableCount > 0 \? availableCount\.toLocaleString\(\)/);
   assert.match(browserSource, /modCatalogScanAllComplete \? modCatalogs\.filter\(\(catalog\) => catalog\.entries\.length > 0\)/);
-  assert.match(browserSource, /searchAllMods \? entry\.source === 'mod'/);
+  assert.match(browserSource, /modBrowserSort==='category'\|\|searchAllMods \? entry\.source === 'mod'/);
   assert.match(browserSource, /loaded \$\{total\.toLocaleString\(\)\} IDs for this session/);
   assert.match(browserSource, /scannedIdTotal \+= loaded\.entries\.length/);
   assert.match(browserSource, /\$\{idsFound\.toLocaleString\(\)\} IDs found/);
@@ -137,7 +137,7 @@ test('Search All searches scanned IDs without requiring a selected mod', () => {
   assert.doesNotMatch(browserSource, /activeView === 'mod-browser' && !modCatalog\) return \[\]/);
   assert.match(browserSource, /Search All Mod IDs/);
   assert.match(browserSource, /matching IDs \/ \$\{includedTotal\.toLocaleString\(\)\} scanned mod IDs/);
-  assert.match(browserSource, /searchAllMods \? entry\.source === 'mod'/);
+  assert.match(browserSource, /modBrowserSort==='category'\|\|searchAllMods \? entry\.source === 'mod'/);
 });
 
 test('official Bethesda Creation plugins are scanned and grouped separately', () => {

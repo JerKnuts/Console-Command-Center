@@ -38,4 +38,6 @@ As of 1.2.30, packaged QUST records are exclusively in Quest Browser. All 244 re
 
 ## Visibility and findings
 
-Advanced Options hides reference-only items, Cells, Ship Parts, and the Settings catalog by default, including searches and ID Favorites. Enable it from the Settings popup beside Help to reveal those entries. Normal and reference-only records are independently alphabetical, with reference-only last. Restrictions from reported tests are applied by owning plugin/local ID and also protect previously saved Favorites.
+Advanced Options hides reference-only items, Locations, Ship Parts, and the Settings catalog by default, including searches and ID Favorites. Enable it from the Settings popup beside Help to reveal those entries. Normal and reference-only records are independently alphabetical, with reference-only last. Restrictions from reported tests are applied by owning plugin/local ID and also protect previously saved Favorites.
+
+Cells are shown by default for teleporting. LCTN location records are Reference Only and require Advanced Options, including mod records and saved Favorites.

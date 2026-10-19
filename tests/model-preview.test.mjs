@@ -22,6 +22,17 @@ function triangle(){
  for(const n of [0,0,0,2,0,0,0,2,0]){v.setFloat32(p,n,true);p+=4;}
  [0,1,2].forEach(u);return b;
 }
+
+test('version 9 transports metal maps separately and rejects invalid references and truncated data',()=>{
+ const bytes=new Uint8Array(136),v=new DataView(bytes.buffer);bytes.set(new Uint8Array(triangle()));
+ v.setUint32(4,9,true); // header + geometry = 68 bytes
+ v.setUint32(88,0,true);v.setUint32(92,1,true); // normal and metal IDs
+ v.setUint32(120,1,true);v.setUint32(124,1,true);v.setUint32(128,1,true);bytes.set([231,231,231,255],132);
+ const [mesh]=decodePreview(bytes.buffer);assert.equal(mesh.normalTexture,undefined);assert.equal(mesh.metalTexture.width,1);assert.deepEqual([...mesh.metalTexture.pixels],[231,231,231,255]);
+ v.setUint32(92,2,true);assert.throws(()=>decodePreview(bytes.buffer),/metal texture reference/);v.setUint32(92,1,true);
+ assert.throws(()=>decodePreview(bytes.buffer.slice(0,-1)),/texture/);
+ assert.equal(decodePreview(triangle())[0].metalTexture,undefined);
+});
 test('geometry decodes, centers and converts engine Z-up to screen Y-up',()=>{
  const [m]=decodePreview(triangle());assert.equal(m.indices.length,3);
  assert.deepEqual([...m.indices],[0,1,2]);
@@ -177,4 +188,17 @@ test('version eight carries only valid normal-only overlays while older packets 
  v.setUint32(4,7,true);assert.throws(()=>decodePreview(bytes.buffer),/texture/);
  v.setUint32(4,8,true);v.setUint32(88,0,true);assert.throws(()=>decodePreview(bytes.buffer),/normal-only/);
  v.setUint32(88,2,true);v.setUint32(68,32,true);assert.throws(()=>decodePreview(bytes.buffer),/normal-only/);
+});
+
+
+test('Ultra rendering has a bounded pixel budget while preserving display proportions',()=>{
+ const size=previewCanvasSize(3440,1440,4,8192,24*1024*1024);
+ assert.ok(size.width*size.height<=24*1024*1024+size.width+size.height);assert.ok(size.width<=8192);assert.ok(Math.abs(size.width/size.height-3440/1440)<.002);
+});
+
+test('Ultra transport accepts compressed full-resolution payloads above the normal 64 MiB limit',async()=>{
+ const raw=Buffer.alloc(64*1024*1024+16),compressed=deflateSync(raw);let requested;
+ const request=async(name,p)=>{if(name.endsWith('previewModel')){requested=p;return{ok:true,ticket:'ultra',bytes:compressed.length,decodedBytes:raw.length,compression:'deflate'};}return{ok:true,offset:p.offset,data:compressed.subarray(p.offset,p.offset+p.maxBytes).toString('base64')};};
+ await assert.rejects(fetchPreview(request,'00000001',()=>true,false,'high'),/compressed model response/);
+ const buffer=await fetchPreview(request,'00000001',()=>true,false,'ultra');assert.equal(buffer.byteLength,raw.length);assert.equal(requested.quality,'ultra');assert.equal(new Uint8Array(buffer).at(-1),0);
 });

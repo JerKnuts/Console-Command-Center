@@ -1,0 +1,10 @@
+# Quick Surveying
+# Sets required plant and animal survey counts to 1 for subsequent scans.
+# Does not automatically survey planets. Use the scanner on each species.
+# Use Reset Quick Surveying to restore the base-game counts (8 each). Other mods may choose different counts.
+
+# Flora samples required
+setgs iHandScannerPlantsCountBase 1
+
+# Fauna samples required
+setgs iHandScannerAnimalCountBase 1

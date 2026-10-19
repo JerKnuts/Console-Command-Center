@@ -1,0 +1,9 @@
+# Quick Surveying RESET
+# Restores the base-game requirement of 8 scans for plants and animals.
+# These are base-game values, not a backup of settings from installed mods.
+
+# Flora samples required - base game 8
+setgs iHandScannerPlantsCountBase 8
+
+# Fauna samples required - base game 8
+setgs iHandScannerAnimalCountBase 8

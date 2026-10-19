@@ -1,41 +1,33 @@
-# Custom Command batches
+# Command batches — 1.3.2
 
-Current behavior: CCC v1.3.0.
+## Included files and saved files
 
-## Files and editor
+Custom Command's flat INCLUDED sidebar lists files in Documents\My Games\Starfield\Console Command Center\Included Batches. Each file is an actual runnable .txt batch with comments explaining its effects. Selecting one loads its contents for review/editing and never executes it. Editing files in a text editor and selecting Refresh updates the list/content. Saving a draft uses the separate Command Batches folder.
 
-Saved batches live in Documents\My Games\Starfield\Console Command Center\Command Batches under the Windows Documents folder. The filename without .txt is the displayed batch name. CCC opens that folder's .txt files when Custom Command is selected and provides Refresh for external edits. Load fills the draft for review; it does not execute. Switching tabs preserves the draft during the UI session. Add to Batch on a command card appends its prepared command.
+The source defaults live in batches/included and are bundled into the UI from those exact .txt files. Defaults are installed once per filename. Existing user files are retained, modified files are not overwritten, and deleted defaults are not recreated. The three original native samples still seed only an empty Command Batches folder; they are separate from the included library.
 
-Write one console command per line. Blank lines and lines whose trimmed text starts with # are ignored. Comments must occupy their own lines; inline comments are not stripped. Line numbers shown in the gutter are display-only and are not saved or executed.
+## Editing and execution
 
-~~~text
-# Player setup
-player.modav carryweight 100
+One command goes on each line. Blank lines are ignored. Both # and ; start full-line or trailing comments outside double-quoted arguments; escaped quotes inside a quoted string do not start comments. Native and browser parsing follow the same rules.
 
-# Add four items
-player.additem 0000ABF9 4
-~~~
+Commands are bold/blue, targets are gold, Form IDs purple, numbers amber and quoted text green in the dark theme, with matching readable light-theme colors. Comments are muted/italic. Highlighting is visual only and does not rewrite the draft or validate that an engine command exists. The underlying textarea preserves cursor selection, undo, IME/controller text entry, copy/paste and accessibility. Long lines wrap visually without changing the file or command boundaries. Line numbers mark logical source lines and align with their wrapped text. Highlighting and line numbers follow vertical scrolling; forced-colors mode exposes ordinary text.
 
-There is no 100-command limit. A file may be up to 1 MB, each command may be up to 1,024 characters, and the list currently shows up to 100 batch files. The UI accepts entry names up to 50 characters; native filename validation permits up to 120 bytes and rejects reserved Windows names, path separators, control characters, and invalid filename characters. Files should be UTF-8 text; a UTF-8 BOM is accepted.
+Review Commands displays executable lines and requires confirmation. Commands run in order and stop at the first reported execution failure. Successful submission is not proof of the intended gameplay result. Files are limited to 1 MB and commands to 1,024 characters, with up to 100 files per list and no fixed command-count limit.
 
-Saving an existing case-insensitive batch name updates that file. Delete removes one file; Delete All requires typing Delete. Browser-stored legacy batches migrate on first load, keeping different same-name contents in separately named migrated files.
+## New included batches
 
-## Included samples
+All Playing Cards adds one complete 52-card deck. All Baseball Caps adds one each of the ten base-game cap variants. Both include item-name comments, add to inventory without equipping anything, and add another copy when run again. These two files install automatically under INCLUDED; existing user-edited batches remain untouched.
 
-On first use, an empty batch folder receives Sample - Basic Supplies, Sample - Workshop Materials, and Sample - Ballistic Starter Kit. Samples do not overwrite existing files or enter Auto-Run automatically. A hidden setup marker prevents deleted samples from being recreated; migrated or existing batches take precedence. The browser preview includes the same examples.
+Adventure Starter Kit adds modest supplies, tools, a weapon/ammo and a suit set without advancing NG+ or equipping anything. Medical Supplies adds healing and affliction treatments. Outpost Starter Kit supplies common building materials, while Manufactured Components and Cooking Pantry provide focused ingredients. Weapon Test Kit files separate ballistic, laser, particle and melee gear. Spacesuit Collection supplies five matching sets; Clothing Wardrobe supplies selected uniforms and headwear.
 
-## Manual execution
+Quick Surveying sets flora/fauna scan requirements to 1. Scanner Visibility extends base/scan range to 100/50. Boostpack Explosions sets BoostpackDeathChance to 75. Each has a separate Name RESET file restoring the documented base-game values (8/8 scans, 50/10 range, 25 explosion chance). These resets do not capture or restore mod-specific overrides. Preset effects and balance still need in-game testing.
 
-Review Commands shows the executable lines in file order and requires confirmation. CCC submits commands one at a time and stops on a reported native/bridge failure. The executor cannot reliably determine whether every console command had its intended effect; a submitted command is not proof of a gameplay change. Activity Log retains submitted commands and reported outcomes.
+Known official-plugin figure/ammunition IDs are remapped when loading their included files, using plugin identity rather than assuming a fixed load-order index. Missing required plugins produce a message. This is scoped to the known supplied ID set and does not rewrite unrelated user commands.
 
 ## Auto-Run
 
-Select On Load beside each chosen file, then switch Auto-Run On in the Batch Files header. Both the master setting and individual selections are stored in Documents\My Games\Starfield\Console Command Center\Auto Run.json. Updates to the installed mod do not overwrite this user-owned folder.
+Saved files can be marked On Load and controlled by a master Auto-Run switch, off by default. They run alphabetically three seconds after loading an existing save, with contents read fresh. Repeated loads repeat additive commands and toggles. Missing or invalid files are skipped and reported; one failed batch does not prevent other selected batches. New games do not trigger this workflow. Existing browser-stored saved batches migrate without overwriting a different same-name file. Setup, preview loading and selecting an included file do not execute it or enable Auto-Run.
 
-Auto-Run targets existing-save loads, waits three seconds, and reads selected text files fresh without requiring CCC to be open. Files run in alphabetical filename order; commands run in file order. A newer load event supersedes a pending older run. New games are not intended to trigger these batches. Missing, unreadable, empty, or invalid files are skipped and reported. A native execution failure stops that batch; other selected batches continue.
+## Reset filenames (1.3.15)
 
-Pending run summaries are kept in native memory for the current game session (up to 20) and imported into Activity Log when the UI connects. Quitting before opening CCC loses those pending summaries. The log reports submission counts and file errors; it does not verify every command's game effect.
-
-These settings apply across saves and characters in this installation. Repeated toggles such as tgm and tcl flip their state on every load, and additive commands can repeatedly add items or values. Prefer deliberate, repeatable setup commands. Turn Auto-Run Off to stop future loads from executing selected files; it does not undo earlier commands.
-
-In-game Auto-Run triggering was confirmed by the user. Validate individual batches and load behavior on a disposable save before using them for routine play.
+Boostpack Explosions RESET.txt, Quick Surveying RESET.txt and Scanner Visibility RESET.txt sort after their matching presets. The former More Boostpack Explosions.txt is now Boostpack Explosions.txt. During included-file setup, old names migrate without changing their contents. Previously deleted defaults stay deleted. If both old and new filenames already exist, both user files are kept without overwriting either. Saved Command Batches and Auto-Run selections are separate and unchanged.

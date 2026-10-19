@@ -52,7 +52,7 @@ inline std::unordered_map<std::string,MaterialAppearance> ReadMaterialInheritanc
                     if(constant&&replacementColor)break;current=node->second.parent;}
                 if(constant.value_or(false)){if(slot==0&&replacementColor){appearance.color=*replacementColor;appearance.constantColor=true;}continue;}
                 auto path=text(field(t,file,slot));try{path=MaterialKey(path);if(path.starts_with("data/"))path.erase(0,5);if(!path.starts_with("textures/")||!path.ends_with(".dds"))continue;}catch(...){continue;}
-                if(slot==0)appearance.texture=path;else if(slot==1)appearance.normal=path;else if(slot==2)appearance.opacity=path;else if(slot==3)appearance.roughness=path;else if(slot==4)appearance.ao=path;}
+                if(path.ends_with("_metal.dds"))appearance.metal=path;else if(path.ends_with("_ao.dds"))appearance.ao=path;else if(slot==0)appearance.texture=path;else if(slot==1)appearance.normal=path;else if(slot==2)appearance.opacity=path;else if(slot==3)appearance.roughness=path;else if(slot==4)appearance.ao=path;}
             if((!appearance.texture.empty()||appearance.constantColor||appearance.tinted||!appearance.normal.empty()||!appearance.opacity.empty())&&!ambiguous.contains(key)){
                 const auto old=result.find(key);if(old!=result.end()&&(old->second.texture!=appearance.texture||old->second.normal!=appearance.normal||old->second.constantColor!=appearance.constantColor||old->second.color!=appearance.color||old->second.tint!=appearance.tint)){result.erase(old);ambiguous.insert(key);}else result.try_emplace(key,std::move(appearance));}}
     }catch(...){return {};}

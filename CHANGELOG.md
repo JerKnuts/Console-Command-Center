@@ -1,6 +1,103 @@
 # Changelog
 
+## 1.3.15
+
+- Rename included reset batches to Name RESET and group Boostpack Explosions with its reset. Migrate existing included filenames while preserving edits and deletions.
+- Add Sort by Mod and Sort by Category below Scan Mods. Category mode browses scanned records across plugins and shows each item's source mod.
+
+## 1.3.14
+
+- Wrap long Custom Command lines while preserving syntax highlighting, aligned line numbers and original command boundaries.
+- Rename the category to Cells / Teleport.
+- Identify 310 of 410 internally named cells using authored location or worldspace names; retain exterior coordinates and searchable original identifiers. Document the 100 unresolved records.
+- Apply four reported name corrections and 24 exact Reference Only marks.
+
+## 1.3.13
+
+- Add editable All Playing Cards and All Baseball Caps included batches: one complete 52-card deck and ten wearable caps, with named comments.
+- Apply 28 reported cell name corrections and 30 exact Reference Only classifications. Preserve original searches and Advanced Options exploration teleport.
+
+## 1.3.12
+
+- Apply twelve reported cell names, including Dazra Outskirts, Ervin's Apartment, Buried Temple and the two Dazra Dunes entries. Preserve original names for searching.
+- Mark the 69 exact reported cells Reference Only, hidden outside Advanced Options and sorted below ordinary destinations. Keep exploration teleport available in Advanced Options.
+
+
+## 1.3.11
+
+- Restore Ultra in Settings and the 3D Viewer: full source textures up to 4K within a bounded budget, sharper material maps, additional studio reflections, bloom, gentle depth of field and subtle grain.
+- Display untextured geometry before loading textures in both preview sizes, then apply low and selected-quality materials without resetting the camera. Reuse inline geometry when opening fullscreen and retain the model if texture loading fails.
+- Restore the larger bounded Ultra transfer path; keep other preset budgets unchanged. Align the live native piece limit with the existing 512-piece reader/transport limit for pilot seats.
+
+
+## 1.3.10
+
+- Mark twenty raw sc cell labels and both reported Abandoned Mine Field cells Reference Only; retain Advanced Options exploration controls.
+
+- Add Identify Current Area beside Working on Dev Mode cell rows. Read the player's current cell, location hierarchy and worldspace on the game thread.
+- Review proposed names with Accept / Decline. Require the selected cell to match the player's current cell; explain broader or unavailable names.
+- Accepted names persist locally, retain searchable original names, and add an entry with area evidence to Export Reports. Declining makes no change.
+
+
+## 1.3.9
+
+- Restore teleport controls for reference-only cells under Advanced Options, with an exploration warning. Keep them hidden by default and sorted last; reference-only locations and other objects remain non-executable.
+
+
+## 1.3.8
+
+- Rename the travel category Cells/Teleport. Classify reviewed marker scenes, test/asset cells, assembly storage, holding cells, placeholder destinations, and the two reported Abandoned Mine entries as Reference Only.
+- Hide reference cells outside Advanced Options and sort them last when shown; remove their teleport action. Ordinary warehouses and other genuine destinations remain available.
+- Reviewed reference classifications take precedence over older Working color markers. Reference-only reports no longer invent an inventory observation.
+
+
+## 1.3.7
+
+- Show Cells in the default ID Browser so teleport actions are available without Advanced Options.
+- Move Locations behind Advanced Options, label them Reference Only, and remove their misleading cell-search action. Apply the reference classification to loaded mod locations too.
+
+
+## 1.3.6
+
+- Show test-result colors, icons and status badges only in Dev Mode, including reviewed WIP groups. Preserve warnings, blocked commands and saved results.
+- Clarify that location records are not teleport destinations. Rename their name-search action to Find Matching Cells and explain that matches are not verified destinations.
+
+
+## 1.3.5
+
+- Correct blue, purple, and red Elevated Cabin bed variants by accepting authored material-root separators.
+- Support pilot-seat previews with 157–185 pieces, retaining geometry and transfer size limits.
+- Classify 24 confirmed invisible furniture interaction markers as Reference Only.
+- Audit all 42 distinct records in the latest furniture report; unresolved materials and the unavailable Helgi sleeping-bag asset remain documented rather than marked fixed.
+
 This file replaces the individual release-note documents. It records user-visible changes without repeating install and compatibility text for every version.
+
+## 1.3.4
+
+- All three reviewed WIP groups use orange status bars by default in both themes, including outside Dev Mode.
+- All supported ID Browser and mod previews now carry authored metal maps when available. Low/Medium/High share metal-aware reflections; Textures Off stays neutral. Version 9 packets retain compatibility with versions 1–8.
+- Corrected 817 Terran Armada catalog labels from its own English STRINGS table, including Mauling Axe and the MGP rifles. Applied the reported Particle Machine Gun/XM-2311 variant names and two reference-only weapon findings.
+- Restored five reported Particle Machine Gun materials whose all-zero opacity was hiding them. Fixed the XM-2311's authored ScopeMount/Scope connection mismatch with an exact model-path alias.
+- Added a reviewed Spawn Object action for supported Workshop / Outpost records. This places a loose object at the player; outpost registration and build-menu integration are separate features.
+
+## 1.3.3
+
+- Command test results now update their categories immediately and after reload: Working moves a WIP command to its functional category; Issues moves it to Executed — Issues in WIP; Not noticeable moves it to Executed — Effect Unconfirmed. Counts, search, favorites, details and execution use the same reported state. Existing native safety blocks stay in place.
+- Corrected 663 Free Lanes names, including 90 books/notes, using SFBGS00D's own English STRINGS table. The reported slate is Chief Engineer's Final Log. Source plugins, Form IDs, reviewed flags and other catalog data are preserved.
+
+## 1.3.2
+
+- Moved the grouped settings catalog from ID Browser to Commands > Advanced Settings, behind Advanced Options. Kept search and live inspection; added reviewed numeric changes and base-game resets where references exist. Strings remain read-only.
+- Corrected 1,138 Shattered Space display names, including 202 books/notes, from the DLC's own English STRINGS table. IDs and reviewed behavior are preserved.
+- Localization extraction matches the owning plugin; a repeatable label-only refresh preserves reviewed catalog metadata.
+
+## 1.3.1
+
+- Added 17 ready-to-run batch files covering adventure and medical supplies, outpost materials, manufactured components, cooking, four weapon test kits, selected suit/outfit collections, surveying, scanner range and boostpack explosions. Settings presets include three explicit base-game reset files.
+- Restored the flat INCLUDED sidebar with user-editable .txt files. Selecting a file loads it for review; edits and deletions survive default refreshes. The six existing user-selected defaults are retained, and original command-batch samples remain separate.
+- Added syntax highlighting to the command editor: bold command names, colored targets/Form IDs/numbers/quoted text, and italic comments. Plain-text editing, controller input, line numbers, horizontal/vertical scrolling and both themes remain supported.
+- Hash and semicolon comments are recognized outside quoted strings by browser and native batch parsing. Official figure/ammunition IDs follow plugin ownership when loading a known included file.
+- New files and UI are validated offline; gameplay effects and balance still require in-game checks. No batches execute during setup or testing.
 
 ## 1.3.0
 

@@ -1,0 +1,159 @@
+# All Playing Cards
+# Adds one of each of the 52 playing cards to your inventory: a complete deck of four suits.
+# Items are added only; nothing is equipped. Running this again adds another copy of each item.
+
+# Playing Card - Ace of Clubs
+player.additem 00107371 1
+
+# Playing Card - 2 of Clubs
+player.additem 0010736E 1
+
+# Playing Card - 3 of Clubs
+player.additem 00092E56 1
+
+# Playing Card - 4 of Clubs
+player.additem 00092E57 1
+
+# Playing Card - 5 of Clubs
+player.additem 00092E58 1
+
+# Playing Card - 6 of Clubs
+player.additem 000B78FA 1
+
+# Playing Card - 7 of Clubs
+player.additem 000B7910 1
+
+# Playing Card - 8 of Clubs
+player.additem 0010736F 1
+
+# Playing Card - 9 of Clubs
+player.additem 00107370 1
+
+# Playing Card - 10 of Clubs
+player.additem 000B799E 1
+
+# Playing Card - Jack of Clubs
+player.additem 00107372 1
+
+# Playing Card - Queen of Clubs
+player.additem 000B79A5 1
+
+# Playing Card - King of Clubs
+player.additem 00107373 1
+
+# Playing Card - Ace of Diamonds
+player.additem 00107377 1
+
+# Playing Card - 2 of Diamonds
+player.additem 00107374 1
+
+# Playing Card - 3 of Diamonds
+player.additem 000B7C87 1
+
+# Playing Card - 4 of Diamonds
+player.additem 0010A793 1
+
+# Playing Card - 5 of Diamonds
+player.additem 0010A794 1
+
+# Playing Card - 6 of Diamonds
+player.additem 0010A795 1
+
+# Playing Card - 7 of Diamonds
+player.additem 0010A796 1
+
+# Playing Card - 8 of Diamonds
+player.additem 00107375 1
+
+# Playing Card - 9 of Diamonds
+player.additem 00107376 1
+
+# Playing Card - 10 of Diamonds
+player.additem 0010A798 1
+
+# Playing Card - Jack of Diamonds
+player.additem 00107378 1
+
+# Playing Card - Queen of Diamonds
+player.additem 0010A797 1
+
+# Playing Card - King of Diamonds
+player.additem 00107379 1
+
+# Playing Card - Ace of Hearts
+player.additem 0010736B 1
+
+# Playing Card - 2 of Hearts
+player.additem 00091A76 1
+
+# Playing Card - 3 of Hearts
+player.additem 00092DC4 1
+
+# Playing Card - 4 of Hearts
+player.additem 00092DC5 1
+
+# Playing Card - 5 of Hearts
+player.additem 00092DCC 1
+
+# Playing Card - 6 of Hearts
+player.additem 00092DDE 1
+
+# Playing Card - 7 of Hearts
+player.additem 00092DE5 1
+
+# Playing Card - 8 of Hearts
+player.additem 0010736C 1
+
+# Playing Card - 9 of Hearts
+player.additem 0010736D 1
+
+# Playing Card - 10 of Hearts
+player.additem 00092DE6 1
+
+# Playing Card - Jack of Hearts
+player.additem 0012C68E 1
+
+# Playing Card - Queen of Hearts
+player.additem 00092DE7 1
+
+# Playing Card - King of Hearts
+player.additem 00050340 1
+
+# Playing Card - Ace of Spades
+player.additem 0010737D 1
+
+# Playing Card - 2 of Spades
+player.additem 0010737A 1
+
+# Playing Card - 3 of Spades
+player.additem 0010A799 1
+
+# Playing Card - 4 of Spades
+player.additem 0010A79A 1
+
+# Playing Card - 5 of Spades
+player.additem 0010A79B 1
+
+# Playing Card - 6 of Spades
+player.additem 0010A79C 1
+
+# Playing Card - 7 of Spades
+player.additem 0010A79D 1
+
+# Playing Card - 8 of Spades
+player.additem 0010737B 1
+
+# Playing Card - 9 of Spades
+player.additem 0010737C 1
+
+# Playing Card - 10 of Spades
+player.additem 0010A79E 1
+
+# Playing Card - Jack of Spades
+player.additem 0010737E 1
+
+# Playing Card - Queen of Spades
+player.additem 0010A79F 1
+
+# Playing Card - King of Spades
+player.additem 00107380 1

@@ -1,0 +1,55 @@
+# Cooking Pantry
+# Adds 20 each of the listed organic ingredients, water, coffee, teas, and Chasmbass Oil for cooking.
+# Running this batch again adds another copy of the listed supplies.
+# Supplies ingredients only. Recipes and research requirements are unchanged.
+
+# Nutrient
+player.additem 000777FD 20
+
+# Spice
+player.additem 000055AC 20
+
+# Aromatic
+player.additem 000055B8 20
+
+# Metabolic Agent
+player.additem 0029F3FC 20
+
+# Gastronomic Delight
+player.additem 0000559D 20
+
+# Water
+player.additem 00005591 20
+
+# Coffee Bag
+player.additem 0025B0FB 20
+
+# Bulk Tranquilitea Breakfast
+player.additem 00101273 20
+
+# Bulk Tranquilitea Classic
+player.additem 000B2EE4 20
+
+# Bulk Tranquilitea Chamomile
+player.additem 0010FA05 20
+
+# Bulk Tranquilitea Dynastic
+player.additem 00097F0B 20
+
+# Bulk Tranquilitea Earl Grey
+player.additem 00097F0D 20
+
+# Bulk Tranquilitea Lemon
+player.additem 00120D33 20
+
+# Bulk Tranquilitea Lotus
+player.additem 00101274 20
+
+# Bulk Tranquilitea Sleepy
+player.additem 00097F0C 20
+
+# Bulk Tranquilitea Sunray
+player.additem 000F2C84 20
+
+# Chasmbass Oil
+player.additem 0013BD9C 20

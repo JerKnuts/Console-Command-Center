@@ -1,0 +1,15 @@
+# Weapon Test Kit - Melee
+# Adds a Combat Knife, Barrow Knife, Rescue Axe, and UC Naval Cutlass for comparing melee weapons.
+# Adds one of each base weapon. It does not equip them.
+
+# Combat Knife
+player.additem 00035A48 1
+
+# Barrow Knife
+player.additem 0026F181 1
+
+# Rescue Axe
+player.additem 0004F760 1
+
+# UC Naval Cutlass
+player.additem 0026D8A5 1

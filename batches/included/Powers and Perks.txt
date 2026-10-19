@@ -1,0 +1,51 @@
+# Batch: Powers and Perks
+# Adds the 24 listed powers and their associated perks once.
+
+player.addspell 2BACBA ;Anti-Gravity Field
+player.addperk 25E19C
+player.addspell 2C5390 ;Create Vacuum
+player.addperk 25E19B
+player.addspell 2C538D ;Creators' Peace
+player.addperk 25E19A
+player.addspell 2BACB5 ;Earthbound
+player.addperk 25E199
+player.addspell 2C5391 ;Elemental Pull
+player.addperk 25E198
+player.addspell 2C538F ;Alien Reanimation
+player.addperk 25E19D
+player.addspell 2BACB4 ;Eternal Harvest
+player.addperk 25E197
+player.addspell 2C538C ;Grav Dash
+player.addperk 25E196
+player.addspell 2BACB7 ;Gravity Wave
+player.addperk 25E195
+player.addspell 2C5A62 ;Gravity Well
+player.addperk 25E193
+player.addspell 2C5399 ;Inner Demon
+player.addperk 25E192
+player.addspell 2C538B ;Life Forced
+player.addperk 25E191
+player.addspell 2C5A4E ;Moon Form
+player.addperk 25E190
+player.addspell 2C5A67 ;Parallel Self
+player.addperk 25E18E
+player.addspell 2C5A66 ;Particle Beam
+player.addperk 25E18D
+player.addspell 2C5389 ;Personal Atmosphere
+player.addperk 25E18C
+player.addspell 2C5A63 ;Phased Time
+player.addperk 25E18B
+player.addspell 2C538A ;Precognition
+player.addperk 25E18F
+player.addspell 2BACB6 ;Reactive Shield
+player.addperk 25E19E
+player.addspell 2C5A54 ;Sense Star Stuff
+player.addperk 25E18A
+player.addspell 2C5A59 ;Solar Flare
+player.addperk 25E189
+player.addspell 2C5388 ;Sunless Space
+player.addperk 25E188
+player.addspell 2C5387 ;Supernova
+player.addperk 25E187
+player.addspell 2C5A53 ;Void Form
+player.addperk 25E186

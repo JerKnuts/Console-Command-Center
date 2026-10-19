@@ -1,3 +1,8 @@
+import type { CurrentArea } from './area-identification';
+import { modCategoryCounts, modCategoryMatches } from './mod-browser-layout';
+import { applyCommandFeedback, wipCommandOutcome } from './command-feedback';
+import { updateCommandHighlight, syncCommandHighlight } from './command-syntax';
+import { SAMPLE_BATCHES, prepareSampleCommands } from './sample-batches';
 import { createLoadingRing, loadingRingHtml } from './loading-ring';
 import { canPreviewModel, installModelPreview } from './model-preview';
 import { uiPreferences, installUiSettings, setPreviewResolution, visibleIdCategory, visibleIdRecord, visibleQuestRecord, visibleCommandRecord } from './ui-preferences';
@@ -5,12 +10,12 @@ import { reviewedReferenceNote, applyReviewedFindings, reviewedWasTested } from 
 import { orderIdEntries } from './id-record-order';
 import { armorReferenceNote, applyArmorFindings } from './armor-test-findings';
 import { rerenderKeepingPosition } from './preserve-report-position';
-import { devFeedbackButton, devFeedbackRow, installDevFeedback, devFeedbackTestedClass } from './dev-feedback';
+import { devFeedbackButton, devFeedbackRow, installDevFeedback, isDevModeEnabled, devFeedbackTestedClass, devFeedbackCommandOutcome, hasEngineCommandFeedback } from './dev-feedback';
 import { ammoReferenceNote, applyAmmoFindings } from './ammo-test-findings';
 import './style.css';
 import './light-theme.css';
 import './dark-theme.css';
-import { gameSettingGroup, gameSettingMatches, gameSettingInspectCommand, type GameSettingEntry } from './game-settings-catalog';
+import { gameSettingGroup, gameSettingMatches, gameSettingInspectCommand, gameSettingResetValue, gameSettingWriteCommand, type GameSettingEntry } from './game-settings-catalog';
 import { installControllerSupport } from './controller-support';
 import { CATEGORY_ORDER, COMMANDS, type CommandCategory, type CommandDefinition, type CommandInput } from './commands';
 import {
@@ -220,7 +225,7 @@ const MAX_CUSTOM_COMMAND_LENGTH = 1024;
 const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1493;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.3.0';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.3.15';
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -252,7 +257,8 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
       { title: 'PREPARE', text: 'Fill the visible fields or use a Browse button when CCC has matching IDs. Helper text explains the expected value.' },
       { title: 'REVIEW AND RUN', text: 'Caution and Danger labels explain meaningful risks. CCC shows the completed command before execution.' },
       { title: 'CONTROLLER', text: 'Use the D-pad or left stick to move, LB and RB to switch pages, A to enter or select, B to go back, Start to search, and Select to open Help. Commands are selected as whole cards. Press A to enter a card with Execute selected, then press A again to run it. B returns to card selection.' },
-      { title: 'WIP COMMANDS', text: 'WIP separates commands by test result. Use uncertain commands only on a disposable or backed-up save.' },
+      { title: 'ADVANCED SETTINGS', text: 'Enable Advanced Options in Settings, then choose Advanced Settings in Commands. Search the grouped list, inspect the live value, or review a numeric change. Base-game resets appear where a reference is supplied; they do not restore mod-specific values. String settings are read-only.' },
+      { title: 'WIP COMMANDS', text: 'Working results move commands into their functional categories. Issues move into the WIP Issues group; Not noticeable moves into Effect Unconfirmed. Saved results still apply after reloading or leaving Dev Mode. Known safety blocks remain in place.' },
     ],
     note: 'Make a manual save before changing quests, NPCs, ships, or important world state.',
   },
@@ -264,7 +270,6 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
       { title: 'SEARCH AND FILTER', text: 'Choose an ID category from the left side, then search its records by name, Form ID, type, or category.' },
       { title: 'SELECT A RECORD', text: 'Choose a name from the compact list to view its information and the actions CCC can safely prepare for that record type.' },
       { title: 'COMMAND PICKERS', text: 'When a command sends you here, only compatible records appear. Selecting one returns its Form ID to the command.' },
-      { title: 'SETTINGS CATALOG', text: 'With Advanced Options enabled, open Settings for a searchable reference list grouped by the spreadsheet categories. MAIN is divided into Scanner, Ships, Combat, Camera, and Other. Select a name and Inspect Current Value. Workbook values are references, not live readings; editing is not enabled.' },
       { title: 'MOD CATALOGS', text: 'Mod records live in the separate Mod Browser. Opening ID Browser never starts a mod scan.' },
     ],
   },
@@ -275,7 +280,7 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
     sections: [
       { title: 'SCAN MODS', text: 'One action discovers the active mods and collects their supported IDs for the current game session.' },
       { title: 'Session scan', text: 'CCC does not scan when Mod Browser opens. Select Scan Mods once after starting the game when you want to browse mod IDs.' },
-      { title: 'Browse categories', text: 'A selected mod is divided into collapsible record categories. Only an opened category adds its records to the list.' },
+      { title: 'Sort the browser', text: 'Sort by Mod lists plugins. Sort by Category lists record categories across all scanned mods; item rows identify their source mod. Both controls are below Scan Mods.' },
       { title: 'Search scope', text: 'With no mod selected, Search All searches every scanned mod ID. Select a mod and choose Search Mod to limit results to that plugin.' },
       { title: 'Current load order', text: 'Each scan uses the current full, medium, and small plugin indexes so the displayed Form IDs match this session.' },
       { title: 'Refresh the list', text: 'Select Scan Mods again after enabling, disabling, or updating plugins.' },
@@ -334,6 +339,10 @@ let commandBatchesLoaded = false;
 let commandBatchAutoRunEnabled = false;
 let commandBatchAutoRunNames = new Set<string>();
 let commandBatchAutoRunDelaySeconds = 3;
+let customSampleRequest = 0;
+let includedBatchDirectory = 'Documents\\My Games\\Starfield\\Console Command Center\\Included Batches';
+let includedBatchSetup: Promise<void> | null = null;
+let includedBatchEntries: Array<{name:string;file:string;commandCount:number}> = [];
 let customCommandDraftName = '';
 let customCommandDraft = '';
 let pendingExecution: PendingExecution | null = null;
@@ -353,6 +362,8 @@ let modCatalogSummaryScanStartedAt = 0;
 let modCatalogSummaryTimer: number | null = null;
 let modCatalogScanReturnFocus: HTMLElement | null = null;
 let modSearchScope: 'mod' | 'all' = 'mod';
+let modBrowserSort: 'mod' | 'category' = 'mod';
+let modBrowserCategory = '';
 const openModCategories = new Set<string>();
 let questBrowserEntries: QuestBrowserEntry[] = [];
 let questBrowserLoaded = false;
@@ -400,7 +411,7 @@ app.innerHTML = `
     <nav class="utility-nav-bar" aria-label="Main pages">
       <span class="controller-bumper-hint controller-bumper-hint--left" aria-hidden="true">LB</span>
       <button class="nav-button nav-button--commands" type="button" data-view="commands">
-        <span>Commands</span><span class="nav-count">${COMMANDS.filter((command) => command.category !== 'Untested').length}</span>
+        <span>Commands</span><span class="nav-count">${currentCommands().filter((command) => command.category !== 'Untested').length}</span>
       </button>
       <button class="nav-button nav-button--ids" type="button" data-view="id-browser">
         <span>ID Browser</span><span class="nav-count" id="id-browser-nav-count">${ID_BROWSER_TOTAL}</span>
@@ -550,7 +561,7 @@ app.innerHTML = `
       <p class="osf-eyebrow confirm-label" id="confirm-label">CONFIRM</p>
       <h2 id="confirm-title">Confirm execution</h2>
       <p id="confirm-message"></p>
-      <div class="confirm-command"><span>COMMAND</span><code id="confirm-command"></code></div>
+      <div class="confirm-command"><span>COMMAND</span><code id="confirm-command" tabindex="0" aria-label="Commands to review"></code></div>
       <div class="confirm-actions">
         <button class="osf-btn" id="confirm-cancel" type="button" data-controller-hint="B">Cancel</button>
         <button class="osf-btn osf-btn--osf-accent" id="confirm-run" type="button">Execute</button>
@@ -923,6 +934,26 @@ async function importCommandBatchAutoRunReports(): Promise<void> {
   }
 }
 
+async function ensureIncludedBatchFiles(refresh = false): Promise<void> {
+  if (refresh) includedBatchSetup = null;
+  if (!includedBatchSetup) {
+    includedBatchSetup = (async () => {
+      if (!window.osfui?.request || !nativeBackendReady) throw new Error('Connect the native backend to read Included Batches.');
+      const plugins = (await readOfficialPluginLoadOrder())?.plugins;
+      const defaults = SAMPLE_BATCHES.flatMap(sample => {
+        try { return [{name:sample.name, previousName:sample.previousName??'', commands:prepareSampleCommands(sample, plugins) + (sample.plugin ? '\n# CCC plugin: ' + sample.plugin + '\n' : '')}]; }
+        catch { return []; }
+      });
+      const reply = await window.osfui.request<{ok:boolean;directory:string;entries:Array<{name:string;file:string;commandCount:number}>}>('console.command-center.includedBatch', {samples:defaults});
+      if (!reply?.ok || !reply.directory) throw new Error('Could not prepare Included Batches. Update the native DLL and restart Starfield.');
+      includedBatchDirectory = reply.directory;
+      includedBatchEntries = reply.entries ?? [];
+      renderNavigation();
+    })().catch(error => { includedBatchSetup = null; throw error; });
+  }
+  await includedBatchSetup;
+}
+
 async function refreshCommandBatches(migrateLegacy = false): Promise<void> {
   if (commandBatchesLoading) return;
   if (!window.osfui?.request || !nativeBackendReady) {
@@ -938,6 +969,7 @@ async function refreshCommandBatches(migrateLegacy = false): Promise<void> {
     if (!reply?.ok || !Array.isArray(reply.entries)) throw new Error('Native backend returned an invalid batch-file list.');
     applyCommandBatchReply(reply);
     await refreshCommandBatchAutoRun();
+    await ensureIncludedBatchFiles(true);
     const warning = reply.warnings?.[0];
     const migrated = reply.migrated ? ` Migrated ${reply.migrated} existing ${reply.migrated === 1 ? 'batch' : 'batches'}.` : '';
     setStatus(warning ? `Loaded ${reply.entries.length} batch files. ${warning}` : `Loaded ${reply.entries.length} batch files.${migrated}`, warning ? 'error' : 'success');
@@ -1020,8 +1052,12 @@ function escapeHtml(value: string): string {
   })[character] ?? character);
 }
 
+function currentCommands(): CommandDefinition[] {
+  return COMMANDS.map(command => applyCommandFeedback(command, devFeedbackCommandOutcome(command.id)));
+}
+
 function categoryCount(category: string): number {
-  const loaded = COMMANDS.filter((command) => command.category === category).length;
+  const loaded = currentCommands().filter((command) => command.category === category).length;
   return category === 'Untested' && !engineCommandLibraryLoaded ? loaded + ENGINE_COMMAND_LIBRARY_TOTAL : loaded;
 }
 
@@ -1029,8 +1065,8 @@ function renderNavigation(): void {
   const previousCategoryScrollTop = navigation.querySelector<HTMLElement>('.navigation-categories')?.scrollTop ?? 0;
 
   const special = [
-    { id: 'recent', label: 'Recent', count: recent.filter((id) => COMMANDS.some((command) => command.id === id)).length },
-    { id: 'favorites', label: 'Favorites', count: favorites.filter((id) => COMMANDS.some((command) => command.id === id)).length + savedCustomCommands.filter((entry) => entry.favorite).length + idFavorites.length },
+    { id: 'recent', label: 'Recent', count: recent.filter((id) => currentCommands().some((command) => command.id === id)).length },
+    { id: 'favorites', label: 'Favorites', count: favorites.filter((id) => currentCommands().some((command) => command.id === id)).length + savedCustomCommands.filter((entry) => entry.favorite).length + idFavorites.length },
   ];
 
   let categoryLabel = 'COMMAND CATEGORIES';
@@ -1041,7 +1077,6 @@ function renderNavigation(): void {
     const builtInCategories = ID_BROWSER_CATEGORIES
       .filter((category) => category.value !== 'all')
       .filter((category) => visibleIdCategory(category.value, uiPreferences.advanced))
-      .filter((category) => !(activeCatalogPicker && category.value === 'game-settings'))
       .map((category) => ({ category, count: idBrowserCategoryCount(category.value) }))
       .filter(({ category, count }) => count > 0)
       .map(({ category, count }) => sidebarCategoryButton('id', category.value, category.label, count, idBrowserCategory === category.value))
@@ -1066,9 +1101,16 @@ function renderNavigation(): void {
         ? `<div class="sidebar-source-heading">Mods</div>${communityMods.map((catalog) => sidebarCatalogButton(catalog, idBrowserCategory === catalog.key)).join('')}`
         : '',
     ].join('');
-    const modState = modCategories || '<div class="sidebar-catalog-note">Select Scan Mods to load this session\'s mod IDs.</div>';
+    const recordCategories = modCategoryCounts(idCatalog,uiPreferences.advanced);
+    const categoryButtons = recordCategories.length ? `<button class="nav-button${!modBrowserCategory?' is-active':''}" type="button" data-mod-record-category="" aria-pressed="${!modBrowserCategory}"><span>All Categories</span><span class="nav-count">${recordCategories.reduce((n,c)=>n+c.count,0)}</span></button>` + recordCategories.map(category=>`<button class="nav-button${modBrowserCategory===category.name?' is-active':''}" type="button" data-mod-record-category="${escapeHtml(category.name)}" aria-pressed="${modBrowserCategory===category.name}"><span>${escapeHtml(category.name==='Cells'?'Cells / Teleport':category.name)}</span><span class="nav-count">${category.count}</span></button>`).join('') : '';
+    categoryLabel = modBrowserSort==='category'?'MOD CATEGORIES':'MOD CATALOGS';
+    const modState = (modBrowserSort==='category'?categoryButtons:modCategories) || '<div class="sidebar-catalog-note">Select Scan Mods to load this session\'s mod IDs.</div>';
     categoryContent = `<div class="sidebar-mod-actions">
         <button class="nav-button sidebar-refresh" type="button" data-scan-mod-catalogs ${modCatalogScanAllRunning ? 'disabled' : ''}><span>${modCatalogScanAllRunning ? 'Scanning Mods…' : 'Scan Mods'}</span></button>
+        <div class="sidebar-mod-sort" role="group" aria-label="Mod Browser sorting">
+          <button class="nav-button${modBrowserSort==='mod'?' is-active':''}" type="button" data-mod-sort="mod" aria-pressed="${modBrowserSort==='mod'}">Sort by Mod</button>
+          <button class="nav-button${modBrowserSort==='category'?' is-active':''}" type="button" data-mod-sort="category" aria-pressed="${modBrowserSort==='category'}">Sort by Category</button>
+        </div>
       </div>${modState}`;
   } else if (activeView === 'quest-browser') {
     categoryLabel = 'QUEST CATEGORIES';
@@ -1081,6 +1123,9 @@ function renderNavigation(): void {
         .join('');
       return `<div class="sidebar-source-heading quest-source-heading">${escapeHtml(source)}</div>${buttons}`;
     }).join('');
+  } else if (activeView === 'custom') {
+    categoryLabel = 'INCLUDED';
+    categoryContent = includedBatchEntries.map((entry) => `<button class="nav-button" type="button" data-included-batch="${escapeHtml(entry.name)}" title="${escapeHtml(entry.file)}"><span>${escapeHtml(entry.file)}</span><span class="nav-count">${entry.commandCount}</span></button>`).join('');
   } else if (activeView === 'commands' || activeView === 'recent' || activeView === 'favorites') {
     categoryContent = CATEGORY_ORDER.filter((category) => visibleCommandRecord({ category }, uiPreferences.advanced)).map((category) => sidebarCategoryButton(
       'command',
@@ -1106,6 +1151,8 @@ function renderNavigation(): void {
   const categoryScroller = navigation.querySelector<HTMLElement>('.navigation-categories');
   if (categoryScroller) categoryScroller.scrollTop = previousCategoryScrollTop;
 
+  const commandsCount = document.querySelector('[data-view="commands"] .nav-count');
+  if (commandsCount) commandsCount.textContent = String(currentCommands().filter(command => command.category !== 'Untested').length);
   const activityCount = document.querySelector('#activity-nav-count');
   if (activityCount instanceof HTMLElement) activityCount.textContent = String(activityLog.length);
   const idCount = document.querySelector('#id-browser-nav-count');
@@ -1122,7 +1169,7 @@ function navButton(id: string, label: string, count: number): string {
 }
 
 function sidebarCategoryButton(kind: 'command' | 'id', id: string, label: string, count: number, active: boolean): string {
-  return `<button class="nav-button${active ? ' is-active' : ''}" type="button" data-${kind}-category="${escapeHtml(id)}" title="${escapeHtml(label)}"><span>${escapeHtml(label)}</span>${kind === 'id' && id === 'game-settings' ? '' : `<span class="nav-count">${count.toLocaleString()}</span>`}</button>`;
+  return `<button class="nav-button${active ? ' is-active' : ''}" type="button" data-${kind}-category="${escapeHtml(id)}" title="${escapeHtml(label)}"><span>${escapeHtml(label)}</span>${kind === 'command' && id === 'Advanced Settings' ? '' : `<span class="nav-count">${count.toLocaleString()}</span>`}</button>`;
 }
 
 function sidebarCatalogButton(catalog: ModCatalogSummary, active: boolean): string {
@@ -1146,7 +1193,6 @@ function questSidebarCategoryButton(source: QuestBrowserEntry['source'], categor
 }
 
 function idBrowserCategoryCount(value: string): number {
-  if (value === 'game-settings') return 8705;
   if (value === 'all') return idCatalogLoaded ? idCatalog.filter((entry) => entry.source !== 'mod' && visibleIdRecord(entry, uiPreferences.advanced)).length : ID_BROWSER_TOTAL;
   const modCatalog = modCatalogs.find((catalog) => catalog.key === value);
   if (modCatalog) return modCatalog.entries.length;
@@ -1170,7 +1216,7 @@ function commandMatches(command: CommandDefinition, searchText = query): boolean
 }
 
 function activeCommands(): CommandDefinition[] {
-  const visibleCommands = COMMANDS.filter((command) => visibleCommandRecord(command, uiPreferences.advanced));
+  const visibleCommands = currentCommands().filter((command) => visibleCommandRecord(command, uiPreferences.advanced));
   if (query) return visibleCommands.filter((command) => commandMatches(command));
 
   if (activeView === 'commands' && commandCategory === 'Untested') {
@@ -1187,7 +1233,7 @@ function activeCommands(): CommandDefinition[] {
       .filter((command): command is CommandDefinition => Boolean(command));
   } else if (activeView === 'recent') {
     commands = recent
-      .map((id) => COMMANDS.find((command) => command.id === id))
+      .map((id) => currentCommands().find((command) => command.id === id))
       .filter((command): command is CommandDefinition => Boolean(command));
   } else if (activeView === 'commands') {
     commands = visibleCommands.filter((command) => command.category === commandCategory);
@@ -1206,7 +1252,7 @@ function viewTitle(): string {
   if (activeView === 'recent') return 'Recent Commands';
   if (activeView === 'quest-browser') return questBrowserCategory === 'all' ? 'All Quests' : questBrowserCategory;
   if (activeView === 'id-browser') return idBrowserCategory === 'all' ? 'All Included IDs' : activeIdBrowserCategory().label;
-  if (activeView === 'mod-browser') return modCatalogs.find((catalog) => catalog.key === idBrowserCategory)?.name ?? 'Installed Mods';
+  if (activeView === 'mod-browser') return modBrowserSort==='category' ? (modBrowserCategory==='Cells'?'Cells / Teleport':modBrowserCategory||'All Mod Categories') : modCatalogs.find((catalog) => catalog.key === idBrowserCategory)?.name ?? 'Installed Mods';
   if (activeView === 'activity') return 'Activity Log';
   if (activeView === 'custom') return 'Custom Command';
   if (activeView === 'commands' && commandCategory === 'Untested') return 'Work in Progress';
@@ -1492,10 +1538,17 @@ function renderRecentToolbar(): string {
   </section>`;
 }
 
+function commandTestedClass(command: CommandDefinition): string {
+  if (!isDevModeEnabled()) return '';
+  const outcome = wipCommandOutcome(command);
+  if (outcome) return ` dev-tested dev-${outcome} wip-status`;
+  return devFeedbackTestedClass({ kind: 'Command', name: command.title, id: command.id }, Boolean(command.testStatus && command.testStatus !== 'untested'));
+}
+
 function renderCommandListRow(command: CommandDefinition): string {
   const selected = command.id === selectedCommandId;
   const unavailable = Boolean(command.unavailableReason);
-  const status = command.testStatus === 'untested'
+  const status = !isDevModeEnabled() ? '' : command.testStatus === 'untested'
     ? 'UNTESTED'
     : command.testStatus === 'inconclusive'
       ? 'UNCONFIRMED'
@@ -1505,7 +1558,7 @@ function renderCommandListRow(command: CommandDefinition): string {
           ? 'ISSUE'
           : '';
   const risk = command.warning ? (command.risk === 'danger' ? 'DANGER' : 'CAUTION') : '';
-  return `<button class="command-list-row${devFeedbackTestedClass({ kind: 'Command', name: command.title, id: command.id }, Boolean(command.testStatus && command.testStatus !== 'untested'))}${unavailable ? ' is-unavailable' : ''}" type="button" data-select-command="${escapeHtml(command.id)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(command.title)} command">
+  return `<button class="command-list-row${commandTestedClass(command)}${unavailable ? ' is-unavailable' : ''}" type="button" data-select-command="${escapeHtml(command.id)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(command.title)} command">
     <span class="command-list-row-title">${escapeHtml(command.title)}</span>
     <span class="command-list-row-tags">${status ? `<span>${status}</span>` : ''}${risk ? `<span class="${command.risk === 'danger' ? 'is-danger' : ''}">${risk}</span>` : ''}${unavailable ? '<span>UNAVAILABLE</span>' : ''}</span>
   </button>`;
@@ -1556,12 +1609,12 @@ function renderSavedCommandFavorites(): string {
 function renderIdFavorites(): string {
   return orderIdEntries(idFavorites.filter((entry) => visibleIdRecord(entry, uiPreferences.advanced))).map((entry) => {
     const selected = entry.favoriteKey === selectedFavoriteIdKey;
-    return devFeedbackRow(`<button class="command-list-row favorite-id-row${idTestedClass(entry)}${selected ? ' is-selected' : ''}" type="button" data-select-favorite-id="${escapeHtml(entry.favoriteKey)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(entry.label)} favorite ID"><span class="command-list-row-title">${escapeHtml(entry.label)}</span></button>`,{kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category});
+    return devFeedbackRow(`<button class="command-list-row favorite-id-row${idTestedClass(entry)}${selected ? ' is-selected' : ''}" type="button" data-select-favorite-id="${escapeHtml(entry.favoriteKey)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(entry.label)} favorite ID"><span class="command-list-row-title">${escapeHtml(entry.label)}</span></button>`,{kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category,recordType:entry.type,editorId:entry.editorId??entry.keywords?.[0]});
   }).join('');
 }
 
 function selectCommand(commandId: string, focusRow = false): void {
-  const command = COMMANDS.find((entry) => entry.id === commandId);
+  const command = currentCommands().find((entry) => entry.id === commandId);
   if (!command) return;
   selectedFavoriteIdKey = null;
   if (selectedCommandId !== commandId) armedCommandActions.clear();
@@ -1576,8 +1629,9 @@ function selectCommand(commandId: string, focusRow = false): void {
 }
 
 function render(): void {
+  if (!engineCommandLibraryLoaded && hasEngineCommandFeedback()) void ensureEngineCommandLibraryLoaded();
   if (!uiPreferences.advanced) {
-    if (commandCategory === 'Untested') commandCategory = CATEGORY_ORDER[0];
+    if (commandCategory === 'Untested' || commandCategory === 'Advanced Settings') commandCategory = CATEGORY_ORDER[0];
     if (!visibleIdCategory(idBrowserCategory, false)) { idBrowserCategory = 'all'; idBrowserSelected = null; }
     if (idBrowserSelected && !visibleIdRecord(idBrowserSelected, false)) idBrowserSelected = null;
     if (questBrowserCategory === 'Internal / System') { questBrowserCategory = QUEST_BROWSER_CATEGORY_ORDER[0]; selectedQuestKey = null; }
@@ -1608,8 +1662,9 @@ function render(): void {
   commandList.classList.toggle('is-compact-command-layout', commandGridView || activeView === 'recent');
   commandList.classList.toggle('is-quest-browser-layout', activeView === 'quest-browser');
   const commandsPageActive = activeView === 'commands' || activeView === 'recent' || activeView === 'favorites';
-  resultCount.hidden = commandsPageActive;
-  resultCountSeparator.hidden = commandsPageActive;
+  const settingsPageActive = activeView === 'commands' && commandCategory === 'Advanced Settings';
+  resultCount.hidden = commandsPageActive && !settingsPageActive;
+  resultCountSeparator.hidden = commandsPageActive && !settingsPageActive;
   document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach((button) => {
     button.classList.toggle('is-active', button.dataset.view === 'commands' ? commandsPageActive : button.dataset.view === activeView);
   });
@@ -1629,7 +1684,7 @@ function render(): void {
             ? 'SEARCH'
             : 'COMMANDS';
   searchWrap.hidden = activeView === 'custom' || activeView === 'activity';
-  search.placeholder = activeView === 'quest-browser'
+  search.placeholder = settingsPageActive ? 'Search setting name, group, or Form ID...' : activeView === 'quest-browser'
     ? 'Search quest, Editor ID, Form ID, source, or stage...'
     : activeView === 'id-browser'
       ? 'Search included IDs by name, Form ID, or type...'
@@ -1638,6 +1693,14 @@ function render(): void {
       : activeView === 'commands' && commandCategory === 'Untested'
         ? 'Search WIP name, command, or description...'
       : 'Search name, command, tag...';
+
+  if (settingsPageActive) {
+    commandList.classList.remove('is-compact-command-layout');
+    commandList.hidden = true;
+    customPanel.hidden = false;
+    renderGameSettingsPanel();
+    return;
+  }
 
   if (activeView === 'id-browser') {
     commandList.classList.remove('is-compact-command-layout');
@@ -1901,7 +1964,7 @@ function renderCommandCard(command: CommandDefinition, detailView = false): stri
   const riskLabel = command.risk === 'danger' ? 'DANGER' : 'CAUTION';
   const selectedAction = selectedCommandAction(command);
   const displayedCommand = commandActionTemplate(command, selectedAction);
-  const testTag = command.testStatus === 'untested'
+  const testTag = !isDevModeEnabled() ? '' : command.testStatus === 'untested'
     ? '<span class="command-test-tag">UNTESTED</span>'
     : command.testStatus === 'inconclusive'
       ? '<span class="command-test-tag">EFFECT UNCONFIRMED</span>'
@@ -2396,20 +2459,30 @@ async function executeConsole(execution: PendingExecution): Promise<void> {
 }
 
 function parseCustomCommands(value: string): string[] {
-  return value.split(/\r?\n/)
-    .map((command) => command.trim())
-    .filter((command) => Boolean(command) && !command.startsWith('#'));
+  return value.split(/\r?\n/).map((line) => {
+    let quoted = false, escaped = false;
+    for (let i = 0; i < line.length; ++i) {
+      const ch = line[i];
+      if (escaped) { escaped = false; continue; }
+      if (quoted && ch === '\\') { escaped = true; continue; }
+      if (ch === '"') { quoted = !quoted; continue; }
+      if (!quoted && (ch === '#' || ch === ';')) return line.slice(0, i).trim();
+    }
+    return line.trim();
+  }).filter(Boolean);
 }
 
 function syncCustomCommandLineNumbers(input: HTMLTextAreaElement, gutter: HTMLElement): void {
   const numbers = gutter.firstElementChild;
   if (numbers instanceof HTMLElement) numbers.style.transform = `translateY(-${input.scrollTop}px)`;
+  syncCommandHighlight(input);
 }
 
 function updateCustomCommandLineNumbers(input: HTMLTextAreaElement, gutter: HTMLElement): void {
   const lineCount = Math.max(1, input.value.split(/\r?\n/).length);
-  gutter.innerHTML = `<span class="custom-command-line-number-content">${Array.from({ length: lineCount }, (_, index) => String(index + 1)).join('\n')}</span>`;
+  gutter.innerHTML = `<span class="custom-command-line-number-content">${Array.from({ length: lineCount }, (_, index) => `<span class="custom-command-line-number">${index + 1}</span>`).join('')}</span>`;
   input.closest<HTMLElement>('.custom-command-editor')?.style.setProperty('--custom-gutter-width', `calc(${Math.max(2, String(lineCount).length)}ch + 16px)`);
+  updateCommandHighlight(input);
   syncCustomCommandLineNumbers(input, gutter);
 }
 
@@ -2545,6 +2618,7 @@ function formatActivityTime(timestamp: number): string {
 
 
 function activeIdBrowserCategory(): IdBrowserCategory {
+  if(activeView==='mod-browser'&&modBrowserSort==='category')return {label:modBrowserCategory||'All Mod Categories',value:'mod-categories',detail:'Scanned records across mods',recordType:'',builtInCategories:modBrowserCategory?[modBrowserCategory]:['*']};
   const modCatalog = modCatalogs.find((catalog) => catalog.key === idBrowserCategory);
   if (modCatalog) return { label: modCatalog.name, value: modCatalog.key, detail: modCatalog.plugin, recordType: '', builtInCategories: [] };
   if (activeView === 'mod-browser') return { label: 'Installed Mods', value: '', detail: '', recordType: '', builtInCategories: [] };
@@ -2570,7 +2644,7 @@ function matchingIds(): IdCatalogEntry[] {
     if (!uiPreferences.advanced && entry.referenceOnly) return false;
     if (activeView !== 'mod-browser' && !visibleIdRecord(entry, uiPreferences.advanced)) return false;
     const sourceMatches = !activeCategory.sources?.length || activeCategory.sources.includes(entry.source);
-    const categoryMatches = sourceMatches && (modCatalog
+    const categoryMatches = activeView==='mod-browser'&&modBrowserSort==='category' ? modCategoryMatches(entry,modBrowserCategory) : sourceMatches && (modCatalog
       ? entry.plugin === modCatalog.plugin
       : categories.includes('*')
         || categories.includes(entry.category)
@@ -2581,7 +2655,7 @@ function matchingIds(): IdCatalogEntry[] {
     const searchAllMods = activeView === 'mod-browser' && query && (modSearchScope === 'all' || !modCatalog);
     const browserScopeMatches = query ? (searchAllMods || categoryMatches) : categoryMatches && recordTypeMatches;
     const sourceScopeMatches = activeView === 'mod-browser'
-      ? searchAllMods ? entry.source === 'mod' : Boolean(modCatalog && entry.plugin === modCatalog.plugin)
+      ? modBrowserSort==='category'||searchAllMods ? entry.source === 'mod' : Boolean(modCatalog && entry.plugin === modCatalog.plugin)
       : entry.source !== 'mod';
     return browserScopeMatches && sourceScopeMatches && pickerTypeMatches && pickerCategoryMatches && idBrowserTextMatches(entry);
   }));
@@ -2591,19 +2665,20 @@ function idTestedClass(entry: IdCatalogEntry): string {
   return devFeedbackTestedClass({ kind: 'ID', name: entry.label, id: entry.value, localId: entry.localFormId, source: entry.plugin ?? entry.source, referenceOnly: Boolean(entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)) }, reviewedWasTested(entry) || Boolean(ammoReferenceNote(entry) || armorReferenceNote(entry)));
 }
 
-function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspell' | 'spawn' | 'forceweather' | 'teleport' | 'findcell' | null {
-  if (entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)) return null;
+function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspell' | 'spawn' | 'forceweather' | 'teleport' | null {
   if (entry.available === false) return null;
   const type = entry.type.toUpperCase();
+  if (entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)) {
+    return type === 'CELL' && uiPreferences.advanced && (entry.editorId ?? entry.keywords?.[0]) ? 'teleport' : null;
+  }
   if (entry.action) return entry.action;
-  if (type === 'FURN' && entry.category === 'Workshop / Outpost Objects') return null;
+  if (entry.category === 'Workshop / Outpost Objects' && ['FURN', 'STAT', 'MSTT', 'CONT'].includes(type)) return 'spawn';
   if (['WEAP', 'ARMO', 'AMMO', 'ALCH', 'MISC', 'BOOK'].includes(type)) return 'additem';
   if (type === 'PERK') return 'addperk';
   if (type === 'SPEL') return 'addspell';
   if (type === 'NPC_' || type === 'FURN') return 'spawn';
   if (type === 'WTHR') return 'forceweather';
-  if (type === 'CELL' && entry.keywords?.[0]) return 'teleport';
-  if (type === 'LCTN') return 'findcell';
+  if (type === 'CELL' && (entry.editorId ?? entry.keywords?.[0])) return 'teleport';
   return null;
 }
 
@@ -2640,6 +2715,7 @@ function renderIdBrowserSelection(): string {
       .replace(/(\s*<\/div>\s*<\/aside>)$/, footer + '$1');
   }
   const action = idBrowserAction(entry);
+  const displayedCategory = entry.category === 'Cells' ? 'Cells / Teleport' : entry.category;
   const favoriteKey = idFavoriteKey(entry);
   const isFavorite = idFavorites.some((favorite) => favorite.favoriteKey === favoriteKey);
   const editorId = entry.editorId ?? (['CELL', 'LCTN'].includes(entry.type.toUpperCase()) ? entry.keywords?.[0] : undefined);
@@ -2653,10 +2729,8 @@ function renderIdBrowserSelection(): string {
           ? 'Change Weather'
           : action === 'teleport'
             ? 'Teleport Here'
-            : action === 'findcell'
-              ? 'Find Teleportable Cell'
-              : action === 'spawn'
-                ? 'Spawn 1'
+            : action === 'spawn'
+                ? entry.category === 'Workshop / Outpost Objects' ? 'Spawn Object' : 'Spawn 1'
                 : '';
   return `
     <aside class="id-browser-selection" aria-label="Selected ID">
@@ -2667,11 +2741,12 @@ function renderIdBrowserSelection(): string {
         ${canPreviewModel(entry, uiPreferences.advanced) ? `<div class="inline-model-preview" data-inline-preview="${escapeHtml(entry.value)}" data-preview-label="${escapeHtml(entry.label)}" data-preview-type="${escapeHtml(entry.type.toUpperCase())}" data-preview-category="${escapeHtml(entry.category)}" aria-label="Item model preview"></div>` : ''}
         <dl class="id-browser-metadata">
           <div><dt>Record Type</dt><dd>${escapeHtml(entry.type)}</dd></div>
-          <div><dt>Category</dt><dd>${escapeHtml(entry.category)}</dd></div>
+          <div><dt>Category</dt><dd>${escapeHtml(displayedCategory)}</dd></div>
           ${entry.source === 'mod' ? `<div><dt>Mod</dt><dd>${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod catalog')}</dd></div>` : entry.source && entry.source !== 'built-in' ? `<div><dt>Source</dt><dd>${escapeHtml(entry.source)}</dd></div>` : ''}
           ${entry.plugin ? `<div><dt>Plugin</dt><dd>${escapeHtml(entry.plugin)}</dd></div>` : ''}
           ${entry.originalName ? `<div><dt>Original Name</dt><dd>${escapeHtml(entry.originalName)}</dd></div>` : ''}
           ${entry.detail ? `<div><dt>Information</dt><dd>${escapeHtml(entry.detail)}</dd></div>` : ''}
+          ${(entry.type.toUpperCase() === 'LCTN' || (entry.type.toUpperCase() === 'CELL' && entry.referenceOnly)) ? '<div><dt>Usage</dt><dd>Reference Only</dd></div>' : ''}
           <div><dt>Form ID</dt><dd>${entry.available === false ? '<span>Not loaded</span>' : `<code>${escapeHtml(entry.value)}</code>`}</dd></div>
           ${entry.alternateFormIds?.length ? `<div><dt>Alternate Form IDs</dt><dd>${entry.alternateFormIds.map(id => `<code>${escapeHtml(id)}</code>`).join('<br>')}</dd></div>` : ''}
           ${entry.localFormId ? `<div><dt>Local ID</dt><dd><code>${escapeHtml(entry.localFormId)}</code></dd></div>` : ''}
@@ -2708,7 +2783,7 @@ function renderGameSettingsPanel(): void {
         setStatus(`Game Settings could not be loaded: ${describe(error)}`, 'error');
       }).finally(() => {
         gameSettingsLoading = null;
-        if (activeView === 'id-browser' && idBrowserCategory === 'game-settings') render();
+        if (activeView === 'commands' && commandCategory === 'Advanced Settings') render();
       });
     }
     return;
@@ -2724,7 +2799,7 @@ function renderGameSettingsPanel(): void {
     return `<details class="game-setting-group" data-setting-group="${escapeHtml(group)}"${open ? ' open' : ''}><summary>${escapeHtml(group)} <span class="nav-count">${rows.length.toLocaleString()}</span></summary>${open ? rows.slice(0, limit).map((entry) => `<button class="id-browser-row${devFeedbackTestedClass({ kind: 'Setting', name: entry.name })}${selected?.name === entry.name ? ' is-selected' : ''}" type="button" data-select-setting="${escapeHtml(entry.name)}" aria-pressed="${selected?.name === entry.name}">${escapeHtml(entry.name)}</button>`).join('') + (rows.length > limit ? `<button class="osf-btn osf-btn--sm" type="button" data-more-settings="${escapeHtml(group)}">Show 200 More</button>` : '') : ''}</details>`;
   }).join('');
   const value = (v: GameSettingEntry['referenceValue']) => v === null ? 'Not supplied' : escapeHtml(String(v));
-  const detail = selected ? `<aside class="id-browser-selection" aria-label="Selected game setting"><div class="id-browser-selection-copy"><span class="osf-eyebrow">GAME SETTING</span><strong>${escapeHtml(selected.name)}</strong><dl class="id-browser-metadata"><div><dt>Group</dt><dd>${escapeHtml(gameSettingGroup(selected))}</dd></div><div><dt>Category</dt><dd>${escapeHtml(selected.category)}</dd></div><div><dt>Type</dt><dd>${escapeHtml(selected.type)}</dd></div><div><dt>Form ID</dt><dd>${selected.formId ? '<code>' + escapeHtml(selected.formId) + '</code>' : 'No Form ID supplied (engine setting)'}</dd></div><div><dt>Reference value</dt><dd>${value(selected.referenceValue)}</dd></div><div><dt>Master value</dt><dd>${value(selected.masterValue)}</dd></div><div><dt>Engine default</dt><dd>${value(selected.engineValue)}</dd></div></dl><p class="game-settings-reference-note">Values above are workbook references, not live readings. Mods and the current session may change them. Inspect to read the current value. Some Creation Kit settings may not be available in the running game.</p></div><div class="id-browser-selection-actions">${devFeedbackButton({ kind: 'Setting', name: selected.name, id: selected.formId ?? undefined, category: selected.category, command: gameSettingInspectCommand(selected) })}<button class="osf-btn osf-btn--sm" type="button" data-copy-setting-name>Copy Setting Name</button><button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-inspect-setting${nativeBackendReady ? '' : ' disabled'}>Inspect Current Value</button></div></aside>` : '<aside class="id-browser-selection id-browser-selection--empty"><strong>Select a Game Setting</strong><span>Choose a name to see its reference data and inspect its current value.</span></aside>';
+  const detail = selected ? `<aside class="id-browser-selection" aria-label="Selected game setting"><div class="id-browser-selection-copy"><span class="osf-eyebrow">GAME SETTING</span><strong>${escapeHtml(selected.name)}</strong><dl class="id-browser-metadata"><div><dt>Group</dt><dd>${escapeHtml(gameSettingGroup(selected))}</dd></div><div><dt>Category</dt><dd>${escapeHtml(selected.category)}</dd></div><div><dt>Type</dt><dd>${escapeHtml(selected.type)}</dd></div><div><dt>Form ID</dt><dd>${selected.formId ? '<code>' + escapeHtml(selected.formId) + '</code>' : 'No Form ID supplied (engine setting)'}</dd></div><div><dt>Reference value</dt><dd>${value(selected.referenceValue)}</dd></div><div><dt>Master value</dt><dd>${value(selected.masterValue)}</dd></div><div><dt>Engine default</dt><dd>${value(selected.engineValue)}</dd></div></dl><p class="game-settings-reference-note">Values above are workbook references, not live readings. Mods and the current session may change them. Inspect to read the current value. Some Creation Kit settings may not be available in the running game. Reset restores a supplied base-game reference, not mod-specific or session values.</p></div><div class="id-browser-selection-actions">${devFeedbackButton({ kind: 'Setting', name: selected.name, id: selected.formId ?? undefined, category: selected.category, command: gameSettingInspectCommand(selected) })}<button class="osf-btn osf-btn--sm" type="button" data-copy-setting-name>Copy Setting Name</button><button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-inspect-setting${nativeBackendReady ? '' : ' disabled'}>Inspect Current Value</button>${selected.type !== 'String' ? `<label class="game-settings-value"><span>New Value</span><input class="osf-input" data-setting-value type="text" inputmode="decimal" autocomplete="off" aria-label="New game setting value" placeholder="Inspect the current value first"></label><button class="osf-btn osf-btn--sm" type="button" data-apply-setting${nativeBackendReady ? '' : ' disabled'}>Review Change</button>${gameSettingResetValue(selected) !== null ? `<button class="osf-btn osf-btn--sm" type="button" data-reset-setting${nativeBackendReady ? '' : ' disabled'}>Reset to Base-Game Value (${escapeHtml(String(gameSettingResetValue(selected)))})</button>` : ''}` : ''}</div></aside>` : '<aside class="id-browser-selection id-browser-selection--empty"><strong>Select a Game Setting</strong><span>Choose a name to see its reference data and inspect its current value.</span></aside>';
   customPanel.innerHTML = `<section class="id-browser-panel"><div class="id-browser-workspace"><div class="id-browser-results" id="game-settings-results">${groups || '<div class="empty-state">No matching settings.</div>'}</div>${detail}</div></section>`;
   const results = customPanel.querySelector<HTMLElement>('#game-settings-results');
   const refresh = () => {
@@ -2755,6 +2830,17 @@ function renderGameSettingsPanel(): void {
     customPanel.querySelector<HTMLElement>(`[data-select-setting="${CSS.escape(selectedGameSetting)}"]`)?.focus({ preventScroll: true });
   });
   customPanel.querySelector('[data-copy-setting-name]')?.addEventListener('click', () => { if (selected) void copyResultId(selected.name); });
+  const reviewSettingChange = (reset: boolean) => {
+    if (!selected || !nativeBackendReady) return;
+    try {
+      const value = reset ? gameSettingResetValue(selected) : customPanel.querySelector<HTMLInputElement>('[data-setting-value]')?.value;
+      if (value === null || value === undefined) return;
+      const command = gameSettingWriteCommand(selected, value);
+      requestExecution({command, definition: {id: 'change-setting-' + selected.name, title: (reset ? 'Reset ' : 'Change ') + selected.name, category: 'Advanced Settings', description: reset ? 'Restore the supplied base-game reference value.' : 'Change a numeric game setting.', command, verifyInGame: true, warning: 'Settings can change gameplay immediately. Record the current value first. Base-game reset values do not restore mod-specific or session overrides.', risk: 'caution', testStatus: 'untested'}, rememberRecent: false});
+    } catch (error) { setStatus(describe(error), 'error'); }
+  };
+  customPanel.querySelector('[data-apply-setting]')?.addEventListener('click', () => reviewSettingChange(false));
+  customPanel.querySelector('[data-reset-setting]')?.addEventListener('click', () => reviewSettingChange(true));
   customPanel.querySelector('[data-inspect-setting]')?.addEventListener('click', () => {
     if (!selected || !nativeBackendReady) return;
     const command = gameSettingInspectCommand(selected);
@@ -2763,17 +2849,15 @@ function renderGameSettingsPanel(): void {
 }
 
 function renderIdBrowserPanel(): void {
-  if (activeView === 'id-browser' && idBrowserCategory === 'game-settings') {
-    renderGameSettingsPanel();
-    return;
-  }
   const results = matchingIds();
   const activeMod = modCatalogs.find((catalog) => catalog.key === idBrowserCategory);
   const globalModSearch = activeView === 'mod-browser' && Boolean(query) && (modSearchScope === 'all' || !activeMod);
   const includedTotal = activeView === 'mod-browser'
     ? !activeMod || globalModSearch ? idCatalog.filter((entry) => entry.source === 'mod').length : activeMod.entries.length
     : idCatalog.filter((entry) => entry.source !== 'mod').length;
-  resultCount.textContent = activeView === 'mod-browser' && !activeMod
+  resultCount.textContent = activeView === 'mod-browser' && modBrowserSort==='category' && !query
+    ? `${results.length.toLocaleString()} shown / ${includedTotal.toLocaleString()} scanned mod IDs`
+    : activeView === 'mod-browser' && !activeMod
     ? query
       ? `${results.length.toLocaleString()} matching IDs / ${includedTotal.toLocaleString()} scanned mod IDs`
       : `${modCatalogs.length.toLocaleString()} scanned mods / ${includedTotal.toLocaleString()} IDs`
@@ -2783,9 +2867,9 @@ function renderIdBrowserPanel(): void {
     <button class="id-browser-row${idTestedClass(entry)}${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type && idBrowserSelected?.plugin === entry.plugin ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
       <strong title="${escapeHtml(entry.label)}">${escapeHtml(entry.label)}</strong>
       ${entry.referenceOnly ? '<span class="id-browser-reference-tag">REFERENCE ONLY</span>' : ''}
-      ${globalModSearch ? `<span class="id-browser-row-source">${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod')}</span>` : ''}
-    </button>`, {kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category});
-  const visibleRows = activeView === 'mod-browser' && results.length > 0
+      ${globalModSearch || (activeView==='mod-browser'&&modBrowserSort==='category') ? `<span class="id-browser-row-source">${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod')}</span>` : ''}
+    </button>`, {kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category,recordType:entry.type,editorId:entry.editorId??entry.keywords?.[0]});
+  const visibleRows = activeView === 'mod-browser' && results.length > 0 && !(modBrowserSort==='category'&&modBrowserCategory)
     ? (() => {
         const groups = new Map<string, Array<{ entry: IdCatalogEntry; index: number }>>();
         results.forEach((entry, index) => {
@@ -2875,20 +2959,6 @@ function bindIdBrowserSelectionActions(): void {
   document.querySelector<HTMLButtonElement>('[data-id-browser-action]')?.addEventListener('click', () => {
     if (!idBrowserSelected) return;
     const action = idBrowserAction(idBrowserSelected);
-    if (action === 'findcell') {
-      selectedFavoriteIdKey = null;
-      activeView = 'id-browser';
-      query = idBrowserSelected.label;
-      search.value = query;
-      activeCatalogPicker = null;
-      if (!uiPreferences.advanced) { setStatus('Enable Advanced Options in Settings to browse Cells.', 'normal'); return; }
-      idBrowserCategory = 'cells';
-      idBrowserRecordTypeFilter = 'CELL';
-      idBrowserSelected = null;
-      setStatus(`Showing teleportable cells matching ${query}.`, 'success');
-      render();
-      return;
-    }
     if (action === 'additem') {
       const quantity = Number(quantityInput?.value);
       if (!Number.isInteger(quantity) || quantity < 1 || quantity > 999999) {
@@ -2915,7 +2985,7 @@ function bindIdBrowserSelectionActions(): void {
 
 function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): void {
   const action = idBrowserAction(entry);
-  if (!action || action === 'findcell') return;
+  if (!action) return;
 
   let command = '';
   let title = '';
@@ -2948,23 +3018,27 @@ function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): void 
     warning = 'Weather records are location-dependent. The selected weather may look wrong or be overridden by the current location, climate, or scripts.';
     risk = 'caution';
   } else if (action === 'teleport') {
-    const cellEditorId = entry.keywords?.[0];
+    const cellEditorId = entry.editorId ?? entry.keywords?.[0];
     if (!cellEditorId) return;
     command = `coc ${cellEditorId}`;
     title = `Teleport to ${entry.label}`;
     description = `Teleport directly to the selected cell.`;
-    warning = 'An unsuitable cell can place you in test areas, unloaded spaces, or locations with broken progression context. Save first.';
+    warning = entry.referenceOnly || reviewedReferenceNote(entry)
+      ? 'This is a reference-only or unverified cell offered for exploration. It may be empty, have no usable arrival point, or fail to teleport. Make a manual save first.'
+      : 'An unsuitable cell can place you in test areas, unloaded spaces, or locations with broken progression context. Save first.';
     risk = 'danger';
   } else {
     command = `player.placeatme ${entry.value} 1`;
     title = `Spawn ${entry.label}`;
     description = `Spawn one instance of the selected base record.`;
-    warning = entry.category === 'Vehicles'
+    warning = entry.category === 'Workshop / Outpost Objects'
+      ? 'Places one object at the player. Leave room for it and make a manual save first. This does not register it with an outpost, create a build-menu entry, or connect power and storage.'
+      : entry.category === 'Vehicles'
       ? 'EXPERIMENTAL: PlaceAtMe can create a physical vehicle without registering ownership, deployment, storage, or normal ship linkage. It may be unusable or persist incorrectly. Test only outdoors on a disposable save.'
       : entry.type.toUpperCase() === 'GBFM'
         ? 'EXPERIMENTAL: PlaceAtMe can spawn a ship directly on the player or partly underground, leaving its boarding ramp inaccessible. Make a disposable save, enable no-clip if needed, and test only in a large open area.'
         : 'Spawning base records can create duplicate NPCs or objects and may destabilize scripted content. Use a disposable save.';
-    risk = 'danger';
+    risk = entry.category === 'Workshop / Outpost Objects' ? 'caution' : 'danger';
   }
 
   const definition: CommandDefinition = {
@@ -2975,12 +3049,15 @@ function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): void 
     command,
     warning,
     risk,
-    testStatus: action === 'forceweather' || action === 'teleport' ? 'verified' : 'untested',
+    testStatus: action === 'forceweather' || (action === 'teleport' && !entry.referenceOnly && !reviewedReferenceNote(entry)) ? 'verified' : 'untested',
   };
   requestExecution({ command, definition, rememberRecent: false });
 }
 
+let customHighlightCleanup: (() => void) | undefined;
 function renderCustomPanel(): void {
+  customHighlightCleanup?.();
+  customHighlightCleanup = undefined;
   const savedEntries = savedCustomCommands.map((entry) => {
     const commands = parseCustomCommands(entry.commands);
     const invalid = entry.valid === false;
@@ -3008,15 +3085,16 @@ function renderCustomPanel(): void {
             <div class="custom-command-field">
               <div class="custom-command-editor">
                 <pre class="custom-command-line-numbers" aria-hidden="true"></pre>
-                <textarea class="osf-input custom-command-input" id="custom-command" aria-label="Commands" rows="8" wrap="off" autocomplete="off" spellcheck="false" placeholder="# Comments begin with # and will not run&#10;# Blank lines can separate sections&#10;&#10;# Player setup&#10;tgm&#10;player.modav carryweight 100&#10;&#10;# Add 4 of an item&#10;player.additem 0000ABF9 4">${escapeHtml(customCommandDraft)}</textarea>
+                <pre class="custom-command-highlight" aria-hidden="true"><code class="custom-command-highlight-content"></code></pre>
+                <textarea class="osf-input custom-command-input" id="custom-command" aria-label="Commands" rows="8" wrap="soft" autocomplete="off" spellcheck="false" placeholder="# Comments begin with # or ; and will not run&#10;# Blank lines can separate sections&#10;&#10;# Player setup&#10;tgm&#10;player.modav carryweight 100&#10;&#10;# Add 4 of an item&#10;player.additem 0000ABF9 4">${escapeHtml(customCommandDraft)}</textarea>
               </div>
             </div>
             <div class="custom-form-actions">
               <div class="custom-format-tips" aria-label="Command formatting tips">
                 <strong>FORMAT TIPS</strong>
                 <span>One command per line</span>
-                <span><code>#</code> starts a note or section</span>
-                <span>Blank lines add spacing</span>
+                <span><code>#</code> or <code>;</code> starts a comment</span>
+                <span>Blank lines add spacing; inline comments work too</span>
                 <span>No bullets, typed line numbers, or <code>&gt;</code> prompts</span>
               </div>
               <div class="custom-form-action-buttons">
@@ -3037,6 +3115,7 @@ function renderCustomPanel(): void {
               ${savedCustomCommands.length ? '<button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-custom-delete-all>Delete All</button>' : ''}
             </div>
           </div>
+          <div class="custom-batch-directory"><span class="osf-eyebrow">INCLUDED FILES</span><code title="${escapeHtml(includedBatchDirectory)}">${escapeHtml(includedBatchDirectory)}</code></div>
           <div class="custom-batch-directory"><span class="osf-eyebrow">USER FOLDER</span><code title="${escapeHtml(commandBatchDirectory)}">${escapeHtml(commandBatchDirectory)}</code></div>
           <div class="custom-delete-all-confirm" data-custom-delete-all-confirm hidden>
             <strong>Delete all saved entries?</strong>
@@ -3066,6 +3145,9 @@ function renderCustomPanel(): void {
   const nameInput = customPanel.querySelector('#custom-command-name');
   if (form instanceof HTMLFormElement && input instanceof HTMLTextAreaElement && lineNumbers instanceof HTMLElement) {
     updateCustomCommandLineNumbers(input, lineNumbers);
+    const highlightResize = new ResizeObserver(() => syncCustomCommandLineNumbers(input, lineNumbers));
+    highlightResize.observe(input);
+    customHighlightCleanup = () => highlightResize.disconnect();
     input.addEventListener('input', () => {
       customCommandDraft = input.value;
       updateCustomCommandLineNumbers(input, lineNumbers);
@@ -3197,6 +3279,7 @@ function renderCustomPanel(): void {
       const entry = savedCustomCommands.find((candidate) => candidate.id === button.dataset.customLoad);
       if (!entry || !(input instanceof HTMLTextAreaElement) || !(nameInput instanceof HTMLInputElement)) return;
       input.value = entry.commands;
+      if (lineNumbers instanceof HTMLElement) updateCustomCommandLineNumbers(input, lineNumbers);
       nameInput.value = entry.name;
       customCommandDraft = entry.commands;
       customCommandDraftName = entry.name;
@@ -3429,6 +3512,7 @@ function switchView(view: string): void {
   }
   if (view === 'mod-browser') {
     idBrowserCategory = '';
+    modBrowserCategory = '';
     idBrowserRecordTypeFilter = '';
     idBrowserSelected = null;
     modSearchScope = 'all';
@@ -3445,7 +3529,41 @@ function switchView(view: string): void {
 
 modScanCancel.addEventListener('click', cancelModCatalogScan);
 
-navigation.addEventListener('click', (event) => {
+navigation.addEventListener('click', async (event) => {
+  const sampleButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-included-batch]');
+  if (sampleButton && activeView === 'custom') {
+    const name = sampleButton.dataset.includedBatch;
+    if (!name) return;
+    const request = ++customSampleRequest, previousDraft = customCommandDraft;
+    try {
+      await ensureIncludedBatchFiles();
+      const reply = await window.osfui!.request<{ok:boolean;entry?:{commands:string}}>('console.command-center.includedBatch', {name});
+      if (!reply?.ok || typeof reply.entry?.commands !== 'string') throw new Error('Included file is missing or unreadable. Check the Included Batches folder.');
+      const content = reply.entry.commands;
+      const sample = SAMPLE_BATCHES.find(entry => entry.name === name) ?? SAMPLE_BATCHES.find(entry => entry.plugin && (content.includes('# CCC plugin: ' + entry.plugin) || content.includes('; CCC plugin: ' + entry.plugin)));
+      const plugins = sample?.plugin ? (await readOfficialPluginLoadOrder())?.plugins : undefined;
+      if (request !== customSampleRequest || activeView !== 'custom' || customCommandDraft !== previousDraft) return;
+      customCommandDraft = sample ? prepareSampleCommands(sample, plugins, content) : content;
+      customCommandDraftName = name;
+      renderCustomPanel();
+      customPanel.querySelector<HTMLTextAreaElement>('#custom-command')?.focus({ preventScroll: true });
+      setStatus(`Loaded ${name}.txt. Edit or review the commands before running.`, 'success');
+    } catch (error) {
+      if (request === customSampleRequest) setStatus(`Could not load ${name}: ${describe(error)}`, 'error');
+    }
+    return;
+  }
+  const sortButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-mod-sort]');
+  if(sortButton && activeView==='mod-browser'){
+    const mode=sortButton.dataset.modSort;
+    if(mode!=='mod'&&mode!=='category')return;
+    modBrowserSort=mode;modBrowserCategory='';idBrowserCategory='';idBrowserRecordTypeFilter='';idBrowserSelected=null;modSearchScope='all';openModCategories.clear();
+    render();document.querySelector<HTMLElement>(`[data-mod-sort="${mode}"]`)?.focus({preventScroll:true});return;
+  }
+  const modCategoryButton=(event.target as Element | null)?.closest<HTMLButtonElement>('[data-mod-record-category]');
+  if(modCategoryButton && activeView==='mod-browser'){
+    modBrowserCategory=modCategoryButton.dataset.modRecordCategory??'';idBrowserCategory='';idBrowserRecordTypeFilter='';idBrowserSelected=null;query='';search.value='';modSearchScope='all';openModCategories.clear();render();return;
+  }
   const scanCatalogs = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-scan-mod-catalogs]');
   if (scanCatalogs) {
     openModCategories.clear();
@@ -3620,7 +3738,7 @@ commandList.addEventListener('click', (event) => {
 
   const pickerButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-open-id-picker]');
   if (pickerButton?.dataset.openIdPicker && pickerButton.dataset.inputKey) {
-    const command = COMMANDS.find((entry) => entry.id === pickerButton.dataset.openIdPicker);
+    const command = currentCommands().find((entry) => entry.id === pickerButton.dataset.openIdPicker);
     const input = command?.inputs?.find((entry) => entry.key === pickerButton.dataset.inputKey);
     if (command && input?.picker) openIdPicker(command.id, input.key, input.picker);
     return;
@@ -3628,7 +3746,7 @@ commandList.addEventListener('click', (event) => {
 
   const catalogPickerButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-open-catalog-picker]');
   if (catalogPickerButton?.dataset.openCatalogPicker && catalogPickerButton.dataset.inputKey) {
-    const command = COMMANDS.find((entry) => entry.id === catalogPickerButton.dataset.openCatalogPicker);
+    const command = currentCommands().find((entry) => entry.id === catalogPickerButton.dataset.openCatalogPicker);
     const input = command?.inputs?.find((entry) => entry.key === catalogPickerButton.dataset.inputKey);
     if (command && input?.browserPicker) openCatalogPicker(command, input);
     return;
@@ -3786,14 +3904,14 @@ commandList.addEventListener('click', (event) => {
 
   const addToBatchButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-add-to-batch]');
   if (addToBatchButton?.dataset.addToBatch) {
-    const command = COMMANDS.find((entry) => entry.id === addToBatchButton.dataset.addToBatch);
+    const command = currentCommands().find((entry) => entry.id === addToBatchButton.dataset.addToBatch);
     if (command) appendCommandToBatch(command);
     return;
   }
 
   const executeButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-execute]');
   if (!executeButton?.dataset.execute) return;
-  const command = COMMANDS.find((entry) => entry.id === executeButton.dataset.execute);
+  const command = currentCommands().find((entry) => entry.id === executeButton.dataset.execute);
   if (!command) return;
   const requestedAction: CommandActionChoice = executeButton.dataset.commandAction === 'secondary' ? 'secondary' : 'primary';
   if (command.secondaryAction && requestedAction !== selectedCommandAction(command)) {
@@ -4124,6 +4242,15 @@ installControllerSupport(window.osfui);
 if (!welcomeHasBeenSeen()) openWelcome();
 
 installDevFeedback({
+  identifyArea: async () => {
+    if(previewReady||!nativeBackendReady||!window.osfui?.request)throw new Error('Identify Current Area requires a loaded save and the updated in-game plugin.');
+    return window.osfui.request<CurrentArea>('console.command-center.identifyCurrentArea',{}, {timeoutMs:12000});
+  },
+  nameChanged: () => {
+    idCatalog=idCatalog.map(applyReviewedFindings);
+    idFavorites=idFavorites.map(applyReviewedFindings);
+    if(idBrowserSelected)idBrowserSelected=applyReviewedFindings(idBrowserSelected);
+  },
   version: CONSOLE_COMMAND_CENTER_VERSION,
   rerender: () => rerenderKeepingPosition(render),
   status: (message, error = false) => setStatus(message, error ? 'error' : 'success'),

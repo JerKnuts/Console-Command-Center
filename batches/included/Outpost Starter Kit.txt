@@ -1,0 +1,58 @@
+# Outpost Starter Kit
+# Adds common raw materials and components for starting an outpost. Quantities are shown beside each item.
+# Running this batch again adds another copy of the listed supplies.
+# Supplies materials only. Construction can still require research, skills, and additional ingredients.
+
+# Iron
+player.additem 0000556E 100
+
+# Aluminum
+player.additem 0000557D 100
+
+# Copper
+player.additem 00005576 50
+
+# Nickel
+player.additem 00005572 50
+
+# Tungsten
+player.additem 0000556B 25
+
+# Titanium
+player.additem 0000556D 25
+
+# Beryllium
+player.additem 000057D9 25
+
+# Cobalt
+player.additem 00005575 25
+
+# Sealant
+player.additem 000055CC 25
+
+# Adhesive
+player.additem 000055B1 25
+
+# Structural Material
+player.additem 000055B9 25
+
+# Fiber
+player.additem 000055AF 25
+
+# Adaptive Frame
+player.additem 00246B6A 25
+
+# Zero Wire
+player.additem 00246B65 25
+
+# Isocentered Magnet
+player.additem 00246B77 15
+
+# Comm Relay
+player.additem 00246B64 15
+
+# Reactive Gauge
+player.additem 00246B6F 15
+
+# Tau Grade Rheostat
+player.additem 00246B68 15

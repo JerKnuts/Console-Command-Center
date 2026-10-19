@@ -1,0 +1,6 @@
+# Boostpack Explosions RESET
+# Restores BoostpackDeathChance to the base-game value of 25.
+# This restores the base-game value rather than any installed mod override.
+
+# BoostpackDeathChance - base game 25
+set 002CCFCB to 25

@@ -2,7 +2,7 @@
 
 Console Command Center turns Starfield console commands into a searchable in-game menu for mouse, keyboard, and controller. It provides command inputs, safety warnings, ID selection, quest tools, mod scanning, editable command batches, and read-only Results popups.
 
-**Current release: v1.3.0.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
+**Current release: v1.3.15.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
 
 ## Requirements
 
@@ -30,7 +30,7 @@ Make a manual save before changing quests or important game state. Each page has
 - **149 established command cards** and **1,532 WIP entries** (39 prepared cards and 1,493 engine commands/script functions).
 - Search, command and ID favorites, Recent commands, saved batch favorites, and Activity Log. Favorite IDs use compact selectable rows with their details and supported actions on the right.
 - **ID Browser: 23,308 packaged entries**, including reviewed ships, vehicle forms, workshop objects, and supported Free Lanes/Terran Armada record types. Duplicate names can identify different underlying records.
-- **Settings catalog: 8,705 game-setting references**, including 2,312 supplied Form IDs. Inspect Current Value uses a setting name; workbook values are labeled reference values, and editing is disabled.
+- **Advanced Settings in Commands:** Search grouped game-setting references, inspect live values, review numeric changes, and reset to supplied base-game values. String settings remain read-only.
 - **Quest Browser: 2,568 quests and 19,061 recorded stage indexes** from Base Game, Shattered Space, Free Lanes, and Terran Armada. Packaged quests are kept out of ID Browser.
 - **Mod Browser:** manually scan loaded mods and Official Creations, browse categories, search one plugin or every scanned plugin, and inspect scanned quest stages.
 - Editable user-owned `.txt` command batches, persistent in-session drafts, synchronized line numbers, Clear, Refresh, and Add to Batch.
@@ -38,13 +38,19 @@ Make a manual save before changing quests or important game state. Each page has
 - Controller navigation, scrolling, dialogs, and alphabetic/numeric/hexadecimal/symbol text entry.
 - Persistent **Advanced Options** and **Light/Dark Mode**, plus **Dev Mode** test reports and a combined text export.
 
+Terran Armada, Free Lanes and Shattered Space display names are matched to each plugin’s own English localization, including books, notes, equipment and locations. See [Shattered Space name verification](docs/SHATTERED_SPACE_NAMES.md) and [Free Lanes name verification](docs/FREE_LANES_NAMES.md).
+
+Command test results also control grouping: Working moves a WIP command into its functional category, Issues moves it to WIP / Executed — Issues, and Not noticeable moves it to WIP / Executed — Effect Unconfirmed. Saved results apply after reload and outside Dev Mode. Existing warnings and execution blocks remain in place.
+
+Workshop / Outpost Objects offer **Spawn Object** for supported physical records. Review places one object at the player; it does not register outpost ownership, add a construction recipe, or create power/storage connections. Reference-only and unavailable records have no spawn action.
+
 ## Interface Settings
 
-**Experimental in v1.3.0:** Supported ID Browser and mod assets offer an inline preview and **3D Viewer**, opened with **Y** on a controller. The viewer reads installed geometry and materials without screenshots or online processing. Low, Medium and High preserve the original mesh and share material roughness, studio reflections, tone mapping, normal maps and a movable light; texture and screen resolution differ by preset. Previous Ultra selections migrate to High. Previews start without a mannequin; supported wearables can enable one and choose male/female. Colors start at Low resolution and upgrade in place, retaining the camera. Controller controls include direct stick pan/rotation, analog-trigger zoom, texture toggle, quality selection and light/brightness modes. ID Browser controller navigation returns to the selected row after closing the viewer and stays inside the middle list for Up/Down. Cap branding and Barrett previews use original game textures without changing installed texture mods. Your player character is not used. See [Model previews](docs/MODEL_PREVIEWS.md).
+**Experimental in v1.3.2:** Supported ID Browser and mod assets offer an inline preview and **3D Viewer**, opened with **Y** on a controller. The viewer reads installed geometry and materials without screenshots or online processing. Low, Medium and High preserve the original mesh and share material roughness, studio reflections, tone mapping, normal maps, authored metal maps and a movable light; texture and screen resolution differ by preset. Previous Ultra selections migrate to High. Previews start without a mannequin; supported wearables can enable one and choose male/female. Colors start at Low resolution and upgrade in place, retaining the camera. Controller controls include direct stick pan/rotation, analog-trigger zoom, texture toggle, quality selection and light/brightness modes. ID Browser controller navigation returns to the selected row after closing the viewer and stays inside the middle list for Up/Down. Cap branding and Barrett previews use original game textures without changing installed texture mods. Your player character is not used. See [Model previews](docs/MODEL_PREVIEWS.md).
 
-Open **Settings** beside Help. Dark Mode and Advanced Options off are the defaults. Advanced Options reveals WIP commands, the ID Browser Settings catalog, Cells, Ship Parts / Other Forms, reference-only items, and Internal / System quests. Basic-mode searches and ID Favorites hide these records without deleting saved favorites. Locations remain separate from Cells.
+Open **Settings** beside Help. Dark Mode and Advanced Options off are the defaults. Advanced Options reveals WIP commands, Advanced Settings in Commands, Locations (Reference Only), Ship Parts / Other Forms, reference-only items, and Internal / System quests. Basic-mode searches and ID Favorites hide these records without deleting saved favorites. Cells/Teleport is visible by default and provides teleport actions; reviewed internal/test cells are reference-only and hidden outside Advanced Options; Locations are reference-only area metadata.
 
-Categories are alphabetical, with WIP last in Commands and Settings last in ID Browser. Quest sections are ordered Base Game, Shattered Space, Free Lanes, and Terran Armada. Reference-only records sort below normal records, alphabetically within each group, and do not offer gameplay quick actions.
+Categories are alphabetical, with Advanced Settings and WIP last in Commands. Quest sections are ordered Base Game, Shattered Space, Free Lanes, and Terran Armada. Reference-only records sort below normal records, alphabetically within each group, and do not offer gameplay quick actions.
 
 Dark Mode uses blue-black backgrounds, slate rows, gray selection, pale text, and muted blue detail headers. Light Mode uses pale gray surfaces, teal rules, charcoal selection, and yellow accents. Both keep distinct warning and danger indicators.
 
@@ -58,13 +64,17 @@ Packaged and scanned quests provide live inspection and confirmed Start, Stop, C
 
 ## Command batches
 
-Files live in `Documents\My Games\Starfield\Console Command Center\Command Batches`. Write one command per line; blank lines and lines beginning with `#` are ignored. Load fills the editor; Review Commands opens confirmation. Existing browser-stored batches migrate without overwriting different contents. Updates do not replace user files.
+Custom Command offers a flat **INCLUDED** list of ready-to-run, user-editable `.txt` files. Select a file to load it into the editor, then edit or review before running. Included files live in `Documents\My Games\Starfield\Console Command Center\Included Batches`; saved user batches remain in `Command Batches`. Refresh rereads files. Default installation preserves existing files, edits and deletions.
 
-There is no 100-command limit. Native validation still limits file size to 1 MB and command length to 1,024 characters; the saved-file list includes up to 100 files. On Load Auto-Run waits three seconds after existing-save loads, reads selected files fresh, and executes them alphabetically. Repeated toggles and additive commands run again on each load. See [Command batches](docs/COMMAND_BATCHES.md).
+The library includes the six previously selected unlock/item batches and 17 new files covering supplies, outposts, components, cooking, four weapon kits, suit/clothing collections and three settings presets with matching resets. New kits use base-game item IDs. Reset files restore documented base-game values, not a backup of modded settings.
+
+The editor highlights commands, targets, IDs, numbers and quoted strings, with italic comments. One command goes on each line; `#` and `;` start comments outside double-quoted strings. Blank lines are ignored. Normal text editing and controller entry remain available.
+
+There is no 100-command limit. Files are limited to 1 MB and commands to 1,024 characters; the saved-file list includes up to 100 files. Optional On Load Auto-Run reads selected saved batches after an existing-save load. Adding items is additive on every execution. See [Command batches](docs/COMMAND_BATCHES.md).
 
 ## Dev Mode feedback
 
-Click the bottom-left dot five times to toggle Dev Mode. Item rows in ID Browser, Mod Browser and Favorites offer **Working**, **Issues** and **Reference Only**. Working and Reference Only save immediately; Issues opens a comment popup. Not noticeable uses orange with a question mark. Commands, quests and settings retain the Test Report popup. Plain Working confirmations stay local. Export Reports writes queued reports to the user CCC folder without clearing saved row outcomes. Dev Mode also marks unresolved model materials with a red/blue checker. See [Dev Mode](docs/DEV_MODE.md).
+Click the bottom-left dot five times to toggle Dev Mode. Item rows in ID Browser, Mod Browser and Favorites offer **Working**, **Issues** and **Reference Only**. Working and Reference Only save immediately; Issues opens a comment popup. Not noticeable uses orange with a question mark. Commands, quests and settings retain the Test Report popup. Plain Working confirmations stay local. Export Reports writes queued reports to the user CCC folder without clearing saved row outcomes. Dev Mode also marks unresolved model materials with a red/blue checker. Cell rows also offer **Identify Current Area**: review a name from the current game area, accept or decline, then export accepted changes with the reports. See [current-area identification](docs/CURRENT_AREA.md) and [Dev Mode](docs/DEV_MODE.md).
 
 ## Build from source
 
@@ -88,3 +98,5 @@ CCC is **GPL-3.0-or-later with the CommonLibSF Modding Exception and GPL-3.0 Lin
 Current test findings are maintained in [Command catalog](COMMAND_CATALOG.md) and [Console test findings](docs/CONSOLE_TEST_FINDINGS.md). Candidate future improvements are in [Future features](docs/FUTURE_FEATURES.md).
 
 Test Report result bars in Dev Mode: Working uses green with a checkmark; Issues uses yellow with an exclamation; choose Not noticeable under Issues for orange with a question mark. Reference Only uses dark gray with a struck-through name. Latest explicit results remain saved after export and restart; comment-only reports preserve the existing classification. Plain Working confirmations stay local unless a comment is added. Dev Mode also marks unresolved model textures with a red/blue checker in both preview sizes.
+
+Ultra preview quality is available in Settings and the 3D Viewer, with sharper textures, enhanced studio reflections, bloom, mild depth of field and subtle grain. Previews show untextured geometry before loading textures. See [model previews](docs/MODEL_PREVIEWS.md).

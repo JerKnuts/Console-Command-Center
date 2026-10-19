@@ -1,0 +1,7 @@
+# Boostpack Explosions
+# Sets the enemy boostpack death-explosion chance to 75 instead of the base-game 25.
+# Applies to eligible boostpack deaths. It does not make every enemy explode.
+# Use Reset Boostpack Explosions to restore 25.
+
+# BoostpackDeathChance
+set 002CCFCB to 75

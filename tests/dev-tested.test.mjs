@@ -15,13 +15,13 @@ test('markers migrate previous reports, survive export and restart, and hide out
  const renamed={...report,name:'Crewman Outfit',id:'0907E666'};
  install();assert.equal(devFeedbackTestedClass(renamed),'');
  for(let i=0;i<5;i++)dotClick();
- assert.equal(devFeedbackTestedClass(renamed),' dev-tested dev-working');
+ assert.equal(devFeedbackTestedClass(renamed),' dev-tested dev-working');assert.equal(devFeedbackTestedClass({...renamed,referenceOnly:true}),' dev-tested dev-reference');
  assert.equal(devFeedbackTestedClass({...renamed,source:'Other.esm'}),'');
  assert.equal(devFeedbackTestedClass({kind:'Command',name:'Already reviewed',id:'known'},true),' dev-tested dev-working');
  await exportClick();assert.deepEqual(JSON.parse(storage.get('ccc.dev-feedback.v1')),[]);
- assert.equal(devFeedbackTestedClass(renamed),' dev-tested dev-working');
+ assert.equal(devFeedbackTestedClass(renamed),' dev-tested dev-working');assert.equal(devFeedbackTestedClass({...renamed,referenceOnly:true}),' dev-tested dev-reference');
  for(let i=0;i<5;i++)dotClick();assert.equal(devFeedbackTestedClass(renamed),'');
- install();for(let i=0;i<5;i++)dotClick();assert.equal(devFeedbackTestedClass(renamed),' dev-tested dev-working');
+ install();for(let i=0;i<5;i++)dotClick();assert.equal(devFeedbackTestedClass(renamed),' dev-tested dev-working');assert.equal(devFeedbackTestedClass({...renamed,referenceOnly:true}),' dev-tested dev-reference');
  for(let i=0;i<5;i++)dotClick();
  delete globalThis.document;delete globalThis.localStorage;
 });

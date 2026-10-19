@@ -1,5 +1,58 @@
-type ReviewedRecord = { value: string; plugin?: string; localFormId?: string };
+import { applyReviewedCellName } from './reviewed-cell-names.ts';
+import { applyAreaNameOverride } from './area-name-overrides.ts';
+import { cellReferenceNote } from './cell-reference.ts';
+type ReviewedRecord = { value: string; type?: string; editorId?: string; keywords?: string[]; plugin?: string; localFormId?: string };
 const REVIEWED_NAMES: Record<string, { label: string; original: string }> = {
+  "sfbgs00d.esm:03D1E5": {"label": "RedCap Asteroid Mine Excavation", "original": "Redcap Asteroid Mine"},
+  "starfield.esm:051BBB": {"label": "Neon: Reliant Medical", "original": "Reliant Medical"},
+  "starfield.esm:1FB254": {"label": "Research Outpost: U3-09", "original": "Research Station U3-09"},
+  "starfield.esm:27E165": {"label": "MAST Scientific Wing", "original": "Scientific Wing"},
+  // Accepted names and explicit corrections from the second October 18 report.
+  "shatteredspace.esm:078079": {"label": "Dazra Outskirts", "original": "Free Cell"},
+  "starfield.esm:2BF625": {"label": "Neon: Freestar Rangers Station", "original": "Freestar Rangers Outpost"},
+  "starfield.esm:2A07D3": {"label": "Akila City GalBank", "original": "GalBank"},
+  "starfield.esm:285EBF": {"label": "Generdyne Power Facility", "original": "Generdyne Industries"},
+  "shatteredspace.esm:092763": {"label": "Dazra: Goods Exchange", "original": "Goods Exchange"},
+  "shatteredspace.esm:04C1E8": {"label": "Dazra Outskirts", "original": "Grove1"},
+  "shatteredspace.esm:04C1D7": {"label": "Dazra Outskirts", "original": "Grove3"},
+  "starfield.esm:244CA8": {"label": "Paradiso Hotel", "original": "Hotel Paradiso"},
+  "starfield.esm:017305": {"label": "Va'ruun Embassy", "original": "House Va'ruun Embassy"},
+  "starfield.esm:2C19AB": {"label": "Infinity LTD", "original": "Infinity Limited HQ"},
+  "starfield.esm:045B25": {"label": "Family Home", "original": "Kid Stuff Apartment"},
+  "shatteredspace.esm:052B3B": {"label": "Dazra Lakes", "original": "Lakes01Start"},
+  "starfield.esm:2BF5F4": {"label": "Neon: Madame Sauvage's Place", "original": "Madame Sauvage's Place"},
+  "shatteredspace.esm:0923F8": {"label": "Dazra: Meat House", "original": "Meat House"},
+  "starfield.esm:2AABC5": {"label": "Freestar Mech Factory", "original": "Mech Factory - Assembly"},
+  "starfield.esm:2AABC6": {"label": "Freestar Mech Factory", "original": "Mech Factory - Command Center"},
+  "starfield.esm:29A41A": {"label": "Freestar Mech Factory", "original": "Mech Factory - Smelting"},
+  "shatteredspace.esm:04C26B": {"label": "Dazra Mesas 01", "original": "Mesas01Start"},
+  "shatteredspace.esm:04D86D": {"label": "Dazra Mesas 02", "original": "Mesas02Start"},
+  "starfield.esm:27DE73": {"label": "MAST Military Wing", "original": "Military Wing"},
+  "starfield.esm:2BF5F6": {"label": "Neon: Neon Security", "original": "Neon Security"},
+  "starfield.esm:211B97": {"label": "Nova Galactic Staryard", "original": "Nova Galactic Shipyard"},
+  "starfield.esm:2BF5F5": {"label": "Neon: Nyx's Apartment", "original": "Nyx's Apartment"},
+  "starfield.esm:26B713": {"label": "NeuraDyne Botany Laboratory", "original": "Plant Research Facility"},
+  "starfield.esm:117A0B": {"label": "The Core Residence", "original": "Player House The Core"},
+  "starfield.esm:11FC1D": {"label": "The Stretch Apartment", "original": "Player House The Stretch"},
+  "shatteredspace.esm:04C281": {"label": "Dazra Pools", "original": "Pools Start"},
+  "shatteredspace.esm:054D6E": {"label": "Dazra Pools 02", "original": "Pools02Start"},
+  // Accepted current-area names and explicit corrections from the 1.3.11 feedback report.
+  "shatteredspace.esm:070E19": {"label": "Dazra Outskirts", "original": "AHPOI01Ext"},
+  "starfield.esm:169EC1": {"label": "Ervin's Apartment", "original": "Apartment Stack I"},
+  "starfield.esm:167935": {"label": "Ellie's Apartment (Barrett's Quest)", "original": "Arches Overlook Apartments"},
+  "starfield.esm:2C12B5": {"label": "Deimos Armored Transport", "original": "Armored Transport"},
+  "starfield.esm:2A948F": {"label": "Chandra Vineyards Mansion", "original": "Chandra Vineyards Main House"},
+  "shatteredspace.esm:07C059": {"label": "Dazra Dunes 04", "original": "Dunes04Start"},
+  "shatteredspace.esm:0411F1": {"label": "Dazra Dunes 05", "original": "Dunes05Start"},
+  "starfield.esm:18A2CA": {"label": "Buried Temple", "original": "Ecliptic Base"},
+  "starfield.esm:00115E": {"label": "Neon: Enhance", "original": "Enhance!"},
+  "starfield.esm:246B56": {"label": "Sarah Morgan's Ship Crash Site", "original": "Escape Shuttle 03 Cabin"},
+  "starfield.esm:15DB7E": {"label": "Neon: Euphorika", "original": "Euphorika"},
+  "starfield.esm:2BF4E4": {"label": "Neon: Euphorika", "original": "Euphorika"},
+  "shatteredspace.esm:0AC60A": {label:"Officer's Particle Machine Gun",original:"Particle Machine Gun"},
+  "shatteredspace.esm:0AC60B": {label:"Officer's Particle Machine Gun",original:"Particle Machine Gun"},
+  "shatteredspace.esm:0AC60C": {label:"Modified Particle Machine Gun",original:"Particle Machine Gun"},
+  "starfield.esm:24561C": {label:"Modified XM-2311",original:"XM-2311"},
   "starfield.esm:22B8F6": {"label": "Repulsing Explorer Spacesuit", "original": "Explorer Spacesuit"},
   "sfbgs050.esm:0008C8": {"label": "Apollo Spacesuit", "original": "Spacesuit Apollo"},
   "sfbgs050.esm:0A4E1E": {"label": "Armada Spacesuit", "original": "Spacesuit Armada"},
@@ -343,7 +396,34 @@ const REVIEWED_ALIASES: Record<string, string[]> = {"139E6B":["092FEA"],"1AC09E"
 export function reviewedDuplicate(record: ReviewedRecord): boolean {
   return (record.plugin ?? 'Starfield.esm').toLowerCase() === 'starfield.esm' && Object.values(REVIEWED_ALIASES).some(ids => ids.includes((record.localFormId ?? record.value).toUpperCase().slice(-6)));
 }
+const INVISIBLE_FURNITURE = new Set([
+  "sfbgs00d.esm:02F08C",
+  "sfbgs00d.esm:086564",
+  "starfield.esm:061F91",
+  "starfield.esm:0CC45B",
+  "starfield.esm:0EFC6F",
+  "starfield.esm:139C83",
+  "starfield.esm:17B689",
+  "starfield.esm:1C2C9A",
+  "starfield.esm:1C8031",
+  "starfield.esm:1CF571",
+  "starfield.esm:1D4810",
+  "starfield.esm:36717D",
+  "starfield.esm:36717E",
+  "sfbgs050.esm:03C79D",
+  "sfbgs050.esm:03C79E",
+  "sfbgs050.esm:03C79F",
+  "sfbgs050.esm:04586E",
+  "sfbgs050.esm:07E8FB",
+  "sfbgs050.esm:0A0C82",
+  "sfbgs050.esm:0AC57D",
+  "shatteredspace.esm:0F9D83",
+  "shatteredspace.esm:0F9D85",
+  "shatteredspace.esm:0FC0B0",
+  "shatteredspace.esm:11CFF7",
+]);
 const REFERENCE_ONLY = new Set([
+  "starfield.esm:343C01", "sfbgs00d.esm:088729",
   "sfbgs047.esm:000018",
   "sfbgs004.esm:000046",
   "starfield.esm:0A6FFA",
@@ -745,9 +825,12 @@ const REFERENCE_ONLY = new Set([
 const REVIEWED_APPAREL = new Set(["starfield.esm:04B5A0","starfield.esm:1676D3","shatteredspace.esm:0CD169","sfbgs00d.esm:0872D8","sfbgs00d.esm:0897D1","starfield.esm:002FA4","starfield.esm:015C9D","starfield.esm:015CA8","starfield.esm:01D1D7","starfield.esm:01D1D9","starfield.esm:01D1E7","starfield.esm:027189","starfield.esm:02B5EE","starfield.esm:04008C","starfield.esm:040091","starfield.esm:09B72F","starfield.esm:09F0EF","starfield.esm:09F0F6","starfield.esm:0A6FEF","starfield.esm:0A6FFA","starfield.esm:0A7001","starfield.esm:0A7018","starfield.esm:0A701C","starfield.esm:0A7021","starfield.esm:0CC4D1","starfield.esm:0CC4F6","starfield.esm:11F3A7","starfield.esm:11F3A8","starfield.esm:11F3AC","starfield.esm:11F3AD","starfield.esm:11F3B0","starfield.esm:177492","starfield.esm:177493","starfield.esm:177494","starfield.esm:177495","starfield.esm:18B54A","starfield.esm:190D0B","starfield.esm:19F9C1","starfield.esm:1A4253","starfield.esm:1A52D1","starfield.esm:1BF2F8","starfield.esm:1C84DB","starfield.esm:2074B5","starfield.esm:208E8C","starfield.esm:21BBEC","starfield.esm:220B07","starfield.esm:223430","starfield.esm:225FC9","starfield.esm:2265B0","starfield.esm:2265B1","starfield.esm:2266A2","starfield.esm:2266A3","starfield.esm:235B7D","starfield.esm:250BC5","starfield.esm:250C86","starfield.esm:251F56","starfield.esm:2619EF","starfield.esm:2619F1","starfield.esm:26D8AA","starfield.esm:29AEAE","starfield.esm:29E171","starfield.esm:3556E7","starfield.esm:362F13","starfield.esm:362F14","starfield.esm:362F15","starfield.esm:37033D","starfield.esm:37033E","starfield.esm:37033F","starfield.esm:3B2A81","starfield.esm:3E8E7F","starfield.esm:3FDBF7","starfield.esm:1466F6","starfield.esm:1466FA","starfield.esm:1466F8", "starfield.esm:1466F9", "starfield.esm:0781F7", "starfield.esm:1466FC", "starfield.esm:0781F8", "starfield.esm:1466FD", "starfield.esm:1466F7", "starfield.esm:1466FB"]);
 function key(record: ReviewedRecord): string { return (record.plugin ?? 'Starfield.esm').toLowerCase() + ':' + (record.localFormId ?? record.value).toUpperCase().slice(-6).padStart(6, '0'); }
 export function reviewedWasTested(record: ReviewedRecord): boolean {
-  return RECENT_TESTED.has(key(record)) || REFERENCE_ONLY.has(key(record)) || Boolean(REVIEWED_NAMES[key(record)]) || key(record) === 'starfield.esm:03B423';
+  return RECENT_TESTED.has(key(record)) || (REFERENCE_ONLY.has(key(record)) || INVISIBLE_FURNITURE.has(key(record))) || Boolean(REVIEWED_NAMES[key(record)]) || key(record) === 'starfield.esm:03B423';
 }
 export function reviewedReferenceNote(record: ReviewedRecord): string | null {
+  const cellNote=cellReferenceNote(record);if(cellNote)return cellNote;
+  if (record.type?.toUpperCase() === 'LCTN') return 'Reference Only: this location record describes an area and cannot be used as a teleport destination. Choose Cells to teleport.';
+  if (INVISIBLE_FURNITURE.has(key(record))) return 'Invisible interaction marker; not a standalone furniture object. Reference only.';
   return REFERENCE_ONLY.has(key(record)) ? 'Player testing found no visible inventory item. Reference only; Add to Player is disabled.' : null;
 }
 export function applyReviewedFindings<T extends ReviewedRecord & { label: string; detail?: string; referenceOnly?: boolean; originalName?: string; category?:string; keywords?: string[]; alternateFormIds?: string[] }>(record: T): T {
@@ -759,6 +842,8 @@ export function applyReviewedFindings<T extends ReviewedRecord & { label: string
   if(REVIEWED_APPAREL.has(key(record)))record={...record,category:"Apparel"};
   const name = REVIEWED_NAMES[key(record)];
   if (name) record = { ...record, label: name.label, originalName: name.original, keywords: [...new Set([...(record.keywords ?? []), name.original])] };
+  record=applyReviewedCellName(record);
+  record=applyAreaNameOverride(record);
   const note = reviewedReferenceNote(record);
   if (note) return { ...record, referenceOnly: true, detail: record.detail?.includes(note) ? record.detail : [record.detail, note].filter(Boolean).join(' ') };
   if (key(record) === 'starfield.esm:03B423') return { ...record, label: 'Cydonia Pack', detail: 'Player testing confirmed this is a Cydonia pack and adds to inventory.' };

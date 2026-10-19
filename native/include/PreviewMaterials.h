@@ -2,7 +2,7 @@
 #include "PreviewGeometry.h"
 
 namespace CCC::Preview {
-    struct MaterialAppearance {std::string texture;std::array<float,3> tint{1,1,1};bool tinted=false;std::string opacity,normal,ao,roughness;std::array<float,3> color{1,1,1};bool constantColor=false;};
+    struct MaterialAppearance {std::string texture;std::array<float,3> tint{1,1,1};bool tinted=false;std::string opacity,normal,ao,roughness,metal;std::array<float,3> color{1,1,1};bool constantColor=false;};
     inline std::string MaterialKey(std::string name) {
         for(auto& c:name){if(c=='\\')c='/';else if(c>='A'&&c<='Z')c=char(c-'A'+'a');}
         if(name.starts_with("/materials/")||name.starts_with("/data/materials/"))name.erase(0,1);
@@ -66,7 +66,7 @@ namespace CCC::Preview {
         void Parse(std::span<const std::uint8_t> bytes) {
             if(graphOnly){const auto inherited=ReadMaterialInheritance(bytes);for(const auto& [name,appearance]:inherited)inheritedRecords.insert_or_assign(name,appearance);return;}
             std::string active,activeMaterial,activePath,activeRoot;MaterialAppearance textureRecord;
-            const auto flush=[&]{if(active.empty())return;auto& record=records[active];if(record.texture.empty())record.texture=textureRecord.texture;if(record.normal.empty())record.normal=textureRecord.normal;if(record.opacity.empty())record.opacity=textureRecord.opacity;if(record.ao.empty())record.ao=textureRecord.ao;if(record.roughness.empty())record.roughness=textureRecord.roughness;if(!record.constantColor&&textureRecord.constantColor){record.color=textureRecord.color;record.constantColor=true;}
+            const auto flush=[&]{if(active.empty())return;auto& record=records[active];if(record.texture.empty())record.texture=textureRecord.texture;if(record.normal.empty())record.normal=textureRecord.normal;if(record.opacity.empty())record.opacity=textureRecord.opacity;if(record.ao.empty())record.ao=textureRecord.ao;if(record.roughness.empty())record.roughness=textureRecord.roughness;if(record.metal.empty())record.metal=textureRecord.metal;if(!record.constantColor&&textureRecord.constantColor){record.color=textureRecord.color;record.constantColor=true;}
                 auto scoped=textureRecord;scoped.tint=record.tint;scoped.tinted=record.tinted;
                 if(!activePath.empty())scopedRecords.try_emplace(activePath,scoped);
                 const auto source=!scoped.texture.empty()?scoped.texture:!scoped.normal.empty()?scoped.normal:scoped.opacity;const auto slash=source.find_last_of('/');if(source.starts_with("textures/")&&slash!=source.npos){const auto key="materials/"+source.substr(9,slash+1-9)+active+".mat";scopedRecords.try_emplace(key,scoped);}
@@ -88,7 +88,7 @@ namespace CCC::Preview {
                     if(textures!=name.npos&&textures>0){auto path=name.substr(0,textures);active=MaterialName(path);if(path.find('/')!=path.npos){if(path.starts_with("data/"))path.erase(0,5);if(!path.starts_with("materials/"))path="materials/"+path;activePath=path;}}
                 }else if((id==0x38a||id==0xee8)&&kind==0&&count&&count<=size-8&&!active.empty()) {
                     auto key=field.Text(count);const auto end=key.find('\0');if(end!=key.npos)key.resize(end);
-                    try{key=AssetKey(key);if(key.starts_with("data/"))key.erase(0,5);if(key.starts_with("textures/")){auto& record=textureRecord;if(key.ends_with("_normal.dds")){if(record.normal.empty())record.normal=key;}else if(key.ends_with("_rough.dds")){if(record.roughness.empty())record.roughness=key;}else if(key.ends_with("_ao.dds")){if(record.ao.empty())record.ao=key;}else if(key.ends_with("_opacity.dds")){if(record.opacity.empty())record.opacity=key;}else if(key.ends_with("_color.dds")||key.ends_with("_d.dds")||key.ends_with("_diffuse.dds")||key.ends_with("_albedo.dds")){if(record.texture.empty())record.texture=std::move(key);}}}catch(...){}
+                    try{key=AssetKey(key);if(key.starts_with("data/"))key.erase(0,5);if(key.starts_with("textures/")){auto& record=textureRecord;if(key.ends_with("_normal.dds")){if(record.normal.empty())record.normal=key;}else if(key.ends_with("_rough.dds")){if(record.roughness.empty())record.roughness=key;}else if(key.ends_with("_metal.dds")){if(record.metal.empty())record.metal=key;}else if(key.ends_with("_ao.dds")){if(record.ao.empty())record.ao=key;}else if(key.ends_with("_opacity.dds")){if(record.opacity.empty())record.opacity=key;}else if(key.ends_with("_color.dds")||key.ends_with("_d.dds")||key.ends_with("_diffuse.dds")||key.ends_with("_albedo.dds")){if(record.texture.empty())record.texture=std::move(key);}}}catch(...){}
                 }
                 }catch(...){active.clear();activeMaterial.clear();}
                 at+=8+size;
@@ -110,7 +110,7 @@ namespace CCC::Preview {
                 if(!base.texture.empty()||base.constantColor||base.tinted){result.texture=base.texture;result.constantColor=base.constantColor;result.color=base.color;result.tint=base.tint;result.tinted=base.tinted;}
                 if(result.normal.empty())result.normal=base.normal;
                 if(result.opacity.empty())result.opacity=base.opacity;
-                if(result.roughness.empty())result.roughness=base.roughness;
+                if(result.roughness.empty())result.roughness=base.roughness;if(result.metal.empty())result.metal=base.metal;
                 if(result.ao.empty())result.ao=base.ao;
                 return result;
             };

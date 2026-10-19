@@ -1,0 +1,3861 @@
+{
+  "report": "CCC-Dev-Feedback-2026-10-18_22-44-00-636_110108-328306265-0.txt",
+  "renamed": {
+    "sfbgs00d.esm:03D1E5": {
+      "label": "RedCap Asteroid Mine Excavation",
+      "original": "Redcap Asteroid Mine"
+    },
+    "starfield.esm:051BBB": {
+      "label": "Neon: Reliant Medical",
+      "original": "Reliant Medical"
+    },
+    "starfield.esm:1FB254": {
+      "label": "Research Outpost: U3-09",
+      "original": "Research Station U3-09"
+    },
+    "starfield.esm:27E165": {
+      "label": "MAST Scientific Wing",
+      "original": "Scientific Wing"
+    }
+  },
+  "reference": [
+    "starfield.esm:2372F3",
+    "starfield.esm:2CE267",
+    "starfield.esm:0134A2",
+    "starfield.esm:2566D6",
+    "starfield.esm:138C3E",
+    "starfield.esm:13D0AC",
+    "starfield.esm:1D8556",
+    "starfield.esm:2CBD44",
+    "sfbgs00d.esm:07E1BB",
+    "shatteredspace.esm:12912A",
+    "shatteredspace.esm:12912B",
+    "shatteredspace.esm:12912C",
+    "sfbgs00d.esm:08049C",
+    "starfield.esm:2C5989",
+    "starfield.esm:25D1A8",
+    "starfield.esm:2641E3",
+    "starfield.esm:2C533C",
+    "starfield.esm:21F571",
+    "starfield.esm:2245B8",
+    "starfield.esm:2245B9",
+    "starfield.esm:224B20",
+    "starfield.esm:224B23",
+    "starfield.esm:249161",
+    "starfield.esm:13D0AA"
+  ],
+  "audit": [
+    {
+      "key": "shatteredspace.esm:0C6406",
+      "original": "SFBGS001 Alias Cell",
+      "label": "Test Interior Location — Alias Cell",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0C6412",
+        "editor": "SFBGS001AliasLocation",
+        "name": "Test Interior Location"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0485DB",
+      "original": "SFBGS001Crater01",
+      "label": "Dazra Outskirts — Exterior (2, 2)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0CBA41",
+      "original": "SFBGS001Dazra OE01",
+      "label": "Dazra Outskirts — Exterior (3, 6)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1EC",
+      "original": "SFBGS001Dazra OE02",
+      "label": "Cave — Exterior (-10, -9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0DF276",
+        "editor": "SFBGS001DazraOE02Location",
+        "name": "Cave"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:06DCC8",
+      "original": "SFBGS001Dazra OE03",
+      "label": "Dazra Outskirts — Exterior (7, -6)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0717E4",
+      "original": "SFBGS001Dazra OE04",
+      "label": "Dazra Outskirts — Exterior (8, 2)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0BD506",
+      "original": "SFBGS001Dazra OE05",
+      "label": "Dazra Outskirts — Exterior (6, 4)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05F6F0",
+      "original": "SFBGS001Dazra OE06",
+      "label": "Dazra Outskirts — Exterior (-1, 6)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05ACB1",
+      "original": "SFBGS001Dazra OE07",
+      "label": "Dazra Outskirts — Exterior (8, -3)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0475F1",
+      "original": "SFBGS001Dazra OE08",
+      "label": "Dazra Outskirts — Exterior (8, -9)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0BEDD3",
+      "original": "SFBGS001Dazra OE09",
+      "label": "Dazra Outskirts — Exterior (-3, -6)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07DBEC",
+      "original": "SFBGS001Dazra OE10",
+      "label": "Dazra Outskirts — Exterior (-7, -4)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07E0F5",
+      "original": "SFBGS001Dazra OE11",
+      "label": "Dazra Outskirts — Exterior (-9, -4)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0478D6",
+      "original": "SFBGS001Dazra OE12",
+      "label": "Dazra Outskirts — Exterior (-7, -9)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:047107",
+      "original": "SFBGS001Dazra OE13",
+      "label": "Dazra Outskirts — Exterior (6, -8)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:06871F",
+      "original": "SFBGS001Dazra OE14",
+      "label": "Dazra Outskirts — Exterior (2, -9)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:076411",
+      "original": "SFBGS001Dazra OE15Ext",
+      "label": "Dazra Outskirts — Exterior (-2, -3)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:155693",
+        "editor": "SFBGS001LandscapePOIDunes01Location",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07E4D2",
+      "original": "SFBGS001Dazra OE16Ext",
+      "label": "Dazra Outskirts — Exterior (1, 1)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:034E03",
+      "original": "SFBGS001Dazra OE17Ext",
+      "label": "Dazra Outskirts — Exterior (-3, 3)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0A5047",
+      "original": "SFBGS001Dazra OE18Ext",
+      "label": "Dazra Outskirts — Exterior (-3, -5)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0A3BC3",
+      "original": "SFBGS001Dazra OE19Ext",
+      "label": "Dazra Outskirts — Exterior (2, -5)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:036B44",
+      "original": "SFBGS001Dazra OE20Ext",
+      "label": "Dazra Outskirts — Exterior (1, 3)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:080404",
+      "original": "SFBGS001LC03Ext",
+      "label": "Shadow Station Epsilon — Exterior (3, 10)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:004517",
+        "editor": "SFBGS001LC03ExteriorLocation",
+        "name": "Shadow Station Epsilon"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1DB",
+      "original": "SFBGS001LC03Ext02",
+      "label": "Shadow Station Epsilon — Exterior (3, 9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:004517",
+        "editor": "SFBGS001LC03ExteriorLocation",
+        "name": "Shadow Station Epsilon"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0870FD",
+      "original": "SFBGS001LC03Ext03",
+      "label": "Shadow Station Epsilon — Exterior (2, 10)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:004517",
+        "editor": "SFBGS001LC03ExteriorLocation",
+        "name": "Shadow Station Epsilon"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1F4",
+      "original": "SFBGS001LC04Ext",
+      "label": "Apostate's Refuge — Exterior (-10, 9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03788C",
+        "editor": "SFBGS001LC04Location",
+        "name": "Apostate's Refuge"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:076302",
+      "original": "SFBGS001LC04Ext02",
+      "label": "Dazra Outskirts — Exterior (-9, 9)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:076303",
+      "original": "SFBGS001LC04Ext03",
+      "label": "Dazra Outskirts — Exterior (-9, 10)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04710B",
+      "original": "SFBGS001LC05Ext",
+      "label": "Ma'leen Dam — Exterior (9, -5)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:02E265",
+        "editor": "SFBGS001LC05ResearchSiteLocation",
+        "name": "Ma'leen Dam"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05ACB0",
+      "original": "SFBGS001LC05Ext02",
+      "label": "Ma'leen Dam — Exterior (9, -6)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:02E265",
+        "editor": "SFBGS001LC05ResearchSiteLocation",
+        "name": "Ma'leen Dam"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05ACB4",
+      "original": "SFBGS001LC05Ext03",
+      "label": "Dazra Outskirts — Exterior (8, -6)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05ACB3",
+      "original": "SFBGS001LC05Ext04",
+      "label": "Dazra Outskirts — Exterior (8, -5)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0470D1",
+      "original": "SFBGS001LC06Ext",
+      "label": "Scaled Citadel — Exterior (3, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0FBA35",
+        "editor": "SFBGS001LC06ScaledCitadelExteriorLocation",
+        "name": "Scaled Citadel"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0485E0",
+      "original": "SFBGS001LC06Ext02",
+      "label": "Scaled Citadel — Exterior (3, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0FBA35",
+        "editor": "SFBGS001LC06ScaledCitadelExteriorLocation",
+        "name": "Scaled Citadel"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0485D6",
+      "original": "SFBGS001LC06Ext03",
+      "label": "Scaled Citadel — Exterior (4, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0FBA35",
+        "editor": "SFBGS001LC06ScaledCitadelExteriorLocation",
+        "name": "Scaled Citadel"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0485D9",
+      "original": "SFBGS001LC06Ext04",
+      "label": "Scaled Citadel — Exterior (3, 1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0FBA35",
+        "editor": "SFBGS001LC06ScaledCitadelExteriorLocation",
+        "name": "Scaled Citadel"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0485D5",
+      "original": "SFBGS001LC06Ext05",
+      "label": "Scaled Citadel — Exterior (4, 1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0FBA35",
+        "editor": "SFBGS001LC06ScaledCitadelExteriorLocation",
+        "name": "Scaled Citadel"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04710D",
+      "original": "SFBGS001LC07Ext",
+      "label": "Deep Gorge Refinery — Exterior (10, -10)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:023B2B",
+        "editor": "SFBGS001LC07ExtLocation",
+        "name": "Deep Gorge Refinery"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0474B2",
+      "original": "SFBGS001LC07Ext02",
+      "label": "Deep Gorge Refinery — Exterior (10, -11)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:023B2B",
+        "editor": "SFBGS001LC07ExtLocation",
+        "name": "Deep Gorge Refinery"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:079E62",
+      "original": "SFBGS001LC07Ext03",
+      "label": "Deep Gorge Refinery — Exterior (9, -11)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:023B2B",
+        "editor": "SFBGS001LC07ExtLocation",
+        "name": "Deep Gorge Refinery"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:079E61",
+      "original": "SFBGS001LC07Ext04",
+      "label": "Deep Gorge Refinery — Exterior (9, -10)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:023B2B",
+        "editor": "SFBGS001LC07ExtLocation",
+        "name": "Deep Gorge Refinery"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1F3",
+      "original": "SFBGS001LC08Ext",
+      "label": "Misthaze Cavern — Exterior (7, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:00F189",
+        "editor": "SFBGS001LC08WaterfallCaveLocation",
+        "name": "Misthaze Cavern"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05F5D5",
+      "original": "SFBGS001LC10Ext",
+      "label": "Dazra Outskirts — Exterior (-6, 9)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05F5D7",
+      "original": "SFBGS001LC10Ext02",
+      "label": "Abandoned Outpost — Exterior (-5, 9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:017A03",
+        "editor": "SFBGS001LC10Location",
+        "name": "Abandoned Outpost"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05F5D8",
+      "original": "SFBGS001LC10Ext03",
+      "label": "Abandoned Outpost — Exterior (-5, 10)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:017A03",
+        "editor": "SFBGS001LC10Location",
+        "name": "Abandoned Outpost"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05B192",
+      "original": "SFBGS001LC10Ext04",
+      "label": "Abandoned Outpost — Exterior (-4, 10)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:017A03",
+        "editor": "SFBGS001LC10Location",
+        "name": "Abandoned Outpost"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C20B",
+      "original": "SFBGS001LC10Ext05",
+      "label": "Abandoned Outpost — Exterior (-4, 9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:017A03",
+        "editor": "SFBGS001LC10Location",
+        "name": "Abandoned Outpost"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1F6",
+      "original": "SFBGS001LC12Ext01",
+      "label": "Abandoned Camp — Exterior (-8, 3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D50E",
+        "editor": "SFBGS001LC12Location",
+        "name": "Abandoned Camp"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07A0F1",
+      "original": "SFBGS001LC12Ext02",
+      "label": "Abandoned Camp — Exterior (-7, 2)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D50E",
+        "editor": "SFBGS001LC12Location",
+        "name": "Abandoned Camp"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C204",
+      "original": "SFBGS001LC13Ext01",
+      "label": "Irina's Farm — Exterior (-10, 6)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:037889",
+        "editor": "SFBGS001LC13Location",
+        "name": "Irina's Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07A1A8",
+      "original": "SFBGS001LC13Ext02",
+      "label": "Irina's Farm — Exterior (-10, 7)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:037889",
+        "editor": "SFBGS001LC13Location",
+        "name": "Irina's Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:06DCC6",
+      "original": "SFBGS001LC15Ext",
+      "label": "Abbas Seaweed Farm — Exterior (8, -7)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D50F",
+        "editor": "SFBGS001LC15Location",
+        "name": "Abbas Seaweed Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:06DCC4",
+      "original": "SFBGS001LC15Ext02",
+      "label": "Abbas Seaweed Farm — Exterior (9, -7)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D50F",
+        "editor": "SFBGS001LC15Location",
+        "name": "Abbas Seaweed Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:06DCC5",
+      "original": "SFBGS001LC15Ext03",
+      "label": "Abbas Seaweed Farm — Exterior (9, -8)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D50F",
+        "editor": "SFBGS001LC15Location",
+        "name": "Abbas Seaweed Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:06DCC7",
+      "original": "SFBGS001LC15Ext04",
+      "label": "Abbas Seaweed Farm — Exterior (8, -8)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D50F",
+        "editor": "SFBGS001LC15Location",
+        "name": "Abbas Seaweed Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07F200",
+      "original": "SFBGS001LC17Ext",
+      "label": "Tul'Shahk Monastery — Exterior (8, 9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D510",
+        "editor": "SFBGS001LC17Location",
+        "name": "Tul'Shahk Monastery"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07F1FD",
+      "original": "SFBGS001LC17Ext02",
+      "label": "Tul'Shahk Monastery — Exterior (9, 9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D510",
+        "editor": "SFBGS001LC17Location",
+        "name": "Tul'Shahk Monastery"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07F1FF",
+      "original": "SFBGS001LC17Ext04",
+      "label": "Tul'Shahk Monastery — Exterior (8, 10)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D510",
+        "editor": "SFBGS001LC17Location",
+        "name": "Tul'Shahk Monastery"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05B194",
+      "original": "SFBGS001LC17Ext05",
+      "label": "Tul'Shahk Monastery — Exterior (9, 10)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D510",
+        "editor": "SFBGS001LC17Location",
+        "name": "Tul'Shahk Monastery"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:076312",
+      "original": "SFBGS001LC18Ext",
+      "label": "Subterranean Mal'siir Farm — Exterior (4, -6)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D511",
+        "editor": "SFBGS001LC18Location",
+        "name": "Subterranean Mal'siir Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:057484",
+      "original": "SFBGS001LC18Ext010",
+      "label": "Subterranean Mal'siir Farm — Exterior (3, -5)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D511",
+        "editor": "SFBGS001LC18Location",
+        "name": "Subterranean Mal'siir Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:076313",
+      "original": "SFBGS001LC18Ext05",
+      "label": "Subterranean Mal'siir Farm — Exterior (5, -6)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D511",
+        "editor": "SFBGS001LC18Location",
+        "name": "Subterranean Mal'siir Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07807C",
+      "original": "SFBGS001LC18Ext07",
+      "label": "Subterranean Mal'siir Farm — Exterior (4, -7)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D511",
+        "editor": "SFBGS001LC18Location",
+        "name": "Subterranean Mal'siir Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07807B",
+      "original": "SFBGS001LC18Ext08",
+      "label": "Subterranean Mal'siir Farm — Exterior (5, -7)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D511",
+        "editor": "SFBGS001LC18Location",
+        "name": "Subterranean Mal'siir Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1E6",
+      "original": "SFBGS001LC19Ext",
+      "label": "Sundered Stone Depot — Exterior (6, 8)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03CA99",
+        "editor": "SFBGS001LC19Location",
+        "name": "Sundered Stone Depot"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1E4",
+      "original": "SFBGS001LC20Ext",
+      "label": "Hollow Bluff Depot — Exterior (-11, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:016063",
+        "editor": "SFBGS001LC20Location",
+        "name": "Hollow Bluff Depot"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07E0F4",
+      "original": "SFBGS001LC20Ext01",
+      "label": "Hollow Bluff Depot — Exterior (-11, -2)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:016063",
+        "editor": "SFBGS001LC20Location",
+        "name": "Hollow Bluff Depot"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07E0F2",
+      "original": "SFBGS001LC20Ext02",
+      "label": "Hollow Bluff Depot — Exterior (-10, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:016063",
+        "editor": "SFBGS001LC20Location",
+        "name": "Hollow Bluff Depot"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07E0F3",
+      "original": "SFBGS001LC20Ext03",
+      "label": "Hollow Bluff Depot — Exterior (-10, -2)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:016063",
+        "editor": "SFBGS001LC20Location",
+        "name": "Hollow Bluff Depot"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07E0E7",
+      "original": "SFBGS001LC20Ext04",
+      "label": "Dazra Outskirts — Exterior (-9, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07E0E8",
+      "original": "SFBGS001LC20Ext05",
+      "label": "Dazra Outskirts — Exterior (-9, -2)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1E3",
+      "original": "SFBGS001LC21Ext",
+      "label": "Malik's Groat Farm — Exterior (-7, -2)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03AD99",
+        "editor": "SFBGS001LC21MalikGroatFarmLocation",
+        "name": "Malik's Groat Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04873A",
+      "original": "SFBGS001LC22Ext",
+      "label": "Wayshrine of Redemption — Exterior (1, 2)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D512",
+        "editor": "SFBGS001LC22Location",
+        "name": "Wayshrine of Redemption"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1EE",
+      "original": "SFBGS001LC23Ext",
+      "label": "Wayshrine of Strength — Exterior (0, -9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D513",
+        "editor": "SFBGS001LC23Location",
+        "name": "Wayshrine of Strength"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:075F99",
+      "original": "SFBGS001LC23Ext02",
+      "label": "Wayshrine of Strength — Exterior (-1, -9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D513",
+        "editor": "SFBGS001LC23Location",
+        "name": "Wayshrine of Strength"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1FE",
+      "original": "SFBGS001LC24Ext",
+      "label": "Wayshrine of Obedience — Exterior (0, 8)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D514",
+        "editor": "SFBGS001LC24Location",
+        "name": "Wayshrine of Obedience"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0740A1",
+      "original": "SFBGS001LC24Ext02",
+      "label": "Wayshrine of Obedience — Exterior (-1, 8)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D514",
+        "editor": "SFBGS001LC24Location",
+        "name": "Wayshrine of Obedience"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0740A0",
+      "original": "SFBGS001LC24Ext03",
+      "label": "Wayshrine of Obedience — Exterior (-1, 9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D514",
+        "editor": "SFBGS001LC24Location",
+        "name": "Wayshrine of Obedience"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1FD",
+      "original": "SFBGS001LC24Ext04",
+      "label": "Wayshrine of Obedience — Exterior (0, 9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D514",
+        "editor": "SFBGS001LC24Location",
+        "name": "Wayshrine of Obedience"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1F2",
+      "original": "SFBGS001LC25Ext",
+      "label": "Wayshrine of Devotion — Exterior (8, 3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D516",
+        "editor": "SFBGS001LC25Location",
+        "name": "Wayshrine of Devotion"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1F9",
+      "original": "SFBGS001LC26Ext",
+      "label": "Wayshrine of Perseverance — Exterior (-11, 3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D515",
+        "editor": "SFBGS001LC26Location",
+        "name": "Wayshrine of Perseverance"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:074099",
+      "original": "SFBGS001LC26Ext02",
+      "label": "Wayshrine of Perseverance — Exterior (-10, 3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D515",
+        "editor": "SFBGS001LC26Location",
+        "name": "Wayshrine of Perseverance"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1FA",
+      "original": "SFBGS001LC27Ext",
+      "label": "Hamadi Station — Exterior (-8, 1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D517",
+        "editor": "SFBGS001LC27Location",
+        "name": "Hamadi Station"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07A0F2",
+      "original": "SFBGS001LC27Ext02",
+      "label": "Hamadi Station — Exterior (-7, 1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D517",
+        "editor": "SFBGS001LC27Location",
+        "name": "Hamadi Station"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1E1",
+      "original": "SFBGS001LC28Ext",
+      "label": "Chunks — Exterior (-5, -3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D518",
+        "editor": "SFBGS001LC28Location",
+        "name": "Chunks"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1ED",
+      "original": "SFBGS001LC29Ext",
+      "label": "Dazra Groat Farms — Exterior (1, -4)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D519",
+        "editor": "SFBGS001LC29Location",
+        "name": "Dazra Groat Farms"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:053EF9",
+      "original": "SFBGS001LC29Ext02",
+      "label": "Dazra Outskirts — Exterior (2, -4)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0A8B3E",
+      "original": "SFBGS001LC29Ext03",
+      "label": "Dazra Groat Farms — Exterior (1, -5)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D519",
+        "editor": "SFBGS001LC29Location",
+        "name": "Dazra Groat Farms"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0C6AF0",
+      "original": "SFBGS001LC32Ext",
+      "label": "Dazra Seaweed Farms — Exterior (-4, 1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D51C",
+        "editor": "SFBGS001LC32Location",
+        "name": "Dazra Seaweed Farms"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0478DA",
+      "original": "SFBGS001LC32Ext02",
+      "label": "Dazra Seaweed Farms — Exterior (-4, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D51C",
+        "editor": "SFBGS001LC32Location",
+        "name": "Dazra Seaweed Farms"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1EB",
+      "original": "SFBGS001LC36Ext",
+      "label": "Listening Post Alpha — Exterior (-9, -11)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D522",
+        "editor": "SFBGS001LC36Location",
+        "name": "Listening Post Alpha"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:070E17",
+      "original": "SFBGS001LC36Ext02",
+      "label": "Listening Post Alpha — Exterior (-9, -10)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D522",
+        "editor": "SFBGS001LC36Location",
+        "name": "Listening Post Alpha"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:070E16",
+      "original": "SFBGS001LC36Ext03",
+      "label": "Dazra Outskirts — Exterior (-10, -10)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:070E18",
+      "original": "SFBGS001LC36Ext04",
+      "label": "Listening Post Alpha — Exterior (-10, -11)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D522",
+        "editor": "SFBGS001LC36Location",
+        "name": "Listening Post Alpha"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1F1",
+      "original": "SFBGS001LC37Ext01",
+      "label": "Listening Post Beta — Exterior (6, 2)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D523",
+        "editor": "SFBGS001LC37Location",
+        "name": "Listening Post Beta"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1DE",
+      "original": "SFBGS001LC38Ext",
+      "label": "Badlands Power Station — Exterior (4, 4)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D524",
+        "editor": "SFBGS001LC38Location",
+        "name": "Badlands Power Station"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:07E12D",
+      "original": "SFBGS001LC38Ext02",
+      "label": "Badlands Power Station — Exterior (4, 5)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D524",
+        "editor": "SFBGS001LC38Location",
+        "name": "Badlands Power Station"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:047105",
+      "original": "SFBGS001LC39Ext",
+      "label": "Lakelands Power Station — Exterior (4, -9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D525",
+        "editor": "SFBGS001LC39Location",
+        "name": "Lakelands Power Station"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1E0",
+      "original": "SFBGS001LC40Ext",
+      "label": "Hillcountry Power Relay — Exterior (-7, -7)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D526",
+        "editor": "SFBGS001LC40Location",
+        "name": "Hillcountry Power Relay"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1FF",
+      "original": "SFBGS001LC41Ext",
+      "label": "Badlands Power Relay — Exterior (-3, 6)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D527",
+        "editor": "SFBGS001LC41Location",
+        "name": "Badlands Power Relay"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0CDD21",
+      "original": "SFBGS001LC41Ext02",
+      "label": "Badlands Power Relay — Exterior (-4, 6)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D527",
+        "editor": "SFBGS001LC41Location",
+        "name": "Badlands Power Relay"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C200",
+      "original": "SFBGS001LC42Ext",
+      "label": "Spacer Crash Site — Exterior (-6, 7)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D528",
+        "editor": "SFBGS001LC42Location",
+        "name": "Spacer Crash Site"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0ABDE1",
+      "original": "SFBGS001LC42Ext02",
+      "label": "Spacer Crash Site — Exterior (-5, 7)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D528",
+        "editor": "SFBGS001LC42Location",
+        "name": "Spacer Crash Site"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1E2",
+      "original": "SFBGS001LC45Ext",
+      "label": "Orahim's Shack — Exterior (-5, -5)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D52B",
+        "editor": "SFBGS001LC45Location",
+        "name": "Orahim's Shack"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0C6AF8",
+      "original": "SFBGS001LC47Ext",
+      "label": "Tomb of the Fang — Exterior (-10, -7)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D52D",
+        "editor": "SFBGS001LC47Location",
+        "name": "Tomb of the Fang"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:08CC27",
+      "original": "SFBGS001LC48Ext",
+      "label": "Control Site Kappa — Exterior (-3, -8)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D52E",
+        "editor": "SFBGS001LC48Location",
+        "name": "Control Site Kappa"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:08D5F5",
+      "original": "SFBGS001LC48Ext03",
+      "label": "Control Site Kappa — Exterior (-4, -8)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D52E",
+        "editor": "SFBGS001LC48Location",
+        "name": "Control Site Kappa"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:08D5F7",
+      "original": "SFBGS001LC48Ext04",
+      "label": "Control Site Kappa — Exterior (-4, -7)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D52E",
+        "editor": "SFBGS001LC48Location",
+        "name": "Control Site Kappa"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:08D5F3",
+      "original": "SFBGS001LC48Ext05",
+      "label": "Control Site Kappa — Exterior (-5, -9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D52E",
+        "editor": "SFBGS001LC48Location",
+        "name": "Control Site Kappa"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1DC",
+      "original": "SFBGS001LC48Ext06",
+      "label": "Control Site Kappa — Exterior (-5, -8)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D52E",
+        "editor": "SFBGS001LC48Location",
+        "name": "Control Site Kappa"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:08D5F6",
+      "original": "SFBGS001LC48Ext07",
+      "label": "Control Site Kappa — Exterior (-5, -7)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D52E",
+        "editor": "SFBGS001LC48Location",
+        "name": "Control Site Kappa"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1DD",
+      "original": "SFBGS001LC48Ext08",
+      "label": "Control Site Kappa — Exterior (-5, -10)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D52E",
+        "editor": "SFBGS001LC48Location",
+        "name": "Control Site Kappa"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:08D5F4",
+      "original": "SFBGS001LC48Ext09",
+      "label": "Control Site Kappa — Exterior (-4, -9)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D52E",
+        "editor": "SFBGS001LC48Location",
+        "name": "Control Site Kappa"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:090BC6",
+      "original": "SFBGS001LC48Ext10",
+      "label": "Dazra Outskirts — Exterior (-3, -10)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0B67AD",
+      "original": "SFBGS001LC49AExt",
+      "label": "Dazra Outskirts — Exterior (-8, 5)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:06133C",
+      "original": "SFBGS001LC49BExt",
+      "label": "Dazra Outskirts — Exterior (1, 6)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1E9",
+      "original": "SFBGS001LC49CExt",
+      "label": "Dazra Outskirts — Exterior (8, -10)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0969CC",
+      "original": "SFBGS001LC49DExt",
+      "label": "Dazra Outskirts — Exterior (5, -3)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:050AD0",
+      "original": "SFBGS001LC49EExt",
+      "label": "Dazra Outskirts — Exterior (-6, -10)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "shatteredspace.esm:0470CB",
+        "editor": "SFBGS001DazraWorld",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C1DF",
+      "original": "SFBGS001LC50Ext",
+      "label": "Vaifala Crash Site — Exterior (2, -11)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:03D530",
+        "editor": "SFBGS001LC50Location",
+        "name": "Vaifala Crash Site"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C271",
+      "original": "SFBGS001LC53Ext",
+      "label": "Hermit Groat Farm — Exterior (-1, -3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:11A35D",
+        "editor": "SFBGS001LC53Location",
+        "name": "Hermit Groat Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:11A138",
+      "original": "SFBGS001LC53Ext02",
+      "label": "Hermit Groat Farm — Exterior (-2, -3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:11A35D",
+        "editor": "SFBGS001LC53Location",
+        "name": "Hermit Groat Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C24C",
+      "original": "SFBGS001LC53Ext03",
+      "label": "Hermit Groat Farm — Exterior (-1, -4)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:11A35D",
+        "editor": "SFBGS001LC53Location",
+        "name": "Hermit Groat Farm"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C276",
+      "original": "SFBGS001LC54Ext",
+      "label": "Orm Filtration Facility — Exterior (-2, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:114CD0",
+        "editor": "SFBGS001LC54Location",
+        "name": "Orm Filtration Facility"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C279",
+      "original": "SFBGS001LC54Ext02",
+      "label": "Orm Filtration Facility — Exterior (-1, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:114CD0",
+        "editor": "SFBGS001LC54Location",
+        "name": "Orm Filtration Facility"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C27A",
+      "original": "SFBGS001LC54Ext03",
+      "label": "Orm Filtration Facility — Exterior (-1, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:114CD0",
+        "editor": "SFBGS001LC54Location",
+        "name": "Orm Filtration Facility"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:052B30",
+      "original": "SFBGS001LC55Ext01",
+      "label": "Lake Watchtower — Exterior (-4, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:112527",
+        "editor": "SFBGS001LC55Location",
+        "name": "Lake Watchtower"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0AAB07",
+      "original": "SFBGS001LC57Ext01",
+      "label": "Oasis Watch Tower — Exterior (1, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:113CB0",
+        "editor": "SFBGS001LC57Location",
+        "name": "Oasis Watch Tower"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04100A",
+      "original": "SFBGS001LC58Ext",
+      "label": "Overlook Watchtower — Exterior (0, -3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:118813",
+        "editor": "SFBGS001LC58Location",
+        "name": "Overlook Watchtower"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:046D0E",
+      "original": "SFBGS001LC58Ext03",
+      "label": "Overlook Watchtower — Exterior (-1, -3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:118813",
+        "editor": "SFBGS001LC58Location",
+        "name": "Overlook Watchtower"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:046D0D",
+      "original": "SFBGS001LC58Ext04",
+      "label": "Overlook Watchtower — Exterior (-1, -2)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:118813",
+        "editor": "SFBGS001LC58Location",
+        "name": "Overlook Watchtower"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:072BA2",
+      "original": "SFBGS001LC59Ext01",
+      "label": "Ridgeline Watchtower — Exterior (0, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:118814",
+        "editor": "SFBGS001LC59Location",
+        "name": "Ridgeline Watchtower"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:072BA4",
+      "original": "SFBGS001LC59Ext02",
+      "label": "Ridgeline Watchtower — Exterior (1, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:118814",
+        "editor": "SFBGS001LC59Location",
+        "name": "Ridgeline Watchtower"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:072BA5",
+      "original": "SFBGS001LC59Ext03",
+      "label": "Ridgeline Watchtower — Exterior (1, 1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:118814",
+        "editor": "SFBGS001LC59Location",
+        "name": "Ridgeline Watchtower"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:072BA1",
+      "original": "SFBGS001LC59Ext04",
+      "label": "Ridgeline Watchtower — Exterior (0, 1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:118814",
+        "editor": "SFBGS001LC59Location",
+        "name": "Ridgeline Watchtower"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:10E348",
+      "original": "SFBGS001LC60Int",
+      "label": "Anomalous Cave — Interior",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:10DE92",
+        "editor": "SFBGS001_MQIN_Location",
+        "name": "Anomalous Cave"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C278",
+      "original": "SFBGS001LD54Ext04",
+      "label": "Orm Filtration Facility — Exterior (-2, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:114CD0",
+        "editor": "SFBGS001LC54Location",
+        "name": "Orm Filtration Facility"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:04C272",
+      "original": "SFBGS001LD54Ext06",
+      "label": "Orm Filtration Facility — Exterior (0, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:114CD0",
+        "editor": "SFBGS001LC54Location",
+        "name": "Orm Filtration Facility"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0F0128",
+      "original": "SFBGS001OE07",
+      "label": "Hoodoo Rock Camp — Exterior (-1, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0F0159",
+        "editor": "SFBGS001OE07Location",
+        "name": "Hoodoo Rock Camp"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0F0121",
+      "original": "SFBGS001OE12Ext01",
+      "label": "Va'ruun Camp — Exterior (-1, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0F0158",
+        "editor": "SFBGS001OE12Location",
+        "name": "Va'ruun Camp"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0F6F76",
+      "original": "SFBGS001OE15Ext01",
+      "label": "Gas Extraction Site — Exterior (-1, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0F7083",
+        "editor": "SFBGS001OE15Location",
+        "name": "Gas Extraction Site"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0F6F74",
+      "original": "SFBGS001OE15Ext02",
+      "label": "Gas Extraction Site — Exterior (-1, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0F7083",
+        "editor": "SFBGS001OE15Location",
+        "name": "Gas Extraction Site"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0F6F75",
+      "original": "SFBGS001OE19Ext01",
+      "label": "Crashed Ship — Exterior (-1, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0F7085",
+        "editor": "SFBGS001OE19Location",
+        "name": "Crashed Ship"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0F6F72",
+      "original": "SFBGS001OE19Ext02",
+      "label": "Crashed Ship — Exterior (0, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0F7085",
+        "editor": "SFBGS001OE19Location",
+        "name": "Crashed Ship"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0F6F6F",
+      "original": "SFBGS001OE19Ext03",
+      "label": "Crashed Ship — Exterior (-1, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0F7085",
+        "editor": "SFBGS001OE19Location",
+        "name": "Crashed Ship"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:078F1A",
+      "original": "SFBGS001POI01Ext",
+      "label": "Sniper Nest — Exterior (4, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:027AE9",
+        "editor": "SFBGS001POI01Location",
+        "name": "Sniper Nest"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:078F18",
+      "original": "SFBGS001POI01Ext02",
+      "label": "Sniper Nest — Exterior (4, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:027AE9",
+        "editor": "SFBGS001POI01Location",
+        "name": "Sniper Nest"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:078F1B",
+      "original": "SFBGS001POI02Ext",
+      "label": "Target Range — Exterior (4, -2)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:027AED",
+        "editor": "SFBGS001POI02Location",
+        "name": "Target Range"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:15568E",
+      "original": "SFBGS001POI03Ext",
+      "label": "Courier Center — Exterior (-5, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:025502",
+        "editor": "SFBGS001POI03Location",
+        "name": "Courier Center"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:057487",
+      "original": "SFBGS001POI04Ext",
+      "label": "Lakeside Dock — Exterior (-4, 3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:034FD1",
+        "editor": "SFBGS001POI04Location",
+        "name": "Lakeside Dock"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:052B66",
+      "original": "SFBGS001POI04Ext02",
+      "label": "Lakeside Dock — Exterior (-3, 3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:034FD1",
+        "editor": "SFBGS001POI04Location",
+        "name": "Lakeside Dock"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05BE8F",
+      "original": "SFBGS001POI05Ext",
+      "label": "Improvised Shelter — Exterior (3, 3)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:034FC6",
+        "editor": "SFBGS001POI05Location",
+        "name": "Improvised Shelter"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0485D0",
+      "original": "SFBGS001POIRuins02",
+      "label": "Dazra Outskirts — Exterior (5, 1)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:084C25",
+      "original": "SFBGS001POIRuins03",
+      "label": "Dazra Outskirts — Exterior (3, -3)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0485D8",
+      "original": "SFBGS001POIRuins04",
+      "label": "Dazra Outskirts — Exterior (3, 2)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0485DE",
+      "original": "SFBGS001POIRuins05",
+      "label": "Dazra Outskirts — Exterior (1, 0)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0485D7",
+      "original": "SFBGS001POIRuins06",
+      "label": "Dazra Orphanage — Exterior (4, -2)",
+      "basis": "Linked location",
+      "source": {
+        "key": "shatteredspace.esm:0E35BA",
+        "editor": "SFBGS001_VkaiZ03_OrphanageLocation",
+        "name": "Dazra Orphanage"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0969CD",
+      "original": "SFBGS001POIRuins07",
+      "label": "Dazra Outskirts — Exterior (4, -3)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:084C26",
+      "original": "SFBGS001POIRuins08",
+      "label": "Dazra Outskirts — Exterior (2, -3)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:08E4F0",
+      "original": "SFBGS001POIRuins09",
+      "label": "Dazra Outskirts — Exterior (2, -2)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0901AA",
+      "original": "SFBGS001WNPCSpawn01Ext",
+      "label": "Dazra Outskirts — Exterior (2, 4)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05F6F9",
+      "original": "SFBGS001WNPCSpawn02Ext",
+      "label": "Dazra Outskirts — Exterior (-2, 4)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0CB024",
+      "original": "SFBGS001WNPCSpawn03Ext",
+      "label": "Dazra Outskirts — Exterior (-6, 4)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05A5C0",
+      "original": "SFBGS001WNPCSpawn04Ext",
+      "label": "Dazra Outskirts — Exterior (-7, -3)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:089A57",
+      "original": "SFBGS001WNPCSpawn05Ext",
+      "label": "Dazra Outskirts — Exterior (-5, -6)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:09F625",
+      "original": "SFBGS001WNPCSpawn06Ext",
+      "label": "Dazra Outskirts — Exterior (-3, -7)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:05ACB2",
+      "original": "SFBGS001WNPCSpawn07Ext",
+      "label": "Dazra Outskirts — Exterior (8, -4)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "shatteredspace.esm:0884EA",
+      "original": "SFBGS001WNPCSpawn08Ext",
+      "label": "Dazra Outskirts — Exterior (7, 1)",
+      "basis": "Parent location",
+      "source": {
+        "key": "shatteredspace.esm:038D1A",
+        "editor": "SFBGS001DazraWorldLocation",
+        "name": "Dazra Outskirts"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00243D",
+      "original": "SFBGS00DDR001Ext",
+      "label": "Autonomous Waste Processing Plant — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:002428",
+        "editor": "SFBGS00DDR001World",
+        "name": "Autonomous Waste Processing Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00243E",
+      "original": "SFBGS00DDR001Ext01",
+      "label": "Autonomous Waste Processing Plant — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:002428",
+        "editor": "SFBGS00DDR001World",
+        "name": "Autonomous Waste Processing Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:002442",
+      "original": "SFBGS00DDR001Ext02",
+      "label": "Autonomous Waste Processing Plant — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:002428",
+        "editor": "SFBGS00DDR001World",
+        "name": "Autonomous Waste Processing Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00243F",
+      "original": "SFBGS00DDR001Ext03",
+      "label": "Autonomous Waste Processing Plant — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:002428",
+        "editor": "SFBGS00DDR001World",
+        "name": "Autonomous Waste Processing Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:004C38",
+      "original": "SFBGS00DDR002Ext01",
+      "label": "Ship Stop — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:004C35",
+        "editor": "SFBGS00DDR002World",
+        "name": "Ship Stop"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:004C3B",
+      "original": "SFBGS00DDR002Ext02",
+      "label": "Ship Stop — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:004C35",
+        "editor": "SFBGS00DDR002World",
+        "name": "Ship Stop"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:004C3D",
+      "original": "SFBGS00DDR002Ext03",
+      "label": "Ship Stop — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:004C35",
+        "editor": "SFBGS00DDR002World",
+        "name": "Ship Stop"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:004C3C",
+      "original": "SFBGS00DDR002Ext04",
+      "label": "Ship Stop — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:004C35",
+        "editor": "SFBGS00DDR002World",
+        "name": "Ship Stop"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:007298",
+      "original": "SFBGS00DDR004Ext",
+      "label": "Pillaged Colony Outpost — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0049B6",
+        "editor": "SFBGS00DDR004World",
+        "name": "Pillaged Colony Outpost"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:006F69",
+      "original": "SFBGS00DDR007Ext",
+      "label": "Ambush Outpost — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0034AE",
+        "editor": "SFBGS00DDR007World",
+        "name": "Ambush Outpost"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00EF40",
+      "original": "SFBGS00DDR008Ext",
+      "label": "Lost Research Facility — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00EC6B",
+        "editor": "SFBGS00DDR008World",
+        "name": "Lost Research Facility"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:0076E4",
+      "original": "SFBGS00DDR009Ext01",
+      "label": "Galx-E Trailer Communes — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0056F4",
+        "editor": "SFBGS00DDR009World",
+        "name": "Galx-E Trailer Communes"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00A677",
+      "original": "SFBGS00DDR010Ext01",
+      "label": "Big Iron CQB Training Center — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0056F6",
+        "editor": "SFBGS00DDR010World",
+        "name": "Big Iron CQB Training Center"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:0079E6",
+      "original": "SFBGS00DDR011Ext",
+      "label": "Wildlife Viewing Station — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:006216",
+        "editor": "SFBGS00DDR011World",
+        "name": "Wildlife Viewing Station"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00873F",
+      "original": "SFBGS00DDR013Ext",
+      "label": "Defunct Broadcasting Station — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0079E3",
+        "editor": "SFBGS00DDR013World",
+        "name": "Defunct Broadcasting Station"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00E077",
+      "original": "SFBGS00DDR014Ext",
+      "label": "Defunct Shipping Facility — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00D189",
+        "editor": "SFBGS00DDR014World",
+        "name": "Defunct Shipping Facility"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00E076",
+      "original": "SFBGS00DDR014Ext02",
+      "label": "Defunct Shipping Facility — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00D189",
+        "editor": "SFBGS00DDR014World",
+        "name": "Defunct Shipping Facility"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00E074",
+      "original": "SFBGS00DDR014Ext03",
+      "label": "Defunct Shipping Facility — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00D189",
+        "editor": "SFBGS00DDR014World",
+        "name": "Defunct Shipping Facility"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00E075",
+      "original": "SFBGS00DDR014Ext04",
+      "label": "Defunct Shipping Facility — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00D189",
+        "editor": "SFBGS00DDR014World",
+        "name": "Defunct Shipping Facility"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:008754",
+      "original": "SFBGS00DDR015World Ext",
+      "label": "Antiquated Radio Observatory — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00873C",
+        "editor": "SFBGS00DDR015World",
+        "name": "Antiquated Radio Observatory"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:0094D0",
+      "original": "SFBGS00DDR016Ext",
+      "label": "Isolated Maintenance Hangar — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00874F",
+        "editor": "SFBGS00DDR016World",
+        "name": "Isolated Maintenance Hangar"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:0094CE",
+      "original": "SFBGS00DDR016Ext01",
+      "label": "Isolated Maintenance Hangar — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00874F",
+        "editor": "SFBGS00DDR016World",
+        "name": "Isolated Maintenance Hangar"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:0094CF",
+      "original": "SFBGS00DDR016Ext02",
+      "label": "Isolated Maintenance Hangar — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00874F",
+        "editor": "SFBGS00DDR016World",
+        "name": "Isolated Maintenance Hangar"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:0094DC",
+      "original": "SFBGS00DDR016Ext03",
+      "label": "Isolated Maintenance Hangar — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00874F",
+        "editor": "SFBGS00DDR016World",
+        "name": "Isolated Maintenance Hangar"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:007B6A",
+      "original": "SFBGS00DDR017Ext",
+      "label": "Greenhouse Farm — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:007B67",
+        "editor": "SFBGS00DDR017World",
+        "name": "Greenhouse Farm"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:008DD3",
+      "original": "SFBGS00DDR018Ext",
+      "label": "Abandoned Tower — Exterior (0, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:00B8BD",
+        "editor": "SFBGS00DDR018Location",
+        "name": "Abandoned Tower"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:011373",
+      "original": "SFBGS00DPOICL01Ext",
+      "label": "Crashed Food Truck — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:010FB8",
+        "editor": "SFBGS00DPOICL01World",
+        "name": "Crashed Food Truck"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00BF3A",
+      "original": "SFBGS00DPOIGN02Ext",
+      "label": "Scattered Shipwreck — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00BF36",
+        "editor": "SFBGS00DPOIGN02World",
+        "name": "Scattered Shipwreck"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00BF39",
+      "original": "SFBGS00DPOIGN02Ext02",
+      "label": "Scattered Shipwreck — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00BF36",
+        "editor": "SFBGS00DPOIGN02World",
+        "name": "Scattered Shipwreck"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00CBDB",
+      "original": "SFBGS00DPOIGN02Ext03",
+      "label": "Scattered Shipwreck — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00BF36",
+        "editor": "SFBGS00DPOIGN02World",
+        "name": "Scattered Shipwreck"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00CBD5",
+      "original": "SFBGS00DPOIGN02Ext04",
+      "label": "Scattered Shipwreck — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00BF36",
+        "editor": "SFBGS00DPOIGN02World",
+        "name": "Scattered Shipwreck"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:00AA25",
+      "original": "SFBGS00DPOIGN04Ext",
+      "label": "Crashed Ship — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:00AA22",
+        "editor": "SFBGS00DPOIGN04World",
+        "name": "Crashed Ship"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:011662",
+      "original": "SFBGS00DPOIYG01Ext",
+      "label": "Explorer's Refuge — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:01165F",
+        "editor": "SFBGS00DPOIYG01World",
+        "name": "Explorer's Refuge"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:023B66",
+      "original": "SFFLDR021x Ext01",
+      "label": "Decommisionned Missile Silo — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:021197",
+        "editor": "SFFLDR021World",
+        "name": "Decommisionned Missile Silo"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:020482",
+      "original": "SFFLDR022Ext01",
+      "label": "Mineral Farm — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:01FA8E",
+        "editor": "SFFLDR022World",
+        "name": "Mineral Farm"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:025687",
+      "original": "SFFLDR023Ext01",
+      "label": "Meteorite Mine — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:025683",
+        "editor": "SFFLDR023World",
+        "name": "Meteorite Mine"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:025686",
+      "original": "SFFLDR023Ext02",
+      "label": "Meteorite Mine — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:025683",
+        "editor": "SFFLDR023World",
+        "name": "Meteorite Mine"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:03077C",
+      "original": "SFFLDR025Ext01",
+      "label": "Concrete Plant — Exterior (1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0300D5",
+        "editor": "SFFLDR025World",
+        "name": "Concrete Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:03077A",
+      "original": "SFFLDR025Ext02",
+      "label": "Concrete Plant — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0300D5",
+        "editor": "SFFLDR025World",
+        "name": "Concrete Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:030776",
+      "original": "SFFLDR025Ext03",
+      "label": "Concrete Plant — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0300D5",
+        "editor": "SFFLDR025World",
+        "name": "Concrete Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:03077D",
+      "original": "SFFLDR025Ext04",
+      "label": "Concrete Plant — Exterior (1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0300D5",
+        "editor": "SFFLDR025World",
+        "name": "Concrete Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:030774",
+      "original": "SFFLDR025Ext05",
+      "label": "Concrete Plant — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0300D5",
+        "editor": "SFFLDR025World",
+        "name": "Concrete Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:030778",
+      "original": "SFFLDR025Ext06",
+      "label": "Concrete Plant — Exterior (-1, 1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0300D5",
+        "editor": "SFFLDR025World",
+        "name": "Concrete Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:030777",
+      "original": "SFFLDR025Ext07",
+      "label": "Concrete Plant — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0300D5",
+        "editor": "SFFLDR025World",
+        "name": "Concrete Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:03077B",
+      "original": "SFFLDR025Ext08",
+      "label": "Concrete Plant — Exterior (0, 1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0300D5",
+        "editor": "SFFLDR025World",
+        "name": "Concrete Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:03077E",
+      "original": "SFFLDR025Ext09",
+      "label": "Concrete Plant — Exterior (1, 1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0300D5",
+        "editor": "SFFLDR025World",
+        "name": "Concrete Plant"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:05DC00",
+      "original": "SFFLDR026Ext01",
+      "label": "Illicit Surgery Center — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:05DBFE",
+        "editor": "SFFLDR026World",
+        "name": "Illicit Surgery Center"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:04B50D",
+      "original": "SFFLDR027Ship Exterior",
+      "label": "Asteroid Prison Mine — Exterior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:04BDB9",
+        "editor": "SFFLDR027AsteroidMineLocation",
+        "name": "Asteroid Prison Mine"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:04B50B",
+      "original": "SFFLDR027Ship Interior",
+      "label": "Asteroid Prison Mine — Interior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:04BDB9",
+        "editor": "SFFLDR027AsteroidMineLocation",
+        "name": "Asteroid Prison Mine"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:044B2E",
+      "original": "SFFLDR028Ship Exterior",
+      "label": "RedCap Asteroid Mine — Exterior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:04640F",
+        "editor": "SFFLDR028AsteroidMineLocation",
+        "name": "RedCap Asteroid Mine"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:044B2D",
+      "original": "SFFLDR028Ship Interior",
+      "label": "RedCap Asteroid Mine — Interior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:04640F",
+        "editor": "SFFLDR028AsteroidMineLocation",
+        "name": "RedCap Asteroid Mine"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:049D90",
+      "original": "SFFLDR029Interior",
+      "label": "Bodach Asteroid Mine Cavern — Interior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:04AB2E",
+        "editor": "SFFLDR029AsteroidMineInteriorLocation",
+        "name": "Bodach Asteroid Mine Cavern"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:04A289",
+      "original": "SFFLDR029Ship Exterior",
+      "label": "Bodach Asteroid Mine — Exterior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:04AB2F",
+        "editor": "SFFLDR029AsteroidMineLocation",
+        "name": "Bodach Asteroid Mine"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:04A287",
+      "original": "SFFLDR029Ship Interior",
+      "label": "Bodach Asteroid Mine — Interior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:04AB2F",
+        "editor": "SFFLDR029AsteroidMineLocation",
+        "name": "Bodach Asteroid Mine"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:0525DA",
+      "original": "SFFLM03Home Ext01",
+      "label": "Atka's House — Exterior (0, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:0358F5",
+        "editor": "SFFL_MS03AtkaHouseLocation",
+        "name": "Atka's House"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:0525DD",
+      "original": "SFFLM03Home Ext02",
+      "label": "Atka's House — Exterior (-1, 0)",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:0358F5",
+        "editor": "SFFL_MS03AtkaHouseLocation",
+        "name": "Atka's House"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:0525DE",
+      "original": "SFFLM03Home Ext03",
+      "label": "Atka's House — Exterior (-1, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:0358F5",
+        "editor": "SFFL_MS03AtkaHouseLocation",
+        "name": "Atka's House"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:0525DB",
+      "original": "SFFLM03Home Ext04",
+      "label": "Atka's House — Exterior (0, -1)",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:0358F5",
+        "editor": "SFFL_MS03AtkaHouseLocation",
+        "name": "Atka's House"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:021248",
+      "original": "SFFL_MS01 Non-Instanced Refs",
+      "label": "Test Cell — Storage Cell",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs00d.esm:02209C",
+        "editor": "SFFL_MS01_Location_TestCell",
+        "name": "Test Cell"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:0525DF",
+      "original": "SFFLOEAF09Ext",
+      "label": "Old Maintenance Garage — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:0525D4",
+        "editor": "SFFLOEAF09World",
+        "name": "Old Maintenance Garage"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:044616",
+      "original": "SFFLOESM03Ext01",
+      "label": "Industrialized Farm — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:044613",
+        "editor": "SFFLOESM06World",
+        "name": "Industrialized Farm"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:036F6E",
+      "original": "SFFLOESM04Ext01",
+      "label": "Scrap Metal Foundry — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:03625A",
+        "editor": "SFFLOESM04World",
+        "name": "Scrap Metal Foundry"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:036F6B",
+      "original": "SFFLOESM04Ext02",
+      "label": "Scrap Metal Foundry — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:03625A",
+        "editor": "SFFLOESM04World",
+        "name": "Scrap Metal Foundry"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:036F66",
+      "original": "SFFLOESM04Ext03",
+      "label": "Scrap Metal Foundry — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:03625A",
+        "editor": "SFFLOESM04World",
+        "name": "Scrap Metal Foundry"
+      }
+    },
+    {
+      "key": "sfbgs00d.esm:036F6A",
+      "original": "SFFLOESM04Ext04",
+      "label": "Scrap Metal Foundry — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs00d.esm:03625A",
+        "editor": "SFFLOESM04World",
+        "name": "Scrap Metal Foundry"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:01931B",
+      "original": "SFTERAssault Platform Ext01",
+      "label": "Terran Reclaimer — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:00558B",
+        "editor": "SFTERAssaultPlatformWorld01",
+        "name": "Terran Reclaimer"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:038811",
+      "original": "SFTERDR001Ext01",
+      "label": "Santos Homestead — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02BB85",
+        "editor": "SFTERDR001World",
+        "name": "Santos Homestead"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BA0A",
+      "original": "SFTERDrop Pod001Ext",
+      "label": "Drop Pod Landing Site — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B29F",
+        "editor": "SFTERDropPod001World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BA0C",
+      "original": "SFTERDrop Pod001Ext01",
+      "label": "Drop Pod Landing Site — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B29F",
+        "editor": "SFTERDropPod001World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BA0D",
+      "original": "SFTERDrop Pod001Ext02",
+      "label": "Drop Pod Landing Site — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B29F",
+        "editor": "SFTERDropPod001World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BA0B",
+      "original": "SFTERDrop Pod001Ext03",
+      "label": "Drop Pod Landing Site — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B29F",
+        "editor": "SFTERDropPod001World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034636",
+      "original": "SFTERDrop Pod002Ext",
+      "label": "Drop Pod Landing Site — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E8D",
+        "editor": "SFTERDropPod002World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034634",
+      "original": "SFTERDrop Pod002Ext01",
+      "label": "Drop Pod Landing Site — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E8D",
+        "editor": "SFTERDropPod002World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034635",
+      "original": "SFTERDrop Pod002Ext02",
+      "label": "Drop Pod Landing Site — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E8D",
+        "editor": "SFTERDropPod002World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034633",
+      "original": "SFTERDrop Pod002Ext03",
+      "label": "Drop Pod Landing Site — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E8D",
+        "editor": "SFTERDropPod002World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03462E",
+      "original": "SFTERDrop Pod003Ext",
+      "label": "Drop Pod Landing Site — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E8F",
+        "editor": "SFTERDropPod003World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034630",
+      "original": "SFTERDrop Pod003Ext01",
+      "label": "Drop Pod Landing Site — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E8F",
+        "editor": "SFTERDropPod003World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034632",
+      "original": "SFTERDrop Pod003Ext02",
+      "label": "Drop Pod Landing Site — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E8F",
+        "editor": "SFTERDropPod003World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034631",
+      "original": "SFTERDrop Pod003Ext03",
+      "label": "Drop Pod Landing Site — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E8F",
+        "editor": "SFTERDropPod003World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03462A",
+      "original": "SFTERDrop Pod004Ext",
+      "label": "Drop Pod Landing Site — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E91",
+        "editor": "SFTERDropPod004World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03462C",
+      "original": "SFTERDrop Pod004Ext01",
+      "label": "Drop Pod Landing Site — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E91",
+        "editor": "SFTERDropPod004World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03462F",
+      "original": "SFTERDrop Pod004Ext02",
+      "label": "Drop Pod Landing Site — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E91",
+        "editor": "SFTERDropPod004World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03462D",
+      "original": "SFTERDrop Pod004Ext03",
+      "label": "Drop Pod Landing Site — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E91",
+        "editor": "SFTERDropPod004World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034626",
+      "original": "SFTERDrop Pod005Ext",
+      "label": "Drop Pod Landing Site — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E96",
+        "editor": "SFTERDropPod005World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034629",
+      "original": "SFTERDrop Pod005Ext01",
+      "label": "Drop Pod Landing Site — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E96",
+        "editor": "SFTERDropPod005World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03462B",
+      "original": "SFTERDrop Pod005Ext02",
+      "label": "Drop Pod Landing Site — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E96",
+        "editor": "SFTERDropPod005World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034628",
+      "original": "SFTERDrop Pod005Ext03",
+      "label": "Drop Pod Landing Site — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E96",
+        "editor": "SFTERDropPod005World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034622",
+      "original": "SFTERDrop Pod006Ext",
+      "label": "Drop Pod Landing Site — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E98",
+        "editor": "SFTERDropPod006World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034625",
+      "original": "SFTERDrop Pod006Ext01",
+      "label": "Drop Pod Landing Site — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E98",
+        "editor": "SFTERDropPod006World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034627",
+      "original": "SFTERDrop Pod006Ext02",
+      "label": "Drop Pod Landing Site — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E98",
+        "editor": "SFTERDropPod006World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034624",
+      "original": "SFTERDrop Pod006Ext03",
+      "label": "Drop Pod Landing Site — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E98",
+        "editor": "SFTERDropPod006World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03461E",
+      "original": "SFTERDrop Pod007Ext",
+      "label": "Drop Pod Landing Site — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9A",
+        "editor": "SFTERDropPod007World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034620",
+      "original": "SFTERDrop Pod007Ext01",
+      "label": "Drop Pod Landing Site — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9A",
+        "editor": "SFTERDropPod007World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034623",
+      "original": "SFTERDrop Pod007Ext02",
+      "label": "Drop Pod Landing Site — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9A",
+        "editor": "SFTERDropPod007World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034621",
+      "original": "SFTERDrop Pod007Ext03",
+      "label": "Drop Pod Landing Site — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9A",
+        "editor": "SFTERDropPod007World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03461A",
+      "original": "SFTERDrop Pod008Ext",
+      "label": "Drop Pod Landing Site — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9C",
+        "editor": "SFTERDropPod008World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03461C",
+      "original": "SFTERDrop Pod008Ext01",
+      "label": "Drop Pod Landing Site — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9C",
+        "editor": "SFTERDropPod008World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03461F",
+      "original": "SFTERDrop Pod008Ext02",
+      "label": "Drop Pod Landing Site — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9C",
+        "editor": "SFTERDropPod008World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03461D",
+      "original": "SFTERDrop Pod008Ext03",
+      "label": "Drop Pod Landing Site — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9C",
+        "editor": "SFTERDropPod008World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034616",
+      "original": "SFTERDrop Pod009Ext",
+      "label": "Drop Pod Landing Site — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9E",
+        "editor": "SFTERDropPod009World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034618",
+      "original": "SFTERDrop Pod009Ext01",
+      "label": "Drop Pod Landing Site — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9E",
+        "editor": "SFTERDropPod009World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03461B",
+      "original": "SFTERDrop Pod009Ext02",
+      "label": "Drop Pod Landing Site — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9E",
+        "editor": "SFTERDropPod009World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034619",
+      "original": "SFTERDrop Pod009Ext03",
+      "label": "Drop Pod Landing Site — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031E9E",
+        "editor": "SFTERDropPod009World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034613",
+      "original": "SFTERDrop Pod010Ext",
+      "label": "Drop Pod Landing Site — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031EA0",
+        "editor": "SFTERDropPod010World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034614",
+      "original": "SFTERDrop Pod010Ext01",
+      "label": "Drop Pod Landing Site — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031EA0",
+        "editor": "SFTERDropPod010World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034617",
+      "original": "SFTERDrop Pod010Ext02",
+      "label": "Drop Pod Landing Site — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031EA0",
+        "editor": "SFTERDropPod010World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:034615",
+      "original": "SFTERDrop Pod010Ext03",
+      "label": "Drop Pod Landing Site — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:031EA0",
+        "editor": "SFTERDropPod010World",
+        "name": "Drop Pod Landing Site"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:03552D",
+      "original": "SFTERDrop Pod011Ext",
+      "label": "Overrun Colony Outpost — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:035513",
+        "editor": "SFTERDropPod011World",
+        "name": "Overrun Colony Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:0743FA",
+      "original": "SFTERDrop Pod012Ext",
+      "label": "Ransacked Mining Outpost — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:0743DC",
+        "editor": "SFTERDropPod012World",
+        "name": "Ransacked Mining Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:074DB0",
+      "original": "SFTERDrop Pod013Ext",
+      "label": "Captured Biochemical Silo — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:074D95",
+        "editor": "SFTERDropPod013World",
+        "name": "Captured Biochemical Silo"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:075124",
+      "original": "SFTERDrop Pod014Ext",
+      "label": "Overtaken Military Encampment — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:07510A",
+        "editor": "SFTERDropPod014World",
+        "name": "Overtaken Military Encampment"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:00F9F6",
+      "original": "SFTER Robot Alias Cell",
+      "label": "EC Robot Alias Cell — Alias Cell",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs050.esm:01A10E",
+        "editor": "SFTER_EC_RobotAliasCell_Location",
+        "name": "EC Robot Alias Cell"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:01B11B",
+      "original": "SFTERLC001Ship Created Exterior",
+      "label": "Opulence of the Stars — Exterior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs050.esm:0A5513",
+        "editor": "SFTERLC001ShipLocation",
+        "name": "Opulence of the Stars"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:014BB4",
+      "original": "SFTERLC002Asteroid Mine Interior",
+      "label": "Machina Forge Prime Cavern — Interior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs050.esm:031F1F",
+        "editor": "SFTERLC002AsteroidMineInteriorLocation",
+        "name": "Machina Forge Prime Cavern"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:014BB2",
+      "original": "SFTERLC002Asteroid Mine Ship Exterior",
+      "label": "Machina Forge Prime — Exterior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs050.esm:00B842",
+        "editor": "SFTERLC002AsteroidMineLocation",
+        "name": "Machina Forge Prime"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:014BB3",
+      "original": "SFTERLC002Asteroid Mine Ship Interior",
+      "label": "Machina Forge Prime — Interior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs050.esm:00B842",
+        "editor": "SFTERLC002AsteroidMineLocation",
+        "name": "Machina Forge Prime"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:005B51",
+      "original": "SFTERLC03Unifier Ship Interior",
+      "label": "Unifier — Interior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs050.esm:01925B",
+        "editor": "SFTERLC03UnifierShipCellLocation",
+        "name": "Unifier"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:0AD144",
+      "original": "SFTERMS02Relay Node Ship Exterior",
+      "label": "Terran Relay Station — Exterior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs050.esm:07E74B",
+        "editor": "SFTER_MS02_RelayStationLocation",
+        "name": "Terran Relay Station"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:0AD143",
+      "original": "SFTERMS02Relay Node Ship Interior",
+      "label": "Terran Relay Station — Interior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs050.esm:07E74B",
+        "editor": "SFTER_MS02_RelayStationLocation",
+        "name": "Terran Relay Station"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BBA9",
+      "original": "SFTEROESD05ext01",
+      "label": "Scrapyard — Exterior (1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02BA34",
+        "editor": "SFTEROESD05World",
+        "name": "Scrapyard"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BBAC",
+      "original": "SFTEROESD05ext02",
+      "label": "Scrapyard — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02BA34",
+        "editor": "SFTEROESD05World",
+        "name": "Scrapyard"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BBB0",
+      "original": "SFTEROESD05ext03",
+      "label": "Scrapyard — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02BA34",
+        "editor": "SFTEROESD05World",
+        "name": "Scrapyard"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BBAF",
+      "original": "SFTEROESD05ext04",
+      "label": "Scrapyard — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02BA34",
+        "editor": "SFTEROESD05World",
+        "name": "Scrapyard"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BBB1",
+      "original": "SFTEROESD05ext05",
+      "label": "Scrapyard — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02BA34",
+        "editor": "SFTEROESD05World",
+        "name": "Scrapyard"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BBA8",
+      "original": "SFTEROESD05ext06",
+      "label": "Scrapyard — Exterior (1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02BA34",
+        "editor": "SFTEROESD05World",
+        "name": "Scrapyard"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BBA7",
+      "original": "SFTEROESD05ext07",
+      "label": "Scrapyard — Exterior (1, 1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02BA34",
+        "editor": "SFTEROESD05World",
+        "name": "Scrapyard"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BBAB",
+      "original": "SFTEROESD05ext08",
+      "label": "Scrapyard — Exterior (0, 1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02BA34",
+        "editor": "SFTEROESD05World",
+        "name": "Scrapyard"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02BBAE",
+      "original": "SFTEROESD05ext09",
+      "label": "Scrapyard — Exterior (-1, 1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02BA34",
+        "editor": "SFTEROESD05World",
+        "name": "Scrapyard"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B00E",
+      "original": "SFTEROutpost FCExt01",
+      "label": "Freestar Collective Outpost — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B007",
+        "editor": "SFTEROutpostFCWorld",
+        "name": "Freestar Collective Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B00B",
+      "original": "SFTEROutpost FCExt02",
+      "label": "Freestar Collective Outpost — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B007",
+        "editor": "SFTEROutpostFCWorld",
+        "name": "Freestar Collective Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B010",
+      "original": "SFTEROutpost FCExt03",
+      "label": "Freestar Collective Outpost — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B007",
+        "editor": "SFTEROutpostFCWorld",
+        "name": "Freestar Collective Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B00A",
+      "original": "SFTEROutpost FCExt04",
+      "label": "Freestar Collective Outpost — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B007",
+        "editor": "SFTEROutpostFCWorld",
+        "name": "Freestar Collective Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B03E",
+      "original": "SFTEROutpost R1Ext01",
+      "label": "Ryujin Industries Outpost — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B032",
+        "editor": "SFTEROutpostRIWorld",
+        "name": "Ryujin Industries Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B03F",
+      "original": "SFTEROutpost RIExt02",
+      "label": "Ryujin Industries Outpost — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B032",
+        "editor": "SFTEROutpostRIWorld",
+        "name": "Ryujin Industries Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B036",
+      "original": "SFTEROutpost RIExt03",
+      "label": "Ryujin Industries Outpost — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B032",
+        "editor": "SFTEROutpostRIWorld",
+        "name": "Ryujin Industries Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B037",
+      "original": "SFTEROutpost RIExt04",
+      "label": "Ryujin Industries Outpost — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B032",
+        "editor": "SFTEROutpostRIWorld",
+        "name": "Ryujin Industries Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B079",
+      "original": "SFTEROutpost UCExt01",
+      "label": "United Colonies Outpost — Exterior (-1, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B062",
+        "editor": "SFTEROutpostUCWorld",
+        "name": "United Colonies Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B078",
+      "original": "SFTEROutpost UCExt02",
+      "label": "United Colonies Outpost — Exterior (-1, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B062",
+        "editor": "SFTEROutpostUCWorld",
+        "name": "United Colonies Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B07B",
+      "original": "SFTEROutpost UCExt03",
+      "label": "United Colonies Outpost — Exterior (0, 0)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B062",
+        "editor": "SFTEROutpostUCWorld",
+        "name": "United Colonies Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B074",
+      "original": "SFTEROutpost UCExt04",
+      "label": "United Colonies Outpost — Exterior (0, -1)",
+      "basis": "Worldspace",
+      "source": {
+        "key": "sfbgs050.esm:02B062",
+        "editor": "SFTEROutpostUCWorld",
+        "name": "United Colonies Outpost"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B45C",
+      "original": "SFTERRelay Node Ship Exterior",
+      "label": "Terran Repeater — Exterior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs050.esm:02B45D",
+        "editor": "SFTERRelayStationLocation",
+        "name": "Terran Repeater"
+      }
+    },
+    {
+      "key": "sfbgs050.esm:02B45B",
+      "original": "SFTERRelay Node Ship Interior",
+      "label": "Terran Repeater — Interior",
+      "basis": "Linked location",
+      "source": {
+        "key": "sfbgs050.esm:02B45D",
+        "editor": "SFTERRelayStationLocation",
+        "name": "Terran Repeater"
+      }
+    }
+  ],
+  "unresolved": [
+    {
+      "key": "shatteredspace.esm:05D10D",
+      "original": "SFBGS001Dazra OE21Ext"
+    },
+    {
+      "key": "shatteredspace.esm:04C280",
+      "original": "SFBGS001LC54Ext05"
+    },
+    {
+      "key": "shatteredspace.esm:03AB72",
+      "original": "SFBGS001s CAttack12"
+    },
+    {
+      "key": "shatteredspace.esm:03ABBC",
+      "original": "SFBGS001s CAttack13"
+    },
+    {
+      "key": "sfbgs00d.esm:008EC2",
+      "original": "SFBGS00DDR005Ext01"
+    },
+    {
+      "key": "sfbgs00d.esm:003A32",
+      "original": "SFBGS00DDR006Ext"
+    },
+    {
+      "key": "sfbgs00d.esm:003A36",
+      "original": "SFBGS00DDR006Ext2"
+    },
+    {
+      "key": "sfbgs00d.esm:003A34",
+      "original": "SFBGS00DDR006Ext3"
+    },
+    {
+      "key": "sfbgs00d.esm:003A33",
+      "original": "SFBGS00DDR006Ext4"
+    },
+    {
+      "key": "sfbgs00d.esm:02489D",
+      "original": "SFFLAnchorpoint Station Exterior"
+    },
+    {
+      "key": "sfbgs00d.esm:0248A4",
+      "original": "SFFLAnchorpoint Station Interior"
+    },
+    {
+      "key": "sfbgs00d.esm:080D37",
+      "original": "SFFLBERS03Cargo CGeneric Renegade03Template Created Exterior"
+    },
+    {
+      "key": "sfbgs00d.esm:080D35",
+      "original": "SFFLBERS03Cargo CGeneric Renegade03Template Created Interior"
+    },
+    {
+      "key": "sfbgs00d.esm:05042D",
+      "original": "SFFLMS02Ship Created Exterior"
+    },
+    {
+      "key": "sfbgs00d.esm:05042B",
+      "original": "SFFLMS02Ship Created Interior"
+    },
+    {
+      "key": "sfbgs00d.esm:046428",
+      "original": "SFFLOEAR07Ext"
+    },
+    {
+      "key": "sfbgs00d.esm:02B9D1",
+      "original": "SFFLOETH01Ext01"
+    },
+    {
+      "key": "sfbgs00d.esm:02B9D0",
+      "original": "SFFLOETH01Ext02"
+    },
+    {
+      "key": "sfbgs00d.esm:02B9D2",
+      "original": "SFFLOETH01Ext03"
+    },
+    {
+      "key": "sfbgs00d.esm:02B9D3",
+      "original": "SFFLOETH01Ext04"
+    },
+    {
+      "key": "sfbgs00d.esm:02A3BC",
+      "original": "SFFLOETH02Ext01"
+    },
+    {
+      "key": "sfbgs00d.esm:02A3BD",
+      "original": "SFFLOETH02Ext02"
+    },
+    {
+      "key": "sfbgs00d.esm:02A3C0",
+      "original": "SFFLOETH02Ext03"
+    },
+    {
+      "key": "sfbgs00d.esm:02A3BE",
+      "original": "SFFLOETH02Ext04"
+    },
+    {
+      "key": "sfbgs00d.esm:03D1C8",
+      "original": "SFFLs CR03"
+    },
+    {
+      "key": "sfbgs00d.esm:047DCF",
+      "original": "SFFLSE01Created Exterior"
+    },
+    {
+      "key": "sfbgs00d.esm:046856",
+      "original": "SFFLSE01Interior"
+    },
+    {
+      "key": "sfbgs00d.esm:040D8D",
+      "original": "SFFLSEEC01Cargo Ship Created Exterior"
+    },
+    {
+      "key": "sfbgs00d.esm:040D8E",
+      "original": "SFFLSEEC01Cargo Ship Created Interior"
+    },
+    {
+      "key": "sfbgs00d.esm:072FC3",
+      "original": "SFFLSEEC02Celestial01Created Exterior"
+    },
+    {
+      "key": "sfbgs00d.esm:072FC4",
+      "original": "SFFLSEEC02Celestial01Created Interior"
+    },
+    {
+      "key": "sfbgs00d.esm:04F924",
+      "original": "SFFLSEEC03Cargo AGeneric MULE01Created Exterior"
+    },
+    {
+      "key": "sfbgs00d.esm:04F8FB",
+      "original": "SFFLSEEC03Cargo AGeneric MULE01Created Interior"
+    },
+    {
+      "key": "sfbgs00d.esm:068043",
+      "original": "SFFLSEEC07Gal Bank Stormrider01Created Exterior"
+    },
+    {
+      "key": "sfbgs00d.esm:06800A",
+      "original": "SFFLSEEC07Gal Bank Stormrider01Created Interior"
+    },
+    {
+      "key": "sfbgs050.esm:043C48",
+      "original": "SFTERAssault Platform001Created Exterior Space"
+    },
+    {
+      "key": "sfbgs050.esm:073D30",
+      "original": "SFTERAssault Ship Destroyed002Created Exterior"
+    },
+    {
+      "key": "sfbgs050.esm:01AB8D",
+      "original": "SFTERAssault Ship001Created Exterior"
+    },
+    {
+      "key": "sfbgs050.esm:0AB27A",
+      "original": "SFTERAssault Ship001Destroyed Created Exterior"
+    },
+    {
+      "key": "sfbgs050.esm:0AB27B",
+      "original": "SFTERAssault Ship001Destroyed Created Interior"
+    },
+    {
+      "key": "sfbgs050.esm:01AB8F",
+      "original": "SFTERAssault Ship001Ship Interior"
+    },
+    {
+      "key": "sfbgs050.esm:01AB8C",
+      "original": "SFTERAssault Ship002Created Exterior"
+    },
+    {
+      "key": "sfbgs050.esm:01AB8E",
+      "original": "SFTERAssault Ship002Ship Interior"
+    },
+    {
+      "key": "sfbgs050.esm:0AF093",
+      "original": "SFTERLC001ssc Empty Cell"
+    },
+    {
+      "key": "sfbgs050.esm:0A0656",
+      "original": "SFTERLC03Unifier Ship Created Exterior"
+    },
+    {
+      "key": "sfbgs050.esm:0A38DA",
+      "original": "SFTERMQ03Lvl Ship Shield Amplifier Created Exterior"
+    },
+    {
+      "key": "sfbgs050.esm:0A38D9",
+      "original": "SFTERMQ03Lvl Ship Shield Amplifier Created Interior"
+    },
+    {
+      "key": "sfbgs050.esm:0ABD65",
+      "original": "SFTERMQ03Lvl Ship Shield Amplifier Destroyed Created Exterior"
+    },
+    {
+      "key": "sfbgs050.esm:0ABD66",
+      "original": "SFTERMQ03Lvl Ship Shield Amplifier Destroyed Created Interior"
+    },
+    {
+      "key": "shatteredspace.esm:0EDF49",
+      "original": "SFBGS001OE01Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:0EDF4C",
+      "original": "SFBGS001OE01Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:0EDF4B",
+      "original": "SFBGS001OE01Ext03"
+    },
+    {
+      "key": "shatteredspace.esm:0EDF4D",
+      "original": "SFBGS001OE01Ext04"
+    },
+    {
+      "key": "shatteredspace.esm:0F566C",
+      "original": "SFBGS001OE02Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:0F7161",
+      "original": "SFBGS001OE03Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:0F715F",
+      "original": "SFBGS001OE03Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:0F7160",
+      "original": "SFBGS001OE03Ext03"
+    },
+    {
+      "key": "shatteredspace.esm:0F7163",
+      "original": "SFBGS001OE03Ext04"
+    },
+    {
+      "key": "shatteredspace.esm:1116C1",
+      "original": "SFBGS001OE04Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:1116F9",
+      "original": "SFBGS001OE04Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:1116FC",
+      "original": "SFBGS001OE04Ext03"
+    },
+    {
+      "key": "shatteredspace.esm:1116FA",
+      "original": "SFBGS001OE04Ext04"
+    },
+    {
+      "key": "shatteredspace.esm:0E03A2",
+      "original": "SFBGS001OE05"
+    },
+    {
+      "key": "shatteredspace.esm:0F4148",
+      "original": "SFBGS001OE06Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:0F4145",
+      "original": "SFBGS001OE06Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:0F4144",
+      "original": "SFBGS001OE06Ext03"
+    },
+    {
+      "key": "shatteredspace.esm:0F4147",
+      "original": "SFBGS001OE06Ext04"
+    },
+    {
+      "key": "shatteredspace.esm:106FB8",
+      "original": "SFBGS001OE08Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:106FBB",
+      "original": "SFBGS001OE08Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:106FBA",
+      "original": "SFBGS001OE08Ext03"
+    },
+    {
+      "key": "shatteredspace.esm:106FB9",
+      "original": "SFBGS001OE08Ext04"
+    },
+    {
+      "key": "shatteredspace.esm:0CB674",
+      "original": "SFBGS001OE09"
+    },
+    {
+      "key": "shatteredspace.esm:0E8151",
+      "original": "SFBGS001OE10Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:0E3D87",
+      "original": "SFBGS001OE10Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:0EC3F6",
+      "original": "SFBGS001OE11Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:0F0129",
+      "original": "SFBGS001OE12Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:10B19D",
+      "original": "SFBGS001OE13Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:10B19B",
+      "original": "SFBGS001OE13Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:10B19E",
+      "original": "SFBGS001OE13Ext03"
+    },
+    {
+      "key": "shatteredspace.esm:10B19C",
+      "original": "SFBGS001OE13Ext04"
+    },
+    {
+      "key": "shatteredspace.esm:0EECE2",
+      "original": "SFBGS001OE14Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:0EECE1",
+      "original": "SFBGS001OE14Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:0EECE0",
+      "original": "SFBGS001OE14Ext03"
+    },
+    {
+      "key": "shatteredspace.esm:0F6F73",
+      "original": "SFBGS001OE15Ext03"
+    },
+    {
+      "key": "shatteredspace.esm:1081EF",
+      "original": "SFBGS001OE16Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:1081F1",
+      "original": "SFBGS001OE16Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:1081F0",
+      "original": "SFBGS001OE16Ext03"
+    },
+    {
+      "key": "shatteredspace.esm:1081EE",
+      "original": "SFBGS001OE16Ext04"
+    },
+    {
+      "key": "shatteredspace.esm:0F57A9",
+      "original": "SFBGS001OE17Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:0F9C58",
+      "original": "SFBGS001OE18Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:0F9C5D",
+      "original": "SFBGS001OE18Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:0F9C59",
+      "original": "SFBGS001OE18Ext03"
+    },
+    {
+      "key": "shatteredspace.esm:109AD4",
+      "original": "SFBGS001OE20Ext01"
+    },
+    {
+      "key": "shatteredspace.esm:109AD7",
+      "original": "SFBGS001OE20Ext02"
+    },
+    {
+      "key": "shatteredspace.esm:109AD5",
+      "original": "SFBGS001OE20Ext03"
+    },
+    {
+      "key": "shatteredspace.esm:109AD9",
+      "original": "SFBGS001OE20Ext04"
+    },
+    {
+      "key": "sfbgs00d.esm:00D26C",
+      "original": "SFBGS00DPOIGN01Ext"
+    },
+    {
+      "key": "sfbgs00d.esm:00D26B",
+      "original": "SFBGS00DPOIGN01Ext02"
+    },
+    {
+      "key": "sfbgs00d.esm:0373C3",
+      "original": "SFFLDR024ext01"
+    },
+    {
+      "key": "sfbgs00d.esm:05CCD1",
+      "original": "SFFLPOIYGTESTWorld"
+    }
+  ]
+}

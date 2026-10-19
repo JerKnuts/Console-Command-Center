@@ -95,7 +95,8 @@ async function readEnglishLocalization(ba2Path) {
     // table. DLSTRINGS and ILSTRINGS reuse numeric keys for dialogue and
     // interface text, so merging them can replace an item's name with an
     // unrelated subtitle.
-    for (const record of records.filter((entry) => /(?:^|\/)[^/]+_en\.strings$/i.test(entry.name))) {
+    const expectedTable = basename(esmPath).replace(/\.esm$/i, '').toLowerCase() + '_en.strings';
+    for (const record of records.filter((entry) => entry.name.toLowerCase().split('/').pop() === expectedTable)) {
       const stored = Buffer.alloc(record.packedSize || record.unpackedSize);
       await archive.read(stored, 0, stored.length, record.dataOffset);
       const parsed = parseStringsFile(record.packedSize ? inflateSync(stored) : stored, !record.name.toLowerCase().endsWith('.strings'));
@@ -165,7 +166,7 @@ try {
   await file.close();
 }
 
-const result = { esm: esmPath, recordCount: records.length, records };
+const result = { esm: esmPath, localizationPlugin: localizedStrings.size ? basename(esmPath) : null, recordCount: records.length, records };
 if (outputPath) {
   await writeFile(outputPath, JSON.stringify(result), 'utf8');
   console.log(JSON.stringify({ output: outputPath, esm: esmPath, recordCount: records.length }));

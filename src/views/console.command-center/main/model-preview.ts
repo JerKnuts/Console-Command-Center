@@ -9,9 +9,10 @@ export function canPreviewModel(entry: RecordForPreview, advanced: boolean): boo
 export function defaultPreviewMannequin(type:string,label:string,category=''):boolean {
  return false;
 }
-export async function fetchPreview(request: RequestPreview, formId: string, current: () => boolean, mannequin = false, quality: 'low'|'medium'|'high' = 'high', sex: 'male'|'female' = 'female', geometryOnly=false): Promise<ArrayBuffer> {
+export async function fetchPreview(request: RequestPreview, formId: string, current: () => boolean, mannequin = false, quality: 'low'|'medium'|'high'|'ultra' = 'high', sex: 'male'|'female' = 'female', geometryOnly=false): Promise<ArrayBuffer> {
+  const transferLimit=(quality==='ultra'?256:64)*1024*1024;
   const reply = await request('console.command-center.previewModel', { formId, mannequin: mannequin ? 1 : 0, quality, sex, stage:geometryOnly?'geometry':'complete' }) as { ok?: boolean; ticket?: string; bytes?: number; compression?: string; decodedBytes?: number };
-  if (!reply?.ok || typeof reply.ticket !== 'string' || !Number.isInteger(reply.bytes) || reply.bytes! < 12 || reply.bytes! > 64 * 1024 * 1024) throw new Error('The native plugin returned an invalid model response.');
+  if (!reply?.ok || typeof reply.ticket !== 'string' || !Number.isInteger(reply.bytes) || reply.bytes! < 12 || reply.bytes! > transferLimit) throw new Error('The native plugin returned an invalid model response.');
   const ticket=reply.ticket;
   const data = new Uint8Array(reply.bytes!);
   const range=async(start:number,end:number)=>{for(let offset=start;offset<end;){
@@ -24,13 +25,13 @@ export async function fetchPreview(request: RequestPreview, formId: string, curr
   for(let start=0;start<data.length;start+=2*32768){const results=await Promise.allSettled(Array.from({length:Math.min(2,Math.ceil((data.length-start)/32768))},(_,i)=>range(start+i*32768,Math.min(data.length,start+(i+1)*32768))));const failure=results.find(result=>result.status==='rejected');if(failure?.status==='rejected')throw failure.reason;await new Promise(resolve=>setTimeout(resolve,0));}
 
   if(reply.compression){
-    if(reply.compression!=='deflate'||!Number.isInteger(reply.decodedBytes)||reply.decodedBytes!<12||reply.decodedBytes!>64*1024*1024)throw new Error('Invalid compressed model response.');
+    if(reply.compression!=='deflate'||!Number.isInteger(reply.decodedBytes)||reply.decodedBytes!<12||reply.decodedBytes!>transferLimit)throw new Error('Invalid compressed model response.');
     const decoded=new Uint8Array(reply.decodedBytes!);const reader=new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate')).getReader();let offset=0;
     try{while(true){if(!current())throw new Error('Preview closed.');const part=await reader.read();if(part.done)break;if(offset+part.value.length>decoded.length)throw new Error('Model decompression size mismatch.');decoded.set(part.value,offset);offset+=part.value.length;}if(offset!==decoded.length)throw new Error('Model decompression size mismatch.');return decoded.buffer;}finally{await reader.cancel();}
   }
   return data.buffer;
 }
-export function installModelPreview(request: RequestPreview, options?: { quality: () => 'low'|'medium'|'high'; setQuality?: (quality:'low'|'medium'|'high') => void }): void {
+export function installModelPreview(request: RequestPreview, options?: { quality: () => 'low'|'medium'|'high'|'ultra'; setQuality?: (quality:'low'|'medium'|'high'|'ultra') => void }): void {
   const renderers=new Set<ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']>>();
   const track=(renderer:ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']>)=>{renderers.add(renderer);renderer.showMissingTextures(isDevModeEnabled());const dispose=renderer.dispose;renderer.dispose=()=>{renderers.delete(renderer);dispose();};return renderer;};
   document.addEventListener('ccc-dev-mode-change',()=>{for(const renderer of renderers)renderer.showMissingTextures(isDevModeEnabled());});
@@ -63,7 +64,7 @@ export function installModelPreview(request: RequestPreview, options?: { quality
     let renderer: ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']> | undefined;
     const qualityLabel=document.createElement('label');qualityLabel.className='model-preview-quality';qualityLabel.textContent='Quality ';
     const qualitySelect=document.createElement('select');qualitySelect.className='osf-input';qualitySelect.setAttribute('aria-label','3D preview quality');
-    for(const value of ['low','medium','high']){const option=document.createElement('option');option.value=value;option.textContent=value[0].toUpperCase()+value.slice(1);qualitySelect.append(option);}qualitySelect.value=options?.quality()??'high';qualityLabel.append(qualitySelect);controls.append(qualityLabel);
+    for(const value of ['low','medium','high','ultra']){const option=document.createElement('option');option.value=value;option.textContent=value[0].toUpperCase()+value.slice(1);qualitySelect.append(option);}qualitySelect.value=options?.quality()??'high';qualityLabel.append(qualitySelect);controls.append(qualityLabel);
     let lightMode=false,texturesEnabled=true;
     const textureButton=document.createElement('button');textureButton.type='button';textureButton.className='osf-btn osf-btn--sm';textureButton.textContent='Textures: On';textureButton.setAttribute('aria-pressed','true');controls.append(textureButton);
     textureButton.addEventListener('click',()=>{texturesEnabled=!texturesEnabled;textureButton.textContent=`Textures: ${texturesEnabled?'On':'Off'}`;textureButton.setAttribute('aria-pressed',String(texturesEnabled));renderer?.showTextures(texturesEnabled);});
@@ -127,23 +128,30 @@ export function installModelPreview(request: RequestPreview, options?: { quality
     canvas.addEventListener('dblclick', () => {renderer?.reset();updateLightMarker();});
     canvas.addEventListener('keydown', e => { const key = e.key; if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '-', '0'].includes(key)) { e.preventDefault(); e.stopPropagation(); if (key === '0') renderer?.reset();else if(lightMode&&key.startsWith('Arrow'))renderer?.moveLight(key==='ArrowLeft'?-12:key==='ArrowRight'?12:0,key==='ArrowUp'?-12:key==='ArrowDown'?12:0); else if(e.shiftKey && key.startsWith('Arrow'))renderer?.pan(key==='ArrowLeft'?-20:key==='ArrowRight'?20:0,key==='ArrowUp'?-20:key==='ArrowDown'?20:0); else renderer?.move(key === 'ArrowLeft' ? -.15 : key === 'ArrowRight' ? .15 : 0, key === 'ArrowUp' ? -.12 : key === 'ArrowDown' ? .12 : 0, key === '+' ? 1.15 : key === '-' ? 1 / 1.15 : 1);updateLightMarker(); } });
     dialog.showModal(); dialog.focus();watchTriggers();controllerFrame=requestAnimationFrame(animateController);
-    let loadSequence=0,renderedKey='';
+    let loadSequence=0,renderedKey='',geometryStage=false;
     const load = async () => {const sequence=++loadSequence,current=()=>dialog.isConnected&&dialog.open&&sequence===loadSequence; try {
       loading.hidden=false;stage.setAttribute('aria-busy','true');const previousView=renderer?.getView();status.textContent=renderer?'Updating preview quality…':'Loading the installed item model…';
       controls.querySelectorAll('button').forEach(button => { button.disabled = !renderer; });
       lighting.querySelectorAll<HTMLInputElement|HTMLButtonElement>('button,input').forEach(control=>{control.disabled=!renderer;});
       mannequinButton.textContent = `Mannequin: ${mannequin ? 'On' : 'Off'}`; mannequinButton.setAttribute('aria-pressed', String(mannequin));
       sexButton.textContent = `Body: ${sex === 'male' ? 'Male' : 'Female'}`;
-      const quality=qualitySelect.value as 'low'|'medium'|'high';
+      const quality=qualitySelect.value as 'low'|'medium'|'high'|'ultra';
       lighting.hidden=false;if(lighting.hidden){lightMode=false;moveLight.setAttribute('aria-pressed','false');moveLight.classList.remove('osf-btn--osf-accent');}renderer?.setQuality(quality);updateLightMarker();setControllerHint();
       const geometryKey=`${id}:${mannequin}:${sex}`,cacheKey=`${id}:${mannequin}:${quality}:${sex}`,lowKey=`${id}:${mannequin}:low:${sex}`;
       const selectedMannequin=mannequin,selectedSex=sex;
       const { decodePreview, createPreviewRenderer } = await import('./preview-renderer');if(!current())return;
-      const paint=(buffer:ArrayBuffer,packetQuality:typeof quality)=>{const meshes=decodePreview(buffer,packetQuality);canvas.hidden=false;
-        if(!renderer||renderedKey!==geometryKey||!renderer.updateMaterials(meshes)){const view=renderer?.getView()??previousView;renderer?.dispose();renderer=track(createPreviewRenderer(canvas,meshes,quality));if(view)renderer.restoreView(view);}
-        renderedKey=geometryKey;renderer.setQuality(quality);renderer.showTextures(texturesEnabled);updateLightMarker();controls.querySelectorAll('button').forEach(button=>{button.disabled=false;});lighting.querySelectorAll<HTMLInputElement|HTMLButtonElement>('button,input').forEach(control=>{control.disabled=false;});return meshes;};
+      const paint=(buffer:ArrayBuffer,packetQuality:typeof quality,geometryOnly=false)=>{geometryStage=geometryOnly;const meshes=decodePreview(buffer,packetQuality);canvas.hidden=false;
+        if(!renderer||renderedKey!==geometryKey||!renderer.updateMaterials(meshes)){const view=renderer?.getView()??previousView;renderer?.dispose();renderer=track(createPreviewRenderer(canvas,meshes,geometryOnly?'low':quality));if(view)renderer.restoreView(view);}
+        renderedKey=geometryKey;renderer.showMissingTextures(!geometryOnly&&isDevModeEnabled());renderer.setQuality(geometryOnly?'low':quality);renderer.showTextures(texturesEnabled);updateLightMarker();controls.querySelectorAll('button').forEach(button=>{button.disabled=false;});lighting.querySelectorAll<HTMLInputElement|HTMLButtonElement>('button,input').forEach(control=>{control.disabled=false;});return meshes;};
       let buffer=fullCache.get(cacheKey);
-      if(!buffer&&quality!=='low'&&(!renderer||renderedKey!==geometryKey)){
+      if(!buffer&&(!renderer||renderedKey!==geometryKey)){
+        const geometryCacheKey=`${id}:${mannequin}:geometry:${sex}`;
+        const geometry=fullCache.get(geometryCacheKey)??await queuedPreview(id,current,selectedMannequin,'low',selectedSex,true);if(!current())return;
+        paint(geometry,'low',true);remember(geometryCacheKey,geometry);
+        status.textContent='Model ready • Loading textures… You can move and zoom now.';
+        await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));if(!current())return;
+      }
+      if(!buffer&&quality!=='low'&&geometryStage){
         const low=fullCache.get(lowKey)??(!selectedMannequin&&selectedSex==='male'?inlineCache.get(`${id}:male`):undefined)??await queuedPreview(id,current,selectedMannequin,'low',selectedSex);if(!current())return;
         const lowMeshes=paint(low,'low');remember(lowKey,low);if(low.byteLength<=16*1024*1024){while(inlineCache.size>=2)inlineCache.delete(inlineCache.keys().next().value!);if(!selectedMannequin&&selectedSex==='male')inlineCache.set(`${id}:male`,low);}
         status.textContent='Low textures ready • Loading sharper textures… You can move and zoom now.'+(lowMeshes.some(mesh=>mesh.incompleteMaterial)?' • Some material layers are unavailable.':'');
@@ -157,7 +165,7 @@ export function installModelPreview(request: RequestPreview, options?: { quality
       const incomplete=meshes.filter(mesh=>mesh.incompleteMaterial&&!mesh.mannequin).length;
       status.textContent = `Left: move • Hold wheel: orbit • Right up/down: zoom • Scroll: zoom • ${textured} textured ${textured === 1 ? 'piece' : 'pieces'}${incomplete ? ' • Some material layers are unavailable.' : ''}${mannequin && !meshes.some(mesh => mesh.mannequin) ? ' • Mannequin unavailable' : ''}`; controls.querySelectorAll('button').forEach(button => { button.disabled = false; });
     } catch (error) { if (current()) { canvas.hidden = !renderer; controls.querySelectorAll('button').forEach(button=>{button.disabled=false;});lighting.querySelectorAll<HTMLInputElement|HTMLButtonElement>('button,input').forEach(control=>{control.disabled=!renderer;});const message=error instanceof Error ? error.message : 'This item cannot be previewed yet.';status.textContent=renderer?'Preview retained • Texture upgrade unavailable: '+message:message; } } finally{if(current()){loading.hidden=true;stage.setAttribute('aria-busy','false');}} };
-    qualitySelect.addEventListener('change',()=>{const quality=qualitySelect.value as 'low'|'medium'|'high';options?.setQuality?.(quality);void load();});
+    qualitySelect.addEventListener('change',()=>{const quality=qualitySelect.value as 'low'|'medium'|'high'|'ultra';options?.setQuality?.(quality);void load();});
     mannequinButton.addEventListener('click', () => { mannequin = !mannequin; void load(); });
     sexButton.addEventListener('click', () => { sex = sex === 'female' ? 'male' : 'female'; void load(); });
     await load();
@@ -179,13 +187,23 @@ export function installModelPreview(request: RequestPreview, options?: { quality
       status.textContent = 'Loading preview…';inlineLoading.hidden=false;
       try {
         const id = host.dataset.inlinePreview!, key = `${id}:male`;
-        const buffer = inlineCache.get(key) ?? await queuedPreview(id, current, armor, 'low', 'male');
-        if (!current()) return;
+        const { decodePreview, createPreviewRenderer } = await import('./preview-renderer');if(!current())return;
+        let buffer=inlineCache.get(key);
+        if(!buffer){
+          const geometryKey=`${id}:${armor}:geometry:male`;
+          const geometry=fullCache.get(geometryKey)??await queuedPreview(id,current,armor,'low','male',true);if(!current())return;
+          remember(geometryKey,geometry);canvas.hidden=false;renderer=track(createPreviewRenderer(canvas,decodePreview(geometry,'low'),'low'));renderer.showMissingTextures(false);
+          status.textContent='Model ready • Loading textures…';
+          await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));if(!current())return;
+          buffer=await queuedPreview(id,current,armor,'low','male');
+        }
+        if(!current())return;
         if (!inlineCache.has(key)) { while (inlineCache.size >= 2) inlineCache.delete(inlineCache.keys().next().value!); if (buffer.byteLength <= 16*1024*1024) inlineCache.set(key, buffer); }
-        const { decodePreview, createPreviewRenderer } = await import('./preview-renderer'); if (!current()) return;
-        canvas.hidden = false; renderer = track(createPreviewRenderer(canvas, decodePreview(buffer, 'low'), 'low'));
+        const meshes=decodePreview(buffer,'low');
+        if(!renderer||!renderer.updateMaterials(meshes)){const view=renderer?.getView();renderer?.dispose();renderer=track(createPreviewRenderer(canvas,meshes,'low'));if(view)renderer.restoreView(view);}
+        renderer.showMissingTextures(isDevModeEnabled());canvas.hidden=false;
         status.textContent = 'Drag to rotate • Scroll to zoom';
-      } catch { if (current()) status.textContent = 'Preview unavailable. Try 3D Viewer.'; }finally{if(current())inlineLoading.hidden=true;}
+      } catch { if (current()) status.textContent = renderer?'Model ready • Textures unavailable. Try 3D Viewer.':'Preview unavailable. Try 3D Viewer.'; }finally{if(current())inlineLoading.hidden=true;}
     };
     let pointer: number | null = null, x = 0, y = 0;
     canvas.addEventListener('pointerdown', e => { if (e.button !== 0) return; e.preventDefault(); pointer = e.pointerId; x = e.clientX; y = e.clientY; canvas.setPointerCapture(e.pointerId); canvas.focus({preventScroll:true}); });

@@ -1,0 +1,9 @@
+# Scanner Visibility RESET
+# Restores hand-scanner base range to 50 and scan range to 10.
+# These are base-game values, not a backup of settings from installed mods.
+
+# Scanner base range - engine reference 50
+setgs fHandScannerBaseRange 50
+
+# Scanning range - Starfield.esm 10
+setgs fHandScannerScanRange 10

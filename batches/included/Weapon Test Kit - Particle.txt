@@ -1,0 +1,15 @@
+# Weapon Test Kit - Particle
+# Adds a Va'ruun Inflictor and Starshard with 500 Heavy and 500 Light Particle Fuses.
+# Adds base weapons without legendary effects. It does not equip or fire them.
+
+# Va'ruun Inflictor
+player.additem 0026D8A0 1
+
+# Heavy Particle Fuse
+player.additem 002B558B 500
+
+# Va'ruun Starshard
+player.additem 0026D8A4 1
+
+# Light Particle Fuse
+player.additem 002B558A 500

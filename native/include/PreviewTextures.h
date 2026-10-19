@@ -24,6 +24,16 @@ namespace CCC::Preview {
         if(out.size()!=size)throw std::runtime_error("Texture chunk size mismatch.");return out;
     }
     struct TexturePixels {std::uint32_t width=0,height=0;Bytes pixels;};
+    inline void RestoreOpaqueWeaponAlpha(TexturePixels& image,const std::string& material){
+        const auto key=MaterialKey(material);
+        const std::string family="materials/weapons/dlc001/particlemachinegun/";
+        if((key!=family+"particlemachinegun_parts.mat"&&key!=family+"particlemachinegun_barrelframe.mat"&&key!=family+"particlemachinegun_receiver.mat"&&key!=family+"particlemachinegun_receiverframe.mat"&&key!=family+"particlemachinegun_standardgrip.mat")||image.pixels.empty())return;
+        // These five reported opaque weapon surfaces list wholly clear opacity maps.
+        // Restore only an entirely clear result; partial masks and other assets remain unchanged.
+        for(std::size_t i=3;i<image.pixels.size();i+=4)if(image.pixels[i]!=0)return;
+        for(std::size_t i=3;i<image.pixels.size();i+=4)image.pixels[i]=255;
+    }
+
     inline std::size_t TextureMipSize(unsigned width,unsigned height,unsigned format) {
         if(format==28||format==29)return std::size_t(width)*height*4;
         if(format==61)return std::size_t(width)*height;
@@ -111,7 +121,7 @@ namespace CCC::Preview {
         std::string Diagnostics(){return materials.Diagnostics()+"; "+std::to_string(entries.size())+" color textures indexed";}
         void Apply(std::vector<Mesh>& meshes,unsigned quality=3) {
             std::unordered_set<std::string> materials;for(const auto& mesh:meshes)if(!mesh.mannequin&&!mesh.material.empty())materials.insert(mesh.material);unsigned limit=quality==1?512:quality==2?(materials.size()<=3?1024:512):quality==4?4096:(materials.size()<=2?2048:1024);
-            unsigned normalLimit=std::min(limit,quality==1?256u:quality==2?512u:quality==4?4096u:1024u);
+            unsigned normalLimit=std::min(limit,quality==1?256u:quality==2?512u:quality==4?(materials.size()<=1?4096u:2048u):1024u);
             const auto textureBudget=std::size_t(quality==4?192:quality==3?48:12)*1024*1024;
             // Reserve coverage for every material before choosing sharper mip levels.
             // Otherwise early normal maps starve later clothing pieces of color.
@@ -137,7 +147,7 @@ namespace CCC::Preview {
                 std::vector<std::string> candidates{key};const auto base=key.rfind("_base_color.dds");if(base!=key.npos)candidates.push_back(key.substr(0,base)+"_color.dds");
                 if(!appearance.texture.empty())candidates.insert(candidates.begin(),appearance.texture);
                 candidates.push_back(key.substr(0,key.size()-10)+"_1001_color.dds");
-                for(const auto& candidate:candidates)try{const auto cacheKey=std::to_string(limit)+":"+candidate+":"+appearance.opacity+":"+appearance.ao;auto it=cache.find(cacheKey);if(it==cache.end()){std::size_t held=0;for(const auto& item:cache)held+=item.second.pixels.size();if(cache.size()>128||held>60*1024*1024)cache.clear();auto decoded=Load(candidate,limit);if(!decoded.pixels.empty()&&!appearance.opacity.empty())try{ApplyOpacity(decoded,Load(appearance.opacity,limit));}catch(...){}if(!decoded.pixels.empty()&&!appearance.ao.empty())try{const auto ao=Load(appearance.ao,limit);if(!ao.pixels.empty())for(unsigned y=0;y<decoded.height;++y)for(unsigned x=0;x<decoded.width;++x){const float shade=.35f+.65f*ao.pixels[(std::size_t(y)*ao.height/decoded.height*ao.width+std::size_t(x)*ao.width/decoded.width)*4]/255.f;for(unsigned c=0;c<3;++c)decoded.pixels[(std::size_t(y)*decoded.width+x)*4+c]=std::uint8_t(decoded.pixels[(std::size_t(y)*decoded.width+x)*4+c]*shade);}}catch(...){}it=cache.emplace(cacheKey,std::move(decoded)).first;}
+                for(const auto& candidate:candidates)try{const auto cacheKey=std::to_string(limit)+":"+candidate+":"+appearance.opacity+":"+appearance.ao+":"+(MaterialKey(mesh.material).starts_with("materials/weapons/dlc001/particlemachinegun/")?"opaque-weapon":"default");auto it=cache.find(cacheKey);if(it==cache.end()){std::size_t held=0;for(const auto& item:cache)held+=item.second.pixels.size();if(cache.size()>128||held>60*1024*1024)cache.clear();auto decoded=Load(candidate,limit);if(!decoded.pixels.empty()&&!appearance.opacity.empty())try{ApplyOpacity(decoded,Load(appearance.opacity,limit));}catch(...){}if(!decoded.pixels.empty()&&!appearance.ao.empty())try{const auto ao=Load(appearance.ao,limit);if(!ao.pixels.empty())for(unsigned y=0;y<decoded.height;++y)for(unsigned x=0;x<decoded.width;++x){const float shade=.35f+.65f*ao.pixels[(std::size_t(y)*ao.height/decoded.height*ao.width+std::size_t(x)*ao.width/decoded.width)*4]/255.f;for(unsigned c=0;c<3;++c)decoded.pixels[(std::size_t(y)*decoded.width+x)*4+c]=std::uint8_t(decoded.pixels[(std::size_t(y)*decoded.width+x)*4+c]*shade);}}catch(...){}RestoreOpaqueWeaponAlpha(decoded,mesh.material);it=cache.emplace(cacheKey,std::move(decoded)).first;}
                     const auto& image=it->second;if(image.pixels.empty())continue;
                     if(!used.contains(candidate)){if(budget+image.pixels.size()>(quality==4?192u:quality==3?48u:12u)*1024*1024)continue;budget+=image.pixels.size();used.insert(candidate);}
                     mesh.textureWidth=image.width;mesh.textureHeight=image.height;mesh.pixels=image.pixels;break;
@@ -153,7 +163,15 @@ namespace CCC::Preview {
                 // Zero is an unused/default tint in these textured materials, not black dye.
                 if(!mesh.pixels.empty()&&mesh.tint==std::array<float,3>{0,0,0})mesh.tinted=false;
                 if(mesh.glass){if(mesh.pixels.empty()){mesh.textureWidth=mesh.textureHeight=1;mesh.pixels={100,125,140,90};}else for(std::size_t i=3;i<mesh.pixels.size();i+=4)mesh.pixels[i]=std::min<std::uint8_t>(mesh.pixels[i],90);}
-                if(!appearance.normal.empty())try{std::size_t held=0;for(const auto& item:cache)held+=item.second.pixels.size();if(held>60u*1024*1024)cache.clear();const auto normalKey="normal:"+std::to_string(quality)+":"+std::to_string(normalLimit)+":"+appearance.normal;auto normal=cache.find(normalKey);if(normal==cache.end()){auto decoded=Load(appearance.normal,normalLimit);{TexturePixels rough;if(!appearance.roughness.empty())try{rough=Load(appearance.roughness,normalLimit);}catch(...){}for(unsigned y=0;y<decoded.height;++y)for(unsigned x=0;x<decoded.width;++x)decoded.pixels[(std::size_t(y)*decoded.width+x)*4+3]=rough.pixels.empty()?166:rough.pixels[(std::size_t(y)*rough.height/decoded.height*rough.width+std::size_t(x)*rough.width/decoded.width)*4];}normal=cache.emplace(normalKey,std::move(decoded)).first;}const auto& image=normal->second;if(!image.pixels.empty()&&(used.contains(normalKey)||budget+image.pixels.size()<(quality==4?192u:48u)*1024*1024)){if(used.insert(normalKey).second)budget+=image.pixels.size();mesh.normalWidth=image.width;mesh.normalHeight=image.height;mesh.normalPixels=image.pixels;}}catch(...){}
+                if(!appearance.normal.empty())try{std::size_t held=0;for(const auto& item:cache)held+=item.second.pixels.size();if(held>60u*1024*1024)cache.clear();const auto normalKey="normal:"+std::to_string(quality)+":"+std::to_string(normalLimit)+":"+appearance.normal+":"+appearance.roughness;auto normal=cache.find(normalKey);if(normal==cache.end()){auto decoded=Load(appearance.normal,normalLimit);{TexturePixels rough;if(!appearance.roughness.empty())try{rough=Load(appearance.roughness,normalLimit);}catch(...){}for(unsigned y=0;y<decoded.height;++y)for(unsigned x=0;x<decoded.width;++x)decoded.pixels[(std::size_t(y)*decoded.width+x)*4+3]=rough.pixels.empty()?166:rough.pixels[(std::size_t(y)*rough.height/decoded.height*rough.width+std::size_t(x)*rough.width/decoded.width)*4];}normal=cache.emplace(normalKey,std::move(decoded)).first;}const auto& image=normal->second;if(!image.pixels.empty()&&(used.contains(normalKey)||budget+image.pixels.size()<=(quality==4?192u:48u)*1024*1024)){if(used.insert(normalKey).second)budget+=image.pixels.size();mesh.normalWidth=image.width;mesh.normalHeight=image.height;mesh.normalPixels=image.pixels;}}catch(...){}
+                if(!appearance.metal.empty()&&!mesh.glass&&!mesh.normalOnly)try{
+                    const unsigned metalLimit=std::min(normalLimit,quality==1?128u:quality==2?256u:quality==4?4096u:512u);
+                    const auto metalKey="metal:"+std::to_string(metalLimit)+":"+appearance.metal;
+                    auto image=cache.find(metalKey);if(image==cache.end())image=cache.emplace(metalKey,Load(appearance.metal,metalLimit)).first;
+                    if(!image->second.pixels.empty()&&(used.contains(metalKey)||budget+image->second.pixels.size()<=(quality==4?192u:48u)*1024*1024)){
+                        if(used.insert(metalKey).second)budget+=image->second.pixels.size();mesh.metalWidth=image->second.width;mesh.metalHeight=image->second.height;mesh.metalPixels=image->second.pixels;
+                    }
+                }catch(...){} // Unsupported metal maps retain the dielectric fallback.
                 if(mesh.normalOnly&&mesh.normalPixels.empty())mesh.incompleteMaterial=true;
             }catch(...){} // Shaded geometry remains available if its texture is unsupported.
         }

@@ -36,7 +36,7 @@ namespace
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "1.3.0";
+    constexpr const char* kBuildId = "1.3.15";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -528,6 +528,40 @@ namespace
         std::atomic_bool finished{ false };
     };
 
+    OSFUI::API::Json AreaForm(RE::TESForm* form)
+    {
+        if (!form) return nullptr;
+        const auto* full = starfield_cast<RE::TESFullName*>(form);
+        return {{"id", std::format("{:08X}", form->GetFormID())},
+                {"editorId", CCC::ModCatalogs::ReadSafeText(form->GetFormEditorID(), 256).value_or("")},
+                {"name", CCC::ModCatalogs::ReadSafeText(full ? full->GetFullName() : nullptr, 256).value_or("")}};
+    }
+
+    void OnIdentifyCurrentArea(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        if (!IsRuntimeSupported()) { raw.Reject("unsupported-runtime", "Current-area identification is unavailable on this runtime."); return; }
+        const auto* tasks=SFSE::GetTaskInterface();
+        if(!tasks){raw.Reject("area-unavailable","The game task queue is unavailable.");return;}
+        const auto generation=g_loadGeneration.load();
+        tasks->AddTask([reply=raw,generation]() {
+            try {
+                if(generation!=g_loadGeneration.load())throw std::runtime_error("The save changed. Identify the area again.");
+                auto* player=RE::PlayerCharacter::GetSingleton();
+                if(!player||!player->parentCell)throw std::runtime_error("Load a save and stand in the destination before identifying it.");
+                const auto cell=AreaForm(player->parentCell);
+                auto* location=player->GetCurrentLocation();
+                OSFUI::API::Json locations=OSFUI::API::Json::array();std::vector<std::uint32_t> seen;
+                for(unsigned depth=0;location&&depth<8;++depth){
+                    if(std::find(seen.begin(),seen.end(),location->GetFormID())!=seen.end())break;
+                    seen.push_back(location->GetFormID());locations.push_back(AreaForm(location));location=location->parentLocation.get();
+                }
+                const auto payload=OSFUI::API::Json{{"ok",true},{"cell",cell},{"locations",locations},{"world",AreaForm(player->GetParentWorldSpace())}}.dump(-1,' ',false,OSFUI::API::Json::error_handler_t::replace);
+                reply.Reply(payload.c_str());
+            }catch(const std::exception& error){reply.Reject("area-unavailable",error.what());}
+            catch(...){reply.Reject("area-unavailable","Could not inspect the current area.");}
+        });
+    }
+
     void OnQuestRead(const OSFUI::API::Request& raw, void*) noexcept
     {
         OSFUI::API::JsonRequest request{ raw };
@@ -777,6 +811,15 @@ namespace
         }
     }
 
+    void OnIncludedBatch(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{raw};
+        if (!request) return;
+        try { (void)request.Reply(CCC::CommandBatches::Included(request.Payload())); }
+        catch (const std::exception& error) { request.Reject("included-batch-failed", error.what()); }
+        catch (...) { request.Reject("included-batch-failed", "Could not read included batch files."); }
+    }
+
     void OnCommandBatchSave(const OSFUI::API::Request& raw, void*) noexcept
     {
         OSFUI::API::JsonRequest request{ raw };
@@ -899,6 +942,7 @@ namespace
         }
         g_ui.RegisterRequest("console.command-center.execute", &OnExecute, nullptr);
         g_ui.RegisterRequest("console.command-center.query", &OnQuery, nullptr);
+        g_ui.RegisterRequest("console.command-center.identifyCurrentArea", &OnIdentifyCurrentArea, nullptr);
         g_ui.RegisterRequest("console.command-center.questRead", &OnQuestRead, nullptr);
         g_ui.RegisterRequest("console.command-center.setEffectiveActorValue", &OnSetEffectiveActorValue, nullptr);
         g_ui.RegisterRequest("console.command-center.modCatalogs", &OnModCatalogs, nullptr);
@@ -908,6 +952,7 @@ namespace
         g_ui.RegisterRequest("console.command-center.previewChunk", &CCC::ModelPreview::OnChunk, nullptr);
         CCC::PreviewTriggerInput::Install(g_ui);
         g_ui.RegisterRequest("console.command-center.devFeedbackExport", &OnDevFeedbackExport, nullptr);
+        g_ui.RegisterRequest("console.command-center.includedBatch", &OnIncludedBatch, nullptr);
         g_ui.RegisterRequest("console.command-center.commandBatchList", &OnCommandBatchList, nullptr);
         g_ui.RegisterRequest("console.command-center.commandBatchSave", &OnCommandBatchSave, nullptr);
         g_ui.RegisterRequest("console.command-center.commandBatchDelete", &OnCommandBatchDelete, nullptr);

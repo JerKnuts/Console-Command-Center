@@ -1,0 +1,124 @@
+{
+  "report": "CCC-Dev-Feedback-2026-10-18_21-12-35-567_99132-322821187-0.txt",
+  "renamed": {
+    "shatteredspace.esm:070E19": {
+      "label": "Dazra Outskirts",
+      "original": "AHPOI01Ext"
+    },
+    "starfield.esm:169EC1": {
+      "label": "Ervin's Apartment",
+      "original": "Apartment Stack I"
+    },
+    "starfield.esm:167935": {
+      "label": "Ellie's Apartment (Barrett's Quest)",
+      "original": "Arches Overlook Apartments"
+    },
+    "starfield.esm:2C12B5": {
+      "label": "Deimos Armored Transport",
+      "original": "Armored Transport"
+    },
+    "starfield.esm:2A948F": {
+      "label": "Chandra Vineyards Mansion",
+      "original": "Chandra Vineyards Main House"
+    },
+    "shatteredspace.esm:07C059": {
+      "label": "Dazra Dunes 04",
+      "original": "Dunes04Start"
+    },
+    "shatteredspace.esm:0411F1": {
+      "label": "Dazra Dunes 05",
+      "original": "Dunes05Start"
+    },
+    "starfield.esm:18A2CA": {
+      "label": "Buried Temple",
+      "original": "Ecliptic Base"
+    },
+    "starfield.esm:00115E": {
+      "label": "Neon: Enhance",
+      "original": "Enhance!"
+    },
+    "starfield.esm:246B56": {
+      "label": "Sarah Morgan's Ship Crash Site",
+      "original": "Escape Shuttle 03 Cabin"
+    },
+    "starfield.esm:15DB7E": {
+      "label": "Neon: Euphorika",
+      "original": "Euphorika"
+    },
+    "starfield.esm:2BF4E4": {
+      "label": "Neon: Euphorika",
+      "original": "Euphorika"
+    }
+  },
+  "reference": [
+    "sfbgs00d.esm:032DFF",
+    "sfbgs050.esm:021779",
+    "sfbgs050.esm:0A2342",
+    "sfbgs050.esm:021777",
+    "sfbgs050.esm:021778",
+    "sfbgs050.esm:0ABEFA",
+    "sfbgs050.esm:0ABEFB",
+    "sfbgs050.esm:0ABEFC",
+    "sfbgs050.esm:0ABEFD",
+    "sfbgs050.esm:0ABEFE",
+    "sfbgs050.esm:0ABEFF",
+    "sfbgs00d.esm:03B6B2",
+    "starfield.esm:2CBD4C",
+    "starfield.esm:24CBC2",
+    "starfield.esm:1E4D5E",
+    "shatteredspace.esm:0FBEE5",
+    "shatteredspace.esm:0EDF4A",
+    "starfield.esm:28FF33",
+    "starfield.esm:287C00",
+    "starfield.esm:265F52",
+    "starfield.esm:25CF13",
+    "starfield.esm:236B89",
+    "starfield.esm:236B8A",
+    "starfield.esm:237A33",
+    "starfield.esm:237A34",
+    "starfield.esm:238220",
+    "starfield.esm:236B88",
+    "starfield.esm:236220",
+    "starfield.esm:23613F",
+    "starfield.esm:23613E",
+    "starfield.esm:235639",
+    "starfield.esm:235638",
+    "starfield.esm:234787",
+    "starfield.esm:234786",
+    "starfield.esm:234089",
+    "starfield.esm:234088",
+    "starfield.esm:234087",
+    "starfield.esm:233C02",
+    "starfield.esm:233C01",
+    "starfield.esm:233BFF",
+    "starfield.esm:233BFE",
+    "starfield.esm:215661",
+    "starfield.esm:2129EB",
+    "starfield.esm:20802C",
+    "starfield.esm:205FDE",
+    "starfield.esm:203F70",
+    "starfield.esm:25FD22",
+    "starfield.esm:01BD56",
+    "starfield.esm:2A948F",
+    "sfbgs00d.esm:03B6B3",
+    "starfield.esm:2CD233",
+    "starfield.esm:1DC414",
+    "starfield.esm:267FC8",
+    "starfield.esm:2A2632",
+    "starfield.esm:138C3B",
+    "starfield.esm:138C3C",
+    "starfield.esm:1E8FF8",
+    "starfield.esm:2239DB",
+    "starfield.esm:2373EA",
+    "sfbgs00d.esm:078981",
+    "sfbgs00d.esm:026C94",
+    "starfield.esm:268F03",
+    "starfield.esm:21C1B2",
+    "starfield.esm:126C78",
+    "starfield.esm:2B61A7",
+    "starfield.esm:26DF1D",
+    "starfield.esm:1F9D6C",
+    "starfield.esm:248CEE",
+    "starfield.esm:2BF4E5"
+  ]
+}

@@ -1,10 +1,10 @@
 # Future features
 
-These are candidate improvements, not promises or features of v1.3.0. Editable text batches, On Load Auto-Run, and scanned mod quest-stage controls are already implemented; see [Command batches](COMMAND_BATCHES.md) and [Mod ID catalogs](MOD_ID_CATALOGS.md).
+These are candidate improvements, not promises or features of v1.3.2. Editable text batches, On Load Auto-Run, and scanned mod quest-stage controls are already implemented; see [Command batches](COMMAND_BATCHES.md) and [Mod ID catalogs](MOD_ID_CATALOGS.md).
 
 ## Command batches
 
-- The expanded editable INCLUDED library and support for semicolon/inline comments are held for the next update. The current release retains three original examples.
+The editable INCLUDED library, syntax highlighting and semicolon/inline comments are implemented in 1.3.2. Candidate further improvements:
 
 - Duplicate-command warnings, especially for repeated toggles.
 - Execution progress and cancellation of remaining commands.
@@ -28,7 +28,7 @@ Reliable optional caching remains future work. Current Mod Browser results are h
 
 - Extend the experimental shaded viewer with complete material resolution, lighting, better archive support, and additional model formats.
 - Investigate an isolated preview copy of the player character, including body shape and appearance, plus automatically generated/cached thumbnails. The current mannequin is static.
-- The manually supplied Akila screenshots have been removed. The v1.3.0 prototype reads installed geometry on demand without paid AI processing or per-item screenshots. See [Model previews](MODEL_PREVIEWS.md).
+- The manually supplied Akila screenshots have been removed. The v1.3.2 prototype reads installed geometry on demand without paid AI processing or per-item screenshots. See [Model previews](MODEL_PREVIEWS.md).
 
 Research reference: SFShopExplorer 0.8.123 uses a separate DirectX 12 renderer and ImGui. CCC's independent prototype uses WebGL in its existing web view. Automatic thumbnail generation remains future work.
 
