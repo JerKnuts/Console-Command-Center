@@ -2,7 +2,9 @@
 
 Console Command Center turns Starfield console commands into a searchable in-game menu for mouse, keyboard, and controller. It provides command inputs, safety warnings, ID selection, quest tools, mod scanning, editable command batches, and read-only Results popups.
 
-**Current release: v1.3.15.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
+**Current release: v1.3.31.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
+
+Translation authors can use the [JSON/CSV translator guide](docs/TRANSLATION_GUIDE.md). CCC uses a web interface; SWF editing is not required. Translation packs are optional and fall back to English.
 
 ## Requirements
 
@@ -27,12 +29,15 @@ Make a manual save before changing quests or important game state. Each page has
 
 ## Features
 
-- **149 established command cards** and **1,532 WIP entries** (39 prepared cards and 1,493 engine commands/script functions).
+- Categorized command cards, with WIP and engine-reference entries available through Advanced Options.
 - Search, command and ID favorites, Recent commands, saved batch favorites, and Activity Log. Favorite IDs use compact selectable rows with their details and supported actions on the right.
 - **ID Browser: 23,308 packaged entries**, including reviewed ships, vehicle forms, workshop objects, and supported Free Lanes/Terran Armada record types. Duplicate names can identify different underlying records.
+- **Descriptions and base stats:** inspect aid effects, gear values, skill ranks, traits and powers before adding them. Description/stats appear on the left, with a sticky model preview on the right. See [item details and reading](docs/ID_BROWSER_DETAILS.md).
+- **Read books and notes** in a scrolling popup, without adding them to inventory or granting skill-book rewards.
+- **JSON translations:** install a separate language pack, choose it in Settings or use automatic selection, and reload translations without editing SWF files.
 - **Advanced Settings in Commands:** Search grouped game-setting references, inspect live values, review numeric changes, and reset to supplied base-game values. String settings remain read-only.
 - **Quest Browser: 2,568 quests and 19,061 recorded stage indexes** from Base Game, Shattered Space, Free Lanes, and Terran Armada. Packaged quests are kept out of ID Browser.
-- **Mod Browser:** manually scan loaded mods and Official Creations, browse categories, search one plugin or every scanned plugin, and inspect scanned quest stages.
+- **Mod Browser:** scan loaded mods and Official Creations, sort by mod or category, search scanned records and inspect quest stages.
 - Editable user-owned `.txt` command batches, persistent in-session drafts, synchronized line numbers, Clear, Refresh, and Add to Batch.
 - Optional **On Load Auto-Run**, controlled by a master switch and per-file selections. Fresh empty folders receive three sample batches without Auto-Run enabled.
 - Controller navigation, scrolling, dialogs, and alphabetic/numeric/hexadecimal/symbol text entry.
@@ -46,7 +51,9 @@ Workshop / Outpost Objects offer **Spawn Object** for supported physical records
 
 ## Interface Settings
 
-**Experimental in v1.3.2:** Supported ID Browser and mod assets offer an inline preview and **3D Viewer**, opened with **Y** on a controller. The viewer reads installed geometry and materials without screenshots or online processing. Low, Medium and High preserve the original mesh and share material roughness, studio reflections, tone mapping, normal maps, authored metal maps and a movable light; texture and screen resolution differ by preset. Previous Ultra selections migrate to High. Previews start without a mannequin; supported wearables can enable one and choose male/female. Colors start at Low resolution and upgrade in place, retaining the camera. Controller controls include direct stick pan/rotation, analog-trigger zoom, texture toggle, quality selection and light/brightness modes. ID Browser controller navigation returns to the selected row after closing the viewer and stays inside the middle list for Up/Down. Cap branding and Barrett previews use original game textures without changing installed texture mods. Your player character is not used. See [Model previews](docs/MODEL_PREVIEWS.md).
+Supported loaded items in ID Browser and Mod Browser offer a small preview and **Model Viewer**, available without Advanced Options. The viewer reads installed meshes and materials. **Low, Medium, High and Ultra** preserve the same geometry and share enhanced reflections, bloom, subtle grain and movable lighting; texture and rendering resolutions differ. Models appear before textures finish loading, and upgrades retain the camera. Supported wearables can show an optional male/female mannequin. Mouse and controller controls support movement, rotation, zoom and lighting. Your player character is not used. See [Model previews](docs/MODEL_PREVIEWS.md).
+
+Advanced Options reveals technical record types, categories, plugin filenames and IDs. Descriptions, stats, requirements, model previews and Copy ID buttons remain available in ordinary browsing. Base stats can differ from equipped items because of upgrades, legendary effects, scaling and player skills.
 
 Open **Settings** beside Help. Dark Mode and Advanced Options off are the defaults. Advanced Options reveals WIP commands, Advanced Settings in Commands, Locations (Reference Only), Ship Parts / Other Forms, reference-only items, and Internal / System quests. Basic-mode searches and ID Favorites hide these records without deleting saved favorites. Cells/Teleport is visible by default and provides teleport actions; reviewed internal/test cells are reference-only and hidden outside Advanced Options; Locations are reference-only area metadata.
 
@@ -99,4 +106,4 @@ Current test findings are maintained in [Command catalog](COMMAND_CATALOG.md) an
 
 Test Report result bars in Dev Mode: Working uses green with a checkmark; Issues uses yellow with an exclamation; choose Not noticeable under Issues for orange with a question mark. Reference Only uses dark gray with a struck-through name. Latest explicit results remain saved after export and restart; comment-only reports preserve the existing classification. Plain Working confirmations stay local unless a comment is added. Dev Mode also marks unresolved model textures with a red/blue checker in both preview sizes.
 
-Ultra preview quality is available in Settings and the 3D Viewer, with sharper textures, enhanced studio reflections, bloom, mild depth of field and subtle grain. Previews show untextured geometry before loading textures. See [model previews](docs/MODEL_PREVIEWS.md).
+All Model Viewer presets include enhanced studio reflections, bloom and subtle grain. Low through Ultra retain different texture and rendering resolutions, with no depth of field. Previews show untextured geometry before loading textures. See [model previews](docs/MODEL_PREVIEWS.md).

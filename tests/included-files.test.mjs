@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,writeFile,rename,unlink} from 'node:fs/promises';
+import {mkdir,mkdtemp,writeFile,rename,unlink} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 import {includedBatchStore,batchLines} from '../scripts/included-batches.mjs';
+await mkdir(resolve('build'),{recursive:true});
 test('browser included-file backend preserves edits/deletions and discovers renamed and new runnable files',async()=>{
  const directory=await mkdtemp(resolve('build/included-batches-test-')),store=includedBatchStore(directory),samples=[{name:'First',commands:'tgm ; note\n'},{name:'Second',commands:'tcl\n'}];
  assert.equal((await store({samples})).entries.length,2);

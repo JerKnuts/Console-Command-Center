@@ -17,7 +17,7 @@ npm run package
 
 The native build restores the exact CommonLibSF revision in native/setup-deps.mjs and recursive submodules. XMake restores nlohmann_json and static zlib 1.3.2. First-time setup therefore needs network access. `npm run setup:deps` restores CommonLibSF explicitly. Dependency licenses, source revisions and restoration instructions are in [Third-party notices](../THIRD_PARTY_NOTICES.md).
 
-`npm run package` performs metadata/link checks, UI checking, automated tests, native/UI builds and ZIP creation. Outputs are artifacts/Console-Command-Center-v1.3.15-Nexus.zip, artifacts/console-command-center-v1.3.15-source.zip and a source manifest. `npm run clean` removes disposable caches according to scripts/clean.mjs; it does not erase user Documents files or install a release into the game.
+`npm run package` performs metadata/link checks, UI checking, automated tests, native/UI builds and ZIP creation. Outputs are artifacts/Console-Command-Center-v1.3.31-Nexus.zip, artifacts/console-command-center-v1.3.31-source.zip and a source manifest. `npm run clean` removes disposable caches according to scripts/clean.mjs; it does not erase user Documents files or install a release into the game.
 
 ## Maintained source
 
@@ -44,3 +44,9 @@ Do not distribute node_modules, native/lib, build, dist, mod, artifacts, .xmake 
 Catalog extraction/generation scripts consume separately supplied records or a workbook. Read [ID catalog sources](ID_CATALOG_SOURCES.md), [Mod ID catalogs](MOD_ID_CATALOGS.md) and [Engine command reference](ENGINE_COMMAND_REFERENCE.md) before regenerating. Do not hand-delete bundled catalog data merely because a feature loads it lazily. Material-variant audit commands and their limits are in [Preview variant audit](PREVIEW_VARIANT_AUDIT.md).
 
 Keep user-facing behavior and known limits in feature guides; keep release changes in CHANGELOG.md and the current verification checklist in RELEASE_VALIDATION.md. Dated feedback expectations belong in test fixtures/reviewed findings, avoiding conflicting copies of old behavior.
+
+## Native regression checks
+
+After configuring XMake, build and run the native targets appropriate to the change: PreviewGeometryTests, PreviewTriggerTests, QuestStagesTests, ScalarResultTests, SampleBatchTests, DevFeedbackTests, RecordDetailsTests and RecordDetailsInputTests. The last two cover description files and the actual OSF request boundary, including omitted optional operation fields. Set TEMP/TMP to a disposable writable test directory if the environment restricts the normal temporary folder.
+
+The CCC package contains its own plugin and view only. Experimental replacements for OSF UI's browser helper are separate projects and must not be folded into CCC source or archives.

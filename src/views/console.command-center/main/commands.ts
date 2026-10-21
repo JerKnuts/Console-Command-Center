@@ -1015,6 +1015,8 @@ export const COMMANDS: CommandDefinition[] = [
     category: 'World',
     description: 'Teleport directly to a cell using its Editor ID / cell name.',
     command: 'coc {cellName}',
+    closeBeforeExecute: true,
+    verifyInGame: true,
     tags: ['coc', 'cell', 'teleport', 'location'],
     inputs: [
       { key: 'cellName', label: 'Cell Name / Editor ID', type: 'text', placeholder: 'CityAkilaTheRock01', pattern: '^\\S+$', hint: 'Choose a popular location or enter an exact Editor ID.', picker: POPULAR_LOCATION_PICKER },

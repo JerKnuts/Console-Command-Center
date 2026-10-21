@@ -250,13 +250,13 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
       const {width:w,height:h}=previewCanvasSize(box.width,box.height,ratio,Math.min(canvasLimit,limit),quality==='ultra'?24*1024*1024:Infinity);
       if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
       let postActive=false;
-      if(quality==='ultra'&&!postFailed){try{post??=createPreviewPost(gl);postActive=post.begin(w,h);if(!postActive)postFailed=true;}catch{post?.dispose();post=undefined;postFailed=true;}}
+      if(!postFailed){try{post??=createPreviewPost(gl);postActive=post.begin(w,h);if(!postActive)postFailed=true;}catch{post?.dispose();post=undefined;postFailed=true;}}
       if(!postActive)gl.bindFramebuffer(gl.FRAMEBUFFER,null);
       gl.viewport(0, 0, w, h); gl.depthMask(true); gl.disable(gl.BLEND); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE); gl.useProgram(program);
       const cy = Math.cos(state.yaw), sy = Math.sin(state.yaw), cp = Math.cos(state.pitch), sp = Math.sin(state.pitch);
       gl.uniformMatrix3fv(rotation, false, new Float32Array([cy, sp * sy, -cp * sy, 0, cp, sp, sy, -sp * cy, cp * cy]));
       gl.uniform1i(markerUniform,0);gl.uniform3f(offsetUniform,0,0,0);gl.uniform1f(aspect, box.width/Math.max(1,box.height)); gl.uniform1f(zoom, state.zoom);gl.uniform2f(pan,panX,panY); gl.enableVertexAttribArray(position); gl.enableVertexAttribArray(uv);gl.enableVertexAttribArray(normal); gl.activeTexture(gl.TEXTURE0); gl.uniform1i(sampler, 0);
-      gl.uniform1i(showTextures,texturesEnabled?1:0);gl.uniform1i(ultra,1);gl.uniform1i(cinematic,1);gl.uniform1i(detail,quality==='ultra'?1:0);const point=lightPoint();gl.uniform3f(light,point[0],point[1],point[2]);gl.uniform1f(strength,lightPower);
+      gl.uniform1i(showTextures,texturesEnabled?1:0);gl.uniform1i(ultra,1);gl.uniform1i(cinematic,1);gl.uniform1i(detail,1);const point=lightPoint();gl.uniform3f(light,point[0],point[1],point[2]);gl.uniform1f(strength,lightPower);
       const depth=(part: typeof parts[number])=>-cp*sy*part.center[0]+sp*part.center[1]+cp*cy*part.center[2];
       const ordered=[...parts.filter(part=>!part.transparent&&!part.decal),...parts.filter(part=>!part.transparent&&part.decal),...parts.filter(part=>part.normalOnly),...parts.filter(part=>part.transparent&&!part.normalOnly).sort((a,b)=>depth(a)-depth(b))];
       ordered.forEach((part, index) => {

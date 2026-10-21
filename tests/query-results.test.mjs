@@ -778,6 +778,9 @@ test('ID Browser quick actions build item, weather, and cell commands', () => {
   assert.equal(requested.definition.category, 'World');
   assert.equal(requested.definition.testStatus, 'verified');
   assert.equal(requested.definition.risk, 'danger');
+  assert.equal(requested.definition.closeBeforeExecute,true);
+  assert.equal(requested.definition.verifyInGame,true);
+  assert.match(commandSource.match(/id: 'center-on-cell',[\s\S]*?inputs:/)[0],/closeBeforeExecute: true/);
   assert.equal(sandbox.idBrowserAction(location), null);
   assert.match(source, /\? 'Change Weather'/);
   assert.match(source, /\? 'Teleport Here'/);

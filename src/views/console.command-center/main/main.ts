@@ -1,3 +1,7 @@
+import { installBookReader } from './book-reader';
+import { canInspectRecord, installRecordDetails } from './record-details';
+import { installTranslations, translateUiText, type TranslationPack } from './translations';
+import { exportReportText } from './report-export';
 import type { CurrentArea } from './area-identification';
 import { modCategoryCounts, modCategoryMatches } from './mod-browser-layout';
 import { applyCommandFeedback, wipCommandOutcome } from './command-feedback';
@@ -225,7 +229,7 @@ const MAX_CUSTOM_COMMAND_LENGTH = 1024;
 const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1493;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.3.15';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.3.31';
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -1209,7 +1213,7 @@ function idBrowserCategoryCount(value: string): number {
 function commandMatches(command: CommandDefinition, searchText = query): boolean {
   if (!searchText.trim()) return true;
   const haystack = [command.title, command.category, command.description, command.command, ...(command.tags ?? [])]
-    .join(' ')
+    .flatMap(value => [value, typeof translateUiText==='function'?translateUiText(String(value??'')):value]).join(' ')
     .toLowerCase();
   const terms = searchText.toLowerCase().split(/\s+/).filter(Boolean);
   return terms.every((term) => haystack.includes(term));
@@ -1816,7 +1820,7 @@ function questBrowserMatches(entry: QuestBrowserEntry): boolean {
     entry.category,
     entry.requirement ?? '',
     ...entry.stages.map(String),
-  ].join(' ').toLowerCase();
+  ].flatMap(value => [value, typeof translateUiText==='function'?translateUiText(String(value??'')):value]).join(' ').toLowerCase();
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
   return terms.every((term) => haystack.includes(term));
 }
@@ -1883,9 +1887,9 @@ function renderQuestBrowserSelection(entry: (Pick<QuestBrowserEntry, 'quest' | '
         ${flags}
         <dl class="quest-browser-metadata">
           <div><dt>Source</dt><dd>${escapeHtml(entry.source)}</dd></div>
-          <div><dt>Category</dt><dd>${escapeHtml(entry.category)}</dd></div>
+          ${uiPreferences.advanced ? `<div><dt>Category</dt><dd>${escapeHtml(entry.category)}</dd></div>
           <div><dt>Editor ID</dt><dd><code>${escapeHtml(entry.editorId)}</code></dd></div>
-          <div><dt>Form ID</dt><dd>${entry.available === false ? 'Required plugin is not active' : `<code>${escapeHtml(entry.questId)}</code>`}</dd></div>
+          <div><dt>Form ID</dt><dd>${entry.available === false ? 'Required plugin is not active' : `<code>${escapeHtml(entry.questId)}</code>`}</dd></div>` : ''}
           <div><dt>Stages</dt><dd>${modQuest && !scannedStagesKnown ? 'Scan again to load stages' : entry.stages.length.toLocaleString()}</dd></div>
         </dl>
         <div class="quest-browser-actions">
@@ -2628,7 +2632,7 @@ function activeIdBrowserCategory(): IdBrowserCategory {
 function idBrowserTextMatches(entry: IdCatalogEntry): boolean {
   if (!query) return true;
   const haystack = [entry.label, entry.value, entry.localFormId ?? '', entry.editorId ?? '', entry.type, entry.category, entry.sourceName ?? '', entry.plugin ?? '', entry.detail ?? '', ...(entry.alternateFormIds ?? []), ...(entry.keywords ?? [])]
-    .join(' ')
+    .flatMap(value => [value, typeof translateUiText==='function'?translateUiText(String(value??'')):value]).join(' ')
     .toLowerCase();
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
   return terms.every((term) => haystack.includes(term));
@@ -2739,19 +2743,21 @@ function renderIdBrowserSelection(): string {
         <strong>${escapeHtml(entry.label)}</strong>
         <div class="id-browser-detail-body">
         ${canPreviewModel(entry, uiPreferences.advanced) ? `<div class="inline-model-preview" data-inline-preview="${escapeHtml(entry.value)}" data-preview-label="${escapeHtml(entry.label)}" data-preview-type="${escapeHtml(entry.type.toUpperCase())}" data-preview-category="${escapeHtml(entry.category)}" aria-label="Item model preview"></div>` : ''}
+        <div class="id-browser-detail-text">
+        ${canInspectRecord(entry) ? `<section class="record-details" data-record-details="${escapeHtml(entry.value)}" data-record-type="${escapeHtml(entry.type.toUpperCase())}" aria-label="Description and stats" aria-live="polite"></section>` : ''}
         <dl class="id-browser-metadata">
-          <div><dt>Record Type</dt><dd>${escapeHtml(entry.type)}</dd></div>
-          <div><dt>Category</dt><dd>${escapeHtml(displayedCategory)}</dd></div>
-          ${entry.source === 'mod' ? `<div><dt>Mod</dt><dd>${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod catalog')}</dd></div>` : entry.source && entry.source !== 'built-in' ? `<div><dt>Source</dt><dd>${escapeHtml(entry.source)}</dd></div>` : ''}
-          ${entry.plugin ? `<div><dt>Plugin</dt><dd>${escapeHtml(entry.plugin)}</dd></div>` : ''}
-          ${entry.originalName ? `<div><dt>Original Name</dt><dd>${escapeHtml(entry.originalName)}</dd></div>` : ''}
+          ${uiPreferences.advanced ? `<div><dt>Record Type</dt><dd>${escapeHtml(entry.type)}</dd></div><div><dt>Category</dt><dd>${escapeHtml(displayedCategory)}</dd></div>` : ''}
+          ${entry.source === 'mod' ? `<div><dt>Mod</dt><dd>${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod catalog')}</dd></div>` : uiPreferences.advanced && entry.source && entry.source !== 'built-in' ? `<div><dt>Source</dt><dd>${escapeHtml(entry.source)}</dd></div>` : ''}
+          ${uiPreferences.advanced && entry.plugin ? `<div><dt>Plugin</dt><dd>${escapeHtml(entry.plugin)}</dd></div>` : ''}
+          ${uiPreferences.advanced && entry.originalName ? `<div><dt>Original Name</dt><dd>${escapeHtml(entry.originalName)}</dd></div>` : ''}
           ${entry.detail ? `<div><dt>Information</dt><dd>${escapeHtml(entry.detail)}</dd></div>` : ''}
           ${(entry.type.toUpperCase() === 'LCTN' || (entry.type.toUpperCase() === 'CELL' && entry.referenceOnly)) ? '<div><dt>Usage</dt><dd>Reference Only</dd></div>' : ''}
-          <div><dt>Form ID</dt><dd>${entry.available === false ? '<span>Not loaded</span>' : `<code>${escapeHtml(entry.value)}</code>`}</dd></div>
-          ${entry.alternateFormIds?.length ? `<div><dt>Alternate Form IDs</dt><dd>${entry.alternateFormIds.map(id => `<code>${escapeHtml(id)}</code>`).join('<br>')}</dd></div>` : ''}
-          ${entry.localFormId ? `<div><dt>Local ID</dt><dd><code>${escapeHtml(entry.localFormId)}</code></dd></div>` : ''}
-          ${editorId ? `<div><dt>Editor ID</dt><dd><code>${escapeHtml(editorId)}</code></dd></div>` : ''}
+          ${uiPreferences.advanced ? `<div><dt>Form ID</dt><dd>${entry.available === false ? '<span>Not loaded</span>' : `<code>${escapeHtml(entry.value)}</code>`}</dd></div>` : ''}
+          ${uiPreferences.advanced && entry.alternateFormIds?.length ? `<div><dt>Alternate Form IDs</dt><dd>${entry.alternateFormIds.map(id => `<code>${escapeHtml(id)}</code>`).join('<br>')}</dd></div>` : ''}
+          ${uiPreferences.advanced && entry.localFormId ? `<div><dt>Local ID</dt><dd><code>${escapeHtml(entry.localFormId)}</code></dd></div>` : ''}
+          ${uiPreferences.advanced && editorId ? `<div><dt>Editor ID</dt><dd><code>${escapeHtml(editorId)}</code></dd></div>` : ''}
         </dl>
+        </div>
         </div>
       </div>
       <div class="id-browser-selection-actions">
@@ -2760,6 +2766,7 @@ function renderIdBrowserSelection(): string {
         <button class="favorite-button id-browser-favorite${isFavorite ? ' is-favorite' : ''}" type="button" data-id-favorite-toggle="${escapeHtml(favoriteKey)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">${isFavorite ? '★' : '☆'}</button>
         ${entry.available === false ? '<span class="id-browser-unavailable">Required plugin is not active. ID actions are disabled.</span>' : `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(entry.value)}">Copy ID</button>`}
         ${editorId ? `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(editorId)}">Copy Editor ID</button>` : ''}
+        ${entry.type.toUpperCase() === 'BOOK' ? `<button class="osf-btn osf-btn--sm" type="button" data-read-book="${escapeHtml(entry.value)}" data-book-title="${escapeHtml(entry.label)}"${entry.available === false ? ' disabled' : ''}>Read</button>` : ''}
         ${action === 'additem'
           ? `<div class="id-browser-add-row"><label class="id-browser-quantity"><span class="osf-eyebrow">QUANTITY</span><input class="osf-input" id="id-browser-quantity" type="text" value="${idBrowserQuantity}" inputmode="numeric" autocomplete="off" aria-label="Item quantity from 1 to 999999"></label><button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-id-browser-action="additem">Add to Player</button></div>`
           : action ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-id-browser-action="${action}">${actionLabel}</button>` : ''}
@@ -3049,6 +3056,8 @@ function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): void 
     command,
     warning,
     risk,
+    closeBeforeExecute: action === 'teleport',
+    verifyInGame: action === 'teleport',
     testStatus: action === 'forceweather' || (action === 'teleport' && !entry.referenceOnly && !reviewedReferenceNote(entry)) ? 'verified' : 'untested',
   };
   requestExecution({ command, definition, rememberRecent: false });
@@ -4261,11 +4270,20 @@ installDevFeedback({
       document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
       return `${link.download} (browser download)`;
     }
-    const reply = await window.osfui.request<{ ok: boolean; path: string }>('console.command-center.devFeedbackExport', { content });
-    if (!reply?.ok || !reply.path) throw new Error('Native export did not return a saved file.');
-    return reply.path;
+    const bridge=window.osfui;
+    return exportReportText((name,payload,options)=>bridge.request(name,payload,options),content);
   },
 });
+
+installBookReader(async (name, payload) => {
+  if (previewReady || !nativeBackendReady || !window.osfui?.request) throw new Error('Reading requires the in-game CCC plugin.');
+  return window.osfui.request(name, payload, { timeoutMs: 30000 });
+}, { available: () => !previewReady && nativeBackendReady && !!window.osfui?.request });
+
+installRecordDetails(async (name, payload) => {
+  if (previewReady || !nativeBackendReady || !window.osfui?.request) throw new Error('Live item details require the in-game plugin.');
+  return window.osfui.request(name, payload, { timeoutMs: 30000 });
+}, { available: () => !previewReady && nativeBackendReady && !!window.osfui?.request });
 
 installModelPreview(async (name, payload) => {
   if (previewReady || !window.osfui?.request) throw new Error('Live model loading requires the in-game native plugin.');
@@ -4273,3 +4291,14 @@ installModelPreview(async (name, payload) => {
 }, { quality: () => uiPreferences.previewResolution, setQuality: quality => { setPreviewResolution(quality); } });
 
 installUiSettings({ changed: render, status: (message, error = false) => setStatus(message, error ? 'error' : 'success') });
+
+installTranslations(async () => {
+  if(!previewReady&&window.osfui?.request){
+    const reply=await window.osfui.request<{ok:boolean;pack?:TranslationPack|null;packs?:Array<{file:string;pack:TranslationPack}>}>('console.command-center.translationPack',{});
+    if(!reply?.ok)throw Error('Translation read failed.');
+    return reply.packs?reply:reply.pack??null;
+  }
+  const response=await fetch('/__ccc/translations',{cache:'no-store'});
+  if(!response.ok)throw Error('Translation file could not be loaded.');
+  return response.json();
+}, render);

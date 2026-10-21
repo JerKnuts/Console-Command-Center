@@ -146,7 +146,7 @@ export function installDevFeedback(options: { version: string; rerender: () => v
       void showAreaIdentification(record,{
         identify:async()=>{if(!options.identifyArea)throw new Error('Current-area identification requires the updated in-game plugin.');return options.identifyArea();},
         accept:(name,area,proposal)=>{
-          const report:DevFeedbackReport={...record,status:'Name Change Accepted',comment:'Accepted the name proposed from the current game area.',version:options.version,time:new Date().toISOString(),originalName:record.name,acceptedName:name,area,nameBasis:proposal.basis};
+          const report:DevFeedbackReport={...record,status:'Name Change Accepted',comment:!proposal.matches?'Entered a custom name for the selected entry; the current cell differs.':proposal.basis==='Custom name'?'Entered a custom name after identifying the current game area.':'Accepted the name proposed from the current game area.',version:options.version,time:new Date().toISOString(),originalName:record.name,acceptedName:name,area,nameBasis:proposal.basis};
           reports=commitAreaNameChange({label:record.name,value:record.id??'',localFormId:record.localId,plugin:sourcePlugins[(record.source??'Starfield.esm').toLowerCase()]??record.source},name,reports,report);
           options.nameChanged?.();options.rerender();options.status(`Renamed ${record.name} to ${name}. Name-change entry saved for Export Reports.`);
         },closed:()=>{if(button.isConnected)button.focus({preventScroll:true});}

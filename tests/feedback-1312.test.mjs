@@ -37,7 +37,7 @@ test('all 69 reported reference cells are hidden in basic mode and scoped to the
 
 test('reported classifications do not hide other caves or other Armored Transport cells',()=>{
  const rows=catalog.filter(r=>r.type==='CELL');
- const unreportedCave=rows.find(r=>r.label==='Waterfall Cave'&&!r.referenceOnly&&!findings.reference.includes(key(r)));
+ const unreportedCave=rows.find(r=>(r.label==='Waterfall Cave'||r.label==='Misthaze Cavern')&&!r.referenceOnly&&!findings.reference.includes(key(r)));
  assert.ok(unreportedCave);assert.equal(cellReferenceNote(unreportedCave),null);
  assert.equal(cellReferenceNote({...unreportedCave,label:'Cave'}),null);
  assert.equal(Boolean(find('starfield.esm:2C12B5').referenceOnly),false);

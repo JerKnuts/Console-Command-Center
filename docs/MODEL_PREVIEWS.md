@@ -1,6 +1,6 @@
-# 3D Viewer
+# Model Viewer
 
-The experimental viewer reads installed game geometry and materials without adding inventory, equipping the player, copying an engine scene or contacting an online service. Game assets are not distributed with CCC. In ID Browser, enable Advanced Options and select a supported item; scanned mod assets also offer previews. The info panel has a Low-quality inline preview and a **3D Viewer** button (controller **Y**).
+The experimental viewer reads installed game geometry and materials without adding inventory, equipping the player, copying an engine scene or contacting an online service. Game assets are not distributed with CCC. In ID Browser, enable Advanced Options and select a supported item; scanned mod assets also offer previews. The info panel has a Low-quality inline preview and a **Model Viewer** button (controller **Y**).
 
 ## Controls
 
@@ -24,9 +24,9 @@ Controller input stays with the fullscreen canvas instead of cycling toolbar but
 
 ## Quality and loading
 
-Low, Medium, High and Ultra preserve original mesh geometry. All retain normal/roughness maps, authored metal maps, studio reflections and tone mapping. Ultra adds more studio reflection panels, bloom, a mild depth-of-field pass focused on the model center, and subtle monochrome grain. These are preview studio reflections, not ray tracing or the game world reflected into the model. Textures Off bypasses the post effects.
+Low, Medium, High and Ultra preserve original mesh geometry. All retain normal/roughness maps, authored metal maps, studio reflections and tone mapping. All four presets also include the extra studio reflection panels, bloom and subtle monochrome grain. Depth of field is disabled. These are preview studio reflections, not ray tracing or the game world reflected into the model. Textures Off bypasses the post effects.
 
-Ultra requests source textures up to 4096 pixels, with a 192 MiB decoded material budget and a 256 MiB transfer cap. Actual source resolution, number of materials and shared memory coverage determine the resulting map sizes; images are not upscaled to invent detail. Ultra uses supersampling capped at 8192 pixels per side and 24 megapixels while preserving aspect ratio. Offscreen bloom/depth targets are allocated only for Ultra and released when changing preset or closing. If allocation fails, the renderer falls back to its ordinary scene pass. High remains the default.
+Ultra requests source textures up to 4096 pixels, with a 192 MiB decoded material budget and a 256 MiB transfer cap. Actual source resolution, number of materials and shared memory coverage determine the resulting map sizes; images are not upscaled to invent detail. Ultra uses supersampling capped at 8192 pixels per side and 24 megapixels while preserving aspect ratio. Offscreen bloom and scene depth targets are used by every preset and released when changing preset or closing. If allocation fails, the renderer falls back to its ordinary scene pass. High remains the default.
 
 On a cold load, both inline and fullscreen previews request and draw geometry without textures first, before starting any material request. Fullscreen then adds Low textures before upgrading to Medium, High or Ultra. Geometry can be reused from an inline preview even while its texture request is pending. Material upgrades preserve the camera and compatible geometry. A CCC ring at the bottom right indicates loading. Failed upgrades retain the usable preview and display an error. Recent decoded models, shared textures and archive indexes are reused in memory; this is not a persistent disk cache. Cold High requests can still be expensive. Closing the viewer cancels remaining transfers and disposes GPU resources; an active native file read can finish in the background.
 
@@ -61,3 +61,7 @@ Native form/model lookup runs on the SFSE task queue. A background worker reads 
 The BA2/NIF/mesh readers and WebGL shaders were independently written. SFShopExplorer 0.8.123 was examined for file-format research; its source, renderer and shaders were not copied. Texture decoding uses bcdec v0.985 under its MIT option; the unmodified upstream header and license are retained in native/third_party. See [third-party notices](../THIRD_PARTY_NOTICES.md).
 
 Native fixtures cover malformed/truncated files, path bounds, decompression, material inheritance, template cycles, attachment placement, cold weapon initialization and packet transport. UI tests cover transfer integrity/cancellation, controls, material upgrades and state preservation. Prior real-asset browser checks covered representative clothing, weapons, helmets, miscellaneous items and the default variant fix. Current release verification is recorded in [Release validation](../RELEASE_VALIDATION.md); an offline pass is not a replacement for an in-game comparison.
+
+### Cloth rest poses
+
+The static reader does not simulate in-game cloth. The Caped House Veth'aal Suit's separate administrator banner uses Cloth_Banner_* bones and can appear detached beside the shoulder in its authored rest pose. This is separate from texture/reflection loading. The banner is retained; fixing this needs a supported cloth pose rather than deleting it or guessing a translation. The preview test tool's --inspect-attachment mode can inspect geometry transforms, bind matrices and inferred bone anchors for installed model paths.

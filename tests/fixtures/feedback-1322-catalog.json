@@ -1,0 +1,133 @@
+{
+  "reportCount": 47,
+  "renamed": {
+    "sfbgs00d.esm:003A32": {
+      "label": "Travel Stop",
+      "previous": "SFBGS00DDR006Ext"
+    },
+    "sfbgs00d.esm:003A33": {
+      "label": "Travel Stop",
+      "previous": "SFBGS00DDR006Ext4"
+    },
+    "sfbgs00d.esm:003A34": {
+      "label": "Travel Stop",
+      "previous": "SFBGS00DDR006Ext3"
+    },
+    "sfbgs00d.esm:003A36": {
+      "label": "Travel Stop",
+      "previous": "SFBGS00DDR006Ext2"
+    },
+    "sfbgs00d.esm:0248A4": {
+      "label": "Anchorpoint",
+      "previous": "SFFLAnchorpoint Station Interior"
+    },
+    "sfbgs00d.esm:046428": {
+      "label": "Geological Survey Site",
+      "previous": "SFFLOEAR07Ext"
+    },
+    "shatteredspace.esm:04C1DB": {
+      "label": "Shadow Station Epsilon",
+      "previous": "Shadow Station Epsilon — Exterior (3, 9)"
+    },
+    "shatteredspace.esm:080404": {
+      "label": "Shadow Station Epsilon",
+      "previous": "Shadow Station Epsilon — Exterior (3, 10)"
+    },
+    "shatteredspace.esm:0870FD": {
+      "label": "Shadow Station Epsilon",
+      "previous": "Shadow Station Epsilon — Exterior (2, 10)"
+    },
+    "starfield.esm:292A68": {
+      "label": "Autonomous Staryard",
+      "previous": "Shipyard"
+    }
+  },
+  "reference": [
+    "sfbgs00d.esm:004C38",
+    "sfbgs00d.esm:004C3B",
+    "sfbgs00d.esm:004C3C",
+    "sfbgs00d.esm:004C3D",
+    "sfbgs00d.esm:008EC2",
+    "sfbgs00d.esm:00D26B",
+    "sfbgs00d.esm:00D26C",
+    "sfbgs00d.esm:02489D",
+    "sfbgs00d.esm:02A3BC",
+    "sfbgs00d.esm:02A3BD",
+    "sfbgs00d.esm:02A3BE",
+    "sfbgs00d.esm:02A3C0",
+    "sfbgs00d.esm:02B9D0",
+    "sfbgs00d.esm:02B9D1",
+    "sfbgs00d.esm:02B9D2",
+    "sfbgs00d.esm:02B9D3",
+    "sfbgs00d.esm:0373C3",
+    "sfbgs00d.esm:03D1C8",
+    "sfbgs00d.esm:046856",
+    "sfbgs050.esm:01AB8E",
+    "sfbgs050.esm:01AB8F",
+    "sfbgs050.esm:0AF093",
+    "shatteredspace.esm:03AB72",
+    "shatteredspace.esm:03ABBC",
+    "shatteredspace.esm:07E06C",
+    "shatteredspace.esm:0F57A9",
+    "shatteredspace.esm:0F9C58",
+    "shatteredspace.esm:0F9C59",
+    "shatteredspace.esm:0F9C5D",
+    "shatteredspace.esm:1081EE",
+    "shatteredspace.esm:1081EF",
+    "shatteredspace.esm:1081F0",
+    "shatteredspace.esm:1081F1",
+    "shatteredspace.esm:109AD4",
+    "shatteredspace.esm:109AD5",
+    "shatteredspace.esm:109AD7",
+    "shatteredspace.esm:109AD9"
+  ],
+  "tested": [
+    "sfbgs00d.esm:003A32",
+    "sfbgs00d.esm:003A33",
+    "sfbgs00d.esm:003A34",
+    "sfbgs00d.esm:003A36",
+    "sfbgs00d.esm:004C38",
+    "sfbgs00d.esm:004C3B",
+    "sfbgs00d.esm:004C3C",
+    "sfbgs00d.esm:004C3D",
+    "sfbgs00d.esm:008EC2",
+    "sfbgs00d.esm:00D26B",
+    "sfbgs00d.esm:00D26C",
+    "sfbgs00d.esm:02489D",
+    "sfbgs00d.esm:0248A4",
+    "sfbgs00d.esm:02A3BC",
+    "sfbgs00d.esm:02A3BD",
+    "sfbgs00d.esm:02A3BE",
+    "sfbgs00d.esm:02A3C0",
+    "sfbgs00d.esm:02B9D0",
+    "sfbgs00d.esm:02B9D1",
+    "sfbgs00d.esm:02B9D2",
+    "sfbgs00d.esm:02B9D3",
+    "sfbgs00d.esm:0373C3",
+    "sfbgs00d.esm:03D1C8",
+    "sfbgs00d.esm:046428",
+    "sfbgs00d.esm:046856",
+    "sfbgs050.esm:01AB8E",
+    "sfbgs050.esm:01AB8F",
+    "sfbgs050.esm:0AF093",
+    "shatteredspace.esm:03AB72",
+    "shatteredspace.esm:03ABBC",
+    "shatteredspace.esm:04C1DB",
+    "shatteredspace.esm:07E06C",
+    "shatteredspace.esm:080404",
+    "shatteredspace.esm:0870FD",
+    "shatteredspace.esm:0F57A9",
+    "shatteredspace.esm:0F9C58",
+    "shatteredspace.esm:0F9C59",
+    "shatteredspace.esm:0F9C5D",
+    "shatteredspace.esm:1081EE",
+    "shatteredspace.esm:1081EF",
+    "shatteredspace.esm:1081F0",
+    "shatteredspace.esm:1081F1",
+    "shatteredspace.esm:109AD4",
+    "shatteredspace.esm:109AD5",
+    "shatteredspace.esm:109AD7",
+    "shatteredspace.esm:109AD9",
+    "starfield.esm:292A68"
+  ]
+}

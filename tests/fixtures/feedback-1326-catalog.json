@@ -1,0 +1,88 @@
+{
+  "reportCount": 23,
+  "renamed": {
+    "shatteredspace.esm:0C6AF8": {
+      "label": "Tomb of the Fang",
+      "previous": "Tomb of the Fang — Exterior (-10, -7)"
+    },
+    "starfield.esm:1A0B99": {
+      "label": "The Trade Authority",
+      "previous": "Trade Authority"
+    },
+    "shatteredspace.esm:07F1FF": {
+      "label": "Tul'Shahk Monastery",
+      "previous": "Tul'Shahk Monastery — Exterior (8, 10)"
+    },
+    "shatteredspace.esm:07F200": {
+      "label": "Tul'Shahk Monastery",
+      "previous": "Tul'Shahk Monastery — Exterior (8, 9)"
+    },
+    "shatteredspace.esm:05B194": {
+      "label": "Tul'Shahk Monastery",
+      "previous": "Tul'Shahk Monastery — Exterior (9, 10)"
+    },
+    "shatteredspace.esm:07F1FD": {
+      "label": "Tul'Shahk Monastery",
+      "previous": "Tul'Shahk Monastery — Exterior (9, 9)"
+    },
+    "starfield.esm:25C678": {
+      "label": "UC Distribution Center",
+      "previous": "UC Distribution"
+    },
+    "starfield.esm:267B61": {
+      "label": "Starstation UCN-48",
+      "previous": "UCN-48"
+    },
+    "shatteredspace.esm:04C1DF": {
+      "label": "Vaifala Crash Site",
+      "previous": "Vaifala Crash Site — Exterior (2, -11)"
+    },
+    "starfield.esm:2C5400": {
+      "label": "Vanguard Recruitment Center",
+      "previous": "Vanguard Orientation Hall"
+    },
+    "starfield.esm:2BF4E6": {
+      "label": "Neon: Hotel Volii",
+      "previous": "Volii Hotel"
+    }
+  },
+  "reference": [
+    "starfield.esm:2373EB",
+    "starfield.esm:234476",
+    "starfield.esm:1AD849",
+    "starfield.esm:09306A",
+    "starfield.esm:25CAA7",
+    "starfield.esm:25B225",
+    "sfbgs050.esm:005B52",
+    "sfbgs050.esm:005B51",
+    "sfbgs050.esm:02B079",
+    "sfbgs050.esm:02B078",
+    "sfbgs050.esm:02B074",
+    "sfbgs050.esm:02B07B"
+  ],
+  "tested": [
+    "starfield.esm:2373EB",
+    "starfield.esm:234476",
+    "shatteredspace.esm:0C6AF8",
+    "starfield.esm:1A0B99",
+    "starfield.esm:1AD849",
+    "shatteredspace.esm:07F1FF",
+    "shatteredspace.esm:07F200",
+    "shatteredspace.esm:05B194",
+    "shatteredspace.esm:07F1FD",
+    "starfield.esm:25C678",
+    "starfield.esm:09306A",
+    "starfield.esm:267B61",
+    "starfield.esm:25CAA7",
+    "starfield.esm:25B225",
+    "sfbgs050.esm:005B52",
+    "sfbgs050.esm:005B51",
+    "sfbgs050.esm:02B079",
+    "sfbgs050.esm:02B078",
+    "sfbgs050.esm:02B074",
+    "sfbgs050.esm:02B07B",
+    "shatteredspace.esm:04C1DF",
+    "starfield.esm:2C5400",
+    "starfield.esm:2BF4E6"
+  ]
+}

@@ -2,7 +2,7 @@
 #include "PreviewGeometry.h"
 #include <memory>
 namespace CCC::Preview {
-    struct ScenePlugin {std::string name;unsigned kind=0,index=0;std::vector<std::string> masters;};
+    struct ScenePlugin {std::string name;unsigned kind=0,index=0;std::vector<std::string> masters;bool localized=false;};
     struct PlacedModel {std::string path;Matrix transform=Identity();};
     class RecordScenes {
         struct Entry{std::size_t plugin;std::uint64_t offset;std::uint32_t size,flags;std::string type;};
@@ -16,10 +16,10 @@ namespace CCC::Preview {
         void Index(){records.clear();cells.clear();for(auto& plugin:plugins)plugin.masters.clear();for(std::size_t p=0;p<plugins.size();++p){std::ifstream f(directory/plugins[p].name,std::ios::binary|std::ios::ate);if(!f)continue;const auto size=std::uint64_t(f.tellg());f.seekg(0);std::uint64_t at=0;
             while(at+24<=size){f.seekg(at);std::array<std::uint8_t,24> h{};if(!f.read(reinterpret_cast<char*>(h.data()),24))break;Reader r{h};const auto type=r.Text(4);const auto length=r.Read<std::uint32_t>();const auto flags=r.Read<std::uint32_t>(),raw=r.Read<std::uint32_t>();
                 if(type=="GRUP"){if(length<24||length>size-at)throw std::runtime_error("Invalid assembly group bounds.");const auto label=flags,group=raw;if(group==6){const auto cell=Remap(p,label);if(cell)cells[cell].push_back({p,at+24,at+length});at+=length;continue;}
-                    if(group==0&&std::string("|TES4|ARMO|ARMA|LMSW|WEAP|OMOD|ARMO|ARMA|LMSW|GBFM|PKIN|STAT|MSTT|FURN|ACTI|CONT|DOOR|COBJ|MTPT|MISC|ALCH|AMMO|BOOK|KEYM|CELL|").find("|"+std::string(reinterpret_cast<const char*>(&label),4)+"|")==std::string::npos){at+=length;continue;}at+=24;continue;}
+                    if(group==0&&std::string("|TES4|ARMO|ARMA|LMSW|WEAP|OMOD|ARMO|ARMA|LMSW|GBFM|PKIN|STAT|MSTT|FURN|ACTI|CONT|DOOR|COBJ|MTPT|MISC|ALCH|AMMO|BOOK|KEYM|PERK|SPEL|CELL|").find("|"+std::string(reinterpret_cast<const char*>(&label),4)+"|")==std::string::npos){at+=length;continue;}at+=24;continue;}
                 if(length>size-at-24||length>8u*1024*1024)throw std::runtime_error("Invalid assembly record bounds.");
-                if(type=="TES4"){const auto bytes=ReadRange(directory/plugins[p].name,at+24,length);Fields(bytes,[&](const std::string& tag,std::span<const std::uint8_t> value){if(tag=="MAST"){std::string name(reinterpret_cast<const char*>(value.data()),value.size());if(auto end=name.find('\0');end!=name.npos)name.resize(end);plugins[p].masters.push_back(std::move(name));}});}
-                else if(std::string("|ARMO|ARMA|LMSW|WEAP|OMOD|GBFM|PKIN|STAT|MSTT|FURN|ACTI|CONT|DOOR|COBJ|MTPT|MISC|ALCH|AMMO|BOOK|KEYM|").find("|"+type+"|")!=std::string::npos){const auto id=Remap(p,raw);if(id){if(flags&0x20)records.erase(id);else records[id]={p,at+24,length,flags,type};if(records.size()>500000)throw std::runtime_error("Assembly record index exceeds the preview limit.");}}
+                if(type=="TES4"){plugins[p].localized=(flags&0x80)!=0;const auto bytes=ReadRange(directory/plugins[p].name,at+24,length);Fields(bytes,[&](const std::string& tag,std::span<const std::uint8_t> value){if(tag=="MAST"){std::string name(reinterpret_cast<const char*>(value.data()),value.size());if(auto end=name.find('\0');end!=name.npos)name.resize(end);plugins[p].masters.push_back(std::move(name));}});}
+                else if(std::string("|ARMO|ARMA|LMSW|WEAP|OMOD|GBFM|PKIN|STAT|MSTT|FURN|ACTI|CONT|DOOR|COBJ|MTPT|MISC|ALCH|AMMO|BOOK|KEYM|PERK|SPEL|").find("|"+type+"|")!=std::string::npos){const auto id=Remap(p,raw);if(id){if(flags&0x20)records.erase(id);else records[id]={p,at+24,length,flags,type};if(records.size()>500000)throw std::runtime_error("Assembly record index exceeds the preview limit.");}}
                 at+=24+length;
             }
         }indexed=true;}
@@ -35,6 +35,17 @@ namespace CCC::Preview {
             std::vector<std::uint32_t> ordered;for(const auto& [id,ref]:refs)ordered.push_back(id);std::sort(ordered.begin(),ordered.end());for(const auto refId:ordered){const auto& ref=refs.at(refId);Resolve(ref.base,Multiply(world,ref.transform),out,visiting,depth+1);}
         }
     public:
+        struct Descriptions{std::string plugin;bool localized=false;Bytes summary;std::vector<Bytes> ranks;};
+        Descriptions ReadDescriptions(std::uint32_t id){
+            if(!indexed)Index();const auto found=records.find(id);if(found==records.end())return {};
+            Descriptions out{plugins[found->second.plugin].name,plugins[found->second.plugin].localized};bool seen=false,inRank=false;Bytes rank;
+            Fields(Read(found->second),[&](const std::string& tag,std::span<const std::uint8_t> bytes){
+                if(tag=="PRRK"){inRank=true;rank.clear();}
+                else if(tag=="PRRF"){if(inRank&&out.ranks.size()<32)out.ranks.push_back(rank);inRank=false;}
+                else if(tag=="DESC"&&bytes.size()<=262144){if(inRank)rank.assign(bytes.begin(),bytes.end());else if(!seen){seen=true;out.summary.assign(bytes.begin(),bytes.end());}}
+            });return out;
+        }
+        std::string InlineDescription(std::uint32_t id){const auto record=ReadDescriptions(id);if(record.localized)return {};std::string text(record.summary.begin(),record.summary.end());if(auto end=text.find('\0');end!=text.npos)text.resize(end);return text;}
         RecordScenes(std::filesystem::path data,std::vector<ScenePlugin> sources):directory(std::move(data)),plugins(std::move(sources)){for(std::size_t i=0;i<plugins.size();++i){if(plugins[i].name!=std::filesystem::path(plugins[i].name).filename().string())throw std::runtime_error("Invalid model plugin name.");names[Lower(plugins[i].name)]=i;}}
         bool IsWeapon(std::uint32_t id){if(!indexed)Index();const auto it=records.find(id);return it!=records.end()&&it->second.type=="WEAP";}
         std::vector<std::string> WeaponModels(std::uint32_t id){if(!indexed)Index();std::vector<std::string> paths;std::unordered_set<std::uint32_t> visiting,done;

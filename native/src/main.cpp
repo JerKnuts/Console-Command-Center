@@ -1,3 +1,4 @@
+#include "Translations.h"
 #include <SFSE/SFSE.h>
 #include <RE/Starfield.h>
 #include <RE/B/BSScriptUtil.h>
@@ -28,6 +29,7 @@
 #include "CommandBatches.h"
 #include "DevFeedback.h"
 #include "ModelPreview.h"
+#include "RecordDetails.h"
 #include "PreviewTriggerInput.h"
 #include "CommandBatchAutoRun.h"
 
@@ -36,7 +38,7 @@ namespace
     OSFUI::API::Client g_ui;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "1.3.15";
+    constexpr const char* kBuildId = "1.3.31";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -789,9 +791,19 @@ namespace
     {
         OSFUI::API::JsonRequest request{ raw };
         if (!request) return;
-        const auto content = request.Get<std::string>("content");
-        if (!content) return;
-        try { (void)request.Reply(CCC::DevFeedback::Export(*content)); }
+        try {
+            const auto& payload=request.Payload();
+            if(payload.contains("action")){
+                static CCC::DevFeedback::Uploads uploads;
+                auto result=uploads.Accept(payload);
+                if(payload.value("action",std::string{})=="finish")result=CCC::DevFeedback::Export(result.at("content").get<std::string>());
+                (void)request.Reply(result);
+            }else{
+                const auto content=request.Get<std::string>("content");
+                if(!content)throw std::runtime_error("Missing report content. Install the matching CCC UI and DLL.");
+                (void)request.Reply(CCC::DevFeedback::Export(*content));
+            }
+        }
         catch (const std::exception& error) { request.Reject("dev-feedback-export-failed", error.what()); }
         catch (...) { request.Reject("dev-feedback-export-failed", "Could not export test reports."); }
     }
@@ -948,11 +960,13 @@ namespace
         g_ui.RegisterRequest("console.command-center.modCatalogs", &OnModCatalogs, nullptr);
         g_ui.RegisterRequest("console.command-center.modCatalogRecords", &OnModCatalogRecords, nullptr);
         g_ui.RegisterRequest("console.command-center.pluginLoadOrder", &OnPluginLoadOrder, nullptr);
+        g_ui.RegisterRequest("console.command-center.inspectRecord", &CCC::RecordDetails::OnInspect, nullptr);
         g_ui.RegisterRequest("console.command-center.previewModel", &CCC::ModelPreview::OnModel, nullptr);
         g_ui.RegisterRequest("console.command-center.previewChunk", &CCC::ModelPreview::OnChunk, nullptr);
         CCC::PreviewTriggerInput::Install(g_ui);
         g_ui.RegisterRequest("console.command-center.devFeedbackExport", &OnDevFeedbackExport, nullptr);
         g_ui.RegisterRequest("console.command-center.includedBatch", &OnIncludedBatch, nullptr);
+        g_ui.RegisterRequest("console.command-center.translationPack", &CCC::Translations::OnRead, nullptr);
         g_ui.RegisterRequest("console.command-center.commandBatchList", &OnCommandBatchList, nullptr);
         g_ui.RegisterRequest("console.command-center.commandBatchSave", &OnCommandBatchSave, nullptr);
         g_ui.RegisterRequest("console.command-center.commandBatchDelete", &OnCommandBatchDelete, nullptr);

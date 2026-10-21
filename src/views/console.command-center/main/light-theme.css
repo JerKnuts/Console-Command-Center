@@ -79,8 +79,14 @@
 :root[data-ccc-theme="light"] .utility-nav-bar .nav-button.is-active .nav-count { color: #f4f4e9; }
 :root[data-ccc-theme="light"] .command-detail-warning { background: rgba(221, 193, 97, 0.16); }
 
-.ui-settings-dialog { width: min(650px, 90vw); max-height: 85vh; padding: 20px; overflow: auto; color: var(--osf-text-body); background: var(--ccc-surface-raised); border: 1px solid var(--ccc-line-strong); }
+.ui-settings-dialog { width: min(900px, 92vw); max-width: 92vw; box-sizing: border-box; max-height: 85vh; padding: 20px; overflow: auto; color: var(--osf-text-body); background: var(--ccc-surface-raised); border: 1px solid var(--ccc-line-strong); }
 .ui-settings-dialog::backdrop { background: rgba(0, 0, 0, 0.8); }
 .ui-settings-option { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid var(--ccc-line); }
 .ui-settings-option p { color: var(--osf-text-muted); margin: 5px 0 0; line-height: 1.4; }
 .ui-settings-option button { min-width: 120px; }
+.ui-settings-option:has(.ui-preview-quality), .ui-settings-option[data-ccc-language-controls] { grid-template-columns: minmax(0, 1fr); }
+.ui-settings-option .ui-preview-quality, .ui-language-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ui-language-actions select { flex: 1 1 260px; min-width: 0; max-width: 100%; }
+.ui-settings-option .ui-language-location { margin: 0; font-size: .85em; overflow-wrap: anywhere; }
+.ui-language-location code { display: block; margin-top: 4px; font-size: inherit; white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 540px) { .ui-settings-option { grid-template-columns: minmax(0, 1fr); } }

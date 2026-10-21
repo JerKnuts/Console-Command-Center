@@ -7,6 +7,8 @@ import { cccPreviewModCatalogPlugin } from './scripts/preview-mod-catalogs.mjs';
 
 // @ts-expect-error JavaScript development plugin has no declaration file.
 import { cccIncludedBatchesPlugin } from './scripts/included-batches.mjs';
+// @ts-expect-error JavaScript development plugin has no declaration file.
+import { cccTranslationsPlugin } from './scripts/translations-preview.mjs';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)));
 
@@ -28,7 +30,7 @@ export default defineConfig({
     permissions: { nativeBridge: true },
   }],
   vite: {
-    plugins: [cccPreviewModCatalogPlugin(projectRoot), cccIncludedBatchesPlugin(), {
+    plugins: [cccTranslationsPlugin(projectRoot), cccPreviewModCatalogPlugin(projectRoot), cccIncludedBatchesPlugin(), {
       name: 'ccc-preview-shared-styles',
       transformIndexHtml(html: string) {
         return html.replace('</head>', '  <link rel="stylesheet" href="/shared/osfui.css">\n  <script>window.__CCC_PREVIEW_READY__ = new Promise((resolve) => { window.__CCC_RESOLVE_PREVIEW_READY__ = resolve; });</script>\n</head>');

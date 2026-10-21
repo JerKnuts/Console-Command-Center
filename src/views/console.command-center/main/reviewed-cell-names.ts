@@ -1,3 +1,4 @@
+import { applyReportedCellName } from './reviewed-cell-feedback.ts';
 // Exact CELL identities resolved from English LCTN/WRLD names in the installed official masters.
 // Location scope and exterior coordinates distinguish cells without inventing landmarks.
 const NAMES: Record<string,{label:string;original:string}> = {
@@ -1246,5 +1247,5 @@ export function applyReviewedCellName<T extends {type?:string;value:string;plugi
  if(record.type!=='CELL')return record;
  const key=(record.plugin??'Starfield.esm').toLowerCase()+':'+(record.localFormId??record.value).toUpperCase().slice(-6).padStart(6,'0');
  const name=NAMES[key];
- return name?{...record,label:name.label,originalName:name.original,keywords:[...new Set([...(record.keywords??[]),name.original])]}:record;
+ return applyReportedCellName(name?{...record,label:name.label,originalName:name.original,keywords:[...new Set([...(record.keywords??[]),name.original])]}:record);
 }

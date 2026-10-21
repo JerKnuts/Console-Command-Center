@@ -1,0 +1,93 @@
+{
+  "reportCount": 17,
+  "renamed": {
+    "starfield.esm:2BF5F8": {
+      "label": "Neon: Warehouse",
+      "previous": "Warehouse 01"
+    },
+    "starfield.esm:2BF600": {
+      "label": "Neon: Warehouse",
+      "previous": "Warehouse 02"
+    },
+    "starfield.esm:2BF603": {
+      "label": "Neon: Warehouse",
+      "previous": "Warehouse 03"
+    },
+    "starfield.esm:045647": {
+      "label": "Neon: Warehouse",
+      "previous": "Warehouse 04"
+    },
+    "shatteredspace.esm:00EF82": {
+      "label": "Misthaze Cavern",
+      "previous": "Waterfall Cave"
+    },
+    "shatteredspace.esm:04C1F2": {
+      "label": "Wayshrine of Devotion",
+      "previous": "Wayshrine of Devotion — Exterior (8, 3)"
+    },
+    "shatteredspace.esm:0740A1": {
+      "label": "Wayshrine of Obedience",
+      "previous": "Wayshrine of Obedience — Exterior (-1, 8)"
+    },
+    "shatteredspace.esm:0740A0": {
+      "label": "Wayshrine of Obedience",
+      "previous": "Wayshrine of Obedience — Exterior (-1, 9)"
+    },
+    "shatteredspace.esm:04C1FE": {
+      "label": "Wayshrine of Obedience",
+      "previous": "Wayshrine of Obedience — Exterior (0, 8)"
+    },
+    "shatteredspace.esm:04C1FD": {
+      "label": "Wayshrine of Obedience",
+      "previous": "Wayshrine of Obedience — Exterior (0, 9)"
+    },
+    "shatteredspace.esm:074099": {
+      "label": "Wayshrine of Perseverance",
+      "previous": "Wayshrine of Perseverance — Exterior (-10, 3)"
+    },
+    "shatteredspace.esm:04C1F9": {
+      "label": "Wayshrine of Perseverance",
+      "previous": "Wayshrine of Perseverance — Exterior (-11, 3)"
+    },
+    "shatteredspace.esm:04873A": {
+      "label": "Wayshrine of Redemption",
+      "previous": "Wayshrine of Redemption — Exterior (1, 2)"
+    },
+    "shatteredspace.esm:075F99": {
+      "label": "Wayshrine of Strength",
+      "previous": "Wayshrine of Strength — Exterior (-1, -9)"
+    },
+    "shatteredspace.esm:04C1EE": {
+      "label": "Wayshrine of Strength",
+      "previous": "Wayshrine of Strength — Exterior (0, -9)"
+    },
+    "sfbgs00d.esm:0079E6": {
+      "label": "Wildlife Viewing Station",
+      "previous": "Wildlife Viewing Station — Exterior (0, 0)"
+    },
+    "starfield.esm:144F82": {
+      "label": "Xenofresh Fisheries",
+      "previous": "Xenofresh Fisheries Factory"
+    }
+  },
+  "reference": [],
+  "tested": [
+    "starfield.esm:2BF5F8",
+    "starfield.esm:2BF600",
+    "starfield.esm:2BF603",
+    "starfield.esm:045647",
+    "shatteredspace.esm:00EF82",
+    "shatteredspace.esm:04C1F2",
+    "shatteredspace.esm:0740A1",
+    "shatteredspace.esm:0740A0",
+    "shatteredspace.esm:04C1FE",
+    "shatteredspace.esm:04C1FD",
+    "shatteredspace.esm:074099",
+    "shatteredspace.esm:04C1F9",
+    "shatteredspace.esm:04873A",
+    "shatteredspace.esm:075F99",
+    "shatteredspace.esm:04C1EE",
+    "sfbgs00d.esm:0079E6",
+    "starfield.esm:144F82"
+  ]
+}

@@ -1,0 +1,708 @@
+{
+  "reportCount": 173,
+  "reportedRenames": 80,
+  "renamed": {
+    "sfbgs00d.esm:049D90": {
+      "label": "Bodach Asteroid Mine Cavern",
+      "previous": "Bodach Asteroid Mine Cavern — Interior"
+    },
+    "sfbgs050.esm:00F9F6": {
+      "label": "EC Robot Alias Cell",
+      "previous": "EC Robot Alias Cell — Alias Cell"
+    },
+    "shatteredspace.esm:034E03": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-3, 3)"
+    },
+    "shatteredspace.esm:036B44": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (1, 3)"
+    },
+    "shatteredspace.esm:047105": {
+      "label": "Lakelands Power Station",
+      "previous": "Lakelands Power Station — Exterior (4, -9)"
+    },
+    "shatteredspace.esm:047107": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (6, -8)"
+    },
+    "shatteredspace.esm:04710D": {
+      "label": "Deep Gorge Refinery",
+      "previous": "Deep Gorge Refinery — Exterior (10, -10)"
+    },
+    "shatteredspace.esm:0474B2": {
+      "label": "Deep Gorge Refinery",
+      "previous": "Deep Gorge Refinery — Exterior (10, -11)"
+    },
+    "shatteredspace.esm:0475F1": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (8, -9)"
+    },
+    "shatteredspace.esm:0478D6": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-7, -9)"
+    },
+    "shatteredspace.esm:0478DA": {
+      "label": "Dazra Seaweed Farms",
+      "previous": "Dazra Seaweed Farms — Exterior (-4, 0)"
+    },
+    "shatteredspace.esm:0485D0": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (5, 1)"
+    },
+    "shatteredspace.esm:0485D7": {
+      "label": "Dazra Orphanage",
+      "previous": "Dazra Orphanage — Exterior (4, -2)"
+    },
+    "shatteredspace.esm:0485D8": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (3, 2)"
+    },
+    "shatteredspace.esm:0485DB": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (2, 2)"
+    },
+    "shatteredspace.esm:0485DE": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (1, 0)"
+    },
+    "shatteredspace.esm:04C1DD": {
+      "label": "Control Site Kappa",
+      "previous": "Control Site Kappa — Exterior (-5, -10)"
+    },
+    "shatteredspace.esm:04C1DE": {
+      "label": "Badlands Power Station",
+      "previous": "Badlands Power Station — Exterior (4, 4)"
+    },
+    "shatteredspace.esm:04C1E0": {
+      "label": "Hillcountry Power Relay",
+      "previous": "Hillcountry Power Relay — Exterior (-7, -7)"
+    },
+    "shatteredspace.esm:04C1E1": {
+      "label": "Chunks",
+      "previous": "Chunks — Exterior (-5, -3)"
+    },
+    "shatteredspace.esm:04C1E4": {
+      "label": "Hollow Bluff Depot",
+      "previous": "Hollow Bluff Depot — Exterior (-11, -1)"
+    },
+    "shatteredspace.esm:04C1E9": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (8, -10)"
+    },
+    "shatteredspace.esm:04C1EB": {
+      "label": "Listening Post Alpha",
+      "previous": "Listening Post Alpha — Exterior (-9, -11)"
+    },
+    "shatteredspace.esm:04C1EC": {
+      "label": "Cave",
+      "previous": "Cave — Exterior (-10, -9)"
+    },
+    "shatteredspace.esm:04C1ED": {
+      "label": "Dazra Groat Farms",
+      "previous": "Dazra Groat Farms — Exterior (1, -4)"
+    },
+    "shatteredspace.esm:04C1F1": {
+      "label": "Listening Post Beta",
+      "previous": "Listening Post Beta — Exterior (6, 2)"
+    },
+    "shatteredspace.esm:04C1F4": {
+      "label": "Apostate's Refuge",
+      "previous": "Apostate's Refuge — Exterior (-10, 9)"
+    },
+    "shatteredspace.esm:04C1F6": {
+      "label": "Abandoned Camp",
+      "previous": "Abandoned Camp — Exterior (-8, 3)"
+    },
+    "shatteredspace.esm:04C1FA": {
+      "label": "Hamadi Station",
+      "previous": "Hamadi Station — Exterior (-8, 1)"
+    },
+    "shatteredspace.esm:04C1FF": {
+      "label": "Badlands Power Relay",
+      "previous": "Badlands Power Relay — Exterior (-3, 6)"
+    },
+    "shatteredspace.esm:04C204": {
+      "label": "Irina's Farm",
+      "previous": "Irina's Farm — Exterior (-10, 6)"
+    },
+    "shatteredspace.esm:04C20B": {
+      "label": "Dazra Abandoned Outpost",
+      "previous": "Abandoned Outpost — Exterior (-4, 9)"
+    },
+    "shatteredspace.esm:04C24C": {
+      "label": "Hermit Groat Farm",
+      "previous": "Hermit Groat Farm — Exterior (-1, -4)"
+    },
+    "shatteredspace.esm:04C271": {
+      "label": "Hermit Groat Farm",
+      "previous": "Hermit Groat Farm — Exterior (-1, -3)"
+    },
+    "shatteredspace.esm:050AD0": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-6, -10)"
+    },
+    "shatteredspace.esm:052B30": {
+      "label": "Lake Watchtower",
+      "previous": "Lake Watchtower — Exterior (-4, -1)"
+    },
+    "shatteredspace.esm:052B66": {
+      "label": "Lakeside Dock",
+      "previous": "Lakeside Dock — Exterior (-3, 3)"
+    },
+    "shatteredspace.esm:053EF9": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (2, -4)"
+    },
+    "shatteredspace.esm:057487": {
+      "label": "Lakeside Dock",
+      "previous": "Lakeside Dock — Exterior (-4, 3)"
+    },
+    "shatteredspace.esm:05A5C0": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-7, -3)"
+    },
+    "shatteredspace.esm:05ACB1": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (8, -3)"
+    },
+    "shatteredspace.esm:05ACB2": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (8, -4)"
+    },
+    "shatteredspace.esm:05ACB3": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (8, -5)"
+    },
+    "shatteredspace.esm:05ACB4": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (8, -6)"
+    },
+    "shatteredspace.esm:05B192": {
+      "label": "Dazra Abandoned Outpost",
+      "previous": "Abandoned Outpost — Exterior (-4, 10)"
+    },
+    "shatteredspace.esm:05BE8F": {
+      "label": "Improvised Shelter",
+      "previous": "Improvised Shelter — Exterior (3, 3)"
+    },
+    "shatteredspace.esm:05F5D5": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-6, 9)"
+    },
+    "shatteredspace.esm:05F5D7": {
+      "label": "Dazra Abandoned Outpost",
+      "previous": "Abandoned Outpost — Exterior (-5, 9)"
+    },
+    "shatteredspace.esm:05F5D8": {
+      "label": "Dazra Abandoned Outpost",
+      "previous": "Abandoned Outpost — Exterior (-5, 10)"
+    },
+    "shatteredspace.esm:05F6F0": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-1, 6)"
+    },
+    "shatteredspace.esm:05F6F9": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-2, 4)"
+    },
+    "shatteredspace.esm:06133C": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (1, 6)"
+    },
+    "shatteredspace.esm:06871F": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (2, -9)"
+    },
+    "shatteredspace.esm:06DCC4": {
+      "label": "Abbas Seaweed Farm",
+      "previous": "Abbas Seaweed Farm — Exterior (9, -7)"
+    },
+    "shatteredspace.esm:06DCC5": {
+      "label": "Abbas Seaweed Farm",
+      "previous": "Abbas Seaweed Farm — Exterior (9, -8)"
+    },
+    "shatteredspace.esm:06DCC6": {
+      "label": "Abbas Seaweed Farm",
+      "previous": "Abbas Seaweed Farm — Exterior (8, -7)"
+    },
+    "shatteredspace.esm:06DCC7": {
+      "label": "Abbas Seaweed Farm",
+      "previous": "Abbas Seaweed Farm — Exterior (8, -8)"
+    },
+    "shatteredspace.esm:06DCC8": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (7, -6)"
+    },
+    "shatteredspace.esm:070E16": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-10, -10)"
+    },
+    "shatteredspace.esm:070E17": {
+      "label": "Listening Post Alpha",
+      "previous": "Listening Post Alpha — Exterior (-9, -10)"
+    },
+    "shatteredspace.esm:070E18": {
+      "label": "Listening Post Alpha",
+      "previous": "Listening Post Alpha — Exterior (-10, -11)"
+    },
+    "shatteredspace.esm:0717E4": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (8, 2)"
+    },
+    "shatteredspace.esm:076302": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-9, 9)"
+    },
+    "shatteredspace.esm:076303": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-9, 10)"
+    },
+    "shatteredspace.esm:076411": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-2, -3)"
+    },
+    "shatteredspace.esm:079E61": {
+      "label": "Deep Gorge Refinery",
+      "previous": "Deep Gorge Refinery — Exterior (9, -10)"
+    },
+    "shatteredspace.esm:079E62": {
+      "label": "Deep Gorge Refinery",
+      "previous": "Deep Gorge Refinery — Exterior (9, -11)"
+    },
+    "shatteredspace.esm:07A0F1": {
+      "label": "Abandoned Camp",
+      "previous": "Abandoned Camp — Exterior (-7, 2)"
+    },
+    "shatteredspace.esm:07A0F2": {
+      "label": "Hamadi Station",
+      "previous": "Hamadi Station — Exterior (-7, 1)"
+    },
+    "shatteredspace.esm:07A1A8": {
+      "label": "Irina's Farm",
+      "previous": "Irina's Farm — Exterior (-10, 7)"
+    },
+    "shatteredspace.esm:07DBEC": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-7, -4)"
+    },
+    "shatteredspace.esm:07E0E7": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-9, -1)"
+    },
+    "shatteredspace.esm:07E0E8": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-9, -2)"
+    },
+    "shatteredspace.esm:07E0F2": {
+      "label": "Hollow Bluff Depot",
+      "previous": "Hollow Bluff Depot — Exterior (-10, -1)"
+    },
+    "shatteredspace.esm:07E0F3": {
+      "label": "Hollow Bluff Depot",
+      "previous": "Hollow Bluff Depot — Exterior (-10, -2)"
+    },
+    "shatteredspace.esm:07E0F4": {
+      "label": "Hollow Bluff Depot",
+      "previous": "Hollow Bluff Depot — Exterior (-11, -2)"
+    },
+    "shatteredspace.esm:07E0F5": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-9, -4)"
+    },
+    "shatteredspace.esm:07E12D": {
+      "label": "Badlands Power Station",
+      "previous": "Badlands Power Station — Exterior (4, 5)"
+    },
+    "shatteredspace.esm:07E4D2": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (1, 1)"
+    },
+    "shatteredspace.esm:084C25": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (3, -3)"
+    },
+    "shatteredspace.esm:084C26": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (2, -3)"
+    },
+    "shatteredspace.esm:0884EA": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (7, 1)"
+    },
+    "shatteredspace.esm:089A57": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-5, -6)"
+    },
+    "shatteredspace.esm:08CC27": {
+      "label": "Control Site Kappa",
+      "previous": "Control Site Kappa — Exterior (-3, -8)"
+    },
+    "shatteredspace.esm:08D5F3": {
+      "label": "Control Site Kappa",
+      "previous": "Control Site Kappa — Exterior (-5, -9)"
+    },
+    "shatteredspace.esm:08D5F4": {
+      "label": "Control Site Kappa",
+      "previous": "Control Site Kappa — Exterior (-4, -9)"
+    },
+    "shatteredspace.esm:08D5F5": {
+      "label": "Control Site Kappa",
+      "previous": "Control Site Kappa — Exterior (-4, -8)"
+    },
+    "shatteredspace.esm:08D5F6": {
+      "label": "Control Site Kappa",
+      "previous": "Control Site Kappa — Exterior (-5, -7)"
+    },
+    "shatteredspace.esm:08D5F7": {
+      "label": "Control Site Kappa",
+      "previous": "Control Site Kappa — Exterior (-4, -7)"
+    },
+    "shatteredspace.esm:08E4F0": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (2, -2)"
+    },
+    "shatteredspace.esm:0901AA": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (2, 4)"
+    },
+    "shatteredspace.esm:090BC6": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-3, -10)"
+    },
+    "shatteredspace.esm:0969CC": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (5, -3)"
+    },
+    "shatteredspace.esm:0969CD": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (4, -3)"
+    },
+    "shatteredspace.esm:09F625": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-3, -7)"
+    },
+    "shatteredspace.esm:0A3BC3": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (2, -5)"
+    },
+    "shatteredspace.esm:0A5047": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-3, -5)"
+    },
+    "shatteredspace.esm:0A8B3E": {
+      "label": "Dazra Groat Farms",
+      "previous": "Dazra Groat Farms — Exterior (1, -5)"
+    },
+    "shatteredspace.esm:0B67AD": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-8, 5)"
+    },
+    "shatteredspace.esm:0BD506": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (6, 4)"
+    },
+    "shatteredspace.esm:0BEDD3": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-3, -6)"
+    },
+    "shatteredspace.esm:0C6AF0": {
+      "label": "Dazra Seaweed Farms",
+      "previous": "Dazra Seaweed Farms — Exterior (-4, 1)"
+    },
+    "shatteredspace.esm:0CB024": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (-6, 4)"
+    },
+    "shatteredspace.esm:0CBA41": {
+      "label": "Dazra Outskirts",
+      "previous": "Dazra Outskirts — Exterior (3, 6)"
+    },
+    "shatteredspace.esm:0CDD21": {
+      "label": "Badlands Power Relay",
+      "previous": "Badlands Power Relay — Exterior (-4, 6)"
+    },
+    "shatteredspace.esm:0F0128": {
+      "label": "Hoodoo Rock Camp",
+      "previous": "Hoodoo Rock Camp — Exterior (-1, 0)"
+    },
+    "shatteredspace.esm:10E348": {
+      "label": "Anomalous Cave",
+      "previous": "Anomalous Cave — Interior"
+    },
+    "shatteredspace.esm:11A138": {
+      "label": "Hermit Groat Farm",
+      "previous": "Hermit Groat Farm — Exterior (-2, -3)"
+    },
+    "shatteredspace.esm:15568E": {
+      "label": "Courier Center",
+      "previous": "Courier Center — Exterior (-5, -1)"
+    }
+  },
+  "reference": [
+    "sfbgs00d.esm:00243D",
+    "sfbgs00d.esm:00243E",
+    "sfbgs00d.esm:00243F",
+    "sfbgs00d.esm:002442",
+    "sfbgs00d.esm:006F69",
+    "sfbgs00d.esm:0076E4",
+    "sfbgs00d.esm:007B6A",
+    "sfbgs00d.esm:00873F",
+    "sfbgs00d.esm:008DD3",
+    "sfbgs00d.esm:0094CE",
+    "sfbgs00d.esm:0094CF",
+    "sfbgs00d.esm:0094D0",
+    "sfbgs00d.esm:0094DC",
+    "sfbgs00d.esm:00A677",
+    "sfbgs00d.esm:00AA25",
+    "sfbgs00d.esm:00E074",
+    "sfbgs00d.esm:00E075",
+    "sfbgs00d.esm:00E076",
+    "sfbgs00d.esm:00E077",
+    "sfbgs00d.esm:00EF40",
+    "sfbgs00d.esm:011373",
+    "sfbgs00d.esm:011662",
+    "sfbgs00d.esm:023B66",
+    "sfbgs00d.esm:030774",
+    "sfbgs00d.esm:030776",
+    "sfbgs00d.esm:030777",
+    "sfbgs00d.esm:030778",
+    "sfbgs00d.esm:03077A",
+    "sfbgs00d.esm:03077B",
+    "sfbgs00d.esm:03077C",
+    "sfbgs00d.esm:03077D",
+    "sfbgs00d.esm:03077E",
+    "sfbgs00d.esm:044616",
+    "sfbgs00d.esm:04A287",
+    "sfbgs00d.esm:04A289",
+    "sfbgs00d.esm:04B50B",
+    "sfbgs00d.esm:04B50D",
+    "sfbgs00d.esm:0525DA",
+    "sfbgs00d.esm:0525DB",
+    "sfbgs00d.esm:0525DD",
+    "sfbgs00d.esm:0525DE",
+    "sfbgs00d.esm:05DC00",
+    "sfbgs050.esm:00F9F6",
+    "sfbgs050.esm:02B00A",
+    "sfbgs050.esm:02B00B",
+    "sfbgs050.esm:02B00E",
+    "sfbgs050.esm:02B010",
+    "sfbgs050.esm:02BA0A",
+    "sfbgs050.esm:02BA0B",
+    "sfbgs050.esm:02BA0C",
+    "sfbgs050.esm:02BA0D",
+    "sfbgs050.esm:034613",
+    "sfbgs050.esm:034614",
+    "sfbgs050.esm:034615",
+    "sfbgs050.esm:034616",
+    "sfbgs050.esm:034617",
+    "sfbgs050.esm:034618",
+    "sfbgs050.esm:034619",
+    "sfbgs050.esm:03461A",
+    "sfbgs050.esm:03461B",
+    "sfbgs050.esm:03461C",
+    "sfbgs050.esm:03461D",
+    "sfbgs050.esm:03461E",
+    "sfbgs050.esm:03461F",
+    "sfbgs050.esm:034620",
+    "sfbgs050.esm:034621",
+    "sfbgs050.esm:034622",
+    "sfbgs050.esm:034623",
+    "sfbgs050.esm:034624",
+    "sfbgs050.esm:034625",
+    "sfbgs050.esm:034626",
+    "sfbgs050.esm:034627",
+    "sfbgs050.esm:034628",
+    "sfbgs050.esm:034629",
+    "sfbgs050.esm:03462A",
+    "sfbgs050.esm:03462B",
+    "sfbgs050.esm:03462C",
+    "sfbgs050.esm:03462D",
+    "sfbgs050.esm:03462E",
+    "sfbgs050.esm:03462F",
+    "sfbgs050.esm:034630",
+    "sfbgs050.esm:034631",
+    "sfbgs050.esm:034632",
+    "sfbgs050.esm:034633",
+    "sfbgs050.esm:034634",
+    "sfbgs050.esm:034635",
+    "sfbgs050.esm:034636",
+    "sfbgs050.esm:074DB0",
+    "shatteredspace.esm:04C1DC",
+    "shatteredspace.esm:05F5D7",
+    "shatteredspace.esm:0F6F74",
+    "shatteredspace.esm:0F6F76"
+  ],
+  "tested": [
+    "sfbgs00d.esm:00243D",
+    "sfbgs00d.esm:00243E",
+    "sfbgs00d.esm:00243F",
+    "sfbgs00d.esm:002442",
+    "sfbgs00d.esm:006F69",
+    "sfbgs00d.esm:0076E4",
+    "sfbgs00d.esm:007B6A",
+    "sfbgs00d.esm:00873F",
+    "sfbgs00d.esm:008DD3",
+    "sfbgs00d.esm:0094CE",
+    "sfbgs00d.esm:0094CF",
+    "sfbgs00d.esm:0094D0",
+    "sfbgs00d.esm:0094DC",
+    "sfbgs00d.esm:00A677",
+    "sfbgs00d.esm:00AA25",
+    "sfbgs00d.esm:00E074",
+    "sfbgs00d.esm:00E075",
+    "sfbgs00d.esm:00E076",
+    "sfbgs00d.esm:00E077",
+    "sfbgs00d.esm:00EF40",
+    "sfbgs00d.esm:011373",
+    "sfbgs00d.esm:011662",
+    "sfbgs00d.esm:023B66",
+    "sfbgs00d.esm:030774",
+    "sfbgs00d.esm:030776",
+    "sfbgs00d.esm:030777",
+    "sfbgs00d.esm:030778",
+    "sfbgs00d.esm:03077A",
+    "sfbgs00d.esm:03077B",
+    "sfbgs00d.esm:03077C",
+    "sfbgs00d.esm:03077D",
+    "sfbgs00d.esm:03077E",
+    "sfbgs00d.esm:044616",
+    "sfbgs00d.esm:049D90",
+    "sfbgs00d.esm:04A287",
+    "sfbgs00d.esm:04A289",
+    "sfbgs00d.esm:04B50B",
+    "sfbgs00d.esm:04B50D",
+    "sfbgs00d.esm:0525DA",
+    "sfbgs00d.esm:0525DB",
+    "sfbgs00d.esm:0525DD",
+    "sfbgs00d.esm:0525DE",
+    "sfbgs00d.esm:05DC00",
+    "sfbgs050.esm:00F9F6",
+    "sfbgs050.esm:02B00A",
+    "sfbgs050.esm:02B00B",
+    "sfbgs050.esm:02B00E",
+    "sfbgs050.esm:02B010",
+    "sfbgs050.esm:02BA0A",
+    "sfbgs050.esm:02BA0B",
+    "sfbgs050.esm:02BA0C",
+    "sfbgs050.esm:02BA0D",
+    "sfbgs050.esm:034613",
+    "sfbgs050.esm:034614",
+    "sfbgs050.esm:034615",
+    "sfbgs050.esm:034616",
+    "sfbgs050.esm:034617",
+    "sfbgs050.esm:034618",
+    "sfbgs050.esm:034619",
+    "sfbgs050.esm:03461A",
+    "sfbgs050.esm:03461B",
+    "sfbgs050.esm:03461C",
+    "sfbgs050.esm:03461D",
+    "sfbgs050.esm:03461E",
+    "sfbgs050.esm:03461F",
+    "sfbgs050.esm:034620",
+    "sfbgs050.esm:034621",
+    "sfbgs050.esm:034622",
+    "sfbgs050.esm:034623",
+    "sfbgs050.esm:034624",
+    "sfbgs050.esm:034625",
+    "sfbgs050.esm:034626",
+    "sfbgs050.esm:034627",
+    "sfbgs050.esm:034628",
+    "sfbgs050.esm:034629",
+    "sfbgs050.esm:03462A",
+    "sfbgs050.esm:03462B",
+    "sfbgs050.esm:03462C",
+    "sfbgs050.esm:03462D",
+    "sfbgs050.esm:03462E",
+    "sfbgs050.esm:03462F",
+    "sfbgs050.esm:034630",
+    "sfbgs050.esm:034631",
+    "sfbgs050.esm:034632",
+    "sfbgs050.esm:034633",
+    "sfbgs050.esm:034634",
+    "sfbgs050.esm:034635",
+    "sfbgs050.esm:034636",
+    "sfbgs050.esm:074DB0",
+    "shatteredspace.esm:034E03",
+    "shatteredspace.esm:047105",
+    "shatteredspace.esm:04710D",
+    "shatteredspace.esm:0474B2",
+    "shatteredspace.esm:0478D6",
+    "shatteredspace.esm:0478DA",
+    "shatteredspace.esm:0485D7",
+    "shatteredspace.esm:0485DE",
+    "shatteredspace.esm:04C1DC",
+    "shatteredspace.esm:04C1DD",
+    "shatteredspace.esm:04C1DE",
+    "shatteredspace.esm:04C1E0",
+    "shatteredspace.esm:04C1E1",
+    "shatteredspace.esm:04C1E4",
+    "shatteredspace.esm:04C1EB",
+    "shatteredspace.esm:04C1EC",
+    "shatteredspace.esm:04C1ED",
+    "shatteredspace.esm:04C1F1",
+    "shatteredspace.esm:04C1F4",
+    "shatteredspace.esm:04C1F6",
+    "shatteredspace.esm:04C1FA",
+    "shatteredspace.esm:04C1FF",
+    "shatteredspace.esm:04C204",
+    "shatteredspace.esm:04C20B",
+    "shatteredspace.esm:04C24C",
+    "shatteredspace.esm:04C271",
+    "shatteredspace.esm:050AD0",
+    "shatteredspace.esm:052B30",
+    "shatteredspace.esm:052B66",
+    "shatteredspace.esm:057487",
+    "shatteredspace.esm:05A5C0",
+    "shatteredspace.esm:05B192",
+    "shatteredspace.esm:05BE8F",
+    "shatteredspace.esm:05F5D5",
+    "shatteredspace.esm:05F5D7",
+    "shatteredspace.esm:05F5D8",
+    "shatteredspace.esm:05F6F0",
+    "shatteredspace.esm:05F6F9",
+    "shatteredspace.esm:06DCC4",
+    "shatteredspace.esm:06DCC5",
+    "shatteredspace.esm:06DCC6",
+    "shatteredspace.esm:06DCC7",
+    "shatteredspace.esm:070E16",
+    "shatteredspace.esm:070E17",
+    "shatteredspace.esm:070E18",
+    "shatteredspace.esm:0717E4",
+    "shatteredspace.esm:076411",
+    "shatteredspace.esm:079E61",
+    "shatteredspace.esm:079E62",
+    "shatteredspace.esm:07A0F1",
+    "shatteredspace.esm:07A0F2",
+    "shatteredspace.esm:07A1A8",
+    "shatteredspace.esm:07DBEC",
+    "shatteredspace.esm:07E0E7",
+    "shatteredspace.esm:07E0E8",
+    "shatteredspace.esm:07E0F2",
+    "shatteredspace.esm:07E0F3",
+    "shatteredspace.esm:07E0F4",
+    "shatteredspace.esm:07E12D",
+    "shatteredspace.esm:089A57",
+    "shatteredspace.esm:08CC27",
+    "shatteredspace.esm:08D5F3",
+    "shatteredspace.esm:08D5F4",
+    "shatteredspace.esm:08D5F5",
+    "shatteredspace.esm:08D5F6",
+    "shatteredspace.esm:08D5F7",
+    "shatteredspace.esm:090BC6",
+    "shatteredspace.esm:09F625",
+    "shatteredspace.esm:0A5047",
+    "shatteredspace.esm:0A8B3E",
+    "shatteredspace.esm:0B67AD",
+    "shatteredspace.esm:0BEDD3",
+    "shatteredspace.esm:0C6AF0",
+    "shatteredspace.esm:0CB024",
+    "shatteredspace.esm:0CDD21",
+    "shatteredspace.esm:0F0128",
+    "shatteredspace.esm:0F6F74",
+    "shatteredspace.esm:0F6F76",
+    "shatteredspace.esm:10E348",
+    "shatteredspace.esm:11A138",
+    "shatteredspace.esm:15568E"
+  ]
+}

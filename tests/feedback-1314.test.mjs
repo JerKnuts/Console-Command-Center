@@ -9,6 +9,12 @@ import {visibleIdRecord} from '../src/views/console.command-center/main/ui-prefe
 registerHooks({resolve(specifier,context,next){return next(specifier.startsWith('.')&&!/\.[a-z]+$/i.test(specifier)?specifier+'.ts':specifier,context);}});
 const {mergeGeneratedIdCatalog,resolvePackagedIdCatalog}=await import('../src/views/console.command-center/main/id-catalog.ts');
 const findings=JSON.parse(readFileSync(new URL('./fixtures/feedback-1314-catalog.json',import.meta.url),'utf8'));
+const latest=JSON.parse(readFileSync(new URL('./fixtures/feedback-1318-catalog.json',import.meta.url),'utf8'));
+Object.assign(latest.renamed,JSON.parse(readFileSync(new URL('./fixtures/feedback-1320-catalog.json',import.meta.url),'utf8')).renamed);
+Object.assign(latest.renamed,JSON.parse(readFileSync(new URL('./fixtures/feedback-1322-catalog.json',import.meta.url),'utf8')).renamed);
+Object.assign(latest.renamed,JSON.parse(readFileSync(new URL('./fixtures/feedback-1325-catalog.json',import.meta.url),'utf8')).renamed);
+Object.assign(latest.renamed,JSON.parse(readFileSync(new URL('./fixtures/feedback-1326-catalog.json',import.meta.url),'utf8')).renamed);
+Object.assign(latest.renamed,JSON.parse(readFileSync(new URL('./fixtures/feedback-1327-catalog.json',import.meta.url),'utf8')).renamed);
 const key=r=>(r.plugin??'Starfield.esm').toLowerCase()+':'+(r.localFormId??r.value).slice(-6).toUpperCase();
 const catalog=mergeGeneratedIdCatalog(GENERATED_ID_CATALOG);
 const find=(k,rows=catalog)=>{const r=rows.find(r=>key(r)===k);assert.ok(r,'Missing feedback record '+k);assert.equal(r.type,'CELL');return r;};
@@ -38,20 +44,20 @@ test('all 310 audited cell names retain identity, searchable original labels and
  assert.equal(findings.audit.length,310);
  const counts={};
  for(const expected of findings.audit){
-  const r=find(expected.key);assert.equal(r.label,expected.label);assert.equal(r.originalName,expected.original);assert.ok(r.keywords.includes(expected.original));
-  assert.ok(r.label.startsWith(expected.source.name+' — '));counts[expected.basis]=(counts[expected.basis]??0)+1;
+  const r=find(expected.key);assert.equal(r.label,latest.renamed[expected.key]?.label??expected.label);assert.equal(r.originalName,expected.original);assert.ok(r.keywords.includes(expected.original));
+  if(latest.renamed[expected.key])assert.ok(r.keywords.includes(expected.label));else assert.ok(r.label.startsWith(expected.source.name+' — '));counts[expected.basis]=(counts[expected.basis]??0)+1;
   assert.deepEqual(applyReviewedFindings(r),r);
   assert.equal(applyReviewedFindings({...r,plugin:'Other.esm',label:expected.original}).label,expected.original);
   assert.equal(applyReviewedFindings({...r,type:'BOOK',label:expected.original}).label,expected.original);
  }
  assert.deepEqual(counts,{'Linked location':141,'Parent location':35,'Worldspace':134});
- assert.match(find('shatteredspace.esm:080404').label,/^Shadow Station Epsilon — Exterior/);
+ assert.equal(find('shatteredspace.esm:080404').label,'Shadow Station Epsilon');
  assert.equal(find('sfbgs050.esm:02B45B').label,'Terran Repeater — Interior');
 });
 
 test('100 cells without authored names retain their identifiers and the category includes spaced separators',()=>{
  assert.equal(findings.unresolved.length,100);
- for(const expected of findings.unresolved)assert.equal(find(expected.key).label,expected.original);
+ for(const expected of findings.unresolved)assert.equal(find(expected.key).label,latest.renamed[expected.key]?.label??expected.original);
  const source=readFileSync(new URL('../src/views/console.command-center/main/id-catalog.ts',import.meta.url),'utf8');
  assert.ok(source.includes("label: 'Cells / Teleport'"));assert.ok(!source.includes('Cells/Teleport'));
 });

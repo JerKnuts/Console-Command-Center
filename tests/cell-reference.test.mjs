@@ -24,7 +24,7 @@ test('storage and holding metadata rules do not infer test cells from ordinary n
 test('reviewed cell corpus keeps ordinary destinations first and reference cells hidden in basic mode',()=>{
  const source=readFileSync(new URL('../src/views/console.command-center/main/id-browser-data.ts',import.meta.url),'utf8');
  const rows=JSON.parse(source.match(/String.raw`([\s\S]*?)`/)[1]).filter(r=>r.type==='CELL').map(applyReviewedFindings);
- const refs=rows.filter(r=>r.referenceOnly);assert.equal(rows.filter(cellReferenceNote).length,1799);assert.equal(refs.length,1824);
+ const refs=rows.filter(r=>r.referenceOnly);assert.equal(rows.filter(cellReferenceNote).length,2058);assert.equal(refs.length,2083);
  const sorted=orderIdEntries(rows);const firstRef=sorted.findIndex(r=>r.referenceOnly);assert.ok(firstRef>0);assert.ok(sorted.slice(firstRef).every(r=>r.referenceOnly));
  assert.ok(refs.every(r=>!visibleIdRecord(r,false)));assert.ok(rows.filter(r=>!r.referenceOnly).every(r=>visibleIdRecord(r,false)));
 });
@@ -35,5 +35,7 @@ test('reviewed raw sc labels and reported minefields are reference-only without 
   const row={label:'Area',value:'09000000',plugin,localFormId,type:'CELL',category:'Cells'};
   assert.equal(applyReviewedFindings(row).referenceOnly,true);assert.equal(cellReferenceNote({...row,plugin:'Other.esm'}),null);
  }
- assert.equal(cellReferenceNote({type:'CELL',value:'0024CBC4',plugin:'Starfield.esm',localFormId:'24CBC4',keywords:['scMS02TheBeagle']}),null);
+ // The Beagle is now explicitly reported as reference; its sc prefix alone still has no effect on other identities.
+ assert.match(cellReferenceNote({type:'CELL',value:'0024CBC4',plugin:'Starfield.esm',localFormId:'24CBC4',keywords:['scMS02TheBeagle']}),/Player-reported/);
+ assert.equal(cellReferenceNote({type:'CELL',value:'0024CBC4',plugin:'Other.esm',localFormId:'24CBC4',keywords:['scMS02TheBeagle']}),null);
 });

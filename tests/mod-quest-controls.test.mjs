@@ -7,7 +7,7 @@ import { devFeedbackButton } from '../src/views/console.command-center/main/dev-
 const source = readFileSync(new URL('../src/views/console.command-center/main/main.ts', import.meta.url), 'utf8');
 const names = new Set(['renderQuestBrowserSelection', 'questBrowserVariantLabel', 'escapeHtml']);
 const functions = [...source.matchAll(/^(?:async )?function (\w+)\b[\s\S]*?^}/gm)].filter(match => names.has(match[1])).map(match => match[0]);
-const context = vm.createContext({ devFeedbackButton, nativeBackendReady: true, activeCatalogPicker: null, questProgressSnapshots: new Map(), normalizedQuestId: id => id.toUpperCase() });
+const context = vm.createContext({ uiPreferences: { advanced: true }, devFeedbackButton, nativeBackendReady: true, activeCatalogPicker: null, questProgressSnapshots: new Map(), normalizedQuestId: id => id.toUpperCase() });
 vm.runInContext(stripTypeScriptTypes(functions.join('\n')), context);
 const quest = { quest: 'Mod Quest', editorId: 'ExampleQuest', questId: 'FE123800', stages: [], source: 'Example.esm', requirement: null, category: 'Quests', internal: false };
 test('mod quest selection uses runtime ID, live inspection, and confirmed stage entry instead of an invented stage list', () => {
@@ -40,4 +40,9 @@ test('inactive official quest entries disable inspection, copy, stage, and state
   assert.match(html, /data-quest-inspect="history"[^>]* disabled/);
   assert.match(html, /data-copy-text="FE123800"[^>]* disabled/);
   assert.match(html, /data-quest-stage="10"[^>]* disabled/);
+});
+
+test('ordinary quest details retain source, stages and copy actions while hiding technical metadata',()=>{
+ context.uiPreferences.advanced=false;
+ try{const html=context.renderQuestBrowserSelection(quest,true);assert.doesNotMatch(html,/<dt>(?:Category|Form ID|Editor ID)<\/dt>/);assert.match(html,/<dt>Source<\/dt>/);assert.match(html,/<dt>Stages<\/dt>/);assert.match(html,/Copy Quest ID/);assert.match(html,/Inspect Quest State/);}finally{context.uiPreferences.advanced=true;}
 });

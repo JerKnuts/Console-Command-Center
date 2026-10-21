@@ -3,8 +3,8 @@ import { createLoadingRing } from './loading-ring.ts';
 import { isDevModeEnabled } from './dev-feedback.ts';
 type RecordForPreview = { value: string; label: string; type: string; available?: boolean; source?:string };
 type RequestPreview = (name: string, payload: Record<string, string | number | boolean>) => Promise<unknown>;
-export function canPreviewModel(entry: RecordForPreview, advanced: boolean): boolean {
-  return (advanced||entry.source==='mod') && entry.available !== false && /^[\dA-F]{8}$/i.test(entry.value) && ['MISC', 'WEAP', 'ARMO', 'AMMO', 'ALCH', 'FURN', 'STAT', 'MSTT', 'ACTI', 'CONT', 'DOOR', 'GBFM', 'PKIN', 'COBJ'].includes(entry.type.toUpperCase());
+export function canPreviewModel(entry: RecordForPreview, _advanced?: boolean): boolean {
+  return entry.available !== false && /^[\dA-F]{8}$/i.test(entry.value) && ['MISC', 'WEAP', 'ARMO', 'AMMO', 'ALCH', 'FURN', 'STAT', 'MSTT', 'ACTI', 'CONT', 'DOOR', 'GBFM', 'PKIN', 'COBJ'].includes(entry.type.toUpperCase());
 }
 export function defaultPreviewMannequin(type:string,label:string,category=''):boolean {
  return false;
@@ -49,7 +49,7 @@ export function installModelPreview(request: RequestPreview, options?: { quality
     const id = trigger.dataset.previewModel; if (!id || !/^[\dA-F]{8}$/i.test(id)) return;
     if (!trigger.isConnected || document.querySelector('dialog.model-preview-dialog[open]')) return;
     const dialog = document.createElement('dialog'); dialog.className = 'model-preview-dialog osf-card';dialog.tabIndex=-1;
-    const title = document.createElement('h3'); title.textContent = trigger.dataset.previewLabel ?? 'Item model'; dialog.setAttribute('aria-label', title.textContent + ' 3D Viewer');
+    const title = document.createElement('h3'); title.textContent = trigger.dataset.previewLabel ?? 'Item model'; dialog.setAttribute('aria-label', title.textContent + ' Model Viewer');
     const close = document.createElement('button'); close.className = 'osf-btn osf-btn--sm'; close.type = 'button'; close.textContent = 'Close';
     const header = document.createElement('header'); header.append(title, close);
     const status = document.createElement('p'); status.className = 'model-preview-status'; status.setAttribute('role', 'status'); status.textContent = 'Loading the installed item model…';
@@ -177,7 +177,7 @@ export function installModelPreview(request: RequestPreview, options?: { quality
     const canvas = document.createElement('canvas'); canvas.className = 'inline-model-canvas'; canvas.tabIndex = 0; canvas.hidden = true;
     canvas.setAttribute('aria-label', 'Item preview. Left-drag to rotate; scroll to zoom. Arrow keys rotate; plus and minus zoom.');
     const status = document.createElement('p'); status.className = 'inline-model-status'; status.textContent = 'Loading preview…'; status.setAttribute('role', 'status');
-    const fullButton = document.createElement('button'); fullButton.type = 'button'; fullButton.className = 'osf-btn osf-btn--sm'; fullButton.textContent = '3D Viewer';fullButton.dataset.controllerHint='Y';
+    const fullButton = document.createElement('button'); fullButton.type = 'button'; fullButton.className = 'osf-btn osf-btn--sm'; fullButton.textContent = 'Model Viewer';fullButton.dataset.controllerHint='Y';
     fullButton.dataset.previewModel = host.dataset.inlinePreview; fullButton.dataset.previewLabel = host.dataset.previewLabel ?? 'Item model'; fullButton.dataset.previewType = host.dataset.previewType; fullButton.dataset.previewSex = 'male'; fullButton.dataset.previewCategory=host.dataset.previewCategory;
     const armor = defaultPreviewMannequin(host.dataset.previewType??'',host.dataset.previewLabel??'',host.dataset.previewCategory);
     const inlineLoading=createLoadingRing('small');host.append(canvas, inlineLoading,status, fullButton);
@@ -203,7 +203,7 @@ export function installModelPreview(request: RequestPreview, options?: { quality
         if(!renderer||!renderer.updateMaterials(meshes)){const view=renderer?.getView();renderer?.dispose();renderer=track(createPreviewRenderer(canvas,meshes,'low'));if(view)renderer.restoreView(view);}
         renderer.showMissingTextures(isDevModeEnabled());canvas.hidden=false;
         status.textContent = 'Drag to rotate • Scroll to zoom';
-      } catch { if (current()) status.textContent = renderer?'Model ready • Textures unavailable. Try 3D Viewer.':'Preview unavailable. Try 3D Viewer.'; }finally{if(current())inlineLoading.hidden=true;}
+      } catch { if (current()) status.textContent = renderer?'Model ready • Textures unavailable. Try Model Viewer.':'Preview unavailable. Try Model Viewer.'; }finally{if(current())inlineLoading.hidden=true;}
     };
     let pointer: number | null = null, x = 0, y = 0;
     canvas.addEventListener('pointerdown', e => { if (e.button !== 0) return; e.preventDefault(); pointer = e.pointerId; x = e.clientX; y = e.clientY; canvas.setPointerCapture(e.pointerId); canvas.focus({preventScroll:true}); });

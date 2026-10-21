@@ -1,0 +1,301 @@
+{
+  "reportCount": 100,
+  "renamed": {
+    "sfbgs00d.esm:00BF39": {
+      "label": "Scattered Shipwreck",
+      "previous": "Scattered Shipwreck — Exterior (-1, 0)"
+    },
+    "sfbgs00d.esm:00BF3A": {
+      "label": "Scattered Shipwreck",
+      "previous": "Scattered Shipwreck — Exterior (-1, -1)"
+    },
+    "sfbgs00d.esm:00CBD5": {
+      "label": "Scattered Shipwreck",
+      "previous": "Scattered Shipwreck — Exterior (0, -1)"
+    },
+    "sfbgs00d.esm:00CBDB": {
+      "label": "Scattered Shipwreck",
+      "previous": "Scattered Shipwreck — Exterior (0, 0)"
+    },
+    "sfbgs050.esm:014BB4": {
+      "label": "Machina Forge Prime Cavern",
+      "previous": "Machina Forge Prime Cavern — Interior"
+    },
+    "sfbgs050.esm:038811": {
+      "label": "Santos Homestead",
+      "previous": "Santos Homestead — Exterior (0, 0)"
+    },
+    "shatteredspace.esm:04100A": {
+      "label": "Overlook Watchtower",
+      "previous": "Overlook Watchtower — Exterior (0, -3)"
+    },
+    "shatteredspace.esm:046D0D": {
+      "label": "Overlook Watchtower",
+      "previous": "Overlook Watchtower — Exterior (-1, -2)"
+    },
+    "shatteredspace.esm:046D0E": {
+      "label": "Overlook Watchtower",
+      "previous": "Overlook Watchtower — Exterior (-1, -3)"
+    },
+    "shatteredspace.esm:0470D1": {
+      "label": "Scaled Citadel",
+      "previous": "Scaled Citadel — Exterior (3, 0)"
+    },
+    "shatteredspace.esm:04710B": {
+      "label": "Ma'leen Dam",
+      "previous": "Ma'leen Dam — Exterior (9, -5)"
+    },
+    "shatteredspace.esm:0485D5": {
+      "label": "Scaled Citadel",
+      "previous": "Scaled Citadel — Exterior (4, 1)"
+    },
+    "shatteredspace.esm:0485D6": {
+      "label": "Scaled Citadel",
+      "previous": "Scaled Citadel — Exterior (4, 0)"
+    },
+    "shatteredspace.esm:0485D9": {
+      "label": "Scaled Citadel",
+      "previous": "Scaled Citadel — Exterior (3, 1)"
+    },
+    "shatteredspace.esm:0485E0": {
+      "label": "Scaled Citadel",
+      "previous": "Scaled Citadel — Exterior (3, -1)"
+    },
+    "shatteredspace.esm:04C1E2": {
+      "label": "Orahim's Shack",
+      "previous": "Orahim's Shack — Exterior (-5, -5)"
+    },
+    "shatteredspace.esm:04C1E3": {
+      "label": "Malik's Groat Farm",
+      "previous": "Malik's Groat Farm — Exterior (-7, -2)"
+    },
+    "shatteredspace.esm:04C1F3": {
+      "label": "Misthaze Cavern",
+      "previous": "Misthaze Cavern — Exterior (7, -1)"
+    },
+    "shatteredspace.esm:04C272": {
+      "label": "Orm Filtration Facility",
+      "previous": "Orm Filtration Facility — Exterior (0, 0)"
+    },
+    "shatteredspace.esm:04C276": {
+      "label": "Orm Filtration Facility",
+      "previous": "Orm Filtration Facility — Exterior (-2, -1)"
+    },
+    "shatteredspace.esm:04C278": {
+      "label": "Orm Filtration Facility",
+      "previous": "Orm Filtration Facility — Exterior (-2, 0)"
+    },
+    "shatteredspace.esm:04C279": {
+      "label": "Orm Filtration Facility",
+      "previous": "Orm Filtration Facility — Exterior (-1, -1)"
+    },
+    "shatteredspace.esm:04C27A": {
+      "label": "Orm Filtration Facility",
+      "previous": "Orm Filtration Facility — Exterior (-1, 0)"
+    },
+    "shatteredspace.esm:04C280": {
+      "label": "Va'ruun'kai",
+      "previous": "SFBGS001LC54Ext05"
+    },
+    "shatteredspace.esm:05ACB0": {
+      "label": "Ma'leen Dam",
+      "previous": "Ma'leen Dam — Exterior (9, -6)"
+    },
+    "shatteredspace.esm:05D10D": {
+      "label": "Va'ruun'kai",
+      "previous": "SFBGS001Dazra OE21Ext"
+    },
+    "shatteredspace.esm:072BA1": {
+      "label": "Ridgeline Watchtower",
+      "previous": "Ridgeline Watchtower — Exterior (0, 1)"
+    },
+    "shatteredspace.esm:072BA4": {
+      "label": "Ridgeline Watchtower",
+      "previous": "Ridgeline Watchtower — Exterior (1, 0)"
+    },
+    "shatteredspace.esm:072BA5": {
+      "label": "Ridgeline Watchtower",
+      "previous": "Ridgeline Watchtower — Exterior (1, 1)"
+    },
+    "shatteredspace.esm:0AAB07": {
+      "label": "Oasis Watch Tower",
+      "previous": "Oasis Watch Tower — Exterior (1, 0)"
+    },
+    "shatteredspace.esm:0EDF49": {
+      "label": "Dazra Outskirts",
+      "previous": "SFBGS001OE01Ext01"
+    },
+    "shatteredspace.esm:0EDF4B": {
+      "label": "Dazra Outskirts",
+      "previous": "SFBGS001OE01Ext03"
+    },
+    "shatteredspace.esm:0EDF4C": {
+      "label": "Dazra Outskirts",
+      "previous": "SFBGS001OE01Ext02"
+    },
+    "shatteredspace.esm:0EDF4D": {
+      "label": "Dazra Outskirts",
+      "previous": "SFBGS001OE01Ext04"
+    }
+  },
+  "reference": [
+    "sfbgs00d.esm:007298",
+    "sfbgs00d.esm:020482",
+    "sfbgs00d.esm:025686",
+    "sfbgs00d.esm:025687",
+    "sfbgs00d.esm:036F66",
+    "sfbgs00d.esm:036F6A",
+    "sfbgs00d.esm:036F6B",
+    "sfbgs00d.esm:036F6E",
+    "sfbgs00d.esm:044B2D",
+    "sfbgs00d.esm:044B2E",
+    "sfbgs00d.esm:0525DF",
+    "sfbgs050.esm:014BB2",
+    "sfbgs050.esm:014BB3",
+    "sfbgs050.esm:02B036",
+    "sfbgs050.esm:02B037",
+    "sfbgs050.esm:02B03E",
+    "sfbgs050.esm:02B03F",
+    "sfbgs050.esm:02BBA7",
+    "sfbgs050.esm:02BBA8",
+    "sfbgs050.esm:02BBA9",
+    "sfbgs050.esm:02BBAB",
+    "sfbgs050.esm:02BBAC",
+    "sfbgs050.esm:02BBAE",
+    "sfbgs050.esm:02BBAF",
+    "sfbgs050.esm:02BBB0",
+    "sfbgs050.esm:02BBB1",
+    "sfbgs050.esm:03552D",
+    "sfbgs050.esm:0743FA",
+    "sfbgs050.esm:075124",
+    "shatteredspace.esm:072BA2",
+    "shatteredspace.esm:0CB674",
+    "shatteredspace.esm:0E03A2",
+    "shatteredspace.esm:0E3D87",
+    "shatteredspace.esm:0E8151",
+    "shatteredspace.esm:0EC3F6",
+    "shatteredspace.esm:0EECE0",
+    "shatteredspace.esm:0EECE1",
+    "shatteredspace.esm:0EECE2",
+    "shatteredspace.esm:0F0129",
+    "shatteredspace.esm:0F4144",
+    "shatteredspace.esm:0F4145",
+    "shatteredspace.esm:0F4147",
+    "shatteredspace.esm:0F4148",
+    "shatteredspace.esm:0F566C",
+    "shatteredspace.esm:0F6F73",
+    "shatteredspace.esm:0F715F",
+    "shatteredspace.esm:0F7160",
+    "shatteredspace.esm:0F7161",
+    "shatteredspace.esm:0F7163",
+    "shatteredspace.esm:106FB8",
+    "shatteredspace.esm:106FB9",
+    "shatteredspace.esm:106FBA",
+    "shatteredspace.esm:106FBB",
+    "shatteredspace.esm:10B19B",
+    "shatteredspace.esm:10B19C",
+    "shatteredspace.esm:10B19D",
+    "shatteredspace.esm:10B19E",
+    "shatteredspace.esm:1116C1",
+    "shatteredspace.esm:1116F9",
+    "shatteredspace.esm:1116FA",
+    "shatteredspace.esm:1116FC"
+  ],
+  "tested": [
+    "sfbgs00d.esm:007298",
+    "sfbgs00d.esm:00BF39",
+    "sfbgs00d.esm:00BF3A",
+    "sfbgs00d.esm:00CBD5",
+    "sfbgs00d.esm:00CBDB",
+    "sfbgs00d.esm:020482",
+    "sfbgs00d.esm:025686",
+    "sfbgs00d.esm:025687",
+    "sfbgs00d.esm:036F66",
+    "sfbgs00d.esm:036F6A",
+    "sfbgs00d.esm:036F6B",
+    "sfbgs00d.esm:036F6E",
+    "sfbgs00d.esm:044B2D",
+    "sfbgs00d.esm:044B2E",
+    "sfbgs00d.esm:0525DF",
+    "sfbgs050.esm:014BB2",
+    "sfbgs050.esm:014BB3",
+    "sfbgs050.esm:014BB4",
+    "sfbgs050.esm:02B036",
+    "sfbgs050.esm:02B037",
+    "sfbgs050.esm:02B03E",
+    "sfbgs050.esm:02B03F",
+    "sfbgs050.esm:02BBA7",
+    "sfbgs050.esm:02BBA8",
+    "sfbgs050.esm:02BBA9",
+    "sfbgs050.esm:02BBAB",
+    "sfbgs050.esm:02BBAC",
+    "sfbgs050.esm:02BBAE",
+    "sfbgs050.esm:02BBAF",
+    "sfbgs050.esm:02BBB0",
+    "sfbgs050.esm:02BBB1",
+    "sfbgs050.esm:03552D",
+    "sfbgs050.esm:038811",
+    "sfbgs050.esm:0743FA",
+    "sfbgs050.esm:075124",
+    "shatteredspace.esm:04100A",
+    "shatteredspace.esm:046D0D",
+    "shatteredspace.esm:046D0E",
+    "shatteredspace.esm:0470D1",
+    "shatteredspace.esm:04710B",
+    "shatteredspace.esm:0485D5",
+    "shatteredspace.esm:0485D6",
+    "shatteredspace.esm:0485D9",
+    "shatteredspace.esm:0485E0",
+    "shatteredspace.esm:04C1E2",
+    "shatteredspace.esm:04C1E3",
+    "shatteredspace.esm:04C1F3",
+    "shatteredspace.esm:04C272",
+    "shatteredspace.esm:04C276",
+    "shatteredspace.esm:04C278",
+    "shatteredspace.esm:04C279",
+    "shatteredspace.esm:04C27A",
+    "shatteredspace.esm:04C280",
+    "shatteredspace.esm:05ACB0",
+    "shatteredspace.esm:05D10D",
+    "shatteredspace.esm:072BA1",
+    "shatteredspace.esm:072BA2",
+    "shatteredspace.esm:072BA4",
+    "shatteredspace.esm:072BA5",
+    "shatteredspace.esm:0AAB07",
+    "shatteredspace.esm:0CB674",
+    "shatteredspace.esm:0E03A2",
+    "shatteredspace.esm:0E3D87",
+    "shatteredspace.esm:0E8151",
+    "shatteredspace.esm:0EC3F6",
+    "shatteredspace.esm:0EDF49",
+    "shatteredspace.esm:0EDF4B",
+    "shatteredspace.esm:0EDF4C",
+    "shatteredspace.esm:0EDF4D",
+    "shatteredspace.esm:0EECE0",
+    "shatteredspace.esm:0EECE1",
+    "shatteredspace.esm:0EECE2",
+    "shatteredspace.esm:0F0129",
+    "shatteredspace.esm:0F4144",
+    "shatteredspace.esm:0F4145",
+    "shatteredspace.esm:0F4147",
+    "shatteredspace.esm:0F4148",
+    "shatteredspace.esm:0F566C",
+    "shatteredspace.esm:0F6F73",
+    "shatteredspace.esm:0F715F",
+    "shatteredspace.esm:0F7160",
+    "shatteredspace.esm:0F7161",
+    "shatteredspace.esm:0F7163",
+    "shatteredspace.esm:106FB8",
+    "shatteredspace.esm:106FB9",
+    "shatteredspace.esm:106FBA",
+    "shatteredspace.esm:106FBB",
+    "shatteredspace.esm:10B19B",
+    "shatteredspace.esm:10B19C",
+    "shatteredspace.esm:10B19D",
+    "shatteredspace.esm:10B19E",
+    "shatteredspace.esm:1116C1",
+    "shatteredspace.esm:1116F9",
+    "shatteredspace.esm:1116FA",
+    "shatteredspace.esm:1116FC"
+  ]
+}

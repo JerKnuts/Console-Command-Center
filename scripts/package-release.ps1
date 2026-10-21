@@ -19,7 +19,7 @@ New-Item -ItemType Directory -Force -Path $artifactRoot | Out-Null
 function Get-SourceFiles([string]$root) {
     # Explicit maintained roots prevent local experiments and generated trees
     # from silently entering the published source archive.
-    $rootFiles = @('.gitignore', 'CHANGELOG.md', 'COMMAND_CATALOG.md', 'EXCEPTIONS', 'LICENSE',
+    $rootFiles = @('.gitignore', '.gitattributes', 'CHANGELOG.md', 'COMMAND_CATALOG.md', 'EXCEPTIONS', 'LICENSE',
         'README.md', 'RELEASE_VALIDATION.md', 'THIRD_PARTY_NOTICES.md', 'osfui.config.ts',
         'osfui.mock.ts', 'package.json', 'package-lock.json', 'tsconfig.json', 'xmake.lua')
     foreach ($name in $rootFiles) {
@@ -38,7 +38,7 @@ function Get-SourceFiles([string]$root) {
             }
         }
     }
-    foreach ($name in @('src', 'native', 'scripts', 'tests', 'docs', 'batches')) {
+    foreach ($name in @('src', 'native', 'scripts', 'tests', 'docs', 'batches', 'translations')) {
         Get-MaintainedFiles (Join-Path $root $name)
     }
 }

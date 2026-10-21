@@ -1,26 +1,24 @@
-# Release validation — 1.3.15
+# Release validation — 1.3.31
 
-Release artifacts validated locally; see GitHub for publication status.
+## Included changes
 
-## This release
+This release includes translation packs, descriptions/effects/base stats, book reading, reviewed cell names and classifications, report export fixes and the split item-details/model-preview layout. Technical metadata follows Advanced Options; Copy ID and supported previews remain available in ordinary browsing.
 
-- All 245 JavaScript tests passed; UI/TypeScript checks passed. Reset migration coverage includes edited sources, deleted defaults, destination collisions, repeat setup and filename validation. Existing batch command checks confirm unchanged preset/reset values.
-- Included reset defaults use suffix RESET. Boostpack Explosions and its RESET file sort together. The existing native included-file setup performs equivalent validated migration; saved batch/Auto-Run files are untouched.
-- Mod grouping uses the existing plugin view or category counts across scanned records. Tests verify cross-plugin category aggregation, exact filtering, reference visibility and exclusion of packaged records.
-- Browser fixture checks confirmed category grouping, cross-plugin source labels, selection and global search. The switch-back assertion needed a render-frame wait; the corrected full browser run remains pending because the permission-review service was unavailable and sandboxed Edge could not launch. Complete the final switching check in the game.
-- UI production build, release metadata checks and native release build passed. The native build used a workspace-local dependency cache. Native SampleBatchTests passed, including edited-file migration, deletion handling, repeated migration and destination collisions. Installable and source archives are built from the maintained source roots; generated caches and test executables are excluded.
-- No live game files were modified during development.
+## Completed checks
 
-## Previous preview validation retained (1.3.11)
+- All 277 JavaScript regression tests and UI/TypeScript compatibility checks passed, including in the clean publishing checkout. Included-batch tests create their own temporary build parent when run before any build.
+- All eight native test executables passed. Source line endings are normalized to LF and declared in .gitattributes.
+- Native request tests use the actual OSF reject callback: omitted/default, explicit inspect and read-book operations retain a usable reply token; malformed operations are refused. This covers the 1.3.29 inspection rejection fixed in 1.3.30.
+- Native description tests cover bounds, long book text, English fallback, namespace separation, inline descriptions, perk-rank text and remapped identities. Installed-file checks loaded Addichrone, Ballistics and A Christmas Carol. Model geometry/attachment, controller trigger, quest-stage, scalar-result, batch and feedback checks are included in the native test suite.
+- Browser checks with simulated native replies verified the Read popup, scrolling, basic formatting, hostile-markup removal, close/Escape, cached reopening and no inventory/console mutation. They also verified normal/advanced metadata toggling and retained copy/action buttons.
+- Layout checks measured equal description/preview columns with a 14 px gap. The preview stayed at the same vertical position during a 120 px scroll. Items without previews use the full text width.
+- Matching native/UI builds, translation export, release metadata/documentation links and source/runtime archive contents checked before packaging. No game assets, reports, profiles, local caches or experimental OSF helper are part of the CCC release.
 
-- All 232 JavaScript tests, UI/TypeScript and release checks passed; native preview fixtures passed for 1.3.11. These prior checks cover the preview changes retained in this release.
-- Native Ultra asset check produced a 101,099,772-byte Mauling Axe packet with two 2048-pixel color/normal/metal sets. The packet decoded and rendered without WebGL errors using the Ultra transfer path. Source texture sizes remain respected.
-- Browser pixel checks confirm bloom outside a bright object, greater blur away from the focus plane, subtle three-level grain on a flat midtone, allocation-failure fallback, and zero retained postprocess textures/framebuffers/programs/shaders/VAOs after disposal.
-- Real-model browser checks cover Ultra, quality switching, light marker, camera controls and Textures Off without WebGL errors.
-- Geometry-first browser checks hold material replies pending and verify visible pixels before the first texture request. Inline-to-fullscreen reuse works while inline textures remain pending. Low-to-Ultra updates preserve the rotation matrix; failed upgrades retain the visible model.
-- Ultra is available in both quality menus and saved preferences; controller quality selection uses the same option list. Other presets keep their existing limits.
-- Temporary game-asset test files were removed from the application source before packaging. No game assets are distributed.
+## Remaining limits
 
-## In-game check still required
+- Browser tests simulate native replies; they do not replace in-game checks across every record, language or mod. Base stats can differ from inventory instances with upgrades, legendary effects, curves or player bonuses.
+- Audio/image-only slates may not supply readable text. Reading in CCC does not add items, mark the original book read or grant rewards.
+- The static viewer does not simulate cloth. The Caped House Veth'aal Suit's separate banner can appear detached in its authored rest pose; no guessed offsets or deleted pieces are applied.
+- The intermittent OSF loading freeze is not claimed fixed. The experimental OSF visibility-helper replacement remains a separate test project; it is not included here.
 
-Install both DLL and UI. Compare Ultra to High on a weapon and an outfit; confirm geometry appears before material loading, and verify performance in the OSF webview. The attached report provides matching live current-cell evidence for ten accepted names, confirming the current-area tool returned names during play. Outstanding furniture material limitations remain documented.
+Install the matching DLL and view together, then restart Starfield for live verification.

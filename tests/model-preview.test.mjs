@@ -57,9 +57,9 @@ test('color transfer validates UVs, texture sizes and mannequin flags',()=>{
  v.setUint32(72,4097,true);assert.throws(()=>decodePreview(bytes.buffer),/texture/);v.setUint32(72,1,true);
  v.setFloat32(80,Infinity,true);assert.throws(()=>decodePreview(bytes.buffer),/coordinates/);
 });
-test('preview buttons require Advanced Options, supported type and an available runtime ID',()=>{
+test('preview buttons work in ordinary and advanced browsing for supported loaded records',()=>{
  const item={value:'0000000F',label:'Credits',type:'MISC'};
- assert.equal(canPreviewModel(item,true),true);assert.equal(canPreviewModel(item,false),false);
+ assert.equal(canPreviewModel(item,true),true);assert.equal(canPreviewModel(item,false),true);
  assert.equal(canPreviewModel({...item,available:false},true),false);
  assert.equal(canPreviewModel({...item,type:'QUST'},true),false);
  assert.equal(canPreviewModel({...item,type:'BOOK'},true),false);
@@ -131,7 +131,7 @@ test('material transfer keeps glass and shared normal maps with validated refere
 
 test('workshop and ship assembly types expose previews without enabling unrelated forms',()=>{
  for(const type of ['FURN','STAT','MSTT','ACTI','CONT','DOOR','GBFM','PKIN','COBJ'])assert.equal(canPreviewModel({value:'0003059B',label:'Build object',type},true),true);
- assert.equal(canPreviewModel({value:'0003059B',label:'Build object',type:'GBFM'},false),false);
+ assert.equal(canPreviewModel({value:'0003059B',label:'Build object',type:'GBFM'},false),true);
  assert.equal(canPreviewModel({value:'0003059B',label:'Quest',type:'QUST'},true),false);
 });
 test('model transfer pipelines two small bounded ranges and accepts out-of-order replies',async()=>{

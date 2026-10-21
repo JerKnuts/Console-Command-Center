@@ -15,8 +15,8 @@ test('reviewed names retain searchable originals and match plugin/local identity
  const data=readFileSync(new URL('../src/views/console.command-center/main/id-browser-data.ts',import.meta.url),'utf8');
  const records=JSON.parse(data.match(/String.raw`([\s\S]*?)`/)[1]);
  const renamedRecords=records.map(applyReviewedFindings).filter(r=>r.originalName);
- assert.equal(renamedRecords.length,520);
- assert.equal(new Set(renamedRecords.map(r=>r.plugin+':'+r.localFormId)).size,520);
+ assert.equal(renamedRecords.length,549);
+ assert.equal(new Set(renamedRecords.map(r=>r.plugin+':'+r.localFormId)).size,549);
 });
 
 

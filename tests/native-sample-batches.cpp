@@ -1,4 +1,5 @@
 #include "CommandBatches.h"
+#include "Translations.h"
 #include <chrono>
 #include <iostream>
 
@@ -65,7 +66,18 @@ int main() {
         CCC::CommandBatches::WriteFile(included / L"New RESET.txt", "tfc\n");
         CCC::CommandBatches::SeedIncluded(included, OSFUI::API::Json::array({{{"name", "New RESET"}, {"previousName", "Old"}, {"commands", "tgm\n"}}}));
         Check(CCC::CommandBatches::ReadFile(included / L"Old.txt") == "tcl\n" && CCC::CommandBatches::ReadFile(included / L"New RESET.txt") == "tfc\n", "Rename collision overwrote user contents.");
-        std::cout << "Sample batch checks passed: first use, contents, edits, deletion, existing folders, rename migration, repeat migration and destination collisions.\nFixtures retained in " << directory.string() << '\n';
+        const auto translationPath=directory/L"active.json";
+        Check(CCC::Translations::Read(translationPath).at("pack").is_null(), "Missing translation did not fall back to English.");
+        CCC::CommandBatches::WriteFile(translationPath,R"({"schemaVersion":1,"locale":"zh-CN","languageName":"Chinese","messages":{"Settings":"\u8bbe\u7f6e"}})");
+        Check(CCC::Translations::Read(translationPath).at("pack").at("messages").at("Settings").get<std::string>().size()==6,"Chinese translation was not preserved as UTF-8.");
+        const auto locales=directory/L"translations";fs::create_directories(locales);
+        fs::copy_file(translationPath,locales/L"Chinese-example.json");
+        CCC::CommandBatches::WriteFile(locales/L"broken.json","not JSON");
+        const auto found=CCC::Translations::Discover(locales);
+        Check(found.at("packs").size()==1&&found.at("packs").at(0).at("file")=="Chinese-example.json"&&found.at("errors").size()==1,"Translation discovery failed to isolate malformed files.");
+        Check(CCC::Translations::Discover(directory/L"missing-translations").at("packs").empty(),"Missing translation folder did not return an empty list.");
+        CCC::CommandBatches::WriteFile(translationPath,"not JSON");bool rejected=false;try{CCC::Translations::Read(translationPath);}catch(...){rejected=true;}Check(rejected,"Malformed translation file accepted.");
+        std::cout << "Sample batch and translation checks passed: edits, deletion, rename migration, collisions, missing/malformed packs and Unicode.\nFixtures retained in " << directory.string() << '\n';
         return 0;
     } catch (const std::exception& error) { std::cerr << error.what() << '\n'; return 1; }
 }

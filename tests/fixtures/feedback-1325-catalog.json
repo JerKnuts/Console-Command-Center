@@ -1,0 +1,208 @@
+{
+  "reportCount": 74,
+  "renamed": {
+    "sfbgs00d.esm:003A32": {
+      "label": "Travel Stop",
+      "previous": "SFBGS00DDR006Ext"
+    },
+    "sfbgs00d.esm:00D26C": {
+      "label": "Travel Stop",
+      "previous": "SFBGS00DPOIGN01Ext"
+    },
+    "sfbgs00d.esm:003A36": {
+      "label": "Travel Stop",
+      "previous": "SFBGS00DDR006Ext2"
+    },
+    "shatteredspace.esm:078F18": {
+      "label": "Sniper Nest",
+      "previous": "Sniper Nest — Exterior (4, 0)"
+    },
+    "shatteredspace.esm:078F1A": {
+      "label": "Sniper Nest",
+      "previous": "Sniper Nest — Exterior (4, -1)"
+    },
+    "shatteredspace.esm:0ABDE1": {
+      "label": "Spacer Crash Site",
+      "previous": "Spacer Crash Site — Exterior (-5, 7)"
+    },
+    "shatteredspace.esm:04C200": {
+      "label": "Spacer Crash Site",
+      "previous": "Spacer Crash Site — Exterior (-6, 7)"
+    },
+    "shatteredspace.esm:057484": {
+      "label": "Subterranean Mal'siir Farm",
+      "previous": "Subterranean Mal'siir Farm — Exterior (3, -5)"
+    },
+    "shatteredspace.esm:076312": {
+      "label": "Subterranean Mal'siir Farm",
+      "previous": "Subterranean Mal'siir Farm — Exterior (4, -6)"
+    },
+    "shatteredspace.esm:07807C": {
+      "label": "Subterranean Mal'siir Farm",
+      "previous": "Subterranean Mal'siir Farm — Exterior (4, -7)"
+    },
+    "shatteredspace.esm:07807B": {
+      "label": "Subterranean Mal'siir Farm",
+      "previous": "Subterranean Mal'siir Farm — Exterior (5, -7)"
+    },
+    "shatteredspace.esm:030F74": {
+      "label": "Subterranean Mal'siir Farm",
+      "previous": "Subterranean Malsiir Farm"
+    },
+    "shatteredspace.esm:04C1E6": {
+      "label": "Sundered Stone Depot",
+      "previous": "Sundered Stone Depot — Exterior (6, 8)"
+    },
+    "starfield.esm:2BF352": {
+      "label": "SY-920 - Cargo Bay II",
+      "previous": "SY-920 - Cargo Bay 2"
+    },
+    "starfield.esm:28D279": {
+      "label": "SY-920 - Engineering Bay IV",
+      "previous": "SY-920 - Engineering Bay 4"
+    },
+    "shatteredspace.esm:078F1B": {
+      "label": "Target Range",
+      "previous": "Target Range — Exterior (4, -2)"
+    },
+    "starfield.esm:00115F": {
+      "label": "Neon: The Emporium",
+      "previous": "The Emporium"
+    }
+  },
+  "reference": [
+    "starfield.esm:235907",
+    "sfbgs00d.esm:084B0A",
+    "sfbgs00d.esm:085E7E",
+    "sfbgs00d.esm:086257",
+    "starfield.esm:13E4AB",
+    "starfield.esm:1D7041",
+    "starfield.esm:1D704D",
+    "starfield.esm:1EE4D0",
+    "starfield.esm:1EF7F0",
+    "starfield.esm:2D7398",
+    "starfield.esm:237627",
+    "shatteredspace.esm:00849D",
+    "sfbgs050.esm:01B11D",
+    "starfield.esm:03DBEC",
+    "starfield.esm:203B4E",
+    "starfield.esm:23858F",
+    "starfield.esm:2B4AB3",
+    "starfield.esm:269580",
+    "shatteredspace.esm:076313",
+    "starfield.esm:21EBE5",
+    "starfield.esm:25E0EF",
+    "starfield.esm:2662DE",
+    "starfield.esm:27032E",
+    "starfield.esm:2959A0",
+    "starfield.esm:2CC103",
+    "starfield.esm:03274D",
+    "starfield.esm:0C70F5",
+    "starfield.esm:0C70F6",
+    "starfield.esm:0C70F7",
+    "starfield.esm:0C70F8",
+    "starfield.esm:0C70F9",
+    "starfield.esm:0C70FA",
+    "starfield.esm:0C7103",
+    "starfield.esm:0C7102",
+    "starfield.esm:0C7101",
+    "starfield.esm:0C7100",
+    "starfield.esm:0C70FF",
+    "starfield.esm:0C70FE",
+    "starfield.esm:0C70FD",
+    "starfield.esm:0C70FC",
+    "starfield.esm:0C70FB",
+    "starfield.esm:19B078",
+    "sfbgs050.esm:01931B",
+    "sfbgs050.esm:0AD144",
+    "sfbgs050.esm:0AD143",
+    "sfbgs050.esm:02B45C",
+    "sfbgs050.esm:02B45B",
+    "shatteredspace.esm:0C6406",
+    "starfield.esm:0B211F",
+    "shatteredspace.esm:024C03",
+    "sfbgs00d.esm:016D49",
+    "starfield.esm:24CBC4",
+    "starfield.esm:2ABFCD",
+    "starfield.esm:012859",
+    "starfield.esm:01410A",
+    "starfield.esm:01410B",
+    "starfield.esm:274274"
+  ],
+  "tested": [
+    "sfbgs00d.esm:003A32",
+    "sfbgs00d.esm:00D26C",
+    "sfbgs00d.esm:003A36",
+    "starfield.esm:235907",
+    "shatteredspace.esm:078F18",
+    "shatteredspace.esm:078F1A",
+    "sfbgs00d.esm:084B0A",
+    "sfbgs00d.esm:085E7E",
+    "sfbgs00d.esm:086257",
+    "shatteredspace.esm:0ABDE1",
+    "shatteredspace.esm:04C200",
+    "starfield.esm:13E4AB",
+    "starfield.esm:1D7041",
+    "starfield.esm:1D704D",
+    "starfield.esm:1EE4D0",
+    "starfield.esm:1EF7F0",
+    "starfield.esm:2D7398",
+    "starfield.esm:237627",
+    "shatteredspace.esm:00849D",
+    "sfbgs050.esm:01B11D",
+    "starfield.esm:03DBEC",
+    "starfield.esm:203B4E",
+    "starfield.esm:23858F",
+    "starfield.esm:2B4AB3",
+    "starfield.esm:269580",
+    "shatteredspace.esm:057484",
+    "shatteredspace.esm:076312",
+    "shatteredspace.esm:07807C",
+    "shatteredspace.esm:076313",
+    "shatteredspace.esm:07807B",
+    "shatteredspace.esm:030F74",
+    "shatteredspace.esm:04C1E6",
+    "starfield.esm:2BF352",
+    "starfield.esm:28D279",
+    "shatteredspace.esm:078F1B",
+    "starfield.esm:21EBE5",
+    "starfield.esm:25E0EF",
+    "starfield.esm:2662DE",
+    "starfield.esm:27032E",
+    "starfield.esm:2959A0",
+    "starfield.esm:2CC103",
+    "starfield.esm:03274D",
+    "starfield.esm:0C70F5",
+    "starfield.esm:0C70F6",
+    "starfield.esm:0C70F7",
+    "starfield.esm:0C70F8",
+    "starfield.esm:0C70F9",
+    "starfield.esm:0C70FA",
+    "starfield.esm:0C7103",
+    "starfield.esm:0C7102",
+    "starfield.esm:0C7101",
+    "starfield.esm:0C7100",
+    "starfield.esm:0C70FF",
+    "starfield.esm:0C70FE",
+    "starfield.esm:0C70FD",
+    "starfield.esm:0C70FC",
+    "starfield.esm:0C70FB",
+    "starfield.esm:19B078",
+    "sfbgs050.esm:01931B",
+    "sfbgs050.esm:0AD144",
+    "sfbgs050.esm:0AD143",
+    "sfbgs050.esm:02B45C",
+    "sfbgs050.esm:02B45B",
+    "shatteredspace.esm:0C6406",
+    "starfield.esm:0B211F",
+    "shatteredspace.esm:024C03",
+    "sfbgs00d.esm:016D49",
+    "starfield.esm:24CBC4",
+    "starfield.esm:2ABFCD",
+    "starfield.esm:00115F",
+    "starfield.esm:012859",
+    "starfield.esm:01410A",
+    "starfield.esm:01410B",
+    "starfield.esm:274274"
+  ]
+}

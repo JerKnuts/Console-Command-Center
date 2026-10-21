@@ -5,6 +5,13 @@
 using namespace CCC::Preview;
 int main(int argc,char** argv) {
     try {
+        if(argc>=4&&std::string(argv[2])=="--inspect-attachment"){
+            AssetStore assets(argv[1],{"Starfield.esm","ShatteredSpace.esm"});
+            for(int i=3;i<argc;++i){ModelScene scene;auto refs=ReadNif(assets.Read(argv[i]),&scene);std::cout<<argv[i]<<"\n";
+                for(const auto& ref:refs){std::cout<<ref.name<<" mesh="<<ref.path<<" bone="<<ref.bone<<" rigid="<<ref.rigid<<" origin="<<OriginAttachment(ref)<<" world=";for(const auto v:ref.transform)std::cout<<v<<',';std::cout<<" bind=";for(const auto v:ref.bind)std::cout<<v<<',';std::cout<<"\n";}
+                for(const auto& [name,matrix]:scene.bones){std::cout<<"BONE "<<name<<' ';for(const auto v:matrix)std::cout<<v<<',';std::cout<<"\n";}
+            }return 0;
+        }
         if(argc>=5&&std::string(argv[2])=="--audit-variants"){
             std::vector<ScenePlugin> plugins;for(int i=4;i<argc;++i)plugins.push_back({argv[i],0,unsigned(i-4)});RecordScenes scenes(argv[1],plugins);std::ifstream input(argv[3]);std::string line;unsigned checked=0,failed=0;
             while(std::getline(input,line)){const auto a=line.find('|'),b=line.find('|',a+1);if(a==line.npos||b==line.npos)throw std::runtime_error("Invalid variant audit row.");const auto id=std::stoul(line.substr(0,a),nullptr,16);std::vector<Mesh> pieces{Mesh{}};pieces[0].material=line.substr(a+1,b-a-1);scenes.ApplyMaterialSwaps(id,pieces);const auto expected=line.substr(b+1);++checked;if(pieces[0].material!=expected){++failed;std::cout<<line.substr(0,a)<<" expected "<<expected<<" got "<<pieces[0].material<<"\n";}}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {proposeAreaName,validAreaName} from '../src/views/console.command-center/main/area-identification.ts';
+import {proposeAreaName,validAreaName,editedAreaProposal} from '../src/views/console.command-center/main/area-identification.ts';
 import {applyAreaNameOverride,commitAreaNameChange} from '../src/views/console.command-center/main/area-name-overrides.ts';
 import {formatDevFeedback,devFeedbackOutcome} from '../src/views/console.command-center/main/dev-feedback.ts';
 const record={kind:'ID',name:'AHPOI01Ext',id:'01070E19',localId:'070E19',source:'ShatteredSpace.esm',recordType:'CELL'};
@@ -16,11 +16,21 @@ test('broader names retain the cell identifier and no missing name is invented',
  assert.equal(proposeAreaName(record,{ok:true,cell:{...cell,name:'Named Cell'},locations:[],world}).name,'Named Cell');
  assert.equal(proposeAreaName(record,{ok:true,cell,locations:[],world:null}).name,'');
 });
-test('selected/current cell mismatch prevents a rename even when Editor IDs look alike',()=>{
+test('selected/current cell mismatch suppresses automatic suggestions even when Editor IDs look alike',()=>{
  const p=proposeAreaName(record,{ok:true,cell:{...cell,id:'00070E19'},locations:[location],world});assert.equal(p.matches,false);assert.equal(p.name,'');
  assert.equal(proposeAreaName({...record,recordType:'LCTN'},{ok:true,cell,locations:[location],world}).matches,false);
  for(const value of ['', '   ', '???', 'Bad\nName', 'A'.repeat(161)])assert.equal(validAreaName(value),false);
  assert.equal(validAreaName('Dazra — Landmark'),true);
+});
+test('a missing or suggested area name can be edited while validation and the selected entry identity remain enforced',()=>{
+ const empty=proposeAreaName(record,{ok:true,cell,locations:[],world:null});
+ assert.equal(editedAreaProposal(record,empty,'  My Camp  ').name,'My Camp');assert.equal(editedAreaProposal(record,empty,'My Camp').basis,'Custom name');
+ const suggested=proposeAreaName(record,{ok:true,cell,locations:[location],world});
+ assert.equal(editedAreaProposal(record,suggested,'Better Landmark').basis,'Custom name');assert.equal(editedAreaProposal(record,suggested,location.name).basis,'Current location');
+ for(const name of ['',record.name,'???','Bad\nName','A'.repeat(161)])assert.equal(editedAreaProposal(record,empty,name),null);
+ const manual=editedAreaProposal(record,{...empty,matches:false},'Custom Camp');assert.equal(manual.name,'Custom Camp');assert.equal(manual.matches,false);assert.equal(manual.basis,'Custom name (current cell differs)');
+ assert.equal(editedAreaProposal({...record,recordType:'LCTN'},{...empty,matches:false},'Custom Camp'),null);
+ assert.equal(editedAreaProposal({...record,id:''},{...empty,matches:false},'Custom Camp'),null);
 });
 test('accepted names persist with an exportable report, retain searchable originals and survive export',async()=>{
  const saved=new Map();globalThis.localStorage={getItem:k=>saved.get(k)??null,setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)};

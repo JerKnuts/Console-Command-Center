@@ -1,5 +1,101 @@
 # Changelog
 
+## 1.3.31
+
+Release summary since the previous GitHub source update (1.3.15):
+
+- Added installed JSON translations, automatic language selection, organized templates and a short translator guide.
+- Added item descriptions, visible effects/durations, gear base stats, skill-rank text and a Read popup for books and notes. Fixed the native inspection request rejection.
+- Split item details into text on the left and a sticky model preview on the right. Previews work without Advanced Options; technical fields remain optional and Copy ID stays available.
+- Updated Model Viewer quality presets with shared enhanced reflections, bloom and grain, retaining distinct resolutions and removing depth of field.
+- Improved report exports, editable area-name suggestions, reviewed cell labels and reference classifications. Preserved searchable old names and advanced exploration teleports.
+- Improved Mod Browser sort controls and hidden-window/controller handling. The intermittent OSF loading freeze and static cloth rest-pose limitations remain under investigation.
+
+Development increments are recorded below.
+
+## 1.3.30
+
+- Fixed in-game descriptions/stats being rejected when the optional inspection operation was omitted.
+- Send the operation explicitly from the panel and preserve the native default for compatible callers.
+- Show the returned error reason and log inspection failures to make future failures diagnosable.
+
+## 1.3.29
+
+- Enabled small model previews and Model Viewer in ordinary browsing, without requiring Advanced Options.
+- Added a Read popup for books and notes, using their installed text without adding items or granting rewards.
+- Kept book bodies out of the compact stats panel; retained safe formatting and a clear message for items without readable text.
+
+## 1.3.28
+
+- Moved record types, categories, plugin filenames, original names and IDs behind Advanced Options in ID/Mod Browser details; quest technical fields follow the same setting.
+- Kept descriptions, stats, requirements, mod names, Copy ID buttons and item/quest actions visible.
+- Replaced the failed live-details prompt with an in-game availability message when no native backend is connected.
+
+## 1.3.27
+
+- Added ID Browser descriptions, aid and power effects, skill ranks, and base gear stats from installed game records.
+- Details load on selection without spawning or equipping items; supported Mod Browser records use the same inspection.
+- Applied all 17 accepted cell names from the October 20 22:03 report, preserving searchable originals.
+
+## 1.3.26
+
+- Applied the October 20 21:43 report: 11 accepted cell names and 12 Reference Only markings.
+- Retained searchable old names and exploration teleports under Advanced Options.
+
+## 1.3.25
+
+- Applied October 20 feedback: 17 accepted cell names and 57 Reference Only reports, keyed to their exact plugin/local IDs.
+- Preserved old names for searching and Advanced Options teleport access to reference destinations.
+
+## 1.3.24
+
+- Matched Mod Browser sort buttons to Scan Mods' width with shorter stacked controls.
+- Kept item previews visible while scrolling their details; renamed 3D Viewer to Model Viewer.
+- Shared enhanced reflections, bloom and subtle grain across every preset; removed depth of field while retaining quality-specific resolutions.
+- The reported in-game loading stall remains under investigation; this build does not claim to fix it.
+
+## 1.3.23
+
+- Stop held controller navigation and delayed Back actions when CCC hides, loses focus or the controller disconnects. Ignore hidden-window controller events and coalesce focus updates.
+- English mode no longer rescans interface text after ordinary updates. Active translations update once per frame and do not observe their own changes.
+- Removed the shrine-specific loading warning after the failure recurred elsewhere. The broader loading stall still requires in-game verification.
+
+## 1.3.22
+
+- Teleport Here and Teleport to Cell close CCC before issuing the teleport, reducing overlap between the paused overlay and a cell transition. This is a mitigation for the reported Shrine of the Fang loading stall; live verification is pending.
+- Applied 47 reports: 10 cell-name corrections and 37 Reference Only destinations, including a shrine-specific warning about the repeated CCC/OSF loading failure.
+
+## 1.3.21
+
+- Fixed Identify Current Area disabling the name field when the current cell differs. Manual names now apply to the selected entry, with the mismatch recorded in Export Reports.
+
+## 1.3.20
+
+- Identify Current Area accepts typed names when no name is found, and allows editing suggestions. Custom names and area evidence are included in exported reports.
+- Applied both new feedback files: 34 name corrections and 61 distinct Reference Only cells, retaining advanced exploration teleport access.
+
+## 1.3.19
+
+- Applied 173 exported reports: 80 direct cell-name corrections, 29 additional Dazra Outskirts label simplifications and 92 distinct reference-only cells. Original identifiers and prior names remain searchable; reference cells retain Advanced Options exploration teleport.
+
+## 1.3.18
+
+- Fixed large report exports timing out in the OSF WebView. Reports transfer in small chunks and save as one file; failed exports keep pending reports.
+
+## 1.3.17
+
+- Translation templates are organized into named sections; existing flat language files remain supported.
+
+- Installed translations become the default automatically; saved language choices take priority and the bundled example stays opt-in.
+
+- Settings discovers installed translation JSON files and remembers the selected language.
+- Fixed translation discovery in the OSF WebView/browser preview; the partial Chinese example is selectable without renaming files. Invalid packs no longer hide other languages.
+
+## 1.3.16
+
+- Add editable JSON translation packs, an English fallback and Language / Reload Translation controls in Settings. Preserve commands, IDs and raw console text.
+- Add a reproducible JSON/CSV translator kit with an interface-first template and optional catalog strings. Include a partial Chinese example and system CJK font fallbacks.
+
 ## 1.3.15
 
 - Rename included reset batches to Name RESET and group Boostpack Explosions with its reset. Migrate existing included filenames while preserving edits and deletions.

@@ -28,6 +28,8 @@ await build({
   },
 });
 
+await cp(resolve(projectRoot, 'translations'), resolve(viewRoot, 'translations'), { recursive: true });
+
 const builtIndexPath = resolve(viewRoot, 'index.html');
 const builtIndex = await readFile(builtIndexPath, 'utf8');
 await writeFile(

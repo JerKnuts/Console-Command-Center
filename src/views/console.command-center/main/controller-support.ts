@@ -125,6 +125,8 @@ function focusElement(element: HTMLElement | undefined): void {
 
 export function installControllerSupport(bridge?: OSFUIBridge): void {
   let controllerActive = false;
+  let viewVisible = true;
+  let focusFrame: number | null = null;
   let lastGamepadEvent = 0;
   let keyboardTarget: EditableTarget | null = null;
   let keyboardValue = '';
@@ -608,7 +610,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   }
 
   function ensureControllerFocus(): void {
-    if (!controllerActive) return;
+    if (!viewVisible || !controllerActive) return;
     const scope = currentScope(keyboard);
     if(scope instanceof HTMLDialogElement&&scope.matches('.model-preview-dialog')){(scope.querySelector<HTMLElement>('canvas:not([hidden])')??scope).focus({preventScroll:true});return;}
     const elements = focusableElements(scope);
@@ -930,10 +932,20 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     }
   }, true);
 
-  const releaseViewerShortcut=()=>{viewerShortcutHeld=false;};
-  window.addEventListener('blur',releaseViewerShortcut);
-  window.addEventListener('gamepaddisconnected',releaseViewerShortcut);
-  document.addEventListener('visibilitychange',releaseViewerShortcut);
+  const resetControllerInput=()=>{
+    viewerShortcutHeld=false;stopDirectionalRepeat();
+    if(bLongPressTimer!==null)window.clearTimeout(bLongPressTimer);
+    bPressStartedAt=null;bLongPressTimer=null;bLongPressHandled=false;
+    if(focusFrame!==null)cancelAnimationFrame(focusFrame);focusFrame=null;
+    controllerActive=false;document.body.classList.remove('controller-active');
+  };
+  const scheduleFocus=()=>{
+    if(!viewVisible||focusFrame!==null)return;
+    focusFrame=requestAnimationFrame(()=>{focusFrame=null;ensureControllerFocus();});
+  };
+  window.addEventListener('blur',resetControllerInput);
+  window.addEventListener('gamepaddisconnected',resetControllerInput);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)resetControllerInput();});
   document.addEventListener('pointerdown', () => {
     viewerShortcutHeld=false;
     controllerActive = false;
@@ -948,22 +960,26 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     }
   }, true);
 
-  const observer = new MutationObserver(() => requestAnimationFrame(ensureControllerFocus));
+  const observer = new MutationObserver(scheduleFocus);
   observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'open'] });
 
   if (bridge) {
     bridge.send('osfui.gamepadRaw', { raw: true });
     bridge.send('osfui.handleBack', { handle: true });
     bridge.on<PreviewTriggerEvent>('console.command-center.previewTriggers',payload=>{
+      if(!viewVisible)return;
       const preview=document.querySelector<HTMLDialogElement>('dialog.model-preview-dialog[open]');
       if(!preview||!keyboard.hidden||payload?.kind!=='triggers'||!payload.axes)return;
       if(payload.axes.lt>.12||payload.axes.rt>.12){controllerActive=true;lastGamepadEvent=performance.now();document.body.classList.add('controller-active');}
       preview.dispatchEvent(new CustomEvent('ccc-preview-gamepad',{detail:payload}));
     });
     bridge.on<{visible:boolean}>('ui.visibility',payload=>{
+      viewVisible=payload.visible;
+      if(!viewVisible)resetControllerInput();
       document.dispatchEvent(new CustomEvent('ccc-controller-visibility',{detail:payload.visible}));
     });
     bridge.on<GamepadPayload>('ui.gamepad', (payload) => {
+      if(!viewVisible)return;
       controllerActive = true;
       lastGamepadEvent = performance.now();
       document.body.classList.add('controller-active');
@@ -1008,7 +1024,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
           stopDirectionalRepeat('stick');
         } else beginDirectionalRepeat(direction, 'stick');
       }
-      requestAnimationFrame(ensureControllerFocus);
+      scheduleFocus();
     });
   }
 }

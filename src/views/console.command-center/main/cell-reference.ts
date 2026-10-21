@@ -1,3 +1,4 @@
+import { reportedCellReference } from './reviewed-cell-feedback.ts';
 // Reviewed CELL metadata only. Unusual ordinary location names are not a test-cell heuristic.
 type CellRecord = {type?:string;value:string;plugin?:string;localFormId?:string;editorId?:string;keywords?:string[]};
 const REVIEWED_CELL_REASONS: Record<string,string> = {
@@ -262,6 +263,6 @@ export function cellReferenceNote(record: CellRecord): string | null {
   if(record.type?.toUpperCase() !== 'CELL') return null;
   const key=(record.plugin??'Starfield.esm').toLowerCase()+':'+(record.localFormId??record.value).toUpperCase().slice(-6).padStart(6,'0');
   const editor=record.editorId??record.keywords?.[0]??'';
-  const reason=REVIEWED_CELL_REASONS[key]??(/^PackIn.*StorageCell(?:(?:DUPLICATE|COPY)\d+)*$/i.test(editor)?'Assembly storage cell':/HoldingCell$/i.test(editor)?'Internal holding cell':null);
+  const reason=REVIEWED_CELL_REASONS[key]??(reportedCellReference(record)?'Player-reported reference destination':/^PackIn.*StorageCell(?:(?:DUPLICATE|COPY)\d+)*$/i.test(editor)?'Assembly storage cell':/HoldingCell$/i.test(editor)?'Internal holding cell':null);
   return reason ? `Reference Only: ${reason}. Hidden outside Advanced Options; exploration teleport is available when Advanced Options is on.` : null;
 }
