@@ -11,6 +11,9 @@ const viewRoot = resolve(outRoot, 'SFSE/Plugins/OSF/UI/views/console.command-cen
 await rm(outRoot, { recursive: true, force: true });
 await mkdir(outRoot, { recursive: true });
 await cp(resolve(projectRoot, 'mod'), outRoot, { recursive: true });
+const settingsRoot = resolve(outRoot, 'SFSE/Plugins/OSF/Settings/schemas');
+await mkdir(settingsRoot, { recursive: true });
+await cp(resolve(projectRoot, 'src/settings/console.command-center.json'), resolve(settingsRoot, 'console.command-center.json'));
 await mkdir(resolve(outRoot, 'licenses'), { recursive: true });
 await cp(resolve(projectRoot, 'native/third_party/LICENSE-bcdec.txt'), resolve(outRoot, 'licenses/bcdec.txt'));
 

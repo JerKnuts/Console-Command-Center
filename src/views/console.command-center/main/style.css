@@ -1361,6 +1361,7 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
   padding: 0 8px;
 }
 .favorite-saved-command-actions .favorite-button { width: 32px; min-width: 32px; padding: 0; }
+.favorite-id-detail { grid-template-rows: minmax(0, 1fr); }
 .favorite-id-detail > .id-browser-selection { height: 100%; min-height: 0; box-sizing: border-box; }
 
 .browser-selection-banner {
@@ -2202,6 +2203,7 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
 .dev-feedback-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .dev-feedback-error { color: var(--ccc-danger); }
 .id-browser-reference-tag { color: var(--ccc-orange); font-family: var(--osf-font-mono); font-size: 9px; white-space: nowrap; margin-left: auto; }
+.is-reference-only .id-browser-reference-tag { font-size: 10px; font-weight: 700; padding: 2px 6px; border: 1px solid; }
 .game-setting-group { margin-bottom: 5px; }
 .game-setting-group > summary { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; color: var(--ccc-orange); background: var(--ccc-surface-raised); border: 1px solid var(--ccc-line); cursor: pointer; font-weight: 700; }
 .game-setting-group > summary::before { content: '▶'; margin-right: 8px; font-size: 10px; }
@@ -2752,3 +2754,6 @@ body.controller-active .model-preview-controller-hint { display: block; }
 .book-reader-dialog > small { display: block; margin-top: 12px; opacity: .75; }
 
 .id-browser-detail-body:has(.inline-model-preview) .record-details dl { grid-template-columns: minmax(0, 1fr); }
+
+.id-reference-cross { color: #ef6b65 !important; font-weight: 800; margin-right: 0.45em; text-decoration: none; }
+:root[data-ccc-theme="light"] .id-reference-cross { color: #9e2429 !important; }

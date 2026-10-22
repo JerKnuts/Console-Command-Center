@@ -78,6 +78,12 @@
 :root[data-ccc-theme="light"] .nav-count { color: #435e54; }
 :root[data-ccc-theme="light"] .utility-nav-bar .nav-button.is-active .nav-count { color: #f4f4e9; }
 :root[data-ccc-theme="light"] .command-detail-warning { background: rgba(221, 193, 97, 0.16); }
+/* Reference rows retain their own muted treatment when selected or hovered. */
+:root[data-ccc-theme="light"] :is(.id-browser-row,.favorite-id-row).is-reference-only { background: #c1c9c8; color: #485451; border-color: #9aa8a3; }
+:root[data-ccc-theme="light"] :is(.id-browser-row,.favorite-id-row).is-reference-only :is(strong,.command-list-row-title) { color: #485451; }
+:root[data-ccc-theme="light"] :is(.id-browser-row,.favorite-id-row).is-reference-only:is(:hover,:focus-visible,.is-selected,[aria-selected="true"]) { background: #33443e; color: #c6d0ca; border-color: #7b8c85; box-shadow: inset 3px 0 #8fa196; }
+:root[data-ccc-theme="light"] :is(.id-browser-row,.favorite-id-row).is-reference-only:is(:hover,:focus-visible,.is-selected,[aria-selected="true"]) :is(strong,.command-list-row-title) { color: #c6d0ca; }
+:root[data-ccc-theme="light"] :is(.id-browser-row,.favorite-id-row).is-reference-only .id-browser-reference-tag { color: #3d5048; background: #d6ddda; border-color: #8d9d95; }
 
 .ui-settings-dialog { width: min(900px, 92vw); max-width: 92vw; box-sizing: border-box; max-height: 85vh; padding: 20px; overflow: auto; color: var(--osf-text-body); background: var(--ccc-surface-raised); border: 1px solid var(--ccc-line-strong); }
 .ui-settings-dialog::backdrop { background: rgba(0, 0, 0, 0.8); }

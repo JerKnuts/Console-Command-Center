@@ -1,3 +1,4 @@
+import { createNativeReconnect } from './native-reconnect';
 import { installBookReader } from './book-reader';
 import { canInspectRecord, installRecordDetails } from './record-details';
 import { installTranslations, translateUiText, type TranslationPack } from './translations';
@@ -14,7 +15,7 @@ import { reviewedReferenceNote, applyReviewedFindings, reviewedWasTested } from 
 import { orderIdEntries } from './id-record-order';
 import { armorReferenceNote, applyArmorFindings } from './armor-test-findings';
 import { rerenderKeepingPosition } from './preserve-report-position';
-import { devFeedbackButton, devFeedbackRow, installDevFeedback, isDevModeEnabled, devFeedbackTestedClass, devFeedbackCommandOutcome, hasEngineCommandFeedback } from './dev-feedback';
+import { devFeedbackIdReference, devFeedbackButton, devFeedbackRow, installDevFeedback, isDevModeEnabled, devFeedbackTestedClass, devFeedbackCommandOutcome, hasEngineCommandFeedback } from './dev-feedback';
 import { ammoReferenceNote, applyAmmoFindings } from './ammo-test-findings';
 import './style.css';
 import './light-theme.css';
@@ -229,7 +230,7 @@ const MAX_CUSTOM_COMMAND_LENGTH = 1024;
 const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1493;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.3.31';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.3.36';
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -1613,7 +1614,7 @@ function renderSavedCommandFavorites(): string {
 function renderIdFavorites(): string {
   return orderIdEntries(idFavorites.filter((entry) => visibleIdRecord(entry, uiPreferences.advanced))).map((entry) => {
     const selected = entry.favoriteKey === selectedFavoriteIdKey;
-    return devFeedbackRow(`<button class="command-list-row favorite-id-row${idTestedClass(entry)}${selected ? ' is-selected' : ''}" type="button" data-select-favorite-id="${escapeHtml(entry.favoriteKey)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(entry.label)} favorite ID"><span class="command-list-row-title">${escapeHtml(entry.label)}</span></button>`,{kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category,recordType:entry.type,editorId:entry.editorId??entry.keywords?.[0]});
+    return devFeedbackRow(`<button class="command-list-row favorite-id-row${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? ' is-reference-only' : ''}${idTestedClass(entry)}${selected ? ' is-selected' : ''}" type="button" data-select-favorite-id="${escapeHtml(entry.favoriteKey)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(entry.label)} favorite ID"><span class="command-list-row-title">${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? '<span class="id-reference-cross" aria-hidden="true">✕</span>' : ''}${escapeHtml(entry.label)}</span>${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? '<span class="id-browser-reference-tag">REFERENCE ONLY</span>' : ''}</button>`,{kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category,referenceOnly:devFeedbackIdReference(entry) ?? Boolean(entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)),recordType:entry.type,editorId:entry.editorId??entry.keywords?.[0]});
   }).join('');
 }
 
@@ -1802,7 +1803,7 @@ function render(): void {
   }
 
   commandList.innerHTML = renderCompactCommandLayout(commands);
-  if (activeView === 'favorites' && selectedFavoriteIdKey) bindIdBrowserSelectionActions();
+  if (activeView === 'favorites' && selectedFavoriteIdKey) bindIdBrowserSelectionActions(commandList);
 }
 
 function questBrowserMatches(entry: QuestBrowserEntry): boolean {
@@ -2645,7 +2646,7 @@ function matchingIds(): IdCatalogEntry[] {
   const pickerTypes = activeCatalogPicker?.browser === 'id' ? activeCatalogPicker.allowedTypes : [];
   const pickerCategories = activeCatalogPicker?.browser === 'id' ? activeCatalogPicker.allowedCategories : [];
   return orderIdEntries(idCatalog.filter((entry) => {
-    if (!uiPreferences.advanced && entry.referenceOnly) return false;
+    if (!uiPreferences.advanced && (devFeedbackIdReference(entry) ?? entry.referenceOnly)) return false;
     if (activeView !== 'mod-browser' && !visibleIdRecord(entry, uiPreferences.advanced)) return false;
     const sourceMatches = !activeCategory.sources?.length || activeCategory.sources.includes(entry.source);
     const categoryMatches = activeView==='mod-browser'&&modBrowserSort==='category' ? modCategoryMatches(entry,modBrowserCategory) : sourceMatches && (modCatalog
@@ -2666,13 +2667,13 @@ function matchingIds(): IdCatalogEntry[] {
 }
 
 function idTestedClass(entry: IdCatalogEntry): string {
-  return devFeedbackTestedClass({ kind: 'ID', name: entry.label, id: entry.value, localId: entry.localFormId, source: entry.plugin ?? entry.source, referenceOnly: Boolean(entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)) }, reviewedWasTested(entry) || Boolean(ammoReferenceNote(entry) || armorReferenceNote(entry)));
+  return devFeedbackTestedClass({ kind: 'ID', name: entry.label, id: entry.value, localId: entry.localFormId, source: entry.plugin ?? entry.source, referenceOnly: (devFeedbackIdReference(entry) ?? Boolean(entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry))) }, reviewedWasTested(entry) || Boolean(ammoReferenceNote(entry) || armorReferenceNote(entry)));
 }
 
 function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspell' | 'spawn' | 'forceweather' | 'teleport' | null {
   if (entry.available === false) return null;
   const type = entry.type.toUpperCase();
-  if (entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)) {
+  if (devFeedbackIdReference(entry) ?? Boolean(entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry))) {
     return type === 'CELL' && uiPreferences.advanced && (entry.editorId ?? entry.keywords?.[0]) ? 'teleport' : null;
   }
   if (entry.action) return entry.action;
@@ -2687,7 +2688,9 @@ function idBrowserAction(entry: IdCatalogEntry): 'additem' | 'addperk' | 'addspe
 }
 
 function renderIdBrowserSelection(): string {
-  const entry = idBrowserSelected ? applyReviewedFindings(applyArmorFindings(applyAmmoFindings(idBrowserSelected))) : null;
+  let entry = idBrowserSelected ? applyReviewedFindings(applyArmorFindings(applyAmmoFindings(idBrowserSelected))) : null;
+  if(entry && devFeedbackIdReference(entry)===true) entry={...entry,referenceOnly:true,detail:'Marked Reference Only locally.'};
+  if(entry && devFeedbackIdReference(entry)===false && entry.referenceOnly) entry={...entry,referenceOnly:false,detail:'Marked working locally. Reference Only cleared.'};
   if (!entry) {
     return `<aside class="id-browser-selection id-browser-selection--empty" aria-label="Selected ID">
       <span class="osf-eyebrow">SELECTED ID</span>
@@ -2871,11 +2874,11 @@ function renderIdBrowserPanel(): void {
     : `${results.length.toLocaleString()} shown / ${includedTotal.toLocaleString()} included IDs${idBrowserRecordTypeFilter ? ` / ${idBrowserRecordTypeFilter}` : ''}`;
 
   const renderResultRow = (entry: IdCatalogEntry, index: number) => devFeedbackRow(`
-    <button class="id-browser-row${idTestedClass(entry)}${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type && idBrowserSelected?.plugin === entry.plugin ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
-      <strong title="${escapeHtml(entry.label)}">${escapeHtml(entry.label)}</strong>
-      ${entry.referenceOnly ? '<span class="id-browser-reference-tag">REFERENCE ONLY</span>' : ''}
+    <button class="id-browser-row${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? ' is-reference-only' : ''}${idTestedClass(entry)}${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type && idBrowserSelected?.plugin === entry.plugin ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
+      <strong title="${escapeHtml(entry.label)}">${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? '<span class="id-reference-cross" aria-hidden="true">✕</span>' : ''}${escapeHtml(entry.label)}</strong>
+      ${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? '<span class="id-browser-reference-tag">REFERENCE ONLY</span>' : ''}
       ${globalModSearch || (activeView==='mod-browser'&&modBrowserSort==='category') ? `<span class="id-browser-row-source">${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod')}</span>` : ''}
-    </button>`, {kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category,recordType:entry.type,editorId:entry.editorId??entry.keywords?.[0]});
+    </button>`, {kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category,referenceOnly:devFeedbackIdReference(entry) ?? Boolean(entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)),recordType:entry.type,editorId:entry.editorId??entry.keywords?.[0]});
   const visibleRows = activeView === 'mod-browser' && results.length > 0 && !(modBrowserSort==='category'&&modBrowserCategory)
     ? (() => {
         const groups = new Map<string, Array<{ entry: IdCatalogEntry; index: number }>>();
@@ -2956,14 +2959,14 @@ function renderIdBrowserPanel(): void {
   bindIdBrowserSelectionActions();
 }
 
-function bindIdBrowserSelectionActions(): void {
-  const quantityInput = document.querySelector<HTMLInputElement>('#id-browser-quantity');
+function bindIdBrowserSelectionActions(root: ParentNode = customPanel): void {
+  const quantityInput = root.querySelector<HTMLInputElement>('#id-browser-quantity');
   quantityInput?.addEventListener('input', () => {
     const quantity = Number(quantityInput.value);
     if (Number.isInteger(quantity) && quantity >= 1 && quantity <= 999999) idBrowserQuantity = quantity;
   });
 
-  document.querySelector<HTMLButtonElement>('[data-id-browser-action]')?.addEventListener('click', () => {
+  root.querySelector<HTMLButtonElement>('[data-id-browser-action]')?.addEventListener('click', () => {
     if (!idBrowserSelected) return;
     const action = idBrowserAction(idBrowserSelected);
     if (action === 'additem') {
@@ -2978,16 +2981,16 @@ function bindIdBrowserSelectionActions(): void {
     }
     requestIdBrowserQuickAction(idBrowserSelected, idBrowserQuantity);
   });
-  document.querySelectorAll<HTMLButtonElement>('[data-copy-id-browser-id]').forEach((button) => button.addEventListener('click', () => {
+  root.querySelectorAll<HTMLButtonElement>('[data-copy-id-browser-id]').forEach((button) => button.addEventListener('click', () => {
     if (button.dataset.copyIdBrowserId) void copyResultId(button.dataset.copyIdBrowserId);
   }));
-  document.querySelector<HTMLButtonElement>('[data-id-favorite-toggle]')?.addEventListener('click', () => {
+  root.querySelector<HTMLButtonElement>('[data-id-favorite-toggle]')?.addEventListener('click', () => {
     if (idBrowserSelected) toggleIdFavorite(idBrowserSelected);
   });
-  document.querySelector<HTMLButtonElement>('[data-use-id-browser-selection]')?.addEventListener('click', () => {
+  root.querySelector<HTMLButtonElement>('[data-use-id-browser-selection]')?.addEventListener('click', () => {
     if (idBrowserSelected) finishCatalogPicker(idBrowserSelected.value, idBrowserSelected.label);
   });
-  document.querySelector<HTMLButtonElement>('[data-cancel-catalog-picker]')?.addEventListener('click', () => finishCatalogPicker());
+  root.querySelector<HTMLButtonElement>('[data-cancel-catalog-picker]')?.addEventListener('click', () => finishCatalogPicker());
 }
 
 function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): void {
@@ -4201,16 +4204,17 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-async function connectNativeBackend(): Promise<void> {
+async function connectNativeBackend(): Promise<boolean> {
+  const wasReady = nativeBackendReady;
   if (!window.osfui?.request) {
     nativeBackendReady = false;
     footerNativeStatus.textContent = 'UNAVAILABLE';
     setStatus('OSF UI native request API is unavailable.', 'error');
-    return;
+    return false;
   }
 
   try {
-    const reply = await window.osfui.request<PingReply>('console.command-center.ping');
+    const reply = await window.osfui.request<PingReply>('console.command-center.ping', {}, { timeoutMs: 10000 });
     if (!reply?.ok) throw new Error('Native backend returned an unsuccessful ping');
     footerStarfieldVersion.textContent = reply.runtime ?? 'UNKNOWN';
     if (reply.runtimeSupported === false) {
@@ -4218,7 +4222,7 @@ async function connectNativeBackend(): Promise<void> {
       footerNativeStatus.textContent = 'DISABLED';
       setStatus(`CCC ${reply.build ?? ''} is tested for Starfield ${reply.testedRuntime ?? '1.16.244'}, but ${reply.runtime ?? 'an unknown runtime'} is running. Native commands are disabled.`, 'error');
       render();
-      return;
+      return true; // An unsupported runtime must not be retried as a transient failure.
     }
     nativeBackendReady = true;
     void importCommandBatchAutoRunReports();
@@ -4227,17 +4231,27 @@ async function connectNativeBackend(): Promise<void> {
   } catch (error) {
     nativeBackendReady = false;
     footerNativeStatus.textContent = 'NOT CONNECTED';
-    setStatus(`Native backend unavailable: ${describe(error)}`, 'error');
+    setStatus(`Native connection interrupted; retrying automatically. ${describe(error)}`, 'error');
+    // Do not repeatedly rebuild the page while disconnected: preserve typed text.
+    if (wasReady) render();
+    return false;
   }
 
   render();
   if (activeView === 'custom' && !commandBatchesLoaded) void refreshCommandBatches(true);
+  return true;
 }
+
+const nativeReconnect = createNativeReconnect(connectNativeBackend);
+window.addEventListener('pagehide', () => nativeReconnect.stop(), { once: true });
 
 if (window.osfui?.request) {
   footerOsfVersion.textContent = '2.0 API';
   setStatus('OSF UI ready; checking ConsoleCommandCenter.dll...', 'working');
-  void connectNativeBackend();
+  void nativeReconnect.retry();
+  window.osfui.on<{visible:boolean}>('ui.visibility', payload => {
+    if (payload.visible && !nativeBackendReady && !previewReady) void nativeReconnect.retry();
+  });
 } else {
   nativeBackendReady = false;
   footerOsfVersion.textContent = 'UNAVAILABLE';

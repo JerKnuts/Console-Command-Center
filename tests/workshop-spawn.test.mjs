@@ -8,7 +8,7 @@ import {applyReviewedFindings,reviewedReferenceNote} from '../src/views/console.
 test('workshop furniture and supported physical objects expose spawning while references stay blocked',()=>{
  const source=readFileSync(new URL('../src/views/console.command-center/main/main.ts',import.meta.url),'utf8');
  const fn=source.match(/^function idBrowserAction\([\s\S]*?^}/m)[0];
- const context=vm.createContext({reviewedReferenceNote,ammoReferenceNote:()=>null,armorReferenceNote:()=>null});vm.runInContext(stripTypeScriptTypes(fn),context);
+ const context=vm.createContext({devFeedbackIdReference:()=>undefined,reviewedReferenceNote,ammoReferenceNote:()=>null,armorReferenceNote:()=>null});vm.runInContext(stripTypeScriptTypes(fn),context);
  for(const type of ['FURN','STAT','MSTT','CONT']){
   const row={label:'Furniture',value:'0203B6BA',plugin:'SFBGS00D.esm',type,category:'Workshop / Outpost Objects'};
   assert.equal(context.idBrowserAction(row),'spawn');assert.equal(context.idBrowserAction({...row,available:false}),null);assert.equal(context.idBrowserAction({...row,referenceOnly:true}),null);
@@ -39,7 +39,7 @@ test('authored invisible furniture markers stay reference only without hiding re
 test('reference cells allow exploration only in Advanced Options without enabling other reference actions',()=>{
  const source=readFileSync(new URL('../src/views/console.command-center/main/main.ts',import.meta.url),'utf8');
  const fn=source.match(/^function idBrowserAction\([\s\S]*?^}/m)[0];
- const uiPreferences={advanced:false};const context=vm.createContext({uiPreferences,reviewedReferenceNote,ammoReferenceNote:()=>null,armorReferenceNote:()=>null});vm.runInContext(stripTypeScriptTypes(fn),context);
+ const uiPreferences={advanced:false};const context=vm.createContext({devFeedbackIdReference:()=>undefined,uiPreferences,reviewedReferenceNote,ammoReferenceNote:()=>null,armorReferenceNote:()=>null});vm.runInContext(stripTypeScriptTypes(fn),context);
  const cell={label:'Markers',type:'CELL',category:'Cells',value:'00012998',plugin:'Starfield.esm',localFormId:'012998',editorId:'aaaMarkers'};
  assert.equal(context.idBrowserAction(cell),null);uiPreferences.advanced=true;assert.equal(context.idBrowserAction(cell),'teleport');
  assert.equal(context.idBrowserAction({...cell,available:false}),null);assert.equal(context.idBrowserAction({...cell,editorId:undefined}),null);

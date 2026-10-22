@@ -32,10 +32,17 @@ export function devFeedbackIdentity(record: DevFeedbackRecord): string {
   const plugin = sourcePlugins[source] ?? source;
   return `${record.kind}:${plugin}:${(record.localId ?? record.id ?? record.name).toUpperCase().slice(-6)}`;
 }
+// A deliberate Working result can override a shipped reference classification.
+export function devFeedbackIdReference(record: {value?:string;localFormId?:string;plugin?:string;source?:string}): boolean | undefined {
+  if (!record.value) return undefined;
+  const outcome=outcomes.get(devFeedbackIdentity({kind:'ID',name:'',id:record.value,localId:record.localFormId,source:record.plugin??record.source}))?.status;
+  return outcome==='working'?false:outcome==='reference'?true:undefined;
+}
 export function devFeedbackTestedClass(record: DevFeedbackRecord, alreadyTested = false): string {
   if(!enabled)return '';
   const identity=devFeedbackIdentity(record);
-  const outcome=record.referenceOnly?'reference':outcomes.get(identity)?.status??(alreadyTested?'working':'');
+  const selected=outcomes.get(identity)?.status;
+  const outcome=record.kind==='ID'&&selected==='working'?'working':record.referenceOnly?'reference':selected??(alreadyTested?'working':'');
   return outcome?' dev-tested dev-'+outcome:tested.has(identity)?' dev-tested':'';
 }
 
@@ -124,6 +131,7 @@ export function installDevFeedback(options: { version: string; rerender: () => v
     finally { exportButton.disabled = false; }
   });
   const saveFeedback=(record:DevFeedbackRecord,status:string,comment:string,error?:HTMLElement):boolean=>{
+    if(record.kind==='ID'&&status==='Working'&&(record.referenceOnly||outcomes.get(devFeedbackIdentity(record))?.status==='reference')&&!comment) comment='Confirmed working; clear Reference Only.';
     const report={...record,status,comment,version:options.version,time:new Date().toISOString()};
     const next=devFeedbackExportable(report)?[...reports,report]:reports;
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next));}
@@ -132,7 +140,7 @@ export function installDevFeedback(options: { version: string; rerender: () => v
     const outcome=devFeedbackOutcome(status);if(outcome)outcomes.set(identity,{status:outcome,time:report.time});
     try{localStorage.setItem(OUTCOMES_KEY,JSON.stringify(Object.fromEntries(outcomes)));}catch{/* Saved reports restore outcomes on reload. */}
     try{localStorage.setItem(TESTED_KEY,JSON.stringify([...tested]));}catch{/* Saved reports retain their identities. */}
-    options.status(status==='Working'&&!comment?`Marked ${record.name} working. Green status saved; no report queued.`:`Saved test report for ${record.name}. ${reports.length} reports ready to export.`);
+    options.status(status==='Working'&&!comment?`Marked ${record.name} working. Reference Only cleared; status saved.`:`Saved test report for ${record.name}. ${reports.length} reports ready to export.`);
     return true;
   };
   document.addEventListener('click', (event) => {

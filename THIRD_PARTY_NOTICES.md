@@ -25,6 +25,10 @@ CCC includes the official OSF UI 2.0 native header (`native/include/OSFUI.h`) an
 - License: GPL-3.0
 - Included files are declarations used to compile and type-check CCC; OSF UI remains a separate required mod.
 
+## OSF Settings SDK declarations
+
+CCC includes `native/include/OSFSettings.h` from the OSF UI SDK at the same pinned revision above. It declares the separate [OSF Settings](https://github.com/ozooma10/osf-settings) service API (GPL-3.0). OSF Settings remains a separate required mod; its DLL is not bundled.
+
 ## Starfield console-command reference
 
 The generated Untested engine-command library is derived from the game-help-based

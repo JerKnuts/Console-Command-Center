@@ -51,5 +51,20 @@
 :root[data-ccc-theme="dark"] .custom-command-editor .custom-command-line-numbers { color: #758f9b; background: #0d202a; }
 :root[data-ccc-theme="dark"] :is(.command-detail-syntax, #results-output) { color: #dde5e9; background: #091821; }
 :root[data-ccc-theme="dark"] .brand-mark { color: #f1f2ec; background: #23343d; border-color: #a8b4ba; }
+/* Reference status is visible in ordinary browsing, independently of Dev Mode. */
+:root[data-ccc-theme="dark"] :is(.id-browser-row,.favorite-id-row).is-reference-only {
+  background: #0b141b;
+  color: #91a0a9;
+  border-color: #2c3d48;
+}
+:root[data-ccc-theme="dark"] :is(.id-browser-row,.favorite-id-row).is-reference-only :is(strong,.command-list-row-title) { color: #91a0a9; }
+:root[data-ccc-theme="dark"] :is(.id-browser-row,.favorite-id-row).is-reference-only:is(:hover,:focus-visible,.is-selected,[aria-selected="true"]) {
+  background: #22313b;
+  color: #b0bdc6;
+  border-color: #718592;
+  box-shadow: inset 3px 0 #8198a6;
+}
+:root[data-ccc-theme="dark"] :is(.id-browser-row,.favorite-id-row).is-reference-only:is(:hover,:focus-visible,.is-selected,[aria-selected="true"]) :is(strong,.command-list-row-title) { color: #b0bdc6; }
+:root[data-ccc-theme="dark"] :is(.id-browser-row,.favorite-id-row).is-reference-only .id-browser-reference-tag { color: #a8b6bf; background: #19262f; border-color: #465b68; }
 :root[data-ccc-theme="dark"] :is(.command-detail-kicker, .id-browser-selection-copy > .osf-eyebrow, .quest-browser-selection-copy > .osf-eyebrow) { display: block; padding: 7px 9px; color: #f1f2ec; background: #245d75; border-bottom: 1px solid #46829b; }
 :root[data-ccc-theme="dark"] :is(.ui-settings-dialog, .results-dialog) > .results-head { margin: -20px -20px 12px; padding: 12px 20px; background: #245d75; color: #f1f2ec; }

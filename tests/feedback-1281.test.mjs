@@ -14,9 +14,9 @@ test('all 68 reported clothing entries move to Apparel without changing identity
  assert.equal(findings.apparel.length,68);
  for(const k of findings.apparel){const e=entry(k);assert.equal(e.category,'Apparel',e.label);assert.equal(e.type,'ARMO');assert.equal(Boolean(e.referenceOnly),['0A6FFA','0A701C','2074B5','37033F','37033E','37033D','220B07','0A7021','0A6FEF','0A7001','0A7018','223430','362F13','362F14','362F15'].includes(e.localFormId));const [plugin,localFormId]=k.split(':');assert.equal(applyReviewedFindings({...e,plugin:'Other.esm',category:'Spacesuits'}).category,'Spacesuits');assert.equal(key(e),plugin+':'+localFormId);}
 });
-test('25 unique reported non-inventory spacesuits are reference-only and plugin-scoped',()=>{
+test('reported non-inventory suits stay restricted except the subsequently confirmed Deepseeker suit',()=>{
  assert.equal(findings.reference.length,25);
- for(const k of findings.reference){const e=entry(k);assert.equal(e.referenceOnly,true,e.label);assert.ok(reviewedReferenceNote(e));assert.equal(reviewedReferenceNote({...e,plugin:'Other.esm'}),null);}
+ for(const k of findings.reference){const e=entry(k);if(k==='starfield.esm:16D2C4'){assert.equal(e.referenceOnly,false);assert.equal(reviewedReferenceNote(e),null);continue;}assert.equal(e.referenceOnly,true,e.label);assert.ok(reviewedReferenceNote(e));assert.equal(reviewedReferenceNote({...e,plugin:'Other.esm'}),null);}
 });
 test('20 reported suit names retain searchable original names and survive DLC load-order changes',()=>{
  assert.equal(Object.keys(findings.renamed).length,20);

@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.3.36
+
+- Retry the read-only native handshake after a startup timeout, with bounded backoff and an immediate retry when CCC reopens. Reconnection refreshes descriptions, stats and command availability without resetting any browser or replaying commands.
+- Added a red X before Reference Only names in ID Browser, Mod Browser and Favorites. Working overrides remove the X together with the reference styling.
+- Documented known bugs: the CCC keybind can require two presses, and CCC can remain stuck on Loading. Waiting 10–15 minutes and trying again may recover the page without restarting Starfield; recovery is not guaranteed. See [Known bugs](README.md#known-bugs).
+
+## 1.3.35 (local test build)
+
+- Made Reference Only ID and favorite rows visually distinct outside Dev Mode with darker backgrounds, muted readable text and a bordered badge. Selected/hovered reference rows retain their own appearance in both themes. Working overrides return rows to their normal styling.
+
+## 1.3.34 (local test build)
+
+- Fixed the Favorites item-details panel collapsing to zero height and hiding names, descriptions, stats and previews. The selected ID now fills its available pane while retaining the action buttons.
+
+## 1.3.33 (local test build)
+
+- Confirmed Deepseeker Spacesuit 0016D2C4 working from the October 21 player report and removed its earlier reference-only classification.
+- Marking an ID Working now overrides Reference Only for its actions, normal-mode visibility, sorting and Dev Mode color. The choice persists across export/restart and stays scoped to the owning plugin/local ID.
+- Clearing a reference classification with Working records the correction in Export Reports. Reference Only can still be reapplied.
+
+## 1.3.32 (local test build)
+
+- Fixed selected-item action controls binding to a hidden panel after switching between Favorites and the ID Browser. Quantity, copy, favorite and picker controls bind to their own panel.
+- Marked four game-data-confirmed non-playable Deepseeker variants as reference only; preserved earlier failed-item findings and kept the normal helmet and pack available. Named the playable pack Deepseeker Pack.
+- Added an assignable Open Console Command Center hotkey through OSF Settings, initially unbound.
+- Deepseeker preview assets decode offline; the reported in-game preview failure has not been reproduced.
+
 ## 1.3.31
 
 Release summary since the previous GitHub source update (1.3.15):

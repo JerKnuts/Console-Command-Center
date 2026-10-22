@@ -2,7 +2,7 @@
 
 Console Command Center turns Starfield console commands into a searchable in-game menu for mouse, keyboard, and controller. It provides command inputs, safety warnings, ID selection, quest tools, mod scanning, editable command batches, and read-only Results popups.
 
-**Current release: v1.3.31.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
+**Current release: v1.3.36.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
 
 Translation authors can use the [JSON/CSV translator guide](docs/TRANSLATION_GUIDE.md). CCC uses a web interface; SWF editing is not required. Translation packs are optional and fall back to English.
 
@@ -19,13 +19,18 @@ Optional official content is identified by its loaded plugin. Shattered Space an
 
 ## Install and open
 
-Install the Nexus-ready ZIP with a mod manager, or copy its `SFSE` folder into Starfield's `Data` folder. Launch through SFSE. Open **MOD SETTINGS** in the pause menu, or bind **Open Mod Settings** to a key such as F10 in OSF Settings, then select **Console Command Center** from the launcher.
+Install the Nexus-ready ZIP with a mod manager, or copy its `SFSE` folder into Starfield's `Data` folder. Launch through SFSE. Open **MOD SETTINGS** in the pause menu, or bind **Open Mod Settings** to a key such as F10 in OSF Settings, then select **Console Command Center** from the launcher. To open CCC directly, bind **Open Console Command Center** on its OSF Settings page (initially unbound). Restart Starfield after installing an update that adds a binding.
 
 For updates, install the complete archive, including `SFSE/Plugins/ConsoleCommandCenter.dll`, and restart the game. Updating only the web page can leave new native features unavailable. Keep OSF browser data and the user CCC folder to preserve favorites, history, reports, and batch files.
 
 CCC v1.0.13 and later use `SFSE/Plugins/OSF/UI/views/console.command-center/`. When upgrading from an older layout, remove the obsolete `SFSE/Plugins/OSFUI/views/console.command-center/` folder. Uninstall by removing the current view folder and DLL.
 
 Make a manual save before changing quests or important game state. Each page has contextual **Help**, and the first-time overview remains available there.
+
+## Known bugs
+
+- **The CCC keybind can require two presses.** This has been reported with F10 and F11, including after closing CCC with Escape or its Close button. Switching away from Starfield and back may temporarily restore one-press opening. The cause remains under investigation.
+- **CCC can remain stuck on Loading in OSF UI.** The keybind may also stop opening CCC, particularly after repeated teleports. If this happens, wait **10–15 minutes**, then try opening CCC again; the page has recovered within the same game session in testing, but recovery is not guaranteed. If it remains stuck, restart Starfield. Native-connection retries in 1.3.36 can restore descriptions/stats after the page recovers; they do not fix the loading hang itself.
 
 ## Features
 
@@ -57,7 +62,7 @@ Advanced Options reveals technical record types, categories, plugin filenames an
 
 Open **Settings** beside Help. Dark Mode and Advanced Options off are the defaults. Advanced Options reveals WIP commands, Advanced Settings in Commands, Locations (Reference Only), Ship Parts / Other Forms, reference-only items, and Internal / System quests. Basic-mode searches and ID Favorites hide these records without deleting saved favorites. Cells/Teleport is visible by default and provides teleport actions; reviewed internal/test cells are reference-only and hidden outside Advanced Options; Locations are reference-only area metadata.
 
-Categories are alphabetical, with Advanced Settings and WIP last in Commands. Quest sections are ordered Base Game, Shattered Space, Free Lanes, and Terran Armada. Reference-only records sort below normal records, alphabetically within each group, and do not offer gameplay quick actions.
+Categories are alphabetical, with Advanced Settings and WIP last in Commands. Quest sections are ordered Base Game, Shattered Space, Free Lanes, and Terran Armada. Reference-only records sort below normal records, alphabetically within each group, and do not offer gameplay quick actions. They use muted backgrounds and text with a red X before the name and a bordered Reference Only badge, including in Favorites and outside Dev Mode. Marking an ID Working clears its reference styling and restrictions.
 
 Dark Mode uses blue-black backgrounds, slate rows, gray selection, pale text, and muted blue detail headers. Light Mode uses pale gray surfaces, teal rules, charcoal selection, and yellow accents. Both keep distinct warning and danger indicators.
 

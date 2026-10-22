@@ -744,7 +744,7 @@ test('ID Browser quick actions build item, weather, and cell commands', () => {
     .map((match) => match[0]);
   assert.equal(quickActionFunctions.length, 2);
   let requested;
-  const sandbox = { reviewedReferenceNote, ammoReferenceNote, armorReferenceNote, requestExecution(execution) { requested = execution; } };
+  const sandbox = { devFeedbackIdReference:()=>undefined, reviewedReferenceNote, ammoReferenceNote, armorReferenceNote, requestExecution(execution) { requested = execution; } };
   vm.createContext(sandbox);
   vm.runInContext(stripTypeScriptTypes(quickActionFunctions.join('\n')), sandbox);
   const medPack = { label: 'Med Pack', value: '0000ABF9', type: 'ALCH', category: 'Aid', action: 'additem' };

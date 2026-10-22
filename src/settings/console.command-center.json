@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "console.command-center",
+  "title": "Console Command Center",
+  "groups": {},
+  "hotkeys": {
+    "openCCC": {
+      "label": "Open Console Command Center"
+    }
+  }
+}

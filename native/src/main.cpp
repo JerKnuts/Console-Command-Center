@@ -23,6 +23,8 @@
 #include <vector>
 
 #include "OSFUI_JSON.h"
+#include "OSFSettings.h"
+#include <REX/REX.h>
 #include "DirectQuery.h"
 #include "ScalarResult.h"
 #include "ModCatalogs.h"
@@ -36,9 +38,15 @@
 namespace
 {
     OSFUI::API::Client g_ui;
+    OSFSettings::API::Client g_settings;
 
     constexpr const char* kViewId = "console.command-center/main";
-    constexpr const char* kBuildId = "1.3.31";
+    void OnOpenHotkey(const char*, const char*, void*) noexcept
+    {
+        if (!g_ui.RequestMenu(kViewId, true)) REX::WARN("CCC hotkey could not queue its view");
+    }
+
+    constexpr const char* kBuildId = "1.3.36";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -949,6 +957,12 @@ namespace
         g_ui.RegisterRequest("console.command-center.ping", &OnPing, nullptr);
         g_ui.RegisterRequest("console.command-center.close", &OnClose, nullptr);
         (void)g_ui.RegisterView(kViewId);
+        if (g_settings.Init() && g_settings.IsReady()) {
+            const auto status = g_settings.RegisterHotkey("console.command-center", "openCCC", &OnOpenHotkey, nullptr);
+            if (status != OSFSettings::API::Status::Ok) REX::WARN("CCC hotkey registration failed: {}", static_cast<unsigned>(status));
+        } else {
+            REX::WARN("OSF Settings unavailable; CCC can still open from its launcher");
+        }
         if (!IsRuntimeSupported()) {
             return;
         }

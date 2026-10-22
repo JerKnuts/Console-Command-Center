@@ -1,3 +1,4 @@
+import { devFeedbackIdReference } from './dev-feedback.ts';
 export type UiPreferences = { advanced: boolean; theme: 'dark' | 'light'; previewResolution: 'low' | 'medium' | 'high' | 'ultra' };
 export function parseUiPreferences(value: unknown): UiPreferences {
   const data = value && typeof value === 'object' ? value as Partial<UiPreferences> : {};
@@ -18,8 +19,8 @@ export function setPreviewResolution(quality:UiPreferences['previewResolution'])
 export function visibleIdCategory(category: string, advanced: boolean): boolean {
   return advanced || !['game-settings', 'locations', 'ship-parts'].includes(category);
 }
-export function visibleIdRecord(record: { type: string; category: string; referenceOnly?: boolean }, advanced: boolean): boolean {
-  return advanced || (!record.referenceOnly && record.type.toUpperCase() !== 'LCTN' && record.category !== 'Locations' && record.category !== 'Ship Parts & Other Forms');
+export function visibleIdRecord(record: { type: string; category: string; referenceOnly?: boolean; value?: string; localFormId?: string; plugin?: string; source?: string }, advanced: boolean): boolean {
+  return advanced || (!(devFeedbackIdReference(record) ?? record.referenceOnly) && record.type.toUpperCase() !== 'LCTN' && record.category !== 'Locations' && record.category !== 'Ship Parts & Other Forms');
 }
 export function visibleQuestRecord(record: { category: string; internal: boolean }, advanced: boolean): boolean {
   return advanced || !(record.internal || record.category === 'Internal / System');
