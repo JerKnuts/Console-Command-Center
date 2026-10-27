@@ -203,7 +203,7 @@ test('native catalog replies become searchable mod entries with source metadata'
   assert.deepEqual(catalogs[0].entries[0], {
     label: 'Example Rifle', value: 'FE042800', type: 'WEAP', category: 'Weapons', detail: undefined,
     editorId: 'Example_Rifle', keywords: ['Example Arsenal', 'ExampleArsenal.esm', '800', 'Example_Rifle'],
-    source: 'mod', sourceName: 'Example Arsenal', plugin: 'ExampleArsenal.esm', localFormId: '800',
+    source: 'mod', sourceName: 'Example Arsenal', plugin: 'ExampleArsenal.esm', localFormId: '800', pluginKind:'small',available:true,
   });
 });
 

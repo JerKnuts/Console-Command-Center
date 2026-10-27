@@ -8,7 +8,7 @@ Bethesda plugins whose filenames begin with `SFBGS` are included under **Officia
 
 The native scanner reports plugin filenames because Starfield plugins do not contain a reliable Nexus or Creations page title. CCC translates known filenames through its bundled display-name map. Unknown plugins use a clean filename-derived fallback. The raw plugin filename is preserved in Selected ID details and remains searchable. See [Display names](#display-names) for the lookup format and contribution guidance.
 
-Large catalogs are divided into collapsible record categories such as Weapons, Armor, Ships, Ship Parts & Other Forms, and Quests. A **base form** is Starfield's generic `GBFM` data record. Mods use GBFM records for complete ships, but also for engines, grav drives, reactors, shields, fuel tanks, landing gear, weapons, templates, and other reusable definitions. CCC uses Editor ID naming to put complete ships under **Ships** and supporting GBFM records under **Ship Parts & Other Forms**. Category contents are created only when opened, which keeps very large plugins responsive.
+Large catalogs are divided into collapsible record categories such as Weapons, Armor / Apparel, Ships, Ship Parts & Other Forms, and Quests. A **base form** is Starfield's generic `GBFM` data record. Mods use GBFM records for complete ships, but also for engines, grav drives, reactors, shields, fuel tanks, landing gear, weapons, templates, and other reusable definitions. CCC uses Editor ID naming to put complete ships under **Ships** and supporting GBFM records under **Ship Parts & Other Forms**. Category contents are created only when opened, which keeps very large plugins responsive.
 
 With no mod selected, **Search All** searches IDs across every scanned plugin. After selecting a mod, **Search Mod** limits results to that plugin. Global results identify their source mod.
 
@@ -29,7 +29,7 @@ Deleted records are skipped. CCC asks the running game for each record's localiz
 
 Full scanning happens only when **Scan Mods** is selected. The progress window remains visible with an elapsed timer, plugin counter, and running ID total while CCC discovers loaded plugins and reads supported records. Opening ID Browser does not start scanning; its packaged catalog stays separate from the Mod Browser. The session scan walks plugin record headers, resolves matching IDs through the running game, and reads QUST payloads for stage indexes. It does not continually scan during gameplay or modify plugin files.
 
-Every manual **Scan Mods** run creates an Activity Log entry. **Open Results** shows the active load-order count, discovered and loaded plugin counts, supported ID total, zero-ID and failed plugin counts, opened and missing plugin files, and elapsed time. Failed scans record their error and elapsed time as well.
+Every manual **Scan Mods** run creates a Command Log entry. **Open Results** shows the active load-order count, discovered and loaded plugin counts, supported ID total, zero-ID and failed plugin counts, opened and missing plugin files, and elapsed time. Failed scans record their error and elapsed time as well.
 
 The Mod Browser tab displays the total number of scanned mod IDs. Any packaged or scanned record can be added to Favorites. CCC stores the record metadata needed to display it and reopen the correct browser. Favoriting an ID does not copy or modify its plugin and does not trigger a scan.
 

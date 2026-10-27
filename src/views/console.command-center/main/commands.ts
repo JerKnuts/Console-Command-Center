@@ -1,3 +1,4 @@
+import { CONFIRMED_READOUT_COMMANDS } from './confirmed-readout-commands';
 import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, FORM_TYPE_PICKER, WEATHER_PICKER, PLAYER_ACTOR_VALUE_PICKER, REFERENCE_ACTOR_VALUE_PICKER, SHIP_ACTOR_VALUE_PICKER, GAME_SETTING_PICKER, OPEN_STATE_PICKER, POPULAR_LOCATION_PICKER, type ReferenceIdPicker } from './reference-ids';
 import { UNTESTED_COMMANDS } from './untested-commands';
 
@@ -5,6 +6,7 @@ export type CommandCategory =
   | 'Gameplay'
   | 'Player'
   | 'Inventory'
+  | 'MISC'
   | 'Skills'
   | 'Camera'
   | 'World'
@@ -433,7 +435,7 @@ export const COMMANDS: CommandDefinition[] = [
     id: 'show-player-inventory',
     title: 'Show Player Inventory',
     category: 'Inventory',
-    description: 'List the player inventory with quantities, names, and Form IDs. Results open in a scrollable window and can be reopened from Activity Log.',
+    description: 'List the player inventory with quantities, names, and Form IDs. Results open in a scrollable window and can be reopened from Command Log.',
     command: 'player.showinventory',
     tags: ['inventory', 'form id', 'inspect', 'showinventory', 'read only'],
     captureOutput: true,
@@ -1586,7 +1588,7 @@ export const COMMANDS: CommandDefinition[] = [
     id: 'show-quest-stages',
     title: 'Show Quest Stage History',
     category: 'Quests',
-    description: 'Read every packaged stage directly from Starfield and list whether it is done or not set. Results open in a scrollable window and can be reopened from Activity Log.',
+    description: 'Read every packaged stage directly from Starfield and list whether it is done or not set. Results open in a scrollable window and can be reopened from Command Log.',
     command: 'sqs {questId}',
     inputs: [questIdInput()],
     tags: ['quest', 'stages', 'sqs', 'history', 'inspect', 'read only'],
@@ -2045,6 +2047,7 @@ export const COMMANDS: CommandDefinition[] = [
     testStatus: 'untested',
     intakeGroup: 'Script Functions',
   },
+  ...CONFIRMED_READOUT_COMMANDS,
   ...UNTESTED_COMMANDS,
 ];
 
@@ -2058,6 +2061,7 @@ export const CATEGORY_ORDER: CommandCategory[] = [
   'Skills',
   'Targets',
   'World',
+  'MISC',
   'Advanced Settings',
   'Untested',
 ];

@@ -1,8 +1,12 @@
 import { devFeedbackIdReference } from './dev-feedback.ts';
-export type UiPreferences = { advanced: boolean; theme: 'dark' | 'light'; previewResolution: 'low' | 'medium' | 'high' | 'ultra' };
+import {previewBackground,type PreviewBackgroundId} from './preview-backgrounds.ts';
+export type UiPreferences = { advanced: boolean; theme: 'dark' | 'light'; previewResolution: 'low' | 'medium' | 'high' | 'ultra'; previewBackground:PreviewBackgroundId;previewBackgroundDark:PreviewBackgroundId;previewBackgroundLight:PreviewBackgroundId };
 export function parseUiPreferences(value: unknown): UiPreferences {
   const data = value && typeof value === 'object' ? value as Partial<UiPreferences> : {};
-  return { advanced: data.advanced === true, theme: data.theme === 'light' ? 'light' : 'dark', previewResolution: data.previewResolution === 'low' || data.previewResolution === 'medium' || data.previewResolution === 'ultra' ? data.previewResolution : 'high' };
+  const theme=data.theme==='light'?'light':'dark';
+  const dark=previewBackground(data.previewBackgroundDark??(data.theme!=='light'?data.previewBackground:undefined)).id;
+  const light=previewBackground(data.previewBackgroundLight??(data.theme==='light'&&data.previewBackground!=='graphite'?data.previewBackground:undefined)??'pearl','light').id;
+  return { advanced: data.advanced === true, theme: data.theme === 'light' ? 'light' : 'dark', previewResolution: data.previewResolution === 'low' || data.previewResolution === 'medium' || data.previewResolution === 'ultra' ? data.previewResolution : 'high',previewBackground:theme==='dark'?dark:light,previewBackgroundDark:dark,previewBackgroundLight:light };
 }
 const KEY = 'ccc.ui-preferences.v1';
 function read(): UiPreferences {
@@ -10,6 +14,16 @@ function read(): UiPreferences {
   catch { return parseUiPreferences(null); }
 }
 export const uiPreferences = read();
+export function setPreviewBackground(value:PreviewBackgroundId):boolean {
+  const background=previewBackground(value);uiPreferences.previewBackground=background.id;uiPreferences[uiPreferences.theme==='dark'?'previewBackgroundDark':'previewBackgroundLight']=background.id;
+  if(typeof document!=='undefined')document.documentElement?.style?.setProperty('--ccc-preview-background',background.css);
+  try{localStorage.setItem(KEY,JSON.stringify(uiPreferences));return true;}catch{return false;}
+}
+export function setUiTheme(theme:UiPreferences['theme']):void{
+ uiPreferences.theme=theme;uiPreferences.previewBackground=theme==='dark'?uiPreferences.previewBackgroundDark:uiPreferences.previewBackgroundLight;
+ if(typeof document!=='undefined'){document.documentElement.dataset.cccTheme=theme;document.documentElement?.style?.setProperty('--ccc-preview-background',previewBackground(uiPreferences.previewBackground).css);}
+ try{localStorage.setItem(KEY,JSON.stringify(uiPreferences));}catch{}
+}
 export function setPreviewResolution(quality:UiPreferences['previewResolution']): boolean {
   uiPreferences.previewResolution=quality;
   if(typeof document!=='undefined')document.querySelectorAll<HTMLButtonElement>('[data-preview-quality]').forEach(choice=>{const selected=choice.dataset.previewQuality===quality;choice.setAttribute('aria-pressed',String(selected));choice.classList.toggle('osf-btn--osf-accent',selected);});
@@ -54,7 +68,7 @@ export function installUiSettings(options: { changed: () => void; status: (text:
       persist();
     });
     theme.addEventListener('click', () => {
-      uiPreferences.theme = uiPreferences.theme === 'dark' ? 'light' : 'dark';
+      setUiTheme(uiPreferences.theme === 'dark' ? 'light' : 'dark');
       theme.textContent = uiPreferences.theme === 'light' ? 'Light Mode' : 'Dark Mode';
       theme.setAttribute('aria-pressed', String(uiPreferences.theme === 'light'));
       persist();

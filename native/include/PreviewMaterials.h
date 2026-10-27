@@ -2,7 +2,11 @@
 #include "PreviewGeometry.h"
 
 namespace CCC::Preview {
-    struct MaterialAppearance {std::string texture;std::array<float,3> tint{1,1,1};bool tinted=false;std::string opacity,normal,ao,roughness,metal;std::array<float,3> color{1,1,1};bool constantColor=false;};
+    struct MaterialOverlay {std::string mask,texture,normal,roughness;std::array<float,3> tint{1,1,1};std::array<float,2> scale{1,1};bool multiply=true,positionContrast=false,tintMultiply=false,blendColor=true,blendNormal=true,blendRoughness=true,addNormals=true;float tintWeight=0,position=.5f,contrast=1,intensity=1;bool needsVertexColor=false,needsDetailMask=false;};
+    struct MaterialAppearance {std::string texture;std::array<float,3> tint{1,1,1};bool tinted=false;std::string opacity,normal,ao,roughness,metal;std::array<float,3> color{1,1,1};bool constantColor=false;float tintWeight=1;std::string emissive;std::vector<MaterialOverlay> overlays;bool glass=false,decal=false;float constantOpacity=-1;bool authored=false,tintMultiply=false;
+        // 0: unknown/effect transparency, 1: opaque, 2: authored alpha test.
+        bool incomplete=false;unsigned opacityMode=0;float alphaThreshold=.5f,constantRoughness=-1,constantMetal=-1,constantAO=-1;
+    };
     inline std::string MaterialKey(std::string name) {
         for(auto& c:name){if(c=='\\')c='/';else if(c>='A'&&c<='Z')c=char(c-'A'+'a');}
         if(name.starts_with("/materials/")||name.starts_with("/data/materials/"))name.erase(0,1);
@@ -14,6 +18,7 @@ namespace CCC::Preview {
     }
 }
 #include "PreviewMaterialGraph.h"
+#include "PreviewJsonMaterials.h"
 namespace CCC::Preview {
     // Confirmed preview limitations, scoped to exact authored materials. Do not infer
     // missing color from layer counts: most correctly rendered materials are layered.
@@ -25,6 +30,7 @@ namespace CCC::Preview {
         return key=="materials/clothes/spacesuit_ecliptic/spacesuit_ecliptic_backpack.mat";
     }
     class MaterialDatabase {
+        std::function<Bytes(const std::string&)> readMaterial;std::unordered_map<std::string,std::optional<MaterialAppearance>> jsonMaterials;
         std::unordered_map<std::string,MaterialAppearance> inheritedRecords;
         std::filesystem::path directory;bool loaded=false;std::unordered_map<std::string,MaterialAppearance> records,scopedRecords;std::string error;
         std::vector<std::filesystem::path> archives;std::unordered_set<std::string> visited,graphVisited;std::size_t databaseBytes=0,graphDatabaseBytes=0;bool graphOnly=false;
@@ -39,7 +45,7 @@ namespace CCC::Preview {
                 if(!count||count>2000000||names>size||std::uint64_t(count)*36+headerSize>names)return;
                 if(version==3){r.Skip(8);if(r.Read<std::uint32_t>()!=0)return;}
                 std::vector<std::uint32_t> indices;f.seekg(names);
-                for(std::uint32_t i=0;i<count;++i){std::uint16_t length=0;if(!f.read(reinterpret_cast<char*>(&length),2)||length>1024)return;std::string name(length,'\0');if(!f.read(name.data(),length))return;try{name=AssetKey(name);if(name.starts_with("materials/")&&name.ends_with("materialsbeta.cdb")&&indices.size()<16)indices.push_back(i);}catch(...){} }
+                for(std::uint32_t i=0;i<count;++i){std::uint16_t length=0;if(!f.read(reinterpret_cast<char*>(&length),2)||length>1024)return;std::string name(length,'\0');if(!f.read(name.data(),length))return;try{name=AssetKey(name);if(name.starts_with("materials/")&&name.ends_with(".cdb")&&indices.size()<16)indices.push_back(i);}catch(...){} }
                 for(const auto index:indices){
                 f.seekg(headerSize+std::uint64_t(index)*36+16);std::array<std::uint8_t,16> entry{};if(!f.read(reinterpret_cast<char*>(entry.data()),entry.size()))return;Reader record{entry};const auto offset=record.Read<std::uint64_t>();const auto packed=record.Read<std::uint32_t>()&0x3fffffff,raw=record.Read<std::uint32_t>()&0x3fffffff;
                 if(!raw||raw>maxDatabase||packed>MaxAssetBytes||offset>names||(packed?packed:raw)>names-offset||names>size)return;
@@ -62,7 +68,7 @@ namespace CCC::Preview {
             graphOnly=false;
         }
     public:
-        explicit MaterialDatabase(std::filesystem::path data,std::vector<std::filesystem::path> sources={}):directory(std::move(data)),archives(std::move(sources)){}
+        explicit MaterialDatabase(std::filesystem::path data,std::vector<std::filesystem::path> sources={},std::function<Bytes(const std::string&)> reader={}):directory(std::move(data)),archives(std::move(sources)),readMaterial(std::move(reader)){}
         void Parse(std::span<const std::uint8_t> bytes) {
             if(graphOnly){const auto inherited=ReadMaterialInheritance(bytes);for(const auto& [name,appearance]:inherited)inheritedRecords.insert_or_assign(name,appearance);return;}
             std::string active,activeMaterial,activePath,activeRoot;MaterialAppearance textureRecord;
@@ -95,24 +101,15 @@ namespace CCC::Preview {
             }flush();
         }
         MaterialAppearance Find(const std::string& path) {if(!loaded)Load();const auto key=MaterialKey(path);
+            if(readMaterial){auto canonical=key;if(canonical.starts_with("data/"))canonical.erase(0,5);auto found=jsonMaterials.find(canonical);if(found==jsonMaterials.end()){std::optional<MaterialAppearance> appearance;try{appearance=ReadJsonPreviewMaterial(readMaterial(canonical));}catch(...){}if(jsonMaterials.size()>=2048)jsonMaterials.clear();found=jsonMaterials.emplace(canonical,std::move(appearance)).first;}if(found->second)return *found->second;}
             for(const auto& archive:archives){auto stem=AssetKey(archive.filename().string());const auto dash=stem.find(" - ");if(dash!=stem.npos)stem.resize(dash);else if(stem.ends_with(".ba2"))stem.resize(stem.size()-4);if(!stem.empty()&&key.find("/"+stem+"/")!=key.npos){LoadLoose(directory/"materials"/"creations"/stem/"materialsbeta.cdb");LoadLoose(directory/"materials"/stem/"materialsbeta.cdb");LoadArchive(archive);}}
             auto scopedKey=key;if(scopedKey.starts_with("data/"))scopedKey.erase(0,5);if(!scopedKey.starts_with("materials/"))scopedKey="materials/"+scopedKey;
-            const auto supplement=[&](MaterialAppearance result){
-                // Keep resolved explicit maps. Follow authored parents only for surfaces
-                // the legacy name reader cannot resolve; never guess by nearby names.
-                if(!result.texture.empty())return result;
-                const auto surfaceName=MaterialName(scopedKey);if(surfaceName.find("glass")!=std::string::npos||surfaceName.find("_visor")!=std::string::npos)return result;
-                EnsureInheritance();
-                auto it=inheritedRecords.find(scopedKey);
-                if(it==inheritedRecords.end())it=inheritedRecords.find(MaterialName(scopedKey));
-                if(it==inheritedRecords.end())return result;
-                const auto& base=it->second;
-                if(!base.texture.empty()||base.constantColor||base.tinted){result.texture=base.texture;result.constantColor=base.constantColor;result.color=base.color;result.tint=base.tint;result.tinted=base.tinted;}
-                if(result.normal.empty())result.normal=base.normal;
-                if(result.opacity.empty())result.opacity=base.opacity;
-                if(result.roughness.empty())result.roughness=base.roughness;if(result.metal.empty())result.metal=base.metal;
-                if(result.ao.empty())result.ao=base.ao;
-                return result;
+            const auto supplement=[&](MaterialAppearance fallback){
+                // Resolve component ownership and inheritance for every material.
+                // The flattened reader remains a fallback for unsupported databases.
+                EnsureInheritance();auto inherited=inheritedRecords.find(scopedKey);
+                if(inherited==inheritedRecords.end())inherited=inheritedRecords.find(MaterialName(scopedKey));
+                return inherited==inheritedRecords.end()?fallback:inherited->second;
             };
             if(const auto scoped=scopedRecords.find(scopedKey);scoped!=scopedRecords.end())return supplement(scoped->second);
             // Akila's shared gloves use singular BaseGlove3.mat but the authored

@@ -1,0 +1,140 @@
+Console Command Center — Test Feedback
+
+Report 1
+Time: 2026-10-24T03:17:34.770Z
+CCC: 1.3.49
+Kind: ID
+Name: Boom Pop! Dynamite
+ID: 0029B040
+Local ID: 29B040
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+is this the right model for this? It does not look like the other Boom Pop! items
+----------------------------------------
+
+Report 2
+Time: 2026-10-24T03:19:03.319Z
+CCC: 1.3.49
+Kind: ID
+Name: Boudicca
+ID: 0029959F
+Source: built-in
+Category: Aid
+Result: Issues
+Comment:
+the model viewer model is too dark. Maybe its wrong texture or needs something else.
+----------------------------------------
+
+Report 3
+Time: 2026-10-24T03:19:45.738Z
+CCC: 1.3.49
+Kind: ID
+Name: Boudicca
+ID: 0029959F
+Source: built-in
+Category: Aid
+Result: Issues
+Comment:
+rename to Boudicca Health
+----------------------------------------
+
+Report 4
+Time: 2026-10-24T03:19:52.869Z
+CCC: 1.3.49
+Kind: ID
+Name: Boudicca
+ID: 0029A849
+Local ID: 29A849
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+rename to Boudicca Oxygen
+----------------------------------------
+
+Report 5
+Time: 2026-10-24T03:20:31.163Z
+CCC: 1.3.49
+Kind: ID
+Name: Butter
+ID: 002C7C0A
+Local ID: 2C7C0A
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture/model is all messed up! its like transparent or something in the model viewer
+----------------------------------------
+
+Report 6
+Time: 2026-10-24T03:21:06.844Z
+CCC: 1.3.49
+Kind: ID
+Name: Cabernet Chunkignon
+ID: 00249C51
+Local ID: 249C51
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+missing a texture/logo on the bottom
+----------------------------------------
+
+Report 7
+Time: 2026-10-24T03:21:42.141Z
+CCC: 1.3.49
+Kind: ID
+Name: CAN-uck! Edmontonian
+ID: 00249C4A
+Local ID: 249C4A
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+some food textures are transparent/broken in this.
+----------------------------------------
+
+Report 8
+Time: 2026-10-24T03:22:34.560Z
+CCC: 1.3.49
+Kind: ID
+Name: CAN-uck! Shepherd's Pie
+ID: 00249C4B
+Local ID: 249C4B
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+textures are messed up
+----------------------------------------
+
+Report 9
+Time: 2026-10-24T03:23:26.157Z
+CCC: 1.3.49
+Kind: ID
+Name: Armada Armored Space Helmet
+ID: 030A52EB
+Local ID: 0A52EB
+Source: SFBGS050.esm
+Category: Helmets
+Result: Issues
+Comment:
+textures for all helmets are messed up. Some all textures are missing. Some just the interior textures. This needs a look-see.
+----------------------------------------
+
+Report 10
+Time: 2026-10-24T03:23:53.826Z
+CCC: 1.3.49
+Kind: ID
+Name: Armada Space Helmet
+ID: 030A4E20
+Local ID: 0A4E20
+Source: SFBGS050.esm
+Category: Helmets
+Result: Issues
+Comment:
+missing textures.
+All helmets start in the model viewer facing backwards. Turn them 180 degrees please!
+----------------------------------------

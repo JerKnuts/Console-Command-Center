@@ -5,7 +5,9 @@
 #include "ModCatalogs.h"
 #include "PreviewTextures.h"
 #include "PreviewRecords.h"
+#include "PreviewTransfer.h"
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <deque>
 #include <mutex>
@@ -47,6 +49,10 @@ namespace {
         } else if(auto* weapon=form->As<RE::TESObjectWEAP>()) {
             add(weapon->BGSModelMaterialSwap::model.c_str());
         }
+        else if(auto* book=form->As<RE::TESObjectBOOK>()){
+            if(book->inventoryModel)add(book->inventoryModel->BGSModelMaterialSwap::model.c_str());
+            if(paths.empty())add(book->BGSModelMaterialSwap::model.c_str());
+        }
         else if(auto* misc=form->As<RE::TESObjectMISC>())add(misc->BGSModelMaterialSwap::model.c_str());
         else if(auto* aid=form->As<RE::AlchemyItem>())add(aid->BGSModelMaterialSwap::model.c_str());
         else if(auto* ammo=form->As<RE::TESAmmo>())add(ammo->BGSModelMaterialSwap::model.c_str());
@@ -67,7 +73,10 @@ void OnModel(const OSFUI::API::Request& raw,void*) noexcept {
     try {
         const auto text=request.Get<std::string>("formId");std::uint32_t id=0;const bool showMannequin=request.Get<unsigned>("mannequin").value_or(0)==1;
         const auto requestedQuality=request.Get<std::string>("quality").value_or("high");const unsigned quality=requestedQuality=="low"?1:requestedQuality=="medium"?2:requestedQuality=="ultra"?4:3;
-        const bool male=request.Get<std::string>("sex").value_or("female")=="male";const bool geometryOnly=request.Get<std::string>("stage").value_or("complete")=="geometry";
+        const bool male=request.Get<std::string>("sex").value_or("female")=="male";const auto stage=request.Get<std::string>("stage").value_or("complete");const bool geometryOnly=stage=="geometry",colorOnly=stage=="color";
+        const auto mannequinFit=request.Get<std::string>("mannequinFit").value_or("outfit");if(mannequinFit!="standard"&&mannequinFit!="outfit"&&mannequinFit!="suit"){request.Reject("invalid-mannequin","Invalid mannequin fit.");return;}
+        const auto mannequinSex=request.Get<std::string>("mannequinSex").value_or("auto");
+        if(mannequinSex!="auto"&&mannequinSex!="male"&&mannequinSex!="female"){request.Reject("invalid-mannequin","Choose Auto, Female or Male.");return;}
         if(!text||text->size()!=8){request.Reject("invalid-form","A valid loaded Form ID is required.");return;}
         const auto parsed=std::from_chars(text->data(),text->data()+text->size(),id,16);
         if(parsed.ec!=std::errc{}||parsed.ptr!=text->data()+text->size()||!id){request.Reject("invalid-form","A valid loaded Form ID is required.");return;}
@@ -77,7 +86,7 @@ void OnModel(const OSFUI::API::Request& raw,void*) noexcept {
         const auto* tasks=SFSE::GetTaskInterface();if(!tasks){state.busy=false;request.Reject("preview-unavailable","The game task queue is unavailable.");return;}
         // Only resolve engine-owned forms on the game thread. Archive IO and
         // decoding run independently, and never execute inventory commands.
-        tasks->AddTask([id,showMannequin,quality,male,geometryOnly,reply=raw]() {
+        tasks->AddTask([id,showMannequin,quality,male,geometryOnly,colorOnly,mannequinSex,mannequinFit,reply=raw]() {
             try {
                 auto* form=RE::TESForm::LookupByID(id);if(!form)throw std::runtime_error("This Form ID is not loaded.");
                 if(auto* recipe=form->As<RE::BGSConstructibleObject>()){form=recipe->createdObject;if(!form)throw std::runtime_error("This recipe has no previewable created object.");}
@@ -85,33 +94,38 @@ void OnModel(const OSFUI::API::Request& raw,void*) noexcept {
                 auto paths=assembly?std::vector<std::string>{}:ModelPaths(form,male);auto directory=DataDirectory();std::vector<std::string> plugins;std::vector<Preview::ScenePlugin> scenePlugins;
                 const auto order=CCC::ModCatalogs::PluginLoadOrder();
                 if(order.contains("plugins"))for(const auto& plugin:order["plugins"]){plugins.push_back(plugin.at("plugin").get<std::string>());const auto kind=plugin.value("pluginKind",std::string("full"));scenePlugins.push_back({plugins.back(),kind=="small"?2u:kind=="medium"?1u:0u,plugin.value("index",0u)});}
+                auto resolvedFit=mannequinFit;
+                if(auto* armor=form->As<RE::TESObjectARMO>()){
+                    if(armor->HasKeywordString("ArmorTypeSpacesuitBody"))resolvedFit="suit";
+                    else if(armor->HasKeywordString("ArmorTypeSpacesuitHelmet")||armor->HasKeywordString("ArmorTypeSpacesuitBackpack")||armor->HasKeywordString("ArmorTypeApparelHead"))resolvedFit="standard";
+                }
                 const bool mannequin=showMannequin&&form->As<RE::TESObjectARMO>();
-                State().Queue([paths=std::move(paths),directory=std::move(directory),plugins=std::move(plugins),reply,id,modelId,assembly,weapon,scenePlugins=std::move(scenePlugins),mannequin,quality,male,geometryOnly]() {
+                State().Queue([paths=std::move(paths),directory=std::move(directory),plugins=std::move(plugins),reply,id,modelId,assembly,weapon,scenePlugins=std::move(scenePlugins),mannequin,quality,male,geometryOnly,colorOnly,mannequinSex,mannequinFit=resolvedFit]() {
                     try {
-                        auto& state=State();std::string signature=directory.string();for(const auto& p:plugins)signature+='|'+p;
-                        if(!state.assets||state.assetSignature!=signature){state.cache.clear();state.geometry.clear();state.scenes.reset();state.textures.reset();state.assets=std::make_unique<Preview::AssetStore>(directory,plugins);state.textures=std::make_unique<Preview::TextureStore>(*state.assets);state.assetSignature=std::move(signature);}
-                        const auto key=std::to_string(id)+":"+std::to_string(quality)+":"+std::to_string(mannequin)+":"+std::to_string(male)+(geometryOnly?":geometry":":complete");
-                        const auto publish=[&](const Service::Cached& item,bool cached){std::string ticket;{std::lock_guard lock(state.mutex);ticket=std::to_string(++state.sequence);state.results.emplace_back(ticket,item.bytes);while(state.results.size()>2)state.results.pop_front();}const auto json=OSFUI::API::Json{{"ok",true},{"ticket",ticket},{"bytes",item.bytes->size()},{"decodedBytes",item.decoded},{"compression","deflate"},{"meshes",item.pieces},{"triangles",item.triangles},{"formId",id},{"mode","color"},{"textured",item.textured},{"cached",cached}}.dump();reply.Reply(json.c_str());};
+                        const auto started=std::chrono::steady_clock::now();auto& state=State();std::string signature=directory.string();for(const auto& p:plugins)signature+='|'+p;
+                        if(!state.assets||state.assetSignature!=signature){state.cache.clear();state.geometry.clear();state.scenes.reset();state.textures.reset();state.assets=std::make_unique<Preview::AssetStore>(directory,plugins);state.assetSignature=std::move(signature);}
+                        const auto key=std::to_string(id)+":"+std::to_string(quality)+":"+std::to_string(mannequin)+":"+std::to_string(male)+":"+mannequinSex+":"+mannequinFit+(geometryOnly?":geometry":colorOnly?":color":":complete");
+                        const auto publish=[&](const Service::Cached& item,bool cached){std::string ticket;{std::lock_guard lock(state.mutex);ticket=std::to_string(++state.sequence);state.results.emplace_back(ticket,item.bytes);while(state.results.size()>2)state.results.pop_front();}const auto json=OSFUI::API::Json{{"ok",true},{"ticket",ticket},{"bytes",item.bytes->size()},{"decodedBytes",item.decoded},{"maxChunkBytes",Preview::MaxTransferChunkBytes},{"compression","deflate"},{"meshes",item.pieces},{"triangles",item.triangles},{"formId",id},{"mode","color"},{"textured",item.textured},{"cached",cached}}.dump();reply.Reply(json.c_str());};
                         for(auto it=state.cache.begin();it!=state.cache.end();++it)if(it->key==key){auto hit=*it;state.cache.erase(it);state.cache.push_back(hit);publish(hit,true);return;}
-                        const auto geometryKey=std::to_string(modelId)+":"+std::to_string(mannequin)+":"+std::to_string(male);
+                        const auto geometryKey=std::to_string(modelId)+":"+std::to_string(mannequin)+":"+std::to_string(male)+":"+mannequinSex+":"+mannequinFit;
                         std::vector<Preview::Mesh> meshes;for(auto it=state.geometry.begin();it!=state.geometry.end();++it)if(it->key==geometryKey){auto hit=std::move(*it);state.geometry.erase(it);meshes=hit.meshes;state.geometry.push_back(std::move(hit));break;}
                         if(meshes.empty()){
                             meshes=(assembly||weapon)?Preview::EnsureRecordScenes(state.scenes,directory,scenePlugins).LoadModels(*state.assets,modelId):Preview::Load(*state.assets,paths,quality);
-                            if(mannequin){const bool modelMale=std::any_of(paths.begin(),paths.end(),[](const auto& path){return path.ends_with("_m.nif");});const bool modelFemale=std::any_of(paths.begin(),paths.end(),[](const auto& path){return path.ends_with("_f.nif");});Preview::AddMannequin(*state.assets,meshes,modelMale||(!modelFemale&&male),quality);}
+                            if(mannequin)Preview::AddMannequin(*state.assets,meshes,Preview::PreviewMannequinMale(paths,male,mannequinSex),quality,mannequinFit=="outfit",mannequinFit=="suit");
                             std::size_t size=0;for(const auto& mesh:meshes)size+=mesh.positions.size()*4+mesh.indices.size()*4+mesh.uv.size()*4;
                             if(size<=24u*1024*1024){std::size_t held=size;for(const auto& prior:state.geometry)held+=prior.bytes;while(!state.geometry.empty()&&(held>24u*1024*1024||state.geometry.size()>=3)){held-=state.geometry.front().bytes;state.geometry.pop_front();}state.geometry.push_back({geometryKey,meshes,size});}
                         }
                         if(!geometryOnly&&!assembly){Preview::EnsureRecordScenes(state.scenes,directory,scenePlugins).ApplyMaterialSwaps(modelId,meshes,male);}
                         if(meshes.size()>Preview::MaxPieces)throw std::runtime_error("Too many model pieces.");
-                        if(!geometryOnly)state.textures->Apply(meshes,quality);auto bytes=Preview::Pack(meshes,(quality==4?256u:64u)*1024*1024);const auto decodedBytes=bytes.size();
+                        if(!geometryOnly){if(!state.textures)state.textures=std::make_unique<Preview::TextureStore>(*state.assets);state.textures->Apply(meshes,colorOnly?0:quality);}auto bytes=Preview::Pack(meshes,(quality==4?256u:64u)*1024*1024);const auto decodedBytes=bytes.size();
                         Preview::Bytes compressed(compressBound(bytes.size()));uLongf compressedLength=compressed.size();
-                        if(compress2(compressed.data(),&compressedLength,bytes.data(),bytes.size(),Z_BEST_SPEED)!=Z_OK)throw std::runtime_error("Model transfer compression failed.");compressed.resize(compressedLength);bytes=std::move(compressed);
+                        if(compress2(compressed.data(),&compressedLength,bytes.data(),bytes.size(),geometryOnly||colorOnly?Z_BEST_SPEED:Z_DEFAULT_COMPRESSION)!=Z_OK)throw std::runtime_error("Model transfer compression failed.");compressed.resize(compressedLength);bytes=std::move(compressed);
                         std::size_t triangles=0;for(const auto& mesh:meshes)triangles+=mesh.indices.size()/3;
                         const auto textured=std::count_if(meshes.begin(),meshes.end(),[](const auto& mesh){return !mesh.pixels.empty();});
                         if(!geometryOnly)REX::INFO("Preview {:08X}: {} textured / {} pieces; {}",id,textured,meshes.size(),state.textures->Diagnostics());
                         for(const auto& mesh:meshes)if(!geometryOnly&&!mesh.mannequin&&(mesh.incompleteMaterial||(mesh.pixels.empty()&&!mesh.tinted&&!mesh.glass)))REX::INFO("Preview unresolved material: {} / {}",mesh.name,mesh.material);
                         Service::Cached item{key,std::make_shared<const Preview::Bytes>(std::move(bytes)),decodedBytes,meshes.size(),triangles,std::size_t(textured)};
-                        if(!geometryOnly&&item.bytes->size()<=64u*1024*1024){std::size_t held=item.bytes->size();for(const auto& prior:state.cache)held+=prior.bytes->size();while(!state.cache.empty()&&(held>64u*1024*1024||state.cache.size()>=4)){held-=state.cache.front().bytes->size();state.cache.pop_front();}state.cache.push_back(item);}publish(item,false);
+                        if(!geometryOnly&&item.bytes->size()<=96u*1024*1024){std::size_t held=item.bytes->size();for(const auto& prior:state.cache)held+=prior.bytes->size();while(!state.cache.empty()&&(held>96u*1024*1024||state.cache.size()>=4)){held-=state.cache.front().bytes->size();state.cache.pop_front();}state.cache.push_back(item);}REX::INFO("Preview {:08X} stage {}: {} ms, {} decoded bytes, {} transfer bytes",id,geometryOnly?"geometry":colorOnly?"color":"complete",std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-started).count(),decodedBytes,item.bytes->size());publish(item,false);
                     } catch(const std::exception& e){reply.Reject("preview-unavailable",e.what());}catch(...){reply.Reject("preview-unavailable","The item model could not be loaded.");}
                 });
             }catch(const std::exception& e){State().busy=false;reply.Reject("preview-unavailable",e.what());}catch(...){State().busy=false;reply.Reject("preview-unavailable","Model metadata is unavailable.");}
@@ -127,7 +141,7 @@ void OnChunk(const OSFUI::API::Request& raw,void*) noexcept {
         {auto& state=State();std::lock_guard lock(state.mutex);
             const auto found=std::find_if(state.results.begin(),state.results.end(),[&](const auto& result){return result.first==*ticket;});
             if(found==state.results.end()||*offset>=found->second->size())expired=true;
-            else {const auto size=std::min<std::size_t>(std::clamp(request.Get<unsigned>("maxBytes").value_or(32768),4096u,65536u),found->second->size()-*offset);chunk.assign(found->second->begin()+*offset,found->second->begin()+*offset+size);}
+            else {const auto size=Preview::PreviewChunkSize(request.Get<unsigned>("maxBytes").value_or(32768),found->second->size()-*offset);chunk.assign(found->second->begin()+*offset,found->second->begin()+*offset+size);}
         }
         if(expired){request.Reject("preview-expired","This model transfer expired; load the preview again.");return;}
         // Reply without the cache lock: the host may dispatch another request.

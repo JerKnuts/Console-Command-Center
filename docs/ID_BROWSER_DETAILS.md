@@ -30,4 +30,4 @@ The reader accepts up to 256 KiB per text entry, preserves basic paragraph/empha
 
 Small previews and Model Viewer are available for supported loaded model types with Advanced Options either on or off. Technical metadata still follows Advanced Options.
 
-The selected-item panel places descriptions, effects, stats and optional metadata in the left half, with a sticky model preview in the right half. Items without a supported model use the full text width. Action buttons stay below the columns.
+The selected-item panel places descriptions, effects, stats and optional metadata in the left half, with a sticky model preview in the right half. Items without a supported model use the full text width. Read and Listen appear as compact buttons below the still preview. Other item actions remain below the columns. Books/slates do not have a full Model Viewer button; see [books and slates](AUDIO_SLATES.md).

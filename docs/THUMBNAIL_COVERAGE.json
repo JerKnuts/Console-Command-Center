@@ -1,0 +1,5301 @@
+{
+  "build": "1.3.62",
+  "attempted": 6072,
+  "covered": 4822,
+  "uniqueImages": 3459,
+  "bytes": 14704182,
+  "categories": {
+    "Aid": {
+      "attempted": 311,
+      "covered": 303
+    },
+    "Ammo": {
+      "attempted": 66,
+      "covered": 40
+    },
+    "Apparel": {
+      "attempted": 619,
+      "covered": 592
+    },
+    "Helmets": {
+      "attempted": 98,
+      "covered": 98
+    },
+    "Packs": {
+      "attempted": 78,
+      "covered": 78
+    },
+    "Resources & Miscellaneous": {
+      "attempted": 1424,
+      "covered": 1424
+    },
+    "Ship Parts & Other Forms": {
+      "attempted": 2738,
+      "covered": 1581
+    },
+    "Spacesuits": {
+      "attempted": 182,
+      "covered": 182
+    },
+    "Weapons": {
+      "attempted": 93,
+      "covered": 89
+    },
+    "Workshop / Outpost Objects": {
+      "attempted": 459,
+      "covered": 431
+    },
+    "Vehicles": {
+      "attempted": 4,
+      "covered": 4
+    }
+  },
+  "unsupported": {
+    "starfield.esm:2EE09E": {
+      "label": "Fed",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:313266": {
+      "label": "Fed",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:313281": {
+      "label": "Fed",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:313268": {
+      "label": "Hungry",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EE09C": {
+      "label": "Hydrated",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EE801": {
+      "label": "Hydrated",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EE98F": {
+      "label": "Hydrated",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:313276": {
+      "label": "Thirsty",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:06497E": {
+      "label": "Creature Electric Arc Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B0ACE": {
+      "label": "Creature Energy Orb Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF713": {
+      "label": "Creature Explosive Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0297F4": {
+      "label": "Creature Fire Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0297F5": {
+      "label": "Creature Ice Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF714": {
+      "label": "Creature Noxious Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF715": {
+      "label": "Creature Oxygen Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:06497F": {
+      "label": "Creature Pod Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:064980": {
+      "label": "Creature Quill Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF70F": {
+      "label": "Creature Rock Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF711": {
+      "label": "Creature Shout Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B0ACF": {
+      "label": "Creature Sonic Blast Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18DEC2": {
+      "label": "Creature Spit Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF710": {
+      "label": "Creature Spit AoE Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF712": {
+      "label": "Creature Vomit Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:087588": {
+      "label": "Gravity Torpedo Ammo",
+      "error": "Model asset is unavailable in the installed game files."
+    },
+    "starfield.esm:2F3F22": {
+      "label": "Gravity Torpedo Ammo",
+      "error": "Model asset is unavailable in the installed game files."
+    },
+    "starfield.esm:2F3F23": {
+      "label": "Gravity Torpedo Ammo",
+      "error": "Model asset is unavailable in the installed game files."
+    },
+    "starfield.esm:1AD730": {
+      "label": "Grenade",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:076EDC": {
+      "label": "Missile",
+      "error": "Model asset is unavailable in the installed game files."
+    },
+    "starfield.esm:249FE8": {
+      "label": "Missile",
+      "error": "Model asset is unavailable in the installed game files."
+    },
+    "starfield.esm:030B2F": {
+      "label": "Missile, CE-19",
+      "error": "Model asset is unavailable in the installed game files."
+    },
+    "starfield.esm:0B2CCD": {
+      "label": "Solar Flare Beam Ammo",
+      "error": "Model asset is unavailable in the installed game files."
+    },
+    "starfield.esm:091157": {
+      "label": "Supernova Ammo",
+      "error": "Model asset is unavailable in the installed game files."
+    },
+    "starfield.esm:19B892": {
+      "label": "Terrormorph Grenade",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2197C1": {
+      "label": "Terrormorph Roar Ammo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1FFA13": {
+      "label": "Farmer ModelA Voice Module",
+      "error": "No preview geometry was found."
+    },
+    "starfield.esm:1FFA14": {
+      "label": "Marine ModelA Voice Module",
+      "error": "No preview geometry was found."
+    },
+    "starfield.esm:1FFA15": {
+      "label": "Security ModelA Voice Module",
+      "error": "No preview geometry was found."
+    },
+    "starfield.esm:319B3A": {
+      "label": "SkinModelA CrimsonFleet ArmoredBrute",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:319B39": {
+      "label": "SkinModelA CrimsonFleet Brute",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:319B2E": {
+      "label": "SkinModelA CrimsonFleet HeavyBrute",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:319B38": {
+      "label": "SkinModelA Generic ArmoredCombat",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:319B3C": {
+      "label": "SkinModelA Generic Brute",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:319B36": {
+      "label": "SkinModelA Generic Combat",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:319B3B": {
+      "label": "SkinModelA Generic HeavyBrute",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:0B41CD": {
+      "label": "SkinModelA Generic HeavyCombat",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:2AA574": {
+      "label": "SkinModelA Generic HeavyCombat",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:319B37": {
+      "label": "SkinModelA Generic HeavyCombat",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:0B41CB": {
+      "label": "SkinModelA Generic HeavyCombat_Styx",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:319B3D": {
+      "label": "SkinModelA Genric ArmoredBrute",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:319B43": {
+      "label": "SkinModelA Nasa",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:319B40": {
+      "label": "SkinModelA Police",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:07B081": {
+      "label": "SkinModelA Vasco",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:019158": {
+      "label": "SkinModelS Brute_CrimsonHeavy",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:01FC52": {
+      "label": "SkinModelS Brute_CrimsonLight",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:01FDB4": {
+      "label": "SkinModelS Brute_CrimsonMedium",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:01FE08": {
+      "label": "SkinModelS Brute_CrimsonMedium",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:01FEE3": {
+      "label": "SkinModelS GenericArmoredCombat",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:01FEE0": {
+      "label": "SkinModelS GenericCombat",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:01FEE1": {
+      "label": "SkinModelS GenericHeavyCombat",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:017C23": {
+      "label": "SkinModelS Tactical_EclipticMedium",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:0E1B4D": {
+      "label": "SkinModelS Tactical_Slayton_Light",
+      "error": "This modular model has an unresolved attachment point."
+    },
+    "starfield.esm:22D10E": {
+      "label": "120LD Landing Bay",
+      "error": "Assembly has too many placed references."
+    },
+    "starfield.esm:26FE66": {
+      "label": "120LD Landing Bay",
+      "error": "Assembly has too many placed references."
+    },
+    "starfield.esm:1212C0": {
+      "label": "Abandoned Starstation",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:09A624": {
+      "label": "Achilles",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E83": {
+      "label": "Achilles",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E81": {
+      "label": "Achilles II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E7F": {
+      "label": "Achilles III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C37": {
+      "label": "Allied Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:089FB8": {
+      "label": "Anansi",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3ADB33": {
+      "label": "Asp's Bite",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E59": {
+      "label": "Asphalt CB",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E57": {
+      "label": "Asphalt CB II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E55": {
+      "label": "Asphalt CB III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:214D9D": {
+      "label": "Astraea",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:214D9F": {
+      "label": "Astraea",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:22EF0D": {
+      "label": "Astraea",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:06FCF6": {
+      "label": "Atlas",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D65C": {
+      "label": "Autobahn I",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D65A": {
+      "label": "Autobahn II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D658": {
+      "label": "Autobahn III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0196D3": {
+      "label": "Autonomous Staryard",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:22F594": {
+      "label": "Azrael's Sword",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2DFF": {
+      "label": "Babylon",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2DFD": {
+      "label": "Babylon II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:054A13": {
+      "label": "Banda Watchdog",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:157B70": {
+      "label": "Banda Watchdog",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0090FD": {
+      "label": "Battery Beta",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:046F61": {
+      "label": "Battery Gamma",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:151577": {
+      "label": "Berry Mule",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:140143": {
+      "label": "Bireme",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38239C": {
+      "label": "Bireme",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:284A18": {
+      "label": "Black Dreadnought",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C24B": {
+      "label": "Blackhawk",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:14A219": {
+      "label": "Blackhawk",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C24F": {
+      "label": "Blackhawk II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:14A21B": {
+      "label": "Blackhawk II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C251": {
+      "label": "Blackhawk III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:14A21D": {
+      "label": "Blackhawk III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:21C936": {
+      "label": "Blind Bet",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:007478": {
+      "label": "Bright Star",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E29": {
+      "label": "Caravan",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E27": {
+      "label": "Caravan II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E25": {
+      "label": "Caravan III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0E78BA": {
+      "label": "Carry ALL",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E53": {
+      "label": "Carry-ALL I",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E51": {
+      "label": "Carry-ALL II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E4F": {
+      "label": "Carry-ALL III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:14A45D": {
+      "label": "Celestial",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D656": {
+      "label": "Civshuttle I",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D654": {
+      "label": "Civshuttle II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D652": {
+      "label": "Civshuttle III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:28E7C6": {
+      "label": "Clemens' Truth",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E3EBA": {
+      "label": "Clinic Med Response",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:282719": {
+      "label": "Cowling",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B1366": {
+      "label": "Crimson Fleet Banshee",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BE9": {
+      "label": "Crimson Fleet Banshee",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:21E2A9": {
+      "label": "Crimson Fleet Ghost",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:295201": {
+      "label": "Crimson Fleet Ghost",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:31DF00": {
+      "label": "Crimson Fleet Ghost",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:221808": {
+      "label": "Crimson Fleet Ghost II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:31DF02": {
+      "label": "Crimson Fleet Ghost II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B6587": {
+      "label": "Crimson Fleet Ghost III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:31DF04": {
+      "label": "Crimson Fleet Ghost III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:281F67": {
+      "label": "Crimson Fleet Ghost IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:31DF60": {
+      "label": "Crimson Fleet Haunt",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BDD": {
+      "label": "Crimson Fleet Haunt II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BDF": {
+      "label": "Crimson Fleet Haunt III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B136B": {
+      "label": "Crimson Fleet Phantom",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BE1": {
+      "label": "Crimson Fleet Phantom",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B1362": {
+      "label": "Crimson Fleet Reaper",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BEB": {
+      "label": "Crimson Fleet Reaper",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388945": {
+      "label": "Crimson Fleet Reaper II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B1364": {
+      "label": "Crimson Fleet Specter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BED": {
+      "label": "Crimson Fleet Specter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:045B3C": {
+      "label": "Crimson Fleet Wight",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:045BA1": {
+      "label": "Crimson Fleet Wight II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:045C67": {
+      "label": "Crimson Fleet Wight III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:197E67": {
+      "label": "Crimson Fleet Wraith",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BEF": {
+      "label": "Crimson Fleet Wraith",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388951": {
+      "label": "Crimson Fleet Wraith II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B86F1": {
+      "label": "Crimson Flt Banshee II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2543AA": {
+      "label": "Crimson Flt Banshee III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BE3": {
+      "label": "Crimson Flt Phantom II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BE5": {
+      "label": "Crimson Flt Phantom III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388947": {
+      "label": "Crimson Flt Reaper III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38894B": {
+      "label": "Crimson Flt Specter II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38894D": {
+      "label": "Crimson Flt Specter III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38894F": {
+      "label": "Crimson Flt Specter IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388953": {
+      "label": "Crimson Flt Wraith III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388955": {
+      "label": "Crimson Flt Wraith IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:107B56": {
+      "label": "Croatoan",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E17": {
+      "label": "Crossbow I",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E15": {
+      "label": "Crossbow II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFB4": {
+      "label": "Crossbow III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E13": {
+      "label": "Crossbow III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:209489": {
+      "label": "Dagger",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:193F33": {
+      "label": "Dalliance",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05BD8A": {
+      "label": "Default Player Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0090F7": {
+      "label": "Defensive Battery",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0090F9": {
+      "label": "Defensive Battery Alpha",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:214335": {
+      "label": "Deimos Armored Shuttle",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:13D0B9": {
+      "label": "Deimos Armored Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0090B3": {
+      "label": "Deimos Staryard",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:157B69": {
+      "label": "Derelict Starstation",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7461": {
+      "label": "Discovery",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E11": {
+      "label": "Dragonfire",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E0F": {
+      "label": "Dragonfire II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E0B": {
+      "label": "Dullahan",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E09": {
+      "label": "Dullahan II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E07": {
+      "label": "Dullahan III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E75AF": {
+      "label": "Dumas",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05C761": {
+      "label": "Ecliptic Bayonet",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C0B": {
+      "label": "Ecliptic Claymore",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388959": {
+      "label": "Ecliptic Claymore II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38895B": {
+      "label": "Ecliptic Claymore III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AE4ED": {
+      "label": "Ecliptic Combat A 01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AE4EB": {
+      "label": "Ecliptic Combat A 02",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:00CF7E": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:00CF80": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0429DD": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:045C6B": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:045C6D": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05C809": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05D1F8": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05D1FD": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:06ACDD": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AE408": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AE40A": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AE40C": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF3D9": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF3DB": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF3E5": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF3E7": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B1370": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B1372": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B1374": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B13CD": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B13CE": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0FFB32": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:34CB92": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:34D1D2": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3B7736": {
+      "label": "Ecliptic Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AE4E0": {
+      "label": "Ecliptic Combat B 01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BFF": {
+      "label": "Ecliptic Cutlass",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C01": {
+      "label": "Ecliptic Cutlass II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BF7": {
+      "label": "Ecliptic Falcata",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BF9": {
+      "label": "Ecliptic Falcata II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BFB": {
+      "label": "Ecliptic Falcata III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C03": {
+      "label": "Ecliptic Rapier",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C05": {
+      "label": "Ecliptic Rapier II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C226": {
+      "label": "Ecliptic Rapier III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C07": {
+      "label": "Ecliptic Scimitar",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C09": {
+      "label": "Ecliptic Scimitar II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C228": {
+      "label": "Ecliptic Scimitar III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B612E": {
+      "label": "Ecliptic Skirmisher",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BF1": {
+      "label": "Ecliptic Stiletto",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BF3": {
+      "label": "Ecliptic Stiletto II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322BF5": {
+      "label": "Ecliptic Stiletto III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:213404": {
+      "label": "Econohaul II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F6793": {
+      "label": "ECS Constant",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:249B83": {
+      "label": "Eklund Site CL25",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1D5DED": {
+      "label": "Erebos",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:255DA3": {
+      "label": "First Cav Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:255DA5": {
+      "label": "First Cav Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:255DA7": {
+      "label": "First Cav Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:255DA9": {
+      "label": "First Cav Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:255EB9": {
+      "label": "First Cav Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:255EBB": {
+      "label": "First Cav Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:255EBD": {
+      "label": "First Cav Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:255EBF": {
+      "label": "First Cav Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:255EC1": {
+      "label": "First Cav Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02289C": {
+      "label": "First Cavalry B Combat 01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0F2C80": {
+      "label": "First Cavalry B Combat 01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02289F": {
+      "label": "First Cavalry Combat A 01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0F2C7E": {
+      "label": "First Cavalry Combat A 01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFD0": {
+      "label": "Freestar Autobahn I",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFD6": {
+      "label": "Freestar Autobahn I",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFCE": {
+      "label": "Freestar Autobahn II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFD4": {
+      "label": "Freestar Autobahn II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFCC": {
+      "label": "Freestar Autobahn III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFD2": {
+      "label": "Freestar Autobahn III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C23A": {
+      "label": "Freestar Caravan",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C23C": {
+      "label": "Freestar Caravan II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C23E": {
+      "label": "Freestar Caravan III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C22A": {
+      "label": "Freestar Carry-ALL",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C22C": {
+      "label": "Freestar Carry-ALL II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C22E": {
+      "label": "Freestar Carry-ALL III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CFAB5": {
+      "label": "Freestar Citizen B Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CFAB1": {
+      "label": "Freestar Citizen C Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1D24D2": {
+      "label": "Freestar Citizen C Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CFAB9": {
+      "label": "Freestar Citizen Cargo A",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B28A4": {
+      "label": "Freestar Collective Security",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D17AF": {
+      "label": "Freestar Collective Security",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D17B1": {
+      "label": "Freestar Collective Security",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2BAD21": {
+      "label": "Freestar Collective Security",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E749E": {
+      "label": "Freestar Discovery",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7530": {
+      "label": "Freestar Dolphin",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7628": {
+      "label": "Freestar Dolphin II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E753C": {
+      "label": "Freestar Falcon",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E75E5": {
+      "label": "Freestar Falcon II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7462": {
+      "label": "Freestar Falcon III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E74A4": {
+      "label": "Freestar Kfir",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E74ED": {
+      "label": "Freestar Kfir II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7502": {
+      "label": "Freestar Kfir III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E74AE": {
+      "label": "Freestar Kfir IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05C772": {
+      "label": "Freestar Mako",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3CF": {
+      "label": "Freestar MULE",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3D1": {
+      "label": "Freestar MULE II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3D3": {
+      "label": "Freestar MULE III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E762D": {
+      "label": "Freestar Mustang",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E74E3": {
+      "label": "Freestar Mustang II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7525": {
+      "label": "Freestar Mustang III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:04237F": {
+      "label": "Freestar Narcissus",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05E9D5": {
+      "label": "Freestar Narcissus",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:042380": {
+      "label": "Freestar Narcissus II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7548": {
+      "label": "Freestar Nimitz",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E751A": {
+      "label": "Freestar Nimitz II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7463": {
+      "label": "Freestar Nimitz III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C236": {
+      "label": "Freestar Pelican",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C238": {
+      "label": "Freestar Pelican II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:042381": {
+      "label": "Freestar Pikup",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05E81F": {
+      "label": "Freestar Pikup",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05EF7C": {
+      "label": "Freestar Pikup",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:042382": {
+      "label": "Freestar Pikup II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:042383": {
+      "label": "Freestar Railstar",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:042384": {
+      "label": "Freestar Railstar II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:04236E": {
+      "label": "Freestar Rambler",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:04236F": {
+      "label": "Freestar Rambler II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7611": {
+      "label": "Freestar Ranger",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E762E": {
+      "label": "Freestar Ranger II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFCA": {
+      "label": "Freestar Renegade",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1BF6AF": {
+      "label": "Freestar Renegade",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFC8": {
+      "label": "Freestar Renegade II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1BF6AE": {
+      "label": "Freestar Renegade II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFC6": {
+      "label": "Freestar Renegade III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1BF6AA": {
+      "label": "Freestar Renegade III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3D5": {
+      "label": "Freestar Responder",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3D6": {
+      "label": "Freestar Responder II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388973": {
+      "label": "Freestar Sec Big Rig",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388975": {
+      "label": "Freestar Sec Big Rig II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C240": {
+      "label": "Freestar Sec Dolphin",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C244": {
+      "label": "Freestar Sec Dolphin II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388977": {
+      "label": "Freestar Sec Falcon",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388979": {
+      "label": "Freestar Sec Falcon II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38897B": {
+      "label": "Freestar Sec Falcon III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38895D": {
+      "label": "Freestar Sec Kfir",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38895F": {
+      "label": "Freestar Sec Kfir II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388961": {
+      "label": "Freestar Sec Kfir III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388963": {
+      "label": "Freestar Sec Kfir IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388965": {
+      "label": "Freestar Sec Mustang",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388967": {
+      "label": "Freestar Sec Mustang II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388969": {
+      "label": "Freestar Sec Mustang III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388989": {
+      "label": "Freestar Sec Nimitz",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38898B": {
+      "label": "Freestar Sec Nimitz II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38898D": {
+      "label": "Freestar Sec Nimitz III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38897D": {
+      "label": "Freestar Sec PCH",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38897F": {
+      "label": "Freestar Sec PCH II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38896B": {
+      "label": "Freestar Sec Pikup",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38896D": {
+      "label": "Freestar Sec Pikup II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:04238B": {
+      "label": "Freestar Sec Railstar",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:04238D": {
+      "label": "Freestar Sec Railstar II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388985": {
+      "label": "Freestar Sec Ranger",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388987": {
+      "label": "Freestar Sec Ranger II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:128FCD": {
+      "label": "Freestar Sec Star Semi",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:12AF58": {
+      "label": "Freestar Sec Star Semi II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA792": {
+      "label": "Freestar Security B Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A25": {
+      "label": "Freestar Security B Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA794": {
+      "label": "Freestar Security B Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA796": {
+      "label": "Freestar Security B Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA798": {
+      "label": "Freestar Security C Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA79A": {
+      "label": "Freestar Security C Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA79C": {
+      "label": "Freestar Security C Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C201": {
+      "label": "Freestar Slipstream",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C203": {
+      "label": "Freestar Slipstream II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C230": {
+      "label": "Freestar Space OX",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C232": {
+      "label": "Freestar Space OX II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C234": {
+      "label": "Freestar Space OX III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3D7": {
+      "label": "Freestar Transpo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3D9": {
+      "label": "Freestar Transpo II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3DB": {
+      "label": "Freestar Transpo III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3DD": {
+      "label": "Freestar Venture",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3DE": {
+      "label": "Freestar Venture II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3DF": {
+      "label": "Freestar Venture III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFC4": {
+      "label": "Freestar Vista",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFC2": {
+      "label": "Freestar Vista II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFC0": {
+      "label": "Freestar Vista III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFBE": {
+      "label": "Freestar Voyager",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFBC": {
+      "label": "Freestar Voyager II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFBA": {
+      "label": "Freestar Voyager III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0228B0": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0228C1": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03173D": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:031743": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B197D": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B197E": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B197F": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B1980": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B1982": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B1983": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:134B2F": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:134B33": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:137871": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:137875": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:137879": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1437C8": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1437CA": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:16BB89": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:34CB66": {
+      "label": "Freighter",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:21C93A": {
+      "label": "Freyja's Rage",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:30ED45": {
+      "label": "GalBank Asphalt CB",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:30ED47": {
+      "label": "GalBank Asphalt CB II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3157A8": {
+      "label": "GalBank Asphalt CB III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0ADEC1": {
+      "label": "Galbank B Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3157AB": {
+      "label": "GalBank Babylon",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3E0": {
+      "label": "GalBank Babylon II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0ADEB9": {
+      "label": "Galbank C Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:34CB51": {
+      "label": "Galbank C Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0ADEC5": {
+      "label": "Galbank Cargo A",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:34CB52": {
+      "label": "Galbank Cargo C01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1CF345": {
+      "label": "GalBank Hulker",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:30ED41": {
+      "label": "GalBank Hulker II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:30ED43": {
+      "label": "GalBank Hulker III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:12C16B": {
+      "label": "GalBank Stormrider",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3157B8": {
+      "label": "GalBank Stormrider II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:12DFCE": {
+      "label": "GalBank Stormrider III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03173F": {
+      "label": "Generic Citizen B Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:103413": {
+      "label": "Gravity Torpedo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:047174": {
+      "label": "Gravity Torpedo II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:10340B": {
+      "label": "Gravity Torpedo III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:050CF4": {
+      "label": "Helix",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2DF7": {
+      "label": "Highlander II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2DF9": {
+      "label": "Highlander II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2DF5": {
+      "label": "Highlander III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05AECF": {
+      "label": "Hope 4 Landing Bay",
+      "error": "Assembly has too many placed references."
+    },
+    "starfield.esm:03CFA2": {
+      "label": "Hoplite",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFA4": {
+      "label": "Hoplite",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D5575": {
+      "label": "Hoplite",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:217665": {
+      "label": "J. Lemaire's Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:214D97": {
+      "label": "Jade Swan",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:214D99": {
+      "label": "Jade Swan",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:214D9B": {
+      "label": "Jade Swan",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:21C932": {
+      "label": "Jade Swan",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1C48D7": {
+      "label": "Joan of Arc",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1A3EE8": {
+      "label": "Juno",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:21C938": {
+      "label": "Lady Lyudmila",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:07D421": {
+      "label": "Laser Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0ADE08": {
+      "label": "Laser Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:16794B": {
+      "label": "Laser Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:16794D": {
+      "label": "Laser Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:14A8B0": {
+      "label": "Legacy",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:157B6E": {
+      "label": "Lemaire Longsword",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18CF0D": {
+      "label": "Lil Muv",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:37A56D": {
+      "label": "Longsword",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:054A17": {
+      "label": "Lopez Watchdog",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:157B72": {
+      "label": "Lopez Watchdog",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05E820": {
+      "label": "Lucky Lu",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3B3915": {
+      "label": "Metropolis",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:20AA0D": {
+      "label": "Missile Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2268A4": {
+      "label": "Missile Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:007911": {
+      "label": "Moara's Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:21C934": {
+      "label": "Moonchild",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0E9517": {
+      "label": "MULE",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:15D948": {
+      "label": "MULE",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E8F": {
+      "label": "MULE",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E8D": {
+      "label": "MULE II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E8B": {
+      "label": "MULE III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E41": {
+      "label": "Naginata",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E3F": {
+      "label": "Naginata II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E3D": {
+      "label": "Naginata III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F1392": {
+      "label": "Narcissus",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0ECFF2": {
+      "label": "Nebula",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:027A6E": {
+      "label": "Neon Citizen B Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:027A72": {
+      "label": "Neon Citizen Cargo A",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:059EFB": {
+      "label": "NG-6 Landing Bay",
+      "error": "This assembly has too many model parts."
+    },
+    "starfield.esm:1A8DA8": {
+      "label": "Nia Kalu's Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:216F53": {
+      "label": "Nova Galactic Staryard",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1BB6A2": {
+      "label": "Nova Galactic Workshop 2x1",
+      "error": "Assembly has too many placed references."
+    },
+    "starfield.esm:1FE724": {
+      "label": "Outlaw Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1FE726": {
+      "label": "Outlaw Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1FE728": {
+      "label": "Outlaw Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:04B3BC": {
+      "label": "Outpost Starstation",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F1ED7": {
+      "label": "Particle Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F1ED9": {
+      "label": "Particle Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F1EDB": {
+      "label": "Particle Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F1EDD": {
+      "label": "Particle Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F1EDF": {
+      "label": "Particle Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F1EE1": {
+      "label": "Particle Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F1EE3": {
+      "label": "Particle Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F1EE5": {
+      "label": "Particle Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F1EE7": {
+      "label": "Particle Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1F1EE9": {
+      "label": "Particle Turret",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AB5DD": {
+      "label": "Party Cruise",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:11EA20": {
+      "label": "PCH",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1CB7E5": {
+      "label": "PCH",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:00B288": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:00CC8C": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:00CC8E": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0189AF": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0189BB": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0189BE": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0189C0": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0228AE": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0231FB": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:027A6A": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:027A79": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:027A7A": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C215": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C216": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C249": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C3A8": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C3AC": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C3BD": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C3BF": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:031726": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:031728": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03172A": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03172C": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03172E": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:031730": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:031732": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:031735": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03B2A3": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03B2A5": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:04237B": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:04237D": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:050A66": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:050AAB": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05BB1A": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05BB1E": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05BB4E": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05BD94": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05BE59": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05C0D5": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05C52E": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05C56D": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:099ECF": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:099ED0": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:099ED2": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:099ED7": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:099EDA": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:099EDC": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0ADEB7": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AE406": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AE4EE": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF3D7": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF3DF": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF3E3": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B1960": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B1992": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B199A": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B19A9": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B19CD": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0BA43F": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0BA441": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0BA448": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0BA450": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0BA457": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0BA459": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0BA45F": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0BA461": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0BA464": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA4F5": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA4F7": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA4F9": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA4FB": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA4FD": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA4FF": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA501": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA525": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA527": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA780": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA782": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA786": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA788": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA78A": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA79E": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA7A0": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA7A2": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA7CA": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA7CC": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB889": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB88B": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB88D": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB8A2": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB8A5": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CFAAB": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CFAAD": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CFABE": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CFACC": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CFADB": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CFADD": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D0593": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D0595": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D05A1": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D185D": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D2D1C": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D2D25": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D2D29": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D3202": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D556E": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D5573": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D5578": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0FFB20": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0FFB2D": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0FFB2F": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0FFB38": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0FFB3A": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:103B92": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:103B95": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1187F3": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1187F5": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1187F7": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1187F9": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1187FB": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1187FD": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:13789F": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:15C03D": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:15C041": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:15C04D": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:17EEF0": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18CEF3": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:19AE1E": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1BE87D": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1BE87F": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1BE881": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1D24D3": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1D24D6": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1D24D7": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1D24D8": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1D24D9": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:219937": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:219938": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:21993F": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:219945": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:21994F": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:229424": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2371C3": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2371C5": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2371C7": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2371C9": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:28BA7F": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7451": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EB24D": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EB24F": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EB251": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EB253": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF73F": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF741": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF744": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF745": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF747": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF749": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF74C": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF74D": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF750": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF754": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF755": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF757": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF759": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF75C": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2EF75D": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:32345F": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3E60E7": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3E60E9": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:216166": {
+      "label": "Polvo Station",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:37F546": {
+      "label": "Privateer",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E3B": {
+      "label": "Pterosaur",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E39": {
+      "label": "Pterosaur II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E37": {
+      "label": "Pterosaur III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:038809": {
+      "label": "Rambler",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:042372": {
+      "label": "Rambler",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:042374": {
+      "label": "Rambler II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0994B2": {
+      "label": "Raptor",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E7D": {
+      "label": "Raptor",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E7B": {
+      "label": "Raptor II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E79": {
+      "label": "Raptor III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2DF3": {
+      "label": "Renegade I",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D666": {
+      "label": "Renegade II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D664": {
+      "label": "Renegade III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E6B": {
+      "label": "Responder",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E69": {
+      "label": "Responder II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CF22A": {
+      "label": "Retrofitted Starstation",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0F48FE": {
+      "label": "Retrofitted Starstation",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1A03C6": {
+      "label": "Ryujin Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1A9B03": {
+      "label": "Satellite",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1A9B04": {
+      "label": "Satellite",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:22D406": {
+      "label": "Satellite",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:050CEE": {
+      "label": "Scorpius",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B21C3": {
+      "label": "Settler Carry-ALL III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B21BD": {
+      "label": "Settler Econohaul",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B21BF": {
+      "label": "Settler Econohaul II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B21C1": {
+      "label": "Settler Lil Muv II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B21B9": {
+      "label": "Settler MULE",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B21BB": {
+      "label": "Settler MULE III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B21C7": {
+      "label": "Settler Pelican II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B21C8": {
+      "label": "Settler Slipstream",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B21C5": {
+      "label": "Settler Space OX",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B21CA": {
+      "label": "Settler Venture II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:122C4A": {
+      "label": "Shadid's Fortune",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:20BA52": {
+      "label": "Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:21CE53": {
+      "label": "Ship Bed 200 Landing Bay",
+      "error": "This assembly has too many model parts."
+    },
+    "starfield.esm:26FE64": {
+      "label": "Ship Bed 200 Landing Bay",
+      "error": "This assembly has too many model parts."
+    },
+    "starfield.esm:015B82": {
+      "label": "Simulator",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:002D45": {
+      "label": "Siren of the Stars",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E23": {
+      "label": "Slipstream",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E21": {
+      "label": "Slipstream II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:12DDAA": {
+      "label": "Smuggler's Stingray",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:04B3C4": {
+      "label": "Solar Flare Beam",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0307F8": {
+      "label": "Solar Flare Beam II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0307F9": {
+      "label": "Solar Flare Beam III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E4D": {
+      "label": "Space Ox",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E4B": {
+      "label": "Space Ox II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E49": {
+      "label": "Space Ox III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322E8D": {
+      "label": "Spacer Combat A01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C19": {
+      "label": "Spacer Coyote",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA57": {
+      "label": "Spacer Coyote II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA59": {
+      "label": "Spacer Coyote III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C1F": {
+      "label": "Spacer Hyena",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA63": {
+      "label": "Spacer Hyena II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA65": {
+      "label": "Spacer Hyena III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA67": {
+      "label": "Spacer Hyena IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C1B": {
+      "label": "Spacer Jackal",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA5B": {
+      "label": "Spacer Jackal II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA5D": {
+      "label": "Spacer Jackal III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C13": {
+      "label": "Spacer Raccoon",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA4B": {
+      "label": "Spacer Raccoon II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA4D": {
+      "label": "Spacer Raccoon III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C15": {
+      "label": "Spacer Raven",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA4F": {
+      "label": "Spacer Raven II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA51": {
+      "label": "Spacer Raven III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C17": {
+      "label": "Spacer Scarab",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA53": {
+      "label": "Spacer Scarab II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:04239B": {
+      "label": "Spacer Scarab III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA55": {
+      "label": "Spacer Scarab III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:322C1D": {
+      "label": "Spacer Vulture",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA5F": {
+      "label": "Spacer Vulture II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33CA61": {
+      "label": "Spacer Vulture III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E893E": {
+      "label": "Sparrow",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:315858": {
+      "label": "SSNN Sloop",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:31585C": {
+      "label": "SSNN Sloop II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:31586B": {
+      "label": "SSNN Sunsail",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:315875": {
+      "label": "SSNN Sunsail II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1A1D90": {
+      "label": "Stability Pro Landing Bay",
+      "error": "Assembly has too many placed references."
+    },
+    "starfield.esm:26FE65": {
+      "label": "Stability Pro Landing Bay",
+      "error": "Assembly has too many placed references."
+    },
+    "starfield.esm:1322D8": {
+      "label": "Star Eagle",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFAA": {
+      "label": "Star Parcel Kirov IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:315877": {
+      "label": "Star Parcel Pikup",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:31587B": {
+      "label": "Star Parcel Pikup II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:31587D": {
+      "label": "Star Parcel Pikup III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C269": {
+      "label": "Star Parcel Spacetruk",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05E8DC": {
+      "label": "Star Parcel Spacetruk",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C26B": {
+      "label": "Star Parcel Spacetruk II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C2C0": {
+      "label": "Star Parcel Spacetruk III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFA8": {
+      "label": "Star Parcel Star Semi",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFA6": {
+      "label": "Star Parcel Star Semi II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFB2": {
+      "label": "Star Semi",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CFB0": {
+      "label": "Star Semi II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:11214A": {
+      "label": "Starborn Guardian",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:112438": {
+      "label": "Starborn Guardian",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:12DC9D": {
+      "label": "Starborn Guardian",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:180F18": {
+      "label": "Starborn Guardian",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:187149": {
+      "label": "Starborn Guardian",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2D07F5": {
+      "label": "Starborn Guardian",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2D16C8": {
+      "label": "Starborn Guardian",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2D19E5": {
+      "label": "Starborn Guardian",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E35": {
+      "label": "Starhawk",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E33": {
+      "label": "Starhawk II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E31": {
+      "label": "Starhawk III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0013B6": {
+      "label": "Starstation RE-939",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:203B4C": {
+      "label": "Starstation UCN-48",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E05": {
+      "label": "Stormrider",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E03": {
+      "label": "Stormrider II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E01": {
+      "label": "Stormrider III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1880B9": {
+      "label": "Stroud Cargo Hall 2x3",
+      "error": "Assembly has too many placed references."
+    },
+    "starfield.esm:3BDAA5": {
+      "label": "Stroud Cargo Hall 3x2",
+      "error": "Assembly has too many placed references."
+    },
+    "starfield.esm:141A6A": {
+      "label": "Stroud Mess Hall 2x3",
+      "error": "Assembly has too many placed references."
+    },
+    "starfield.esm:3E75B9": {
+      "label": "Stroud Mess Hall 3x2",
+      "error": "Assembly has too many placed references."
+    },
+    "starfield.esm:0090B0": {
+      "label": "Stroud-Eklund Staryard",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E1D": {
+      "label": "Sunsail I",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E1B": {
+      "label": "Sunsail II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:066599": {
+      "label": "Supernova",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0307FA": {
+      "label": "Supernova II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0307FB": {
+      "label": "Supernova III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:159AF1": {
+      "label": "SY-920",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:08CE68": {
+      "label": "The Almagest",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:061C03": {
+      "label": "The Beagle",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1DEBE4": {
+      "label": "The Clinic",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:13D773": {
+      "label": "The Colander",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0328B4": {
+      "label": "The Colender",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0A12CB": {
+      "label": "The Datura",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0DD15A": {
+      "label": "The Datura",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0DD166": {
+      "label": "The Datura",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0DD16C": {
+      "label": "The Datura",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0DD183": {
+      "label": "The Datura",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:128D5E": {
+      "label": "The Den",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:012863": {
+      "label": "The Eye",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0E0280": {
+      "label": "The First Dragonfire",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0E0282": {
+      "label": "The First Dragonfire II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0F2C77": {
+      "label": "The First Dullahan",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0F2C79": {
+      "label": "The First Dullahan II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C75D": {
+      "label": "The First Pterosaur",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C77D": {
+      "label": "The First Pterosaur II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C888": {
+      "label": "The First Pterosaur III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0423AB": {
+      "label": "The First Thresher",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0423AD": {
+      "label": "The First Thresher II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0423AF": {
+      "label": "The First Thresher III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D0AA9": {
+      "label": "The First Wendigo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D0AAB": {
+      "label": "The First Wendigo II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C88F": {
+      "label": "The First Zumwalt",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C8A7": {
+      "label": "The First Zumwalt II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:032406": {
+      "label": "The Key",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0BD1C2": {
+      "label": "The Ragana",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:22EF0F": {
+      "label": "The Ragana",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:234DE4": {
+      "label": "The Scow",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1EB452": {
+      "label": "The Sonder",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:14A8BC": {
+      "label": "The Warlock",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E77": {
+      "label": "Thresher",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E75": {
+      "label": "Thresher II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E73": {
+      "label": "Thresher III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:28FDE8": {
+      "label": "Tier 01 Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C2A": {
+      "label": "Tier I Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C2F": {
+      "label": "Tier I Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C1A": {
+      "label": "Tier II Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C22": {
+      "label": "Tier II Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C2C": {
+      "label": "Tier II Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:056052": {
+      "label": "Tier III Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C1F": {
+      "label": "Tier III Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C25": {
+      "label": "Tier III Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C34": {
+      "label": "Tier III Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C20": {
+      "label": "Tier IV Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C16": {
+      "label": "Tier V Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C1B": {
+      "label": "Tier V Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C24": {
+      "label": "Tier V Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C0C": {
+      "label": "Tier VI Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C0E": {
+      "label": "Tier VI Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C10": {
+      "label": "Tier VI Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C13": {
+      "label": "Tier VI Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:132C17": {
+      "label": "Tier VI Simulated Ship",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33A1C2": {
+      "label": "Tracker Crossbow",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:318488": {
+      "label": "Tracker Crossbow II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:331347": {
+      "label": "Tracker Naginata",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D0AA1": {
+      "label": "Tracker Naginata II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33A1C6": {
+      "label": "Tracker Ranger",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33134F": {
+      "label": "Tracker Ranger II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:331AC4": {
+      "label": "Tracker Ranger III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33A1C4": {
+      "label": "Tracker Thresher",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33132A": {
+      "label": "Tracker Thresher II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33133F": {
+      "label": "Tracker Thresher III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF9C": {
+      "label": "Tracker Vindicator",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF9A": {
+      "label": "Tracker Vindicator II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF98": {
+      "label": "Tracker Vindicator III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:331341": {
+      "label": "Tracker Wendigo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:331345": {
+      "label": "Tracker Wendigo II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AE412": {
+      "label": "Tracker's Alliance A Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:33A1CA": {
+      "label": "Tracker's Alliance A Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AE410": {
+      "label": "Tracker's Alliance B Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1B03A7": {
+      "label": "Trade Authority",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:331AC7": {
+      "label": "Trader Atlas",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:333D9A": {
+      "label": "Trader Atlas II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:333D9C": {
+      "label": "Trader Atlas III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:34B5CC": {
+      "label": "Trader Highlander",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:34B5F0": {
+      "label": "Trader Highlander II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF96": {
+      "label": "Trader Highlander III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:333D9E": {
+      "label": "Trader Railstar",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:333E89": {
+      "label": "Trader Railstar II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0423B1": {
+      "label": "Trader Railstar III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:347145": {
+      "label": "Trader Wagon Train",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:34B5C4": {
+      "label": "Trader Wagon Train II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:34B5C7": {
+      "label": "Trader Wagon Train III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E5F": {
+      "label": "Transpo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E5D": {
+      "label": "Transpo II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E5B": {
+      "label": "Transpo III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0EB7F6": {
+      "label": "Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0090B8": {
+      "label": "Trident Staryard",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF94": {
+      "label": "UC Autobahn",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF92": {
+      "label": "UC Autobahn II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF90": {
+      "label": "UC Autobahn III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C8AA": {
+      "label": "UC Carry-ALL",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CA6B": {
+      "label": "UC Carry-ALL II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CAEC": {
+      "label": "UC Carry-ALL III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E74E2": {
+      "label": "UC Chimera",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E74E4": {
+      "label": "UC Chimera II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E762B": {
+      "label": "UC Chimera III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA7C0": {
+      "label": "UC Citizen A Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA7C2": {
+      "label": "UC Citizen B Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA7C4": {
+      "label": "UC Citizen B Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA7C6": {
+      "label": "UC Citizen C Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1D24D4": {
+      "label": "UC Citizen C Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA7C8": {
+      "label": "UC Citizen C Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CA7BE": {
+      "label": "UC Citizen Cargo A",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF8D": {
+      "label": "UC Civshuttle",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF8B": {
+      "label": "UC Civshuttle II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF89": {
+      "label": "UC Civshuttle III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E74EE": {
+      "label": "UC Dagger",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7477": {
+      "label": "UC Dagger II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E75FF": {
+      "label": "UC Dagger III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7541": {
+      "label": "UC Dagger IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E754E": {
+      "label": "UC Discovery",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0423B3": {
+      "label": "UC Econohaul",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0423B4": {
+      "label": "UC Econohaul II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05DD99": {
+      "label": "UC Endeavor",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E752B": {
+      "label": "UC Hoplite",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E762C": {
+      "label": "UC Hoplite II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E752D": {
+      "label": "UC Hoplite III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05D8EF": {
+      "label": "UC Hulker",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0423B5": {
+      "label": "UC Lil Muv",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0423B6": {
+      "label": "UC Lil Muv II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7526": {
+      "label": "UC Longsword",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E745D": {
+      "label": "UC Longsword II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7524": {
+      "label": "UC Longsword III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7511": {
+      "label": "UC Longsword IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3E2": {
+      "label": "UC MULE",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3E4": {
+      "label": "UC MULE II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3E6": {
+      "label": "UC MULE III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0423B7": {
+      "label": "UC Narcissus",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0423B8": {
+      "label": "UC Narcissus II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:07D44F": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AE40E": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B136E": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B139F": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B13CB": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D1851": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D3205": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D3208": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D320B": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0DFC3D": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0FFB1D": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0FFB22": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0FFB29": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:15C26C": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:15C2CF": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:15C38C": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2D6F8B": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0DFC2A": {
+      "label": "UC Navy A Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:119DFB": {
+      "label": "UC Navy A Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:134E28": {
+      "label": "UC Navy A Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1CAEB3": {
+      "label": "UC Navy A Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1D24D5": {
+      "label": "UC Navy A Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:27DF0D": {
+      "label": "UC Navy A Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:07D44B": {
+      "label": "UC Navy A Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:07D449": {
+      "label": "UC Navy B Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0DFC20": {
+      "label": "UC Navy B Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1BBBB7": {
+      "label": "UC Navy B Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1CAEB5": {
+      "label": "UC Navy B Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:07D445": {
+      "label": "UC Navy B Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E5E76": {
+      "label": "UC Navy Bireme",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38899B": {
+      "label": "UC Navy Bireme II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:07D443": {
+      "label": "UC Navy C Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:07D441": {
+      "label": "UC Navy C Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B13A1": {
+      "label": "UC Navy C Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:07D43F": {
+      "label": "UC Navy C Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E5E79": {
+      "label": "UC Navy Celestial",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38899D": {
+      "label": "UC Navy Celestial II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E5E81": {
+      "label": "UC Navy Chimera",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889A7": {
+      "label": "UC Navy Chimera II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889A9": {
+      "label": "UC Navy Chimera III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF35F": {
+      "label": "UC Navy Dagger",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388993": {
+      "label": "UC Navy Dagger II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388995": {
+      "label": "UC Navy Dagger III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF361": {
+      "label": "UC Navy Econohaul",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388997": {
+      "label": "UC Navy Econohaul II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E5E7B": {
+      "label": "UC Navy Hoplite",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38899F": {
+      "label": "UC Navy Hoplite II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CB60": {
+      "label": "UC Navy Hoplite III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E5E87": {
+      "label": "UC Navy Kraken I",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0AF365": {
+      "label": "UC Navy Lil Muv",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388999": {
+      "label": "UC Navy Lil Muv II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:187C77": {
+      "label": "UC Navy Longsword",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E5E63": {
+      "label": "UC Navy Longsword II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E5E65": {
+      "label": "UC Navy Longsword III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E5E69": {
+      "label": "UC Navy Longsword IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E5E7D": {
+      "label": "UC Navy Nebula",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889A1": {
+      "label": "UC Navy Nebula II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E5E7F": {
+      "label": "UC Navy Phalanx",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889A3": {
+      "label": "UC Navy Phalanx II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889A5": {
+      "label": "UC Navy Phalanx III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1E5E84": {
+      "label": "UC Navy Polis",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889AB": {
+      "label": "UC Navy Polis II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CB1E": {
+      "label": "UC Pelican",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CB21": {
+      "label": "UC Pelican II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7464": {
+      "label": "UC Phalanx",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E7535": {
+      "label": "UC Phalanx II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2E749D": {
+      "label": "UC Phalanx III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:042376": {
+      "label": "UC Rambler",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:042377": {
+      "label": "UC Rambler II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02B132": {
+      "label": "UC Reef",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02B12C": {
+      "label": "UC Reef II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02B126": {
+      "label": "UC Reef III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3E8": {
+      "label": "UC Responder",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3E9": {
+      "label": "UC Responder II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CB25": {
+      "label": "UC Roanoke",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CB34": {
+      "label": "UC Roanoke II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CB39": {
+      "label": "UC Roanoke III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889C3": {
+      "label": "UC Sec Bireme",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889C5": {
+      "label": "UC Sec Bireme II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889C7": {
+      "label": "UC Sec Celestial",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889C9": {
+      "label": "UC Sec Celestial II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889D9": {
+      "label": "UC Sec Chimera",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889DB": {
+      "label": "UC Sec Chimera II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889DD": {
+      "label": "UC Sec Chimera III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889AD": {
+      "label": "UC Sec Dagger",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889AF": {
+      "label": "UC Sec Dagger II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889B1": {
+      "label": "UC Sec Dagger III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889B3": {
+      "label": "UC Sec Dagger IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889B5": {
+      "label": "UC Sec Econohaul",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889B7": {
+      "label": "UC Sec Econohaul II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889CB": {
+      "label": "UC Sec Hoplite",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889CD": {
+      "label": "UC Sec Hoplite II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CB63": {
+      "label": "UC Sec Hoplite III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889B9": {
+      "label": "UC Sec Lil Muv",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889BB": {
+      "label": "UC Sec Lil Muv II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889BD": {
+      "label": "UC Sec Longsword",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889BF": {
+      "label": "UC Sec Longsword II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889C1": {
+      "label": "UC Sec Longsword III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889CF": {
+      "label": "UC Sec Nebula",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889D1": {
+      "label": "UC Sec Nebula II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889D3": {
+      "label": "UC Sec Phalanx",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889D5": {
+      "label": "UC Sec Phalanx II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889D7": {
+      "label": "UC Sec Phalanx III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889DF": {
+      "label": "UC Sec Polis",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889E1": {
+      "label": "UC Sec Polis II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB897": {
+      "label": "UC Security B Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB895": {
+      "label": "UC Security B Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB893": {
+      "label": "UC Security B Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB891": {
+      "label": "UC Security C Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB88F": {
+      "label": "UC Security C Transport",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB89B": {
+      "label": "UC Security Cargo A",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2371D3": {
+      "label": "UC Security Chimera",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2371D5": {
+      "label": "UC Security Chimera II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:2371D7": {
+      "label": "UC Security Chimera III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0CB899": {
+      "label": "UC Security Combat A",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C205": {
+      "label": "UC Slipstream",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02C207": {
+      "label": "UC Slipstream II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CAFA": {
+      "label": "UC Space OX",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CB15": {
+      "label": "UC Space OX II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CB1B": {
+      "label": "UC Space OX III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0DBC4B": {
+      "label": "UC SysDef B Cargo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A41": {
+      "label": "UC SysDef B Combat 01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889F7": {
+      "label": "UC SysDef Bireme",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889F9": {
+      "label": "UC SysDef Bireme II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:01ABFC": {
+      "label": "UC SysDef C Combat 01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D2D1F": {
+      "label": "UC SysDef Cargo A",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889FB": {
+      "label": "UC SysDef Celestial",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889FD": {
+      "label": "UC SysDef Celestial II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A0D": {
+      "label": "UC SysDef Chimera",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A0F": {
+      "label": "UC SysDef Chimera II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A11": {
+      "label": "UC SysDef Chimera III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A3D": {
+      "label": "UC SysDef Combat A 01",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889E3": {
+      "label": "UC SysDef Econohaul",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889E5": {
+      "label": "UC SysDef Econohaul II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889E7": {
+      "label": "UC SysDef Gladius",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889E9": {
+      "label": "UC SysDef Gladius II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889EB": {
+      "label": "UC SysDef Gladius III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889ED": {
+      "label": "UC SysDef Gladius IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889FF": {
+      "label": "UC SysDef Hoplite",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A01": {
+      "label": "UC SysDef Hoplite II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3E5B6A": {
+      "label": "UC SysDef Hoplite III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889EF": {
+      "label": "UC SysDef Lil Muv",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889F0": {
+      "label": "UC SysDef Lil Muv II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889F1": {
+      "label": "UC SysDef Longsword",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889F3": {
+      "label": "UC SysDef Longsword II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3889F5": {
+      "label": "UC SysDef Longsword III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A03": {
+      "label": "UC SysDef Nebula",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A05": {
+      "label": "UC SysDef Nebula II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A07": {
+      "label": "UC SysDef Phalanx",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A09": {
+      "label": "UC SysDef Phalanx II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A0B": {
+      "label": "UC SysDef Phalanx III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A13": {
+      "label": "UC SysDef Polis",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:388A15": {
+      "label": "UC SysDef Polis II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3EA": {
+      "label": "UC Transpo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3EC": {
+      "label": "UC Transpo II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3EE": {
+      "label": "UC Transpo III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D1857": {
+      "label": "UC Vanguard A Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D1855": {
+      "label": "UC Vanguard B Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0D1853": {
+      "label": "UC Vanguard C Combat",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05E737": {
+      "label": "UC Vanguard Dagger",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:07431A": {
+      "label": "UC Vanguard Dragonfire II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02B120": {
+      "label": "UC Vanguard Dullahan II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:074317": {
+      "label": "UC Vanguard Falcon II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:074319": {
+      "label": "UC Vanguard Hammerhead III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0423BE": {
+      "label": "UC Vanguard Longsword III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02B118": {
+      "label": "UC Vanguard Nimitz II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05F06F": {
+      "label": "UC Vanguard Ranger",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:174E6C": {
+      "label": "UC Vanguard Raptor",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1773BF": {
+      "label": "UC Vanguard Raptor II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1773C1": {
+      "label": "UC Vanguard Raptor III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:074318": {
+      "label": "UC Vanguard Watchdog III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CB67": {
+      "label": "UC Vanguard Zumwalt II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02CB98": {
+      "label": "UC Vanguard Zumwalt III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3F0": {
+      "label": "UC Venture",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3F1": {
+      "label": "UC Venture II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18D3F2": {
+      "label": "UC Venture III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:257106": {
+      "label": "UC Vigilance",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF81": {
+      "label": "UC Vista",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF7F": {
+      "label": "UC Vista II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:03CF7D": {
+      "label": "UC Vista III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:031831": {
+      "label": "UC Voyager",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:031813": {
+      "label": "UC Voyager II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:02B137": {
+      "label": "UC Voyager III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:19AF6F": {
+      "label": "United Colonies Ambassador",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18CF15": {
+      "label": "United Colonies Big Rig",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18CF17": {
+      "label": "United Colonies Econohaul",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1BEE99": {
+      "label": "United Colonies Emissary II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1BEE98": {
+      "label": "United Colonies Emissary III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1BEE96": {
+      "label": "United Colonies Emissary IV",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:19AF6D": {
+      "label": "United Colonies Envoy",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18CF1A": {
+      "label": "United Colonies Lil Muv",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18CF13": {
+      "label": "United Colonies PCH",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18CF11": {
+      "label": "United Colonies Spacetruk",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05BD8C": {
+      "label": "United Colonies System Defense",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B28A5": {
+      "label": "United Colonies System Defense",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B28A7": {
+      "label": "United Colonies System Defense",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B28A9": {
+      "label": "United Colonies System Defense",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B28AB": {
+      "label": "United Colonies System Defense",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0B28AE": {
+      "label": "United Colonies System Defense",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:100974": {
+      "label": "United Colonies System Defense",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:18CF0F": {
+      "label": "United Colonies Venture",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:323450": {
+      "label": "Va'ruun Dirge",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3157BC": {
+      "label": "Va'ruun Dirge II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3157C1": {
+      "label": "Va'ruun Dirge III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:323454": {
+      "label": "Va'ruun Eulogy",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3157FC": {
+      "label": "Va'ruun Eulogy II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:315805": {
+      "label": "Va'ruun Eulogy III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:323452": {
+      "label": "Va'ruun Hymn",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3157CD": {
+      "label": "Va'ruun Hymn II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3157ED": {
+      "label": "Va'ruun Hymn III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:05C72F": {
+      "label": "Va'ruun Litany",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:32345A": {
+      "label": "Va'ruun Prophecy",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:315842": {
+      "label": "Va'ruun Prophecy II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:315852": {
+      "label": "Va'ruun Prophecy III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:32345C": {
+      "label": "Va'ruun Revelation",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:315854": {
+      "label": "Va'ruun Revelation II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:315856": {
+      "label": "Va'ruun Revelation III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:323458": {
+      "label": "Va'ruun Vigil",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:315817": {
+      "label": "Va'ruun Vigil II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:31581C": {
+      "label": "Va'ruun Vigil III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:10ABE1": {
+      "label": "Va'ruun Zealot",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1A528C": {
+      "label": "Va'ruun Zealot",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:10ABE4": {
+      "label": "Va'ruun Zealot Captain",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:001E9F": {
+      "label": "Vanquisher",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:001EA1": {
+      "label": "Vanquisher",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:001EA6": {
+      "label": "Vanquisher",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D650": {
+      "label": "Vista I",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D64E": {
+      "label": "Vista II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D64C": {
+      "label": "Vista III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D662": {
+      "label": "Voyager",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D660": {
+      "label": "Voyager II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:38D65E": {
+      "label": "Voyager III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E47": {
+      "label": "Wagontrain",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E45": {
+      "label": "Wagontrain II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E43": {
+      "label": "Wagontrain III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E2F": {
+      "label": "Warhammer",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E2D": {
+      "label": "Warhammer II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E2B": {
+      "label": "Warhammer III",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E71": {
+      "label": "Wendigo",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:3A2E6F": {
+      "label": "Wendigo II",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:003C57": {
+      "label": "z_LaserDefensiveBattery_DummyFire",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:030B30": {
+      "label": "CE-19 missile launcher",
+      "error": "This weapon has no supported default model."
+    },
+    "starfield.esm:2C7D29": {
+      "label": "CombaTech EquiNOX",
+      "error": "No preview geometry was found."
+    },
+    "starfield.esm:343C01": {
+      "label": "crMiniBotRangedAttack_Mouth1_LASER",
+      "error": "This weapon has no supported default model."
+    },
+    "starfield.esm:139C83": {
+      "label": "Chair",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1C2C9A": {
+      "label": "Chair",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1C8031": {
+      "label": "Chair",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1CF571": {
+      "label": "Chair",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:1D4810": {
+      "label": "Chair",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:36717D": {
+      "label": "Chair",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:36717E": {
+      "label": "Chair",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:0EFC6F": {
+      "label": "Galley",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:17B689": {
+      "label": "Galley",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:061F91": {
+      "label": "PlayerLadder",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "starfield.esm:155D2E": {
+      "label": "Sleeping Bag",
+      "error": "Model asset is unavailable in the installed game files."
+    },
+    "starfield.esm:0CC45B": {
+      "label": "Toilet",
+      "error": "This object has no supported model or assembly geometry."
+    },
+    "sfbgs050.esm:03EBD3": {
+      "label": "Terran Scipio",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "03EBD3"
+    },
+    "sfbgs050.esm:03EBD5": {
+      "label": "Terran Scipio II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "03EBD5"
+    },
+    "sfbgs050.esm:03EBD6": {
+      "label": "Terran Scipio III",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "03EBD6"
+    },
+    "sfbgs050.esm:03EBD4": {
+      "label": "Terran Shaka",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "03EBD4"
+    },
+    "sfbgs050.esm:03EBD7": {
+      "label": "Terran Shaka II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "03EBD7"
+    },
+    "sfbgs050.esm:03EBD8": {
+      "label": "Terran Shaka III",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "03EBD8"
+    },
+    "sfbgs050.esm:045874": {
+      "label": "Terran Cyrus",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "045874"
+    },
+    "sfbgs050.esm:045870": {
+      "label": "Terran Cyrus II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "045870"
+    },
+    "sfbgs050.esm:04586F": {
+      "label": "Terran Cyrus III",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "04586F"
+    },
+    "sfbgs050.esm:045875": {
+      "label": "Terran Tomyris",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "045875"
+    },
+    "sfbgs050.esm:045876": {
+      "label": "Terran Tomyris II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "045876"
+    },
+    "sfbgs050.esm:045873": {
+      "label": "Terran Trajan",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "045873"
+    },
+    "sfbgs050.esm:045872": {
+      "label": "Terran Trajan II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "045872"
+    },
+    "sfbgs050.esm:045871": {
+      "label": "Terran Trajan III",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "045871"
+    },
+    "sfbgs050.esm:0A208F": {
+      "label": "Terran Boudica",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A208F"
+    },
+    "sfbgs050.esm:0A2091": {
+      "label": "Terran Boudica II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A2091"
+    },
+    "sfbgs050.esm:0A2093": {
+      "label": "Terran Boudica III",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A2093"
+    },
+    "sfbgs050.esm:05D08E": {
+      "label": "Terran Saladin",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05D08E"
+    },
+    "sfbgs050.esm:05D08F": {
+      "label": "Terran Saladin II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05D08F"
+    },
+    "sfbgs050.esm:05D090": {
+      "label": "Terran Saladin III",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05D090"
+    },
+    "shatteredspace.esm:0CA713": {
+      "label": "Dazra Mourning Ship01",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "0CA713"
+    },
+    "shatteredspace.esm:0D1F1D": {
+      "label": "Dazra Mourning Ship02",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "0D1F1D"
+    },
+    "shatteredspace.esm:0084C9": {
+      "label": "The Oracle",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "0084C9"
+    },
+    "sfbgs050.esm:05F17C": {
+      "label": "Enc Terran Armada F01",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05F17C"
+    },
+    "sfbgs050.esm:05F17D": {
+      "label": "Enc Terran Armada F02",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05F17D"
+    },
+    "sfbgs050.esm:05F17E": {
+      "label": "Enc Terran Armada F03",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05F17E"
+    },
+    "sfbgs050.esm:05F179": {
+      "label": "Enc Terran Armada M01 Template",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05F179"
+    },
+    "sfbgs050.esm:05F17A": {
+      "label": "Enc Terran Armada M02",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05F17A"
+    },
+    "sfbgs050.esm:05F17B": {
+      "label": "Enc Terran Armada M03",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05F17B"
+    },
+    "sfbgs050.esm:05F17F": {
+      "label": "Enc Terran Armada R01",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05F17F"
+    },
+    "sfbgs050.esm:05F180": {
+      "label": "Enc Terran Armada R02",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05F180"
+    },
+    "sfbgs050.esm:05F181": {
+      "label": "Enc Terran Armada R03",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05F181"
+    },
+    "shatteredspace.esm:03AC6B": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "03AC6B"
+    },
+    "shatteredspace.esm:03AC6C": {
+      "label": "UC Navy A Cargo",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "03AC6C"
+    },
+    "sfbgs050.esm:05D092": {
+      "label": "Ocelot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05D092"
+    },
+    "sfbgs050.esm:03EBD9": {
+      "label": "Ocelot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "03EBD9"
+    },
+    "sfbgs050.esm:09175E": {
+      "label": "Ocelot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "09175E"
+    },
+    "sfbgs050.esm:045877": {
+      "label": "Ocelot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "045877"
+    },
+    "sfbgs050.esm:091760": {
+      "label": "Ocelot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "091760"
+    },
+    "sfbgs050.esm:05D091": {
+      "label": "Ocelot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "05D091"
+    },
+    "sfbgs050.esm:091762": {
+      "label": "Ocelot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "091762"
+    },
+    "sfbgs050.esm:091764": {
+      "label": "Ocelot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "091764"
+    },
+    "sfbgs050.esm:091756": {
+      "label": "Lvl Ship UCSys Def A Combat No Loot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "091756"
+    },
+    "sfbgs050.esm:091758": {
+      "label": "Lvl Ship UCSys Def B Combat No Loot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "091758"
+    },
+    "sfbgs050.esm:09175A": {
+      "label": "Lvl Ship UCSys Def C Combat No Loot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "09175A"
+    },
+    "sfbgs050.esm:09175C": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "09175C"
+    },
+    "sfbgs050.esm:09BC02": {
+      "label": "Lvl Ship VOID FC",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "09BC02"
+    },
+    "sfbgs050.esm:09BC01": {
+      "label": "Lvl Ship VOID UC",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "09BC01"
+    },
+    "sfbgs050.esm:09BC00": {
+      "label": "Lvl VOID Template",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "09BC00"
+    },
+    "shatteredspace.esm:11090E": {
+      "label": "Evening Star",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "11090E"
+    },
+    "sfbgs050.esm:0A8E33": {
+      "label": "MQ03 UCOfficer Lvl Ship UCSys Def C Combat No Loot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A8E33"
+    },
+    "shatteredspace.esm:09453D": {
+      "label": "Evening Star",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "09453D"
+    },
+    "shatteredspace.esm:013B84": {
+      "label": "ECS Constant",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "013B84"
+    },
+    "sfbgs050.esm:065C08": {
+      "label": "SFBGS050 AP Static Ship01",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "065C08"
+    },
+    "sfbgs00d.esm:080D32": {
+      "label": "Renegade III",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "080D32"
+    },
+    "sfbgs00d.esm:04BFF5": {
+      "label": "Pirate Ship",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "04BFF5"
+    },
+    "sfbgs00d.esm:040DB1": {
+      "label": "Talos IV",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "040DB1"
+    },
+    "sfbgs00d.esm:07300F": {
+      "label": "Celestial",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "07300F"
+    },
+    "sfbgs00d.esm:04F929": {
+      "label": "MULE",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "04F929"
+    },
+    "sfbgs00d.esm:068040": {
+      "label": "GalBank Stormrider",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "068040"
+    },
+    "sfbgs00d.esm:0482BB": {
+      "label": "Narcissus",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "0482BB"
+    },
+    "sfbgs00d.esm:02489C": {
+      "label": "Anchorpoint",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "02489C"
+    },
+    "sfbgs00d.esm:03B6BB": {
+      "label": "Chateau des Etoiles",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "03B6BB"
+    },
+    "sfbgs00d.esm:04BDB3": {
+      "label": "Asteroid Mine",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "04BDB3"
+    },
+    "sfbgs00d.esm:046404": {
+      "label": "RedCap Asteroid Mine",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "046404"
+    },
+    "sfbgs00d.esm:07D432": {
+      "label": "Bodach Asteroid Mine",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "07D432"
+    },
+    "sfbgs00d.esm:050429": {
+      "label": "Dionysus Booze Cruiser",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "050429"
+    },
+    "sfbgs050.esm:0A9B42": {
+      "label": "UC Navy A Combat",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A9B42"
+    },
+    "sfbgs050.esm:0A9B44": {
+      "label": "UC Navy B Combat",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A9B44"
+    },
+    "sfbgs050.esm:0A9B46": {
+      "label": "SFTER INC Lvl Ship Freestar Citizen C Combat",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A9B46"
+    },
+    "sfbgs050.esm:0A9B4F": {
+      "label": "SFTER INC Lvl Ship Freestar Citizen Combat",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A9B4F"
+    },
+    "sfbgs050.esm:0A9B4B": {
+      "label": "UC Navy A Combat",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A9B4B"
+    },
+    "sfbgs050.esm:0A9B48": {
+      "label": "UC Navy B Combat",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A9B48"
+    },
+    "sfbgs050.esm:0A9B4D": {
+      "label": "SFTER INC Lvl Ship UCCitizen C Combat",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A9B4D"
+    },
+    "sfbgs050.esm:0A9B51": {
+      "label": "SFTER INC Lvl Ship UCCitizen Combat",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A9B51"
+    },
+    "sfbgs050.esm:083736": {
+      "label": "Terran Scipio II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "083736"
+    },
+    "sfbgs050.esm:083738": {
+      "label": "Terran Shaka II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "083738"
+    },
+    "sfbgs050.esm:083742": {
+      "label": "Terran Cyrus II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "083742"
+    },
+    "sfbgs050.esm:08373F": {
+      "label": "Terran Tomyris II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "08373F"
+    },
+    "sfbgs050.esm:08373C": {
+      "label": "Terran Saladin II",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "08373C"
+    },
+    "sfbgs050.esm:02AD87": {
+      "label": "Terran Shield Amplifier",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "02AD87"
+    },
+    "sfbgs050.esm:0ABD4B": {
+      "label": "Terran Shield Amplifier",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0ABD4B"
+    },
+    "sfbgs050.esm:02C510": {
+      "label": "Defensive Battery",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "02C510"
+    },
+    "sfbgs050.esm:043797": {
+      "label": "UC Civilian Ship",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "043797"
+    },
+    "sfbgs050.esm:04570D": {
+      "label": "Freestar Civilian Ship",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "04570D"
+    },
+    "sfbgs050.esm:0AEAFF": {
+      "label": "Terran Repeater",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0AEAFF"
+    },
+    "sfbgs050.esm:00B471": {
+      "label": "Atlas",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "00B471"
+    },
+    "sfbgs050.esm:02BB7B": {
+      "label": "Atlas",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "02BB7B"
+    },
+    "sfbgs050.esm:028C5B": {
+      "label": "VOID Support Ship",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "028C5B"
+    },
+    "sfbgs050.esm:043C49": {
+      "label": "Terran Reclaimer",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "043C49"
+    },
+    "sfbgs050.esm:09E24C": {
+      "label": "Terran Reclaimer",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "09E24C"
+    },
+    "sfbgs050.esm:01AB9A": {
+      "label": "Terran Enforcer",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "01AB9A"
+    },
+    "sfbgs050.esm:073D2B": {
+      "label": "Terran Enforcer",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "073D2B"
+    },
+    "sfbgs050.esm:01AB9B": {
+      "label": "Terran Assembler",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "01AB9B"
+    },
+    "sfbgs050.esm:073D27": {
+      "label": "Terran Assembler",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "073D27"
+    },
+    "sfbgs050.esm:01B126": {
+      "label": "Opulence of the Stars",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "01B126"
+    },
+    "sfbgs050.esm:0A4B82": {
+      "label": "Opulence of the Stars",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A4B82"
+    },
+    "sfbgs050.esm:014E95": {
+      "label": "Mining Asteroid",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "014E95"
+    },
+    "sfbgs050.esm:005B5A": {
+      "label": "The Unifier",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "005B5A"
+    },
+    "sfbgs050.esm:02B462": {
+      "label": "Terran Repeater",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "02B462"
+    },
+    "sfbgs050.esm:06DA56": {
+      "label": "Custom Antique Revolver",
+      "error": "This modular model has an unresolved attachment point.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "06DA56"
+    },
+    "shatteredspace.esm:0FC0B0": {
+      "label": "ESCAPE!",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "0FC0B0"
+    },
+    "sfbgs050.esm:0A0C82": {
+      "label": "Delta Powered Up",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A0C82"
+    },
+    "sfbgs050.esm:08EC88": {
+      "label": "Destroyed Model G Furniture Marker",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "08EC88"
+    },
+    "shatteredspace.esm:0F9D85": {
+      "label": "Genuflect",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "0F9D85"
+    },
+    "shatteredspace.esm:0F9D83": {
+      "label": "Genuflect",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "0F9D83"
+    },
+    "sfbgs00d.esm:086564": {
+      "label": "Milli Whale Sleeping",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "086564"
+    },
+    "shatteredspace.esm:11CFF7": {
+      "label": "Mourning Device NPCConsole Standing",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "ShatteredSpace.esm",
+      "localFormId": "11CFF7"
+    },
+    "sfbgs050.esm:0A2F5C": {
+      "label": "NPCSearching Floor",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0A2F5C"
+    },
+    "sfbgs00d.esm:032130": {
+      "label": "SFFL MS01 NPCKneeling Praying Must Exit To Talk",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "032130"
+    },
+    "sfbgs00d.esm:02F08C": {
+      "label": "SFFL MS01 NPCLeaning Bartop Front Exit To Talk",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS00D.esm",
+      "localFormId": "02F08C"
+    },
+    "sfbgs050.esm:07E8FB": {
+      "label": "SFTER NPCDesk Lean",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "07E8FB"
+    },
+    "sfbgs050.esm:0AC57D": {
+      "label": "SFTER Terminal Console Standing No Chair No Scale",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "0AC57D"
+    },
+    "sfbgs050.esm:03C79D": {
+      "label": "Terran Robot Powered Down A",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "03C79D"
+    },
+    "sfbgs050.esm:03C79E": {
+      "label": "Terran Robot Powered Down B",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "03C79E"
+    },
+    "sfbgs050.esm:03C79F": {
+      "label": "Terran Robot Powered Down C",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "03C79F"
+    },
+    "sfbgs050.esm:04586E": {
+      "label": "Upgrading Robot",
+      "error": "This object has no supported model or assembly geometry.",
+      "plugin": "SFBGS050.esm",
+      "localFormId": "04586E"
+    }
+  },
+  "plugins": [
+    "Starfield.esm",
+    "ShatteredSpace.esm",
+    "SFBGS00D.esm",
+    "SFBGS050.esm"
+  ],
+  "coverageByPlugin": {
+    "starfield.esm": 4342,
+    "shatteredspace.esm": 190,
+    "sfbgs00d.esm": 110,
+    "sfbgs050.esm": 176
+  }
+}

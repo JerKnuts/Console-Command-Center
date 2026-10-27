@@ -1,7 +1,7 @@
 import { showAreaIdentification } from './area-identification-dialog.ts';
 import { commitAreaNameChange } from './area-name-overrides.ts';
 import type { CurrentArea } from './area-identification.ts';
-export type DevFeedbackRecord = { kind: string; name: string; id?: string; localId?: string; source?: string; category?: string; command?: string; referenceOnly?: boolean; recordType?: string; editorId?: string };
+export type DevFeedbackRecord = { kind: string; name: string; id?: string; localId?: string; source?: string; category?: string; command?: string; referenceOnly?: boolean; recordType?: string; editorId?: string; alreadyTested?: boolean };
 export type DevFeedbackReport = DevFeedbackRecord & { version: string; time: string; status: string; comment: string; originalName?:string; acceptedName?:string; area?:CurrentArea; nameBasis?:string };
 let enabled = false;
 export function isDevModeEnabled():boolean{return enabled;}
@@ -9,14 +9,18 @@ export function devFeedbackExportable(report:DevFeedbackReport):boolean{return r
 const STORAGE_KEY = 'ccc.dev-feedback.v1';
 const TESTED_KEY = 'ccc.dev-tested.v1';
 const OUTCOMES_KEY = 'ccc.dev-outcomes.v1';
-let outcomes = new Map<string,{status:string;time:string}>();
+let outcomes = new Map<string,{status:string;time:string;category?:string}>();
 export function devFeedbackCommandOutcome(id: string): string | undefined {
   return outcomes.get(`Command:${id}`)?.status;
+}
+export function devFeedbackCommandCategory(id: string): string | undefined {
+  return outcomes.get(`Command:${id}`)?.category;
 }
 export function hasEngineCommandFeedback(): boolean {
   return [...outcomes.keys()].some(key => key.startsWith('Command:engine-'));
 }
 export function devFeedbackOutcome(status:string):string {
+  if(status==='Unreviewed')return 'unreviewed';
   if(status==='Working')return 'working';
   if(status==='Issues'||status==='Not working')return 'issues';
   if(status==='Not noticeable'||status==='Executed (no effect)')return 'uncertain';
@@ -42,6 +46,7 @@ export function devFeedbackTestedClass(record: DevFeedbackRecord, alreadyTested 
   if(!enabled)return '';
   const identity=devFeedbackIdentity(record);
   const selected=outcomes.get(identity)?.status;
+  if(selected==='unreviewed')return record.referenceOnly?' dev-tested dev-reference':'';
   const outcome=record.kind==='ID'&&selected==='working'?'working':record.referenceOnly?'reference':selected??(alreadyTested?'working':'');
   return outcome?' dev-tested dev-'+outcome:tested.has(identity)?' dev-tested':'';
 }
@@ -52,13 +57,20 @@ export function devFeedbackResults(kind: string): string[] {
   return ['Working', 'Issues', ...(kind === 'ID' ? ['Reference Only'] : [])];
 }
 
+function isWorking(record:DevFeedbackRecord):boolean {
+  const outcome=outcomes.get(devFeedbackIdentity(record))?.status;
+  return outcome ? outcome==='working' : Boolean(record.alreadyTested && !record.referenceOnly);
+}
+
 export function devFeedbackButton(record: DevFeedbackRecord): string {
-  return enabled ? `<button class="osf-btn osf-btn--sm dev-feedback-button" type="button" data-dev-record="${escape(JSON.stringify(record))}">Test Report</button>` : '';
+  if(!enabled)return '';
+  const data=escape(JSON.stringify(record));
+  return `<button class="osf-btn osf-btn--sm dev-feedback-button" type="button" data-dev-record="${data}">Test Report</button>`;
 }
 
 export function devFeedbackRow(row:string,record:DevFeedbackRecord):string {
   if(!enabled)return row;
-  const outcome=outcomes.get(devFeedbackIdentity(record))?.status;
+  const outcome=outcomes.get(devFeedbackIdentity(record))?.status??(record.alreadyTested?'working':undefined);
   const buttons=devFeedbackResults(record.kind).map(value=>`<button class="osf-btn osf-btn--sm dev-feedback-row-button" type="button" data-dev-record="${escape(JSON.stringify(record))}" data-dev-action="${value}" aria-pressed="${devFeedbackOutcome(value)===outcome}">${value}</button>${value==='Working'&&record.kind==='ID'&&record.recordType==='CELL'?`<button class="osf-btn osf-btn--sm dev-feedback-row-button dev-identify-area" type="button" data-dev-record="${escape(JSON.stringify(record))}" data-dev-action="Identify Current Area">Identify Current Area</button>`:''}`).join('');
   return `<div class="dev-feedback-list-row">${row}<span class="dev-feedback-row-actions" role="group" aria-label="Test result for ${escape(record.name)}">${buttons}</span></div>`;
 }
@@ -92,12 +104,13 @@ export function installDevFeedback(options: { version: string; rerender: () => v
     const saved=JSON.parse(localStorage.getItem(OUTCOMES_KEY)??'{}');
     outcomes=new Map();
     for(const [key,value] of Object.entries(saved&&typeof saved==='object'&&!Array.isArray(saved)?saved:{})){
-      const entry=typeof value==='string'?{status:value,time:''}:value as {status?:unknown;time?:unknown};
-      if(key.length<=512&&entry&&typeof entry.status==='string'&&['working','issues','uncertain','reference'].includes(entry.status))outcomes.set(key,{status:entry.status,time:typeof entry.time==='string'?entry.time:''});
+      const entry=typeof value==='string'?{status:value,time:'',category:undefined}:value as {status?:unknown;time?:unknown;category?:unknown};
+      if(key.length<=512&&entry&&typeof entry.status==='string'&&['working','issues','uncertain','reference','unreviewed'].includes(entry.status))outcomes.set(key,{status:entry.status,time:typeof entry.time==='string'?entry.time:'',category:typeof entry.category==='string'?entry.category:undefined});
     }
   }catch{outcomes=new Map();}
   // Migrate pending reports from earlier builds without adding them to future exports.
-  reports.filter(record=>record.status!=='Name Change Accepted').forEach(record => {const identity=devFeedbackIdentity(record);tested.add(identity);const outcome=devFeedbackOutcome(record.status);if(outcome&&(!outcomes.has(identity)||record.time>=outcomes.get(identity)!.time))outcomes.set(identity,{status:outcome,time:record.time});});
+  reports.filter(record=>record.status!=='Name Change Accepted').forEach(record => {const identity=devFeedbackIdentity(record);tested.add(identity);const outcome=devFeedbackOutcome(record.status);if(outcome&&(!outcomes.has(identity)||record.time>=outcomes.get(identity)!.time))outcomes.set(identity,{status:outcome,time:record.time,category:record.category});});
+  for(const [identity,outcome] of outcomes)if(outcome.status==='unreviewed')tested.delete(identity);
   try{localStorage.setItem(OUTCOMES_KEY,JSON.stringify(Object.fromEntries(outcomes)));}catch{/* Pending reports retain outcomes until storage is available. */}
   try { localStorage.setItem(TESTED_KEY, JSON.stringify([...tested])); } catch { /* Pending reports still retain their identities. */ }
   reports=reports.filter(devFeedbackExportable);
@@ -136,11 +149,11 @@ export function installDevFeedback(options: { version: string; rerender: () => v
     const next=devFeedbackExportable(report)?[...reports,report]:reports;
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next));}
     catch{const message='The report could not be saved. Export existing reports or free browser storage and try again.';if(error)error.textContent=message;else options.status(message,true);return false;}
-    reports=next;const identity=devFeedbackIdentity(record);tested.add(identity);
-    const outcome=devFeedbackOutcome(status);if(outcome)outcomes.set(identity,{status:outcome,time:report.time});
+    reports=next;const identity=devFeedbackIdentity(record);if(status==='Unreviewed')tested.delete(identity);else tested.add(identity);
+    const outcome=devFeedbackOutcome(status);if(outcome)outcomes.set(identity,{status:outcome,time:report.time,category:record.category});
     try{localStorage.setItem(OUTCOMES_KEY,JSON.stringify(Object.fromEntries(outcomes)));}catch{/* Saved reports restore outcomes on reload. */}
     try{localStorage.setItem(TESTED_KEY,JSON.stringify([...tested]));}catch{/* Saved reports retain their identities. */}
-    options.status(status==='Working'&&!comment?`Marked ${record.name} working. Reference Only cleared; status saved.`:`Saved test report for ${record.name}. ${reports.length} reports ready to export.`);
+    options.status(status==='Unreviewed'?`Cleared Working for ${record.name}. It is ready to review again.`:status==='Working'&&!comment?`Marked ${record.name} working. Reference Only cleared; status saved.`:`Saved test report for ${record.name}. ${reports.length} reports ready to export.`);
     return true;
   };
   document.addEventListener('click', (event) => {
@@ -162,7 +175,7 @@ export function installDevFeedback(options: { version: string; rerender: () => v
     }
     if(action==='Working'||action==='Reference Only'){
       if(!devFeedbackResults(record.kind).includes(action))return;
-      if(saveFeedback(record,action,''))options.rerender();
+      if(saveFeedback(record,action==='Working'&&isWorking(record)?'Unreviewed':action,''))options.rerender();
       return;
     }
     const directIssue=action==='Issues';

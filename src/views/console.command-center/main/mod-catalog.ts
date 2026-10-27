@@ -57,6 +57,8 @@ export type ModCatalogReply = {
 };
 
 export function modRecordCategory(record: { type: string; category: string; label: string; editorId?: string }): string {
+  if (['Books','Books & Notes','Notes','Text Slates','Image Slates'].includes(record.category)) return 'Books / Notes';
+  if (record.type.toUpperCase() === 'ARMO') return 'Armor / Apparel';
   if (record.type.toUpperCase() !== 'GBFM') return record.category;
   const editorId = (record.editorId ?? '').toLowerCase();
   const partTokens = ['engine', 'gravdrive', 'grav_drive', 'reactor', 'shield', 'fueltank', 'fuel_tank', 'lander',
@@ -93,6 +95,8 @@ export function normalizeModCatalogs(reply: ModCatalogReply): ModCatalogSummary[
       sourceName: displayName,
       plugin: catalog.plugin,
       localFormId: record.localFormId,
+      pluginKind,
+      available: true,
     }));
     return [{
       key,

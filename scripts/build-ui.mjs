@@ -16,6 +16,7 @@ await mkdir(settingsRoot, { recursive: true });
 await cp(resolve(projectRoot, 'src/settings/console.command-center.json'), resolve(settingsRoot, 'console.command-center.json'));
 await mkdir(resolve(outRoot, 'licenses'), { recursive: true });
 await cp(resolve(projectRoot, 'native/third_party/LICENSE-bcdec.txt'), resolve(outRoot, 'licenses/bcdec.txt'));
+await cp(resolve(projectRoot, 'THIRD_PARTY_NOTICES.md'), resolve(outRoot, 'licenses/THIRD_PARTY_NOTICES.md'));
 
 await build({
   root: sourceRoot,

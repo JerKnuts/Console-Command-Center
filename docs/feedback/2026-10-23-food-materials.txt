@@ -1,0 +1,309 @@
+Console Command Center — Test Feedback
+
+Report 1
+Time: 2026-10-24T03:36:40.902Z
+CCC: 1.3.50
+Kind: ID
+Name: Butter
+ID: 002C7C0A
+Local ID: 2C7C0A
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue.
+----------------------------------------
+
+Report 2
+Time: 2026-10-24T03:36:51.631Z
+CCC: 1.3.50
+Kind: ID
+Name: Cabernet Chunkignon
+ID: 00249C51
+Local ID: 249C51
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue
+----------------------------------------
+
+Report 3
+Time: 2026-10-24T03:36:57.679Z
+CCC: 1.3.50
+Kind: ID
+Name: CAN-uck! Edmontonian
+ID: 00249C4A
+Local ID: 249C4A
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue
+----------------------------------------
+
+Report 4
+Time: 2026-10-24T03:37:06.339Z
+CCC: 1.3.50
+Kind: ID
+Name: CAN-uck! Shepherd's Pie
+ID: 00249C4B
+Local ID: 249C4B
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue
+----------------------------------------
+
+Report 5
+Time: 2026-10-24T03:37:21.165Z
+CCC: 1.3.50
+Kind: ID
+Name: Carrot
+ID: 00092B98
+Local ID: 092B98
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue
+----------------------------------------
+
+Report 6
+Time: 2026-10-24T03:38:11.892Z
+CCC: 1.3.50
+Kind: ID
+Name: Chandra Cabernet Sauvignon
+ID: 002C7202
+Local ID: 2C7202
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue. the bottle should be much darker like it is in-game
+----------------------------------------
+
+Report 7
+Time: 2026-10-24T03:38:33.538Z
+CCC: 1.3.50
+Kind: ID
+Name: Chandra Chardonnay
+ID: 002C7204
+Local ID: 2C7204
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue.
+----------------------------------------
+
+Report 8
+Time: 2026-10-24T03:38:48.583Z
+CCC: 1.3.50
+Kind: ID
+Name: Chandra Malbec
+ID: 002C7203
+Local ID: 2C7203
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue on bottle
+----------------------------------------
+
+Report 9
+Time: 2026-10-24T03:38:55.085Z
+CCC: 1.3.50
+Kind: ID
+Name: Chandra Merlot
+ID: 002C7208
+Local ID: 2C7208
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue on bottle
+----------------------------------------
+
+Report 10
+Time: 2026-10-24T03:39:01.590Z
+CCC: 1.3.50
+Kind: ID
+Name: Chandra Pinot Noir
+ID: 002C7206
+Local ID: 2C7206
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue on bottle
+----------------------------------------
+
+Report 11
+Time: 2026-10-24T03:39:09.716Z
+CCC: 1.3.50
+Kind: ID
+Name: Chandra Port
+ID: 002C7209
+Local ID: 2C7209
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue on bottle
+----------------------------------------
+
+Report 12
+Time: 2026-10-24T03:39:16.135Z
+CCC: 1.3.50
+Kind: ID
+Name: Chandra Riesling
+ID: 002C7205
+Local ID: 2C7205
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue on bottle
+----------------------------------------
+
+Report 13
+Time: 2026-10-24T03:39:22.758Z
+CCC: 1.3.50
+Kind: ID
+Name: Chandra Sauvignon Blanc
+ID: 002C7207
+Local ID: 2C7207
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue on bottle
+----------------------------------------
+
+Report 14
+Time: 2026-10-24T03:40:05.614Z
+CCC: 1.3.50
+Kind: ID
+Name: Cheddar Snack Crackers
+ID: 002C7236
+Local ID: 2C7236
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue. the tin should be metallic silver.
+----------------------------------------
+
+Report 15
+Time: 2026-10-24T03:40:15.236Z
+CCC: 1.3.50
+Kind: ID
+Name: Cheese
+ID: 001FC9C1
+Local ID: 1FC9C1
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue
+----------------------------------------
+
+Report 16
+Time: 2026-10-24T03:41:12.018Z
+CCC: 1.3.50
+Kind: ID
+Name: Chocolate Labs
+ID: 002C723B
+Local ID: 2C723B
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+missing metallic tin texture
+----------------------------------------
+
+Report 17
+Time: 2026-10-24T03:43:14.363Z
+CCC: 1.3.50
+Kind: ID
+Name: Chunks Cola
+ID: 00249C52
+Local ID: 249C52
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+texture issue on bottom logo
+----------------------------------------
+
+Report 18
+Time: 2026-10-24T03:43:53.649Z
+CCC: 1.3.50
+Kind: ID
+Name: Chunks Groat
+ID: 01035DF5
+Local ID: 035DF5
+Source: ShatteredSpace.esm
+Category: Aid
+Result: Issues
+Comment:
+is there supposed to be a logo on the bottom of this one just like all the others? possible texture issue
+----------------------------------------
+
+Report 19
+Time: 2026-10-24T03:44:26.153Z
+CCC: 1.3.50
+Kind: ID
+Name: Chunks Wine
+ID: 0020675D
+Local ID: 20675D
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+logo/texture on bottom needs work
+----------------------------------------
+
+Report 20
+Time: 2026-10-24T03:45:22.870Z
+CCC: 1.3.50
+Kind: ID
+Name: Container of Cereal
+ID: 00287D76
+Local ID: 287D76
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+transparency issues when rotating
+----------------------------------------
+
+Report 21
+Time: 2026-10-24T03:46:49.007Z
+CCC: 1.3.50
+Kind: ID
+Name: Dark Lager
+ID: 00139E45
+Local ID: 139E45
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+whole bottle should be more gold. is there an texture issue?
+----------------------------------------
+
+Report 22
+Time: 2026-10-24T03:48:05.431Z
+CCC: 1.3.50
+Kind: ID
+Name: Disastrous Shipwreck
+ID: 0029B042
+Local ID: 29B042
+Source: Starfield.esm
+Category: Aid
+Result: Issues
+Comment:
+take a look at textures/transparency please
+----------------------------------------

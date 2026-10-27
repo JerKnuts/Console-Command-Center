@@ -24,7 +24,7 @@ namespace CCC::Details {
     }
     class DescriptionStore {
         struct Table{std::string key;std::unordered_map<std::uint32_t,std::string> values;};
-        std::filesystem::path data;std::list<Table> cache;
+        std::filesystem::path data;std::string tableSuffix=".dlstrings";std::list<Table> cache;
         Bytes ReadArchive(const std::filesystem::path& path,const std::string& wanted) {
             std::ifstream f(path,std::ios::binary|std::ios::ate);if(!f)return {};
             const auto size=std::uint64_t(f.tellg());if(size<24)return {};
@@ -44,7 +44,7 @@ namespace CCC::Details {
             }return {};
         }
         std::unordered_map<std::uint32_t,std::string> Load(const std::string& plugin,const std::string& language) {
-            const auto stem=Lower(std::filesystem::path(plugin).stem().string());const auto name=stem+"_"+language+".dlstrings";
+            const auto stem=Lower(std::filesystem::path(plugin).stem().string());const auto name=stem+"_"+language+tableSuffix;
             const auto loose=data/"Strings"/name;
             if(std::filesystem::exists(loose))return ParseDescriptions(Preview::ReadRange(loose,0,std::filesystem::file_size(loose)));
             std::vector<std::filesystem::path> archives;
@@ -58,7 +58,7 @@ namespace CCC::Details {
             for(const auto& archive:archives){auto bytes=ReadArchive(archive,"strings/"+name);if(!bytes.empty())return ParseDescriptions(bytes);}return {};
         }
     public:
-        explicit DescriptionStore(std::filesystem::path directory):data(std::move(directory)){}
+        explicit DescriptionStore(std::filesystem::path directory,std::string suffix=".dlstrings"):data(std::move(directory)),tableSuffix(std::move(suffix)){if(tableSuffix!=".dlstrings"&&tableSuffix!=".ilstrings")throw std::runtime_error("Invalid description namespace.");}
         std::string Lookup(const std::string& plugin,std::string language,std::uint32_t id) {
             if(!id||plugin.empty()||plugin.find_first_of("/\\:")!=plugin.npos||plugin=="..")return {};
             language=Lower(language);if(language.empty()||language.size()>16||language.find_first_not_of("abcdefghijklmnopqrstuvwxyz_")!=language.npos)language="en";

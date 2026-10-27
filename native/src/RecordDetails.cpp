@@ -4,6 +4,7 @@
 #include "RecordDetailsInput.h"
 #include "RecordDescriptions.h"
 #include "PreviewRecords.h"
+#include "SlateVoiceAssets.h"
 #include "ModCatalogs.h"
 #include <atomic>
 #include <condition_variable>
@@ -16,8 +17,8 @@ namespace {
     using Json=OSFUI::API::Json;
     struct Service {
         std::atomic_bool busy{false};std::mutex mutex;std::condition_variable_any wake;std::function<void()> pending;
-        std::unique_ptr<Details::DescriptionStore> descriptions;std::unique_ptr<Preview::RecordScenes> records;
-        std::string signature;
+        std::unique_ptr<Details::DescriptionStore> descriptions,subtitles;std::unique_ptr<Preview::RecordScenes> records;
+        std::string signature,audioKey;std::unique_ptr<Details::SlateVoiceAssets> voices;Preview::Bytes audioBytes;
         std::jthread worker;
         Service():worker([this](std::stop_token stop){while(!stop.stop_requested()){
             std::function<void()> job;{std::unique_lock lock(mutex);if(!wake.wait(lock,stop,[&]{return bool(pending);}))break;job=std::move(pending);pending={};}
@@ -67,26 +68,43 @@ void OnInspect(const OSFUI::API::Request& raw,void*) noexcept {
     OSFUI::API::JsonRequest request{raw};if(!request)return;bool owns=false;
     try{
         if(request.SourceViewId()!="console.command-center/main")throw std::runtime_error("Record inspection must originate in CCC.");
-        const auto operation=Operation(request);const bool readBook=operation=="read-book";
+        const auto operation=Operation(request);const bool readBook=operation=="read-book",audioChunk=operation=="read-slate-audio";
+        const auto track=request.Payload().value("track",0u),offset=request.Payload().value("offset",0u),count=request.Payload().value("count",32768u);
+        if(audioChunk&&(track>=256||count==0||count>32768||offset>8u*1024*1024))throw std::runtime_error("Invalid audio range.");
         const auto text=request.Get<std::string>("formId");std::uint32_t id=0;if(!text||text->size()!=8)throw std::runtime_error("A loaded Form ID is required.");
         const auto parsed=std::from_chars(text->data(),text->data()+8,id,16);if(parsed.ec!=std::errc{}||parsed.ptr!=text->data()+8||!id)throw std::runtime_error("Invalid Form ID.");
         if(State().busy.exchange(true)){raw.Reject("details-busy","Another item is being inspected. Please retry.");return;}owns=true;
         const auto* tasks=SFSE::GetTaskInterface();if(!tasks)throw std::runtime_error("Game task queue is unavailable.");
-        tasks->AddTask([id,readBook,reply=raw]{try{
+        tasks->AddTask([id,readBook,audioChunk,track,offset,count,reply=raw]{try{
             // Engine objects are accessed only here, on the game thread. The worker owns copies.
             auto* form=RE::TESForm::LookupByID(id);if(!form)throw std::runtime_error("This record is not loaded.");
-            const bool book=form->As<RE::TESObjectBOOK>()!=nullptr;if(readBook&&!book)throw std::runtime_error("This record is not a book or note.");const bool perk=form->As<RE::BGSPerk>()!=nullptr;auto out=Snapshot(form);std::uint32_t descriptionId=0;std::string owner,language="en";bool localized=false;
+            const bool book=form->As<RE::TESObjectBOOK>()!=nullptr;if((readBook||audioChunk)&&!book)throw std::runtime_error("This record is not a book or note.");const bool perk=form->As<RE::BGSPerk>()!=nullptr;auto out=Snapshot(form);std::uint32_t descriptionId=0;std::string owner,language="en";bool localized=false;
             if(auto* description=starfield_cast<RE::TESDescription*>(form)){descriptionId=description->descriptionText.id;if(auto* file=form->GetDescriptionOwnerFile()){owner=file->fileName;localized=file->fileFlags.any(RE::TESFile::Flags::kLocalized);}}
             if(auto* ini=RE::INISettingCollection::GetSingleton())if(auto* setting=ini->GetSetting("sLanguage:General");setting&&setting->GetType()==RE::Setting::Type::kString&&!setting->GetString().empty())language=setting->GetString();
             std::vector<Preview::ScenePlugin> plugins;const auto order=ModCatalogs::PluginLoadOrder();if(order.contains("plugins"))for(const auto& plugin:order["plugins"]){const auto kind=plugin.value("pluginKind",std::string("full"));plugins.push_back({plugin.at("plugin").get<std::string>(),kind=="small"?2u:kind=="medium"?1u:0u,plugin.value("index",0u)});}
-            auto directory=Directory();State().Queue([id,perk,book,readBook,reply,out=std::move(out),owner=std::move(owner),language=std::move(language),descriptionId,localized,directory=std::move(directory),plugins=std::move(plugins)]()mutable{try{
-                auto& state=State();std::string signature=directory.string();for(const auto& plugin:plugins)signature+='|'+plugin.name+':'+std::to_string(plugin.kind)+':'+std::to_string(plugin.index);
-                if(state.signature!=signature){state.records.reset();state.descriptions=std::make_unique<Details::DescriptionStore>(directory);state.signature=signature;}
+            auto directory=Directory();State().Queue([id,perk,book,readBook,audioChunk,track,offset,count,reply,out=std::move(out),owner=std::move(owner),language=std::move(language),descriptionId,localized,directory=std::move(directory),plugins=std::move(plugins)]()mutable{try{
+                auto& state=State();std::string signature=directory.string()+":"+language;for(const auto& plugin:plugins)signature+='|'+plugin.name+':'+std::to_string(plugin.kind)+':'+std::to_string(plugin.index);
+                if(state.signature!=signature){state.records.reset();state.subtitles.reset();state.voices.reset();state.audioBytes.clear();state.audioKey.clear();state.descriptions=std::make_unique<Details::DescriptionStore>(directory);state.signature=signature;}
+                if(audioChunk){
+                    if(!state.records)state.records=std::make_unique<Preview::RecordScenes>(directory,plugins);
+                    const auto key=std::to_string(id)+":"+std::to_string(track);
+                    if(state.audioKey!=key){auto tracks=state.records->AudioTracks(id);if(track>=tracks.size())throw std::runtime_error("Audio line is out of range.");if(!state.voices)state.voices=std::make_unique<Details::SlateVoiceAssets>(directory,plugins,language);auto bytes=state.voices->Read(tracks[track]);if(bytes.size()<12||bytes.size()>8u*1024*1024||std::string(reinterpret_cast<const char*>(bytes.data()),4)!="RIFF"||std::string(reinterpret_cast<const char*>(bytes.data()+8),4)!="WAVE")throw std::runtime_error("Unsupported slate audio format.");state.audioBytes=std::move(bytes);state.audioKey=key;}
+                    if(offset>=state.audioBytes.size())throw std::runtime_error("Audio offset is out of range.");const auto length=std::min<std::size_t>(count,state.audioBytes.size()-offset);
+                    const auto result=Json{{"ok",true},{"formId",std::format("{:08X}",id)},{"track",track},{"offset",offset},{"totalBytes",state.audioBytes.size()},{"data",Preview::Base64(std::span(state.audioBytes).subspan(offset,length))}}.dump();state.busy=false;reply.Reply(result.c_str());return;
+                }
                 try{if(book&&!readBook)out["description"]="";else if(localized)out["description"]=state.descriptions->Lookup(owner,language,descriptionId);
                     else if(!owner.empty()){if(!state.records)state.records=std::make_unique<Preview::RecordScenes>(directory,plugins);out["description"]=state.records->InlineDescription(id);}
                 }catch(const std::exception& e){REX::WARN("Record description unavailable for {:08X}: {}",id,e.what());}
                 if(readBook){
+                    if(!state.records)state.records=std::make_unique<Preview::RecordScenes>(directory,plugins);
+                    out["slateType"]=state.records->SlateType(id);
+                    if(out["slateType"]==3){
+                        try{auto tracks=state.records->AudioTracks(id);if(!state.subtitles)state.subtitles=std::make_unique<Details::DescriptionStore>(directory,".ilstrings");out["audioTracks"]=Json::array();std::size_t textBudget=32768;
+                            for(unsigned i=0;i<tracks.size();++i){const auto& line=tracks[i];std::string text;if(line.localized&&line.text.size()==4){Preview::Reader r{line.text};text=state.subtitles->Lookup(line.plugin,language,r.Read<std::uint32_t>());}else if(!line.localized)text=Details::Text(line.text);text.resize((std::min)({text.size(),std::size_t(2048),textBudget}));textBudget-=text.size();out["audioTracks"].push_back({{"index",i},{"text",text}});}
+                        }catch(const std::exception& e){out["audioError"]=e.what();}
+                    }
                     if(out["description"]==""){
+
                         if(!state.records)state.records=std::make_unique<Preview::RecordScenes>(directory,plugins);
                         const auto record=state.records->ReadDescriptions(id);
                         if(record.localized&&record.summary.size()==4){Preview::Reader r{record.summary};out["description"]=state.descriptions->Lookup(record.plugin,language,r.Read<std::uint32_t>());}

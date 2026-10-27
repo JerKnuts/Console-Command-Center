@@ -1,40 +1,34 @@
 # Future features
 
-These are candidate improvements, not promises or features of v1.3.2. Editable text batches, On Load Auto-Run, and scanned mod quest-stage controls are already implemented; see [Command batches](COMMAND_BATCHES.md) and [Mod ID catalogs](MOD_ID_CATALOGS.md).
+These are candidates, not promised release features. The book/note reader, in-CCC Audio Slate playback, packaged official-item thumbnails, on-demand mod still previews, studio lighting, ground shadows and manual batch editing are implemented. See [model previews](MODEL_PREVIEWS.md), [books and slates](AUDIO_SLATES.md) and [command batches](COMMAND_BATCHES.md).
 
-## Command batches
+## Loading and model fidelity
 
-The editable INCLUDED library, syntax highlighting and semicolon/inline comments are implemented in 1.3.2. Candidate further improvements:
-
-- Duplicate-command warnings, especially for repeated toggles.
-- Execution progress and cancellation of remaining commands.
-- Descriptions, tags, folders, and reusable batch variables.
-- Auto-Run choices for first load per session versus every load, adjustable delay, and optional per-character selections.
-- Persistent native Auto-Run reports that survive quitting before CCC opens.
+- Reduce cold High/Ultra preparation and transfer costs further, including investigating GPU-compressed textures. Progressive color previews and larger transfer chunks are implemented; Ultra can still take time.
+- Improve layered materials, transparency, refraction, cloth poses and modular assembly coverage. Current previews approximate the game renderer.
+- Investigate an optional persistent asset/thumbnail cache with reliable invalidation after mod or load-order changes. Current dynamic thumbnails are cached only in memory.
+- Continue the separate native inventory-renderer experiment. It is not part of this release or a replacement for the current WebGL viewer.
 
 ## Browsers and testing
 
-- Quest bookmarks and filters for inspected running/completed state.
-- Mod scan comparisons and per-plugin visibility controls.
-- More reviewed plugin names and supported record types.
-- Further Dev Mode report filtering, editing, and review tools.
-- Activity Log export, portable favorites, recent IDs, and before/after stat comparisons.
+- Quest bookmarks and running/completed filters.
+- Mod scan comparisons, per-plugin visibility and optional validated catalog caching. Current scans are manual and last for the game session.
+- More reviewed names, model coverage and supported record types.
+- Dev Mode report filtering/editing, portable favorites, recent IDs and before/after stat comparisons.
+- Embedded image-slate layouts. The reader displays supported text and recorded audio; videos are outside scope.
 
-## Mod catalog caching
+## Command batches
 
-Reliable optional caching remains future work. Current Mod Browser results are held only for the game session; scanning is manual. An eventual cache must preserve current runtime ID ownership, handle changed plugins, and improve startup speed. See [Mod ID catalogs](MOD_ID_CATALOGS.md).
+- Duplicate-command warnings, especially for repeated toggles.
+- Execution progress and cancellation of remaining commands.
+- Descriptions, tags, folders and reusable variables.
+- Auto-Run choices for first load per session versus every load, adjustable delay and per-character selections.
+- Persistent Auto-Run reports that survive quitting before CCC opens.
 
-## Automatic item previews
+## Known issues to investigate
 
-- Extend the experimental shaded viewer with complete material resolution, lighting, better archive support, and additional model formats.
-- Investigate an isolated preview copy of the player character, including body shape and appearance, plus automatically generated/cached thumbnails. The current mannequin is static.
-- The manually supplied Akila screenshots have been removed. The v1.3.2 prototype reads installed geometry on demand without paid AI processing or per-item screenshots. See [Model previews](MODEL_PREVIEWS.md).
+- The direct CCC keyboard shortcut can require two presses.
+- OSF UI can remain stuck on Loading, especially after repeated teleports.
+- Remaining unsupported command readouts and material cases need live verification; successful dispatch alone is not a verified result.
 
-Research reference: SFShopExplorer 0.8.123 uses a separate DirectX 12 renderer and ImGui. CCC's independent prototype uses WebGL in its existing web view. Automatic thumbnail generation remains future work.
-
-## Book and note reader
-
-- Explore reading book and note text directly in CCC, with readable pages and navigation.
-- Books and notes no longer offer 3D previews. A reader is future work and is not included in the current build.
-
-- Investigate transferring GPU-compressed source textures and a persistent asset cache to avoid repeated RGBA expansion/transfer on cold High previews. Model-first background upgrades are already implemented.
+See the [README](../README.md) for current workarounds and [release validation](../RELEASE_VALIDATION.md) for the distinction between automated checks and in-game confirmation.

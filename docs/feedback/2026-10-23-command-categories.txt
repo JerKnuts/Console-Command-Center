@@ -1,0 +1,274 @@
+Console Command Center — Test Feedback
+
+Report 1
+Time: 2026-10-24T03:01:08.836Z
+CCC: 1.3.48
+Kind: Command
+Name: Is It Raining?
+ID: engine-israining-609
+Category: World
+Command: IsRaining
+Result: Issues
+Comment:
+move to WIP - Issues
+----------------------------------------
+
+Report 2
+Time: 2026-10-24T03:01:15.898Z
+CCC: 1.3.48
+Kind: Command
+Name: Is It Snowing?
+ID: engine-issnowing-622
+Category: World
+Command: IsSnowing
+Result: Issues
+Comment:
+Move to WIP - Issues
+----------------------------------------
+
+Report 3
+Time: 2026-10-24T03:03:30.168Z
+CCC: 1.3.48
+Kind: Command
+Name: Get Random Percent
+ID: engine-getrandompercent-624
+Category: Gameplay
+Command: GetRandomPercent
+Result: Issues
+Comment:
+move to new category called MISC
+----------------------------------------
+
+Report 4
+Time: 2026-10-24T03:03:39.216Z
+CCC: 1.3.48
+Kind: Command
+Name: Toggle All Menus
+ID: engine-togglemenus-21
+Category: Gameplay
+Command: ToggleMenus
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 5
+Time: 2026-10-24T03:03:54.437Z
+CCC: 1.3.48
+Kind: Command
+Name: Get Item Count
+ID: engine-getitemcount-594
+Category: Inventory
+Command: {target}.GetItemCount {arguments}
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 6
+Time: 2026-10-24T03:03:59.546Z
+CCC: 1.3.48
+Kind: Command
+Name: Get Credit Count
+ID: engine-getgold-595
+Category: Inventory
+Command: {target}.GetGold
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 7
+Time: 2026-10-24T03:04:12.994Z
+CCC: 1.3.48
+Kind: Command
+Name: Get Credit Count
+ID: engine-getgold-595
+Category: Inventory
+Command: {target}.GetGold
+Result: Issues
+Comment:
+don't move to misc
+----------------------------------------
+
+Report 8
+Time: 2026-10-24T03:06:00.627Z
+CCC: 1.3.48
+Kind: Command
+Name: Get Scale
+ID: engine-getscale-571
+Category: Targets
+Command: {target}.GetScale
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 9
+Time: 2026-10-24T03:06:04.738Z
+CCC: 1.3.48
+Kind: Command
+Name: Are They Dead?
+ID: engine-getdead-593
+Category: Targets
+Command: {target}.GetDead
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 10
+Time: 2026-10-24T03:06:07.062Z
+CCC: 1.3.48
+Kind: Command
+Name: Are They Disabled?
+ID: engine-getdisabled-582
+Category: Targets
+Command: {target}.GetDisabled
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 11
+Time: 2026-10-24T03:06:09.369Z
+CCC: 1.3.48
+Kind: Command
+Name: Are They Sleeping?
+ID: engine-getsleeping-596
+Category: Targets
+Command: {target}.GetSleeping
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 12
+Time: 2026-10-24T03:06:11.744Z
+CCC: 1.3.48
+Kind: Command
+Name: Is Weapon Out?
+ID: engine-isweaponout-810
+Category: Targets
+Command: {target}.IsWeaponOut
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 13
+Time: 2026-10-24T03:06:14.029Z
+CCC: 1.3.48
+Kind: Command
+Name: Is Magic Out?
+ID: engine-isweaponmagicout-648
+Category: Targets
+Command: {target}.IsWeaponMagicOut
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 14
+Time: 2026-10-24T03:06:16.257Z
+CCC: 1.3.48
+Kind: Command
+Name: Are They Sneaking?
+ID: engine-issneaking-833
+Category: Targets
+Command: {target}.IsSneaking
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 15
+Time: 2026-10-24T03:06:18.243Z
+CCC: 1.3.48
+Kind: Command
+Name: Are They Running?
+ID: engine-isrunning-834
+Category: Targets
+Command: {target}.IsRunning
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 16
+Time: 2026-10-24T03:06:20.424Z
+CCC: 1.3.48
+Kind: Command
+Name: Are They In Combat?
+ID: engine-isincombat-836
+Category: Targets
+Command: {target}.IsInCombat
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 17
+Time: 2026-10-24T03:06:23.791Z
+CCC: 1.3.48
+Kind: Command
+Name: Combat State
+ID: engine-getcombatstate-870
+Category: Targets
+Command: {target}.GetCombatState
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 18
+Time: 2026-10-24T03:06:26.250Z
+CCC: 1.3.48
+Kind: Command
+Name: Are They Essential?
+ID: engine-isessential-901
+Category: Targets
+Command: {target}.IsEssential
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 19
+Time: 2026-10-24T03:06:28.738Z
+CCC: 1.3.48
+Kind: Command
+Name: How Far Away Is It?
+ID: engine-getdistance-548
+Category: Targets
+Command: {target}.GetDistance {arguments}
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 20
+Time: 2026-10-24T03:06:31.757Z
+CCC: 1.3.48
+Kind: Command
+Name: Is It Locked?
+ID: engine-getlocked-552
+Category: Targets
+Command: {target}.GetLocked
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------
+
+Report 21
+Time: 2026-10-24T03:06:36.344Z
+CCC: 1.3.48
+Kind: Command
+Name: How Hard Is The Lock?
+ID: engine-getlocklevel-612
+Category: Targets
+Command: {target}.GetLockLevel
+Result: Issues
+Comment:
+move to MISC
+----------------------------------------

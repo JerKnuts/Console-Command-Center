@@ -5,6 +5,7 @@ export type PreviewGamepadEvent = OSFUIGamepadButtonEvent | OSFUIGamepadStickEve
 export type PreviewControlMode = 'object' | 'light' | 'brightness';
 export function createPreviewController(actions: {
   mannequin():void; body():void; textures():void; close():void;
+  background?(delta:number):void;
   quality(open:boolean, delta?:number, apply?:boolean):void;
   mode(mode:PreviewControlMode):void; lightingAvailable():boolean;
   pan(x:number,y:number):void; rotate(x:number,y:number):void;
@@ -38,7 +39,8 @@ export function createPreviewController(actions: {
         else if(id===2||id===8)actions.quality(true,1);
         return;
       }
-      if(id===0x0100)actions.mannequin();
+      if(id===4||id===8)actions.background?.(id===4?-1:1);
+      else if(id===0x0100)actions.mannequin();
       else if(id===0x0200)actions.body();
       else if(id===0x4000)actions.textures();
       else if(id===0x0080&&actions.lightingAvailable())setMode(mode==='light'?'object':'light');

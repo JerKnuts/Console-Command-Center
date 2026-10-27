@@ -113,16 +113,17 @@ namespace CCC::Preview
                 std::string name(n, '\0'); if (!stream.read(name.data(), n)) return;
                 try { name = AssetKey(name); } catch (...) { continue; }
                 const auto& e = entries[i]; const auto size = e.packed ? e.packed : e.raw;
-                if (!(name.starts_with("meshes/") || name.starts_with("geometries/")) || e.raw > MaxAssetBytes || e.raw == 0 || e.offset > namesAt || size > namesAt - e.offset) continue;
+                if (!(name.starts_with("meshes/") || name.starts_with("geometries/") || (name.starts_with("materials/")&&name.ends_with(".mat"))) || e.raw > MaxAssetBytes || e.raw == 0 || e.offset > namesAt || size > namesAt - e.offset) continue;
                 archive.files.emplace(std::move(name), e);
             }
         }
         Bytes Read(std::string path) {
             const auto key = AssetKey(std::move(path));
-            if (!(key.starts_with("meshes/") || key.starts_with("geometries/"))) throw std::runtime_error("Only model assets may be loaded.");
+            const bool material=key.starts_with("materials/")&&key.ends_with(".mat");if (!(key.starts_with("meshes/") || key.starts_with("geometries/") || material)) throw std::runtime_error("Only model assets may be loaded.");
             const auto loose = data / std::filesystem::path(key);
             if (std::filesystem::is_regular_file(loose)) return ReadRange(loose, 0, static_cast<std::size_t>(std::filesystem::file_size(loose)));
             for (auto& archive : archives) {
+                if(material&&AssetKey(archive.path.filename().string()).starts_with("starfield - "))continue;
                 if (!archive.indexed) Index(archive);
                 const auto it = archive.files.find(key); if (it == archive.files.end()) continue;
                 const auto& e = it->second; auto bytes = ReadRange(archive.path, e.offset, e.packed ? e.packed : e.raw);
@@ -139,7 +140,7 @@ namespace CCC::Preview
     inline Matrix Multiply(const Matrix& a, const Matrix& b) {
         Matrix out{}; for (int row = 0; row < 4; ++row) for (int col = 0; col < 4; ++col) for (int k = 0; k < 4; ++k) out[row*4+col] += a[row*4+k]*b[k*4+col]; return out;
     }
-    struct Mesh { std::string name; std::vector<float> positions; std::vector<std::uint32_t> indices; std::vector<float> uv; std::string material; std::uint32_t textureWidth=0,textureHeight=0; Bytes pixels; bool mannequin=false; std::array<float,3> tint{1,1,1};bool tinted=false; std::uint32_t normalWidth=0,normalHeight=0; Bytes normalPixels; bool glass=false; bool decal=false; bool incompleteMaterial=false; bool normalOnly=false;std::uint32_t metalWidth=0,metalHeight=0;Bytes metalPixels; };
+    struct Mesh { std::string name; std::vector<float> positions; std::vector<std::uint32_t> indices; std::vector<float> uv; std::string material; std::uint32_t textureWidth=0,textureHeight=0; Bytes pixels; bool mannequin=false; std::array<float,3> tint{1,1,1};bool tinted=false; std::uint32_t normalWidth=0,normalHeight=0; Bytes normalPixels; bool glass=false; bool decal=false; bool incompleteMaterial=false; bool normalOnly=false;std::uint32_t metalWidth=0,metalHeight=0;Bytes metalPixels;bool causticEffect=false;bool flowingLiquid=false; };
     struct GeometryRef { std::string name, path; Matrix transform; std::string material; std::string bone; Matrix bind=Identity(); bool rigid=false; Bytes embedded; std::optional<std::array<float,3>> inlineTint; };
     inline Matrix InverseAffine(const Matrix& m) {
         const float a=m[0],b=m[1],c=m[2],d=m[4],e=m[5],f=m[6],g=m[8],h=m[9],i=m[10];const float det=a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g);
@@ -295,6 +296,22 @@ namespace CCC::Preview
         // exposes Scope. Use that actual parent transform for this asset only.
         return AssetKey(path)=="meshes/weapons/m1919/m1919_scope_mount.nif"&&AttachmentSlotEqual(child,"ScopeMount")&&AttachmentSlotEqual(parent,"Scope");
     }
+    inline std::optional<Matrix> AttachmentHostTransform(const ModelScene& scene,const std::string& path,const std::string& host){
+        if(host.empty())return scene.root;
+        if(const auto found=scene.nodes.find(host);found!=scene.nodes.end())return found->second;
+        // This receiver renames the original mesh but retains HardTarget_Body
+        // in its authored Grip/Scope/Laser connection hosts. Use its actual body
+        // transform; never put unrelated missing attachment hosts at the origin.
+        if(AssetKey(path)=="meshes/m82bubproject/m82bub/m82bub.nif"&&host=="HardTarget_Body")
+            if(const auto body=scene.nodes.find("M82Bub_Body:1");body!=scene.nodes.end())return body->second;
+        return {};
+    }
+    inline bool SceneDistortionOnly(const std::string& material) {
+        // This engine effect refracts the scene behind a weapon. Drawing its
+        // smoke opacity as an ordinary surface instead covers the blade in gray.
+        // Omit only this known effect, including during geometry-only previews.
+        return !material.empty() && AssetKey(material)=="materials/effects/fires/heatdistortion.mat";
+    }
     inline std::vector<Mesh> Load(AssetStore& store, const std::vector<std::string>& models,unsigned quality=4) {
         std::vector<Mesh> out; std::size_t totalVertices=0,totalIndices=0;
         struct Part{std::string path;ModelScene scene;std::vector<GeometryRef> geometry;Matrix placement=Identity();bool placed=false;};std::vector<Part> parts;
@@ -311,12 +328,13 @@ namespace CCC::Preview
         }
         for(std::size_t pass=0;pass<parts.size();++pass)for(auto& part:parts)if(!part.placed) {
             for(const auto& parent:parts)if(parent.placed&&!part.placed)for(const auto& mount:parent.scene.mounts)if(mount.slot.starts_with("P-")&&std::any_of(part.scene.slots.begin(),part.scene.slots.end(),[&](const auto& slot){return AttachmentMountMatches(part.path,slot,mount.slot.substr(2));})) {
-                const auto host=parent.scene.nodes.find(mount.host);if(!mount.host.empty()&&host==parent.scene.nodes.end())continue;
-                part.placement=Multiply(parent.placement,Multiply(host==parent.scene.nodes.end()?parent.scene.root:host->second,mount.transform));part.placed=true;break;
+                const auto host=AttachmentHostTransform(parent.scene,parent.path,mount.host);if(!host)continue;
+                part.placement=Multiply(parent.placement,Multiply(*host,mount.transform));part.placed=true;break;
             }
         }
         for(const auto& part:parts){if(!part.placed)throw std::runtime_error("This modular model has an unresolved attachment point.");
             for(auto ref:part.geometry) {
+                if(SceneDistortionOnly(ref.material))continue;
                 ref.transform=Multiply(part.placement,ref.transform);
                 // Keep instancing when the same mesh appears at different transforms.
                 auto mesh=ReadMesh(ref.embedded.empty()?store.Read(ref.path):ref.embedded,ref); totalVertices+=mesh.positions.size()/3; totalIndices+=mesh.indices.size();
@@ -327,28 +345,65 @@ namespace CCC::Preview
         }
         if(out.empty())throw std::runtime_error("No preview geometry was found."); return out;
     }
-    inline void InsetMannequin(Mesh& mesh,float distance=.004f){
+    inline void InsetMannequin(Mesh& mesh,float distance=.004f,bool forearms=false){
         using Key=std::array<long long,3>;std::map<Key,std::array<float,3>> normals;
         const auto key=[&](std::size_t at){return Key{std::llround(mesh.positions[at]*100000),std::llround(mesh.positions[at+1]*100000),std::llround(mesh.positions[at+2]*100000)};};
         for(std::size_t i=0;i<mesh.indices.size();i+=3){const auto a=mesh.indices[i]*3,b=mesh.indices[i+1]*3,c=mesh.indices[i+2]*3;const auto& p=mesh.positions;const float ux=p[b]-p[a],uy=p[b+1]-p[a+1],uz=p[b+2]-p[a+2],vx=p[c]-p[a],vy=p[c+1]-p[a+1],vz=p[c+2]-p[a+2];const std::array<float,3> n{uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx};for(auto at:{a,b,c})for(unsigned k=0;k<3;++k)normals[key(at)][k]+=n[k];}
         double orientation=0;for(std::size_t i=0;i<mesh.positions.size();i+=3)for(unsigned k=0;k<3;++k)orientation+=mesh.positions[i+k]*normals[key(i)][k];
         const float sign=orientation<0?-1.f:1.f;
-        for(std::size_t i=0;i<mesh.positions.size();i+=3){const auto n=normals[key(i)];const float length=std::hypot(n[0],n[1],n[2]);if(length>1e-12f)for(unsigned k=0;k<3;++k)mesh.positions[i+k]-=distance*sign*n[k]/length;}
+        // Hand assets include open-ended forearms. Their global normal winding
+        // cannot reliably distinguish inward from outward, so fit those cross
+        // sections radially instead of applying a larger normal offset.
+        std::map<int,std::array<double,3>> sections;
+        if(forearms)for(std::size_t i=0;i<mesh.positions.size();i+=3){auto& section=sections[int(std::floor(mesh.positions[i]/.015f))];section[0]+=mesh.positions[i+1];section[1]+=mesh.positions[i+2];section[2]+=1;}
+        float handExtent=0;for(std::size_t i=0;i<mesh.positions.size();i+=3)handExtent=std::max(handExtent,std::abs(mesh.positions[i]));
+        for(std::size_t i=0;i<mesh.positions.size();i+=3){const auto n=normals[key(i)];const float length=std::hypot(n[0],n[1],n[2]);
+            const float forearm=forearms&&handExtent>.01f?std::clamp((handExtent-std::abs(mesh.positions[i])-handExtent*.12f)/(handExtent*.20f),0.f,1.f):0.f;
+            const auto section=forearms?sections[int(std::floor(mesh.positions[i]/.015f))]:std::array<double,3>{};
+            if(length>1e-12f)for(unsigned k=0;k<3;++k)mesh.positions[i+k]-=distance*(1.f-forearm)*sign*n[k]/length;
+            if(forearm>0&&section[2]>0)for(unsigned k=1;k<3;++k){const float centre=section[k-1]/section[2];mesh.positions[i+k]=centre+(mesh.positions[i+k]-centre)*(1.f-.5f*forearm);}
+
+        }
     }
-    inline void AddMannequin(AssetStore& store,std::vector<Mesh>& meshes,bool male=false,unsigned quality=4) {
+    inline bool PreviewMannequinMale(const std::vector<std::string>& paths,bool requestedMale,const std::string& selection="auto"){
+        if(selection=="female")return false;if(selection=="male")return true;
+        int best=-1;bool selected=requestedMale;
+        for(const auto& raw:paths){const auto path=AssetKey(raw);const bool female=path.ends_with("_f.nif")||path.find("_f_")!=path.npos||path.find("/female/")!=path.npos,male=path.ends_with("_m.nif")||path.find("_m_")!=path.npos||path.find("/male/")!=path.npos;if(female==male)continue;
+            const bool accessory=path.find("glove")!=path.npos||path.find("boot")!=path.npos||path.find("hand")!=path.npos||path.find("feet")!=path.npos||path.find("head")!=path.npos||path.find("neck")!=path.npos;
+            if(accessory)continue;const int score=10;if(score>best){best=score;selected=male;}
+        }return selected;
+    }
+    inline void AddMannequin(AssetStore& store,std::vector<Mesh>& meshes,bool male=false,unsigned quality=4,bool fitted=true,bool headOnly=false) {
         const std::string folder="meshes/actors/mannequin/mesh/outpost_mannequin_01/";
         for(const auto* part:{"body","head","hands","neck"})try {
+            if(headOnly&&std::string_view(part)!="head"&&std::string_view(part)!="neck")continue;
             auto pieces=Load(store,{folder+"outpost_mannequin_"+part+"_01_"+(male?"m":"f")+".nif"},quality);
-            for(auto& piece:pieces){InsetMannequin(piece,std::string(part)=="body"?.008f:.002f);piece.mannequin=true;meshes.push_back(std::move(piece));}
+            for(auto& piece:pieces){if(fitted)InsetMannequin(piece,std::string(part)=="body"?.018f:std::string(part)=="neck"?.006f:.004f,std::string(part)=="hands");piece.mannequin=true;meshes.push_back(std::move(piece));}
         }catch(...){}
     }
     template<class T> inline void Append(Bytes& output, const T& value) { const auto* p=reinterpret_cast<const std::uint8_t*>(&value); output.insert(output.end(),p,p+sizeof(T)); }
     inline Bytes Pack(const std::vector<Mesh>& meshes,std::size_t maxBytes=64*1024*1024) {
         std::size_t vertices=0,indices=0;for(const auto& mesh:meshes){vertices+=mesh.positions.size()/3;indices+=mesh.indices.size();}
         if(meshes.empty()||meshes.size()>MaxPieces||vertices>MaxVertices||indices>MaxIndices)throw std::runtime_error("This combined model exceeds the preview limits.");
+        const bool hasEffect=std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.causticEffect||mesh.flowingLiquid;});
         const bool hasMetal=std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return !mesh.metalPixels.empty();});
-        Bytes out; Append(out,std::uint32_t(0x50504343)); Append(out,std::uint32_t(std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return !mesh.metalPixels.empty();})?9:std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.normalOnly;})?8:7)); Append(out,std::uint32_t(meshes.size()));
-        struct PackedTexture{std::uint32_t width,height;const Bytes* pixels;};std::vector<PackedTexture> textures;
+        Bytes out; Append(out,std::uint32_t(0x50504343)); Append(out,std::uint32_t(std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.flowingLiquid;})?11:hasEffect?10:std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return !mesh.metalPixels.empty();})?9:std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.normalOnly;})?8:7)); Append(out,std::uint32_t(meshes.size()));
+        struct PackedTexture{
+            std::uint32_t width,height;const Bytes* pixels;Bytes reduced;
+            const Bytes& Data()const{return reduced.empty()?*pixels:reduced;}
+            void Reduce(){
+                const auto w=std::max(1u,width/2),h=std::max(1u,height/2);
+                Bytes next(std::size_t(w)*h*4);const auto& source=Data();
+                for(unsigned y=0;y<h;++y)for(unsigned x=0;x<w;++x){
+                    const auto x0=x*width/w,x1=(x+1)*width/w,y0=y*height/h,y1=(y+1)*height/h;
+                    for(unsigned c=0;c<4;++c){unsigned sum=0;
+                        for(unsigned sy=y0;sy<y1;++sy)for(unsigned sx=x0;sx<x1;++sx)sum+=source[(std::size_t(sy)*width+sx)*4+c];
+                        const auto count=(x1-x0)*(y1-y0);next[(std::size_t(y)*w+x)*4+c]=std::uint8_t((sum+count/2)/count);
+                    }
+                }
+                reduced=std::move(next);width=w;height=h;
+            }
+        };std::vector<PackedTexture> textures;
         const auto textureId=[&](std::uint32_t width,std::uint32_t height,const Bytes& pixels)->std::uint32_t{
             if(pixels.empty())return 0;if(!width||!height||width>4096||height>4096||pixels.size()!=std::size_t(width)*height*4)throw std::runtime_error("Invalid model texture.");
             for(std::size_t i=0;i<textures.size();++i)if(textures[i].width==width&&textures[i].height==height&&*textures[i].pixels==pixels)return i+1;
@@ -356,10 +411,24 @@ namespace CCC::Preview
         };
         for(const auto& mesh:meshes){Append(out,std::uint32_t(mesh.positions.size()/3));Append(out,std::uint32_t(mesh.indices.size()));for(auto v:mesh.positions)Append(out,v);for(auto i:mesh.indices)Append(out,i);
             const auto color=textureId(mesh.textureWidth,mesh.textureHeight,mesh.pixels),normal=textureId(mesh.normalWidth,mesh.normalHeight,mesh.normalPixels);
-            Append(out,std::uint32_t(mesh.mannequin?1:0)|(mesh.tinted?2u:0u)|(mesh.glass?4u:0u)|((mesh.decal||[&]{auto name=mesh.material;for(auto& c:name)if(c>='A'&&c<='Z')c+=32;return name;}().find("decal")!=std::string::npos)?8u:0u)|(mesh.incompleteMaterial?16u:0u)|(mesh.normalOnly?32u:0u));Append(out,color);for(auto c:mesh.tint)Append(out,c);Append(out,normal);if(hasMetal)Append(out,textureId(mesh.metalWidth,mesh.metalHeight,mesh.metalPixels));
+            Append(out,std::uint32_t(mesh.mannequin?1:0)|(mesh.tinted?2u:0u)|(mesh.glass?4u:0u)|((mesh.decal||[&]{auto name=mesh.material;for(auto& c:name)if(c>='A'&&c<='Z')c+=32;return name;}().find("decal")!=std::string::npos)?8u:0u)|(mesh.incompleteMaterial?16u:0u)|(mesh.normalOnly?32u:0u)|(mesh.causticEffect?64u:0u)|(mesh.flowingLiquid?128u:0u));Append(out,color);for(auto c:mesh.tint)Append(out,c);Append(out,normal);if(hasMetal||hasEffect)Append(out,textureId(mesh.metalWidth,mesh.metalHeight,mesh.metalPixels));
             for(std::size_t i=0;i<mesh.positions.size()/3*2;++i)Append(out,mesh.uv.size()>i?mesh.uv[i]:0.f);
         }
-        Append(out,std::uint32_t(textures.size()));for(const auto& texture:textures){Append(out,texture.width);Append(out,texture.height);out.insert(out.end(),texture.pixels->begin(),texture.pixels->end());}
+        // Material composition can produce distinct images from one shared DDS,
+        // so the source-texture budget is not the final packet budget. Fit the
+        // actual unique output maps before appending them, retaining every mesh,
+        // texture reference, material flag and alpha channel. Cached originals
+        // remain untouched and ordinary packets retain their exact bytes.
+        std::size_t total=out.size()+4+textures.size()*8;
+        for(const auto& texture:textures)total+=texture.Data().size();
+        while(total>maxBytes){
+            auto largest=textures.end();
+            for(auto it=textures.begin();it!=textures.end();++it)if((it->width>1||it->height>1)&&(largest==textures.end()||it->Data().size()>largest->Data().size()))largest=it;
+            if(largest==textures.end())throw std::runtime_error("Preview geometry exceeds the transfer limit.");
+            total-=largest->Data().size();largest->Reduce();total+=largest->Data().size();
+        }
+        out.reserve(total);
+        Append(out,std::uint32_t(textures.size()));for(const auto& texture:textures){Append(out,texture.width);Append(out,texture.height);const auto& pixels=texture.Data();out.insert(out.end(),pixels.begin(),pixels.end());}
         if(out.size()>maxBytes)throw std::runtime_error("Preview data exceeds the transfer limit."); return out;
     }
     inline std::string Base64(std::span<const std::uint8_t> data) {

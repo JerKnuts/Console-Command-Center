@@ -1,8 +1,8 @@
 # Console Command Center
 
-Console Command Center turns Starfield console commands into a searchable in-game menu for mouse, keyboard, and controller. It provides command inputs, safety warnings, ID selection, quest tools, mod scanning, editable command batches, and read-only Results popups.
+Console Command Center turns Starfield console commands into a searchable in-game menu for mouse, keyboard, and controller. It provides command inputs, ID selection, quest tools, mod scanning, editable command batches, read-only Results popups, item previews, and book/slate playback.
 
-**Current release: v1.3.36.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
+**Current release: v1.4.0.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
 
 Translation authors can use the [JSON/CSV translator guide](docs/TRANSLATION_GUIDE.md). CCC uses a web interface; SWF editing is not required. Translation packs are optional and fall back to English.
 
@@ -27,6 +27,10 @@ CCC v1.0.13 and later use `SFSE/Plugins/OSF/UI/views/console.command-center/`. W
 
 Make a manual save before changing quests or important game state. Each page has contextual **Help**, and the first-time overview remains available there.
 
+## Menu keyboard shortcut
+
+The assigned CCC keyboard shortcut also opens CCC over inventory, containers, shops, the data menu, maps, missions, skills, research and crafting screens. Closing CCC returns to the existing menu. This uses Starfield's saved Controls binding; finish saving a rebind before using it. The menu fallback does not handle controller bindings. Pause/Controls, text-entry dialogs, loading screens and OSF Settings are excluded. The separate two-press issue remains under investigation.
+
 ## Known bugs
 
 - **The CCC keybind can require two presses.** This has been reported with F10 and F11, including after closing CCC with Escape or its Close button. Switching away from Starfield and back may temporarily restore one-press opening. The cause remains under investigation.
@@ -34,13 +38,15 @@ Make a manual save before changing quests or important game state. Each page has
 
 ## Features
 
-- Categorized command cards, with WIP and engine-reference entries available through Advanced Options.
-- Search, command and ID favorites, Recent commands, saved batch favorites, and Activity Log. Favorite IDs use compact selectable rows with their details and supported actions on the right.
+- **Command Browser:** alphabetical commands within categories, with WIP and engine-reference entries available through Advanced Options. Command-specific instructions and review dialogs remain; Caution/Danger badges have been removed.
+- Search, command and ID favorites, Recent commands, saved batch favorites, and Command Log. Favorite IDs use compact selectable rows with their details and supported actions on the right.
 - **ID Browser: 23,308 packaged entries**, including reviewed ships, vehicle forms, workshop objects, and supported Free Lanes/Terran Armada record types. Duplicate names can identify different underlying records.
 - **Descriptions and base stats:** inspect aid effects, gear values, skill ranks, traits and powers before adding them. Description/stats appear on the left, with a sticky model preview on the right. See [item details and reading](docs/ID_BROWSER_DETAILS.md).
-- **Read books and notes** in a scrolling popup, without adding them to inventory or granting skill-book rewards.
+- **Books / Notes:** read books, notes and supported text slates in a scrolling popup. Image slates share this category; embedded image layouts are not decoded. Reading does not add inventory or grant skill-book rewards.
+- **Audio Slates:** listen inside CCC while the game stays paused, with themed playback controls, volume, speed and a scrolling line transcript. Missing voice files report unavailable. See [books and slates](docs/AUDIO_SLATES.md).
+- **Item previews:** 4,822 official-item thumbnail mappings, on-demand mod still previews, and a full Model Viewer for supported items. Books/slates use stills with Read/Listen beneath them; complete ships have no viewer.
 - **JSON translations:** install a separate language pack, choose it in Settings or use automatic selection, and reload translations without editing SWF files.
-- **Advanced Settings in Commands:** Search grouped game-setting references, inspect live values, review numeric changes, and reset to supplied base-game values. String settings remain read-only.
+- **Advanced Settings in Command Browser:** Search grouped game-setting references, inspect live values, review numeric changes, and reset to supplied base-game values. String settings remain read-only.
 - **Quest Browser: 2,568 quests and 19,061 recorded stage indexes** from Base Game, Shattered Space, Free Lanes, and Terran Armada. Packaged quests are kept out of ID Browser.
 - **Mod Browser:** scan loaded mods and Official Creations, sort by mod or category, search scanned records and inspect quest stages.
 - Editable user-owned `.txt` command batches, persistent in-session drafts, synchronized line numbers, Clear, Refresh, and Add to Batch.
@@ -50,21 +56,21 @@ Make a manual save before changing quests or important game state. Each page has
 
 Terran Armada, Free Lanes and Shattered Space display names are matched to each plugin’s own English localization, including books, notes, equipment and locations. See [Shattered Space name verification](docs/SHATTERED_SPACE_NAMES.md) and [Free Lanes name verification](docs/FREE_LANES_NAMES.md).
 
-Command test results also control grouping: Working moves a WIP command into its functional category, Issues moves it to WIP / Executed — Issues, and Not noticeable moves it to WIP / Executed — Effect Unconfirmed. Saved results apply after reload and outside Dev Mode. Existing warnings and execution blocks remain in place.
+In Dev Mode, Working is a manual toggle: click it again to clear the designation. Reporting an issue retains the command in its displayed category rather than making it disappear into WIP. Explicitly reviewed unresolved commands can still be assigned to WIP. Saved outcomes survive reload and report export. Reporting never executes the command or clears unavailable-action blocks.
 
 Workshop / Outpost Objects offer **Spawn Object** for supported physical records. Review places one object at the player; it does not register outpost ownership, add a construction recipe, or create power/storage connections. Reference-only and unavailable records have no spawn action.
 
 ## Interface Settings
 
-Supported loaded items in ID Browser and Mod Browser offer a small preview and **Model Viewer**, available without Advanced Options. The viewer reads installed meshes and materials. **Low, Medium, High and Ultra** preserve the same geometry and share enhanced reflections, bloom, subtle grain and movable lighting; texture and rendering resolutions differ. Models appear before textures finish loading, and upgrades retain the camera. Supported wearables can show an optional male/female mannequin. Mouse and controller controls support movement, rotation, zoom and lighting. Your player character is not used. See [Model previews](docs/MODEL_PREVIEWS.md).
+Supported loaded items in ID Browser, Mod Browser and Favorites offer a still preview and, where supported, **Model Viewer** without Advanced Options. The viewer reads installed meshes/materials, with Low through Ultra quality, progressive color loading, studio reflections, smooth object/ground shadows and movable lighting. Complex Ultra loads can still be slow. Upgrades retain the camera. Supported wearables can show an optional male/female mannequin; its on/off choice is remembered for the page session. Suits use neck/head only; helmets, hats and packs use full-size mannequins. Your player character is not used. See [Model previews](docs/MODEL_PREVIEWS.md).
 
 Advanced Options reveals technical record types, categories, plugin filenames and IDs. Descriptions, stats, requirements, model previews and Copy ID buttons remain available in ordinary browsing. Base stats can differ from equipped items because of upgrades, legendary effects, scaling and player skills.
 
-Open **Settings** beside Help. Dark Mode and Advanced Options off are the defaults. Advanced Options reveals WIP commands, Advanced Settings in Commands, Locations (Reference Only), Ship Parts / Other Forms, reference-only items, and Internal / System quests. Basic-mode searches and ID Favorites hide these records without deleting saved favorites. Cells/Teleport is visible by default and provides teleport actions; reviewed internal/test cells are reference-only and hidden outside Advanced Options; Locations are reference-only area metadata.
+Open **Settings** beside Help. Dark Mode and Advanced Options off are the defaults. Advanced Options reveals WIP commands, Advanced Settings in Command Browser, Locations (Reference Only), Ship Parts / Other Forms, reference-only items, and Internal / System quests. Basic-mode searches and ID Favorites hide these records without deleting saved favorites. Cells/Teleport is visible by default and provides teleport actions; reviewed internal/test cells are reference-only and hidden outside Advanced Options; Locations are reference-only area metadata.
 
-Categories are alphabetical, with Advanced Settings and WIP last in Commands. Quest sections are ordered Base Game, Shattered Space, Free Lanes, and Terran Armada. Reference-only records sort below normal records, alphabetically within each group, and do not offer gameplay quick actions. They use muted backgrounds and text with a red X before the name and a bordered Reference Only badge, including in Favorites and outside Dev Mode. Marking an ID Working clears its reference styling and restrictions.
+Categories are alphabetical, with MISC, Advanced Settings and WIP pinned last in Command Browser. Quest sections are ordered Base Game, Shattered Space, Free Lanes, and Terran Armada. Reference-only records sort below normal records, alphabetically within each group, and do not offer gameplay quick actions. They use muted backgrounds and text with a red X before the name and a bordered Reference Only badge, including in Favorites and outside Dev Mode. Marking an ID Working clears its reference styling and restrictions.
 
-Dark Mode uses blue-black backgrounds, slate rows, gray selection, pale text, and muted blue detail headers. Light Mode uses pale gray surfaces, teal rules, charcoal selection, and yellow accents. Both keep distinct warning and danger indicators.
+Dark Mode uses blue-black backgrounds, slate rows, gray selection, pale text, and muted blue detail headers. Light Mode uses pale gray surfaces, teal rules, charcoal selection, and yellow accents. Viewer backgrounds default to Graphite in Dark Mode and Pearl in Light Mode, with additional subtle gradients and colors available in either Basic or Advanced mode. Background choices are saved separately by theme.
 
 ## Browsers and quest tools
 
@@ -76,9 +82,9 @@ Packaged and scanned quests provide live inspection and confirmed Start, Stop, C
 
 ## Command batches
 
-Custom Command offers a flat **INCLUDED** list of ready-to-run, user-editable `.txt` files. Select a file to load it into the editor, then edit or review before running. Included files live in `Documents\My Games\Starfield\Console Command Center\Included Batches`; saved user batches remain in `Command Batches`. Refresh rereads files. Default installation preserves existing files, edits and deletions.
+Batch Commander offers a flat **INCLUDED** list of ready-to-run, user-editable `.txt` files. Select a file to load it into the editor, then edit or review before running. Included files live in `Documents\My Games\Starfield\Console Command Center\Included Batches`; saved user batches remain in `Command Batches`. Refresh rereads files. Default installation preserves existing files, edits and deletions.
 
-The library includes the six previously selected unlock/item batches and 17 new files covering supplies, outposts, components, cooking, four weapon kits, suit/clothing collections and three settings presets with matching resets. New kits use base-game item IDs. Reset files restore documented base-game values, not a backup of modded settings.
+The INCLUDED library contains 25 files covering unlocks, supplies, outposts, components, cooking, playing cards, baseball caps, four weapon kits, suit/clothing collections and three settings presets with matching resets. The new kits use base-game item IDs. Reset files restore documented base-game values, not a backup of modded settings.
 
 The editor highlights commands, targets, IDs, numbers and quoted strings, with italic comments. One command goes on each line; `#` and `;` start comments outside double-quoted strings. Blank lines are ignored. Normal text editing and controller entry remain available.
 
@@ -86,11 +92,11 @@ There is no 100-command limit. Files are limited to 1 MB and commands to 1,024 c
 
 ## Dev Mode feedback
 
-Click the bottom-left dot five times to toggle Dev Mode. Item rows in ID Browser, Mod Browser and Favorites offer **Working**, **Issues** and **Reference Only**. Working and Reference Only save immediately; Issues opens a comment popup. Not noticeable uses orange with a question mark. Commands, quests and settings retain the Test Report popup. Plain Working confirmations stay local. Export Reports writes queued reports to the user CCC folder without clearing saved row outcomes. Dev Mode also marks unresolved model materials with a red/blue checker. Cell rows also offer **Identify Current Area**: review a name from the current game area, accept or decline, then export accepted changes with the reports. See [current-area identification](docs/CURRENT_AREA.md) and [Dev Mode](docs/DEV_MODE.md).
+Click the bottom-left dot five times to toggle Dev Mode. Item rows in ID Browser, Mod Browser and Favorites offer **Working**, **Issues** and **Reference Only**. Working and Reference Only save immediately; Issues opens a comment popup. Not noticeable uses orange with a question mark. Command rows also offer Working and Issues; Working can be clicked again to clear it. Quests and settings retain the Test Report popup. Plain Working confirmations stay local. Export Reports writes queued reports to the user CCC folder without clearing saved row outcomes. The missing-material checkerboard is disabled; incomplete-material notices remain. Cell rows also offer **Identify Current Area**: review a name from the current game area, accept or decline, then export accepted changes with the reports. See [current-area identification](docs/CURRENT_AREA.md) and [Dev Mode](docs/DEV_MODE.md).
 
 ## Build from source
 
-Install Node.js/npm, Git, XMake, and the SFSE/CommonLibSF C++ build prerequisites. The native build restores the CommonLibSF revision pinned in `native/setup-deps.mjs`, including submodules. XMake restores nlohmann_json and static zlib 1.3.2.
+Install Node.js 24.x/npm, Git, XMake, and the SFSE/CommonLibSF C++ build prerequisites. The native build restores the CommonLibSF revision pinned in `native/setup-deps.mjs`, including submodules. XMake restores nlohmann_json and static zlib 1.3.2.
 
 ~~~powershell
 npm ci
@@ -108,7 +114,3 @@ Generated catalogs are committed so normal builds do not need the game data or s
 CCC is **GPL-3.0-or-later with the CommonLibSF Modding Exception and GPL-3.0 Linking Exception (with Corresponding Source)**. See [LICENSE](LICENSE), [EXCEPTIONS](EXCEPTIONS), and [third-party notices](THIRD_PARTY_NOTICES.md) for dependency pins, licenses, and source restoration.
 
 Current test findings are maintained in [Command catalog](COMMAND_CATALOG.md) and [Console test findings](docs/CONSOLE_TEST_FINDINGS.md). Candidate future improvements are in [Future features](docs/FUTURE_FEATURES.md).
-
-Test Report result bars in Dev Mode: Working uses green with a checkmark; Issues uses yellow with an exclamation; choose Not noticeable under Issues for orange with a question mark. Reference Only uses dark gray with a struck-through name. Latest explicit results remain saved after export and restart; comment-only reports preserve the existing classification. Plain Working confirmations stay local unless a comment is added. Dev Mode also marks unresolved model textures with a red/blue checker in both preview sizes.
-
-All Model Viewer presets include enhanced studio reflections, bloom and subtle grain. Low through Ultra retain different texture and rendering resolutions, with no depth of field. Previews show untextured geometry before loading textures. See [model previews](docs/MODEL_PREVIEWS.md).

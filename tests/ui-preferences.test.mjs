@@ -8,8 +8,8 @@ test('preview quality defaults high and preserves only supported saved choices',
  assert.equal(parseUiPreferences({previewResolution:'invalid'}).previewResolution,'high');assert.equal(parseUiPreferences({previewResolution:'ultra'}).previewResolution,'ultra');
 });
 test('basic preferences hide advanced categories and records while preserving ordinary content',()=>{
- assert.deepEqual(parseUiPreferences(null),{advanced:false,theme:'dark',previewResolution:'high'});
- assert.deepEqual(parseUiPreferences({advanced:'true',theme:'other'}),{advanced:false,theme:'dark',previewResolution:'high'});
+ assert.deepEqual(parseUiPreferences(null),{advanced:false,theme:'dark',previewResolution:'high',previewBackground:'graphite',previewBackgroundDark:'graphite',previewBackgroundLight:'pearl'});
+ assert.deepEqual(parseUiPreferences({advanced:'true',theme:'other'}),{advanced:false,theme:'dark',previewResolution:'high',previewBackground:'graphite',previewBackgroundDark:'graphite',previewBackgroundLight:'pearl'});
  for(const category of ['locations','ship-parts','game-settings']){assert.equal(visibleIdCategory(category,false),false);assert.equal(visibleIdCategory(category,true),true);}
  assert.equal(visibleIdCategory('cells',false),true);
  assert.equal(visibleIdRecord({type:'CELL',category:'Cells'},false),true);
@@ -41,7 +41,7 @@ test('Settings popup toggles persist advanced and theme selections',()=>{
  uiPreferences.advanced=false;uiPreferences.theme='dark';
  installUiSettings({changed:()=>changed++,status(){}});
  handlers.get('open')();handlers.get('advanced')();handlers.get('theme')();
- assert.deepEqual(JSON.parse(saved),{advanced:true,theme:'light',previewResolution:'high'});
+ assert.deepEqual(JSON.parse(saved),{advanced:true,theme:'light',previewResolution:'high',previewBackground:'pearl',previewBackgroundDark:'graphite',previewBackgroundLight:'pearl'});
  assert.equal(document.documentElement.dataset.cccTheme,'light');assert.equal(changed,2);
  handlers.get('close')();assert.equal(removed,true);
  uiPreferences.advanced=false;uiPreferences.theme='dark';
@@ -66,4 +66,10 @@ test('location records are reference only across all plugins while cells stay or
  }
  assert.equal(visibleIdRecord({type:'LCTN',category:'Locations'},false),false);
  assert.equal(applyReviewedFindings({label:'Room',type:'CELL',category:'Cells',value:'01000123'}).referenceOnly,undefined);
+});
+
+test('viewer backgrounds default by theme and retain independent custom selections',()=>{
+ assert.equal(parseUiPreferences({theme:'light'}).previewBackground,'pearl');assert.equal(parseUiPreferences({theme:'dark'}).previewBackground,'graphite');
+ assert.equal(parseUiPreferences({theme:'light',previewBackground:'graphite',previewBackgroundDark:'graphite',previewBackgroundLight:'pearl'}).previewBackground,'pearl');
+ const p=parseUiPreferences({theme:'light',previewBackgroundDark:'blue',previewBackgroundLight:'linen'});assert.equal(p.previewBackground,'linen');assert.equal(p.previewBackgroundDark,'blue');
 });

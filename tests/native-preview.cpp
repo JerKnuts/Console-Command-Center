@@ -1,10 +1,29 @@
 #include "PreviewTextures.h"
 #include "PreviewRecords.h"
+#include "PreviewTransfer.h"
+#include "SlateVoiceAssets.h"
+#include "RecordDescriptions.h"
 #include <iostream>
 #include "native-material-graph.h"
 using namespace CCC::Preview;
 int main(int argc,char** argv) {
     try {
+        if(argc==4&&std::string(argv[2])=="--slate-audit"){
+            const std::vector<ScenePlugin> plugins{{"Starfield.esm",0,0},{"ShatteredSpace.esm",0,1},{"SFBGS00D.esm",0,2},{"SFBGS050.esm",0,3}};RecordScenes scenes(argv[1],plugins);CCC::Details::SlateVoiceAssets assets(argv[1],plugins);std::ifstream input(argv[3]);std::string line;unsigned count=0,failed=0,voices=0;
+            while(std::getline(input,line)){try{auto tracks=scenes.AudioTracks(std::stoul(line,nullptr,16));if(tracks.empty())throw std::runtime_error("No recording lines");for(const auto& track:tracks){auto bytes=assets.Read(track);if(bytes.size()<12||std::memcmp(bytes.data(),"RIFF",4))throw std::runtime_error("Invalid voice data");++voices;}++count;}catch(const std::exception& e){++failed;std::cout<<line<<": "<<e.what()<<"\n";}}
+            std::cout<<count<<" audio slates resolved, "<<voices<<" voice lines read, "<<failed<<" failures\n";return failed?1:0;
+        }
+        if(argc==5&&std::string(argv[2])=="--slate-audio"){
+            const std::vector<ScenePlugin> plugins{{"Starfield.esm",0,0},{"ShatteredSpace.esm",0,1},{"SFBGS00D.esm",0,2},{"SFBGS050.esm",0,3}};RecordScenes scenes(argv[1],plugins);auto tracks=scenes.AudioTracks(std::stoul(argv[3],nullptr,16));CCC::Details::SlateVoiceAssets assets(argv[1],plugins);CCC::Details::DescriptionStore descriptions(argv[1],".ilstrings");std::filesystem::create_directories(argv[4]);nlohmann::json report=nlohmann::json::array();
+            for(unsigned i=0;i<tracks.size();++i){const auto& track=tracks[i];auto bytes=assets.Read(track);const auto path=std::filesystem::path(argv[4])/(std::to_string(i)+".wem");std::ofstream out(path,std::ios::binary);out.write(reinterpret_cast<const char*>(bytes.data()),bytes.size());std::string text;if(track.localized&&track.text.size()==4){Reader r{track.text};text=descriptions.Lookup(track.plugin,"en",r.Read<std::uint32_t>());}else text=CCC::Details::Text(track.text);report.push_back({{"index",i},{"text",text},{"wem",std::format("{:08x}",track.wem)},{"bytes",bytes.size()}});}
+            std::ofstream out(std::filesystem::path(argv[4])/"tracks.json");out<<report.dump(2);std::cout<<tracks.size()<<" installed voice lines exported for isolated playback validation\n";return 0;
+        }
+        if(argc==4&&std::string(argv[2])=="--slate-tracks"){
+            RecordScenes scenes(argv[1],{{"Starfield.esm",0,0},{"ShatteredSpace.esm",0,1},{"SFBGS00D.esm",0,2},{"SFBGS050.esm",0,3}});const auto id=std::stoul(argv[3],nullptr,16);auto tracks=scenes.AudioTracks(id);std::cout<<tracks.size()<<" audio lines\n";for(const auto& line:tracks)std::cout<<line.plugin<<"|"<<std::format("{:08x}",line.wem)<<"|"<<line.voice<<"\n";return 0;
+        }
+        if(argc==5&&std::string(argv[2])=="--extract-asset"){
+            AssetStore source(argv[1]);const auto bytes=source.Read(argv[3]);std::ofstream out(argv[4],std::ios::binary);if(!out.write(reinterpret_cast<const char*>(bytes.data()),bytes.size()))throw std::runtime_error("Diagnostic asset write failed.");return 0;
+        }
         if(argc>=4&&std::string(argv[2])=="--inspect-attachment"){
             AssetStore assets(argv[1],{"Starfield.esm","ShatteredSpace.esm"});
             for(int i=3;i<argc;++i){ModelScene scene;auto refs=ReadNif(assets.Read(argv[i]),&scene);std::cout<<argv[i]<<"\n";
@@ -17,10 +36,33 @@ int main(int argc,char** argv) {
             while(std::getline(input,line)){const auto a=line.find('|'),b=line.find('|',a+1);if(a==line.npos||b==line.npos)throw std::runtime_error("Invalid variant audit row.");const auto id=std::stoul(line.substr(0,a),nullptr,16);std::vector<Mesh> pieces{Mesh{}};pieces[0].material=line.substr(a+1,b-a-1);scenes.ApplyMaterialSwaps(id,pieces);const auto expected=line.substr(b+1);++checked;if(pieces[0].material!=expected){++failed;std::cout<<line.substr(0,a)<<" expected "<<expected<<" got "<<pieces[0].material<<"\n";}}
             std::cout<<checked<<" authored material rules checked, "<<failed<<" mismatches\n";return failed||!checked?1:0;
         }
+        if(argc>=5&&std::string(argv[2])=="--compare-materials"){
+            AssetStore source(argv[1]);MaterialDatabase fast(source.data);const auto databaseSize=std::filesystem::file_size(argv[3]);if(databaseSize>128u*1024*1024)throw std::runtime_error("Material database too large.");Bytes database(databaseSize);std::ifstream db(argv[3],std::ios::binary);if(!db.read(reinterpret_cast<char*>(database.data()),database.size()))throw std::runtime_error("Material database read failed.");const auto graph=ReadMaterialInheritance(database);
+            const auto print=[](const char* label,const MaterialAppearance& a){std::cout<<label<<" color="<<a.texture<<" opacity="<<a.opacity<<" normal="<<a.normal<<" tint="<<a.tinted<<":"<<a.tint[0]<<","<<a.tint[1]<<","<<a.tint[2]<<" constant="<<a.constantColor<<":"<<a.color[0]<<","<<a.color[1]<<","<<a.color[2]<<"\n";};
+            for(int i=4;i<argc;++i){std::cout<<argv[i]<<"\n";print("fast",fast.Find(argv[i]));auto key=MaterialKey(argv[i]);auto found=graph.find(key);if(found==graph.end())found=graph.find(MaterialName(key));if(found!=graph.end())print("graph",found->second);else std::cout<<"graph not resolved\n";}
+            return 0;
+        }
+        if(argc>=4&&std::string(argv[2])=="--inspect-materials"){
+            AssetStore source(argv[1]);std::vector<std::filesystem::path> archives;for(const auto& a:source.archives)archives.push_back(a.path);MaterialDatabase database(source.data,archives);
+            for(int i=3;i<argc;++i){const auto a=database.Find(argv[i]);std::cout<<argv[i]<<"\n color="<<a.texture<<" opacity="<<a.opacity<<" normal="<<a.normal<<" rough="<<a.roughness<<" metal="<<a.metal<<" ao="<<a.ao<<" constantColor="<<a.constantColor<<" rgb="<<a.color[0]<<","<<a.color[1]<<","<<a.color[2]<<" tint="<<a.tinted<<":"<<a.tint[0]<<","<<a.tint[1]<<","<<a.tint[2]<<" weight="<<a.tintWeight<<" multiply="<<a.tintMultiply<<" glass="<<a.glass<<" decal="<<a.decal<<"\n";}return 0;
+        }
         if(argc>=4&&std::string(argv[2])=="--check-materials"){
             AssetStore source(argv[1]);TextureStore store(source);std::vector<Mesh> pieces;for(int i=3;i<argc;++i){Mesh piece{"material",{0,0,0,1,0,0,0,1,0},{0,1,2}};piece.uv={0,0,1,0,0,1};piece.material=argv[i];pieces.push_back(std::move(piece));}store.Apply(pieces,1);bool complete=true;for(const auto& piece:pieces){const bool resolved=!piece.incompleteMaterial&&(!piece.pixels.empty()||piece.tinted||piece.glass);std::cout<<piece.material<<" resolved="<<resolved<<" normalOnly="<<piece.normalOnly<<" normal="<<(!piece.normalPixels.empty())<<"\n";complete=complete&&resolved;}Pack(pieces);return complete?0:1;
         }
+        if((argc==6||argc==7)&&std::string(argv[2])=="--mannequin-preview"){
+            std::vector<ScenePlugin> plugins{{"Starfield.esm",0,0}};std::vector<std::string> names{"Starfield.esm"};if(const auto* extra=std::getenv("CCC_PREVIEW_PLUGINS")){std::istringstream list(extra);std::string name;while(std::getline(list,name,';'))if(!name.empty()){names.push_back(name);plugins.push_back({name,0,unsigned(plugins.size())});}}AssetStore assets(argv[1],names);RecordScenes scenes(argv[1],plugins);const auto id=std::stoul(argv[3],nullptr,16);const auto paths=scenes.ArmorModels(id,std::string(argv[5])!="female");for(const auto& path:paths)std::cout<<path<<"\n";auto meshes=Load(assets,paths,1);const auto before=meshes.size();if(std::string(argv[5])!="none")AddMannequin(assets,meshes,std::string(argv[5])=="male",1,argc<7||std::string(argv[6])=="outfit",argc==7&&std::string(argv[6])=="suit");if(std::string(argv[5])!="none"&&meshes.size()==before)throw std::runtime_error("Requested mannequin is unavailable.");scenes.ApplyMaterialSwaps(id,meshes,true);TextureStore textures(assets);textures.Apply(meshes,1);const auto bytes=Pack(meshes);std::ofstream out(argv[4],std::ios::binary);out.write(reinterpret_cast<const char*>(bytes.data()),bytes.size());std::cout<<argv[5]<<" mannequin: "<<meshes.size()-before<<" parts, "<<bytes.size()<<" bytes\n";return 0;
+        }
+        if(argc==5&&std::string(argv[2])=="--thumbnail-batch"){
+
+            std::vector<ScenePlugin> plugins{{"Starfield.esm",0,0}};std::vector<std::string> names{"Starfield.esm"};if(const auto* extra=std::getenv("CCC_PREVIEW_PLUGINS")){std::istringstream list(extra);std::string name;while(std::getline(list,name,';'))if(!name.empty()){names.push_back(name);plugins.push_back({name,0,unsigned(plugins.size())});}}
+            AssetStore assets(argv[1],names);TextureStore textures(assets);RecordScenes scenes(argv[1],plugins);std::ifstream input(argv[3]);std::string id;
+            while(std::getline(input,id)){if(id.empty())continue;try{const auto form=std::stoul(id,nullptr,16);const auto output=std::filesystem::path(argv[4])/(id+".bin");if(std::filesystem::exists(output)){std::cout<<id<<" OK cached"<<std::endl;continue;}
+                const auto armor=scenes.ArmorModels(form,true);auto meshes=armor.empty()?scenes.LoadModels(assets,form):Load(assets,armor,1);scenes.ApplyMaterialSwaps(form,meshes,true);textures.Apply(meshes,0);auto bytes=Pack(meshes);std::ofstream out(output,std::ios::binary);if(!out.write(reinterpret_cast<const char*>(bytes.data()),bytes.size()))throw std::runtime_error("Thumbnail packet write failed.");out.close();std::cout<<id<<" OK "<<bytes.size()<<std::endl;
+            }catch(const std::exception& e){std::cout<<id<<" ERROR "<<e.what()<<std::endl;}}
+            return 0;
+        }
         if(argc>=5&&std::string(argv[2])=="--batch"){
+
             AssetStore assets(argv[1]);TextureStore textures(assets);std::ifstream input(argv[3]);std::string line;
             std::vector<ScenePlugin> plugins{{"Starfield.esm",0,0}};
             if(const auto* extra=std::getenv("CCC_PREVIEW_PLUGINS")){std::istringstream list(extra);std::string name;while(std::getline(list,name,';'))if(!name.empty())plugins.push_back({name,0,unsigned(plugins.size())});}
@@ -34,13 +76,25 @@ int main(int argc,char** argv) {
         if(argc>=3) {
             std::vector<ScenePlugin> testPlugins{{"Starfield.esm",0,0}};
             if(const auto* extra=std::getenv("CCC_PREVIEW_PLUGINS")){std::istringstream list(extra);std::string name;while(std::getline(list,name,';'))if(!name.empty())testPlugins.push_back({name,0,unsigned(testPlugins.size())});}
-            const auto* setting=std::getenv("CCC_PREVIEW_QUALITY");const unsigned quality=setting&&std::string(setting)=="ultra"?4:setting&&std::string(setting)=="medium"?2:setting&&std::string(setting)=="low"?1:3;AssetStore store(argv[1]);std::vector<std::string> models{argv[2]};for(int i=5;i<argc;++i)models.push_back(argv[i]);if(std::getenv("CCC_PREVIEW_REFS"))for(const auto& path:models){ModelScene scene;auto refs=ReadNif(store.Read(path),&scene);for(const auto& ref:refs){std::cout<<ref.name<<" bone "<<ref.bone<<" transform ";for(auto v:ref.transform)std::cout<<v<<",";std::cout<<" bind ";for(auto v:ref.bind)std::cout<<v<<",";std::cout<<"\n";}}auto mesh=std::string(argv[2]).starts_with("form:")?[&]{std::unique_ptr<RecordScenes> coldCache;auto& scene=EnsureRecordScenes(coldCache,argv[1],testPlugins);const auto id=std::stoul(std::string(argv[2]).substr(5),nullptr,16);if(std::getenv("CCC_PREVIEW_MOUNTS"))for(const auto& model:scene.Models(id)){ModelScene part;ReadNif(store.Read(model.path.starts_with("meshes/")?model.path:"meshes/"+model.path),&part);std::cout<<model.path<<" slots ";for(const auto& slot:part.slots)std::cout<<slot<<",";for(const auto& mount:part.mounts)std::cout<<" mount "<<mount.slot<<" host="<<mount.host<<" found="<<part.nodes.contains(mount.host);std::cout<<"\n";}if(std::getenv("CCC_PREVIEW_DIAG"))for(const auto& model:scene.Models(id))std::cout<<model.path<<" placement "<<model.transform[3]<<","<<model.transform[7]<<","<<model.transform[11]<<"\n";return scene.LoadModels(store,id);}():Load(store,models,quality);if(argc>=5&&(std::string(argv[4])=="mannequin"||std::string(argv[4])=="male"))AddMannequin(store,mesh,std::string(argv[4])=="male",quality);if(const auto* form=std::getenv("CCC_PREVIEW_FORM"))RecordScenes(argv[1],testPlugins).ApplyMaterialSwaps(std::stoul(form,nullptr,16),mesh,(std::string(argc>=5?argv[4]:"")!="mannequin"&&std::string(argc>=5?argv[4]:"")!="female"));TextureStore textures(store);if(!std::getenv("CCC_PREVIEW_GEOMETRY_ONLY"))textures.Apply(mesh,quality);auto packed=Pack(mesh,(quality==4?256u:64u)*1024*1024);
+            const auto* setting=std::getenv("CCC_PREVIEW_QUALITY");const unsigned quality=setting&&std::string(setting)=="color"?0:setting&&std::string(setting)=="ultra"?4:setting&&std::string(setting)=="medium"?2:setting&&std::string(setting)=="low"?1:3;AssetStore store(argv[1]);std::vector<std::string> models{argv[2]};for(int i=5;i<argc;++i)models.push_back(argv[i]);if(std::getenv("CCC_PREVIEW_REFS"))for(const auto& path:models){ModelScene scene;auto refs=ReadNif(store.Read(path),&scene);for(const auto& ref:refs){std::cout<<ref.name<<" bone "<<ref.bone<<" transform ";for(auto v:ref.transform)std::cout<<v<<",";std::cout<<" bind ";for(auto v:ref.bind)std::cout<<v<<",";std::cout<<"\n";}}auto mesh=std::string(argv[2]).starts_with("form:")?[&]{std::unique_ptr<RecordScenes> coldCache;auto& scene=EnsureRecordScenes(coldCache,argv[1],testPlugins);const auto id=std::stoul(std::string(argv[2]).substr(5),nullptr,16);if(std::getenv("CCC_PREVIEW_MOUNTS"))for(const auto& model:scene.Models(id)){ModelScene part;ReadNif(store.Read(model.path.starts_with("meshes/")?model.path:"meshes/"+model.path),&part);std::cout<<model.path<<" slots ";for(const auto& slot:part.slots)std::cout<<slot<<",";for(const auto& mount:part.mounts)std::cout<<" mount "<<mount.slot<<" host="<<mount.host<<" found="<<part.nodes.contains(mount.host);std::cout<<"\n";}if(std::getenv("CCC_PREVIEW_DIAG"))for(const auto& model:scene.Models(id))std::cout<<model.path<<" placement "<<model.transform[3]<<","<<model.transform[7]<<","<<model.transform[11]<<"\n";return scene.LoadModels(store,id);}():Load(store,models,quality);if(argc>=5&&(std::string(argv[4])=="mannequin"||std::string(argv[4])=="male"))AddMannequin(store,mesh,std::string(argv[4])=="male",quality);if(const auto* form=std::getenv("CCC_PREVIEW_FORM"))RecordScenes(argv[1],testPlugins).ApplyMaterialSwaps(std::stoul(form,nullptr,16),mesh,(std::string(argc>=5?argv[4]:"")!="mannequin"&&std::string(argc>=5?argv[4]:"")!="female"));TextureStore textures(store);if(!std::getenv("CCC_PREVIEW_GEOMETRY_ONLY"))textures.Apply(mesh,quality);auto packed=Pack(mesh,(quality==4?256u:64u)*1024*1024);
             std::size_t textured=0;for(const auto& piece:mesh)if(!piece.pixels.empty())++textured;std::cout<<textured<<" textured pieces; ";
             if(std::getenv("CCC_PREVIEW_DIAG")&&!std::getenv("CCC_PREVIEW_GEOMETRY_ONLY")){MaterialDatabase db(store.data,[&]{std::vector<std::filesystem::path> paths;for(const auto& archive:store.archives)paths.push_back(archive.path);return paths;}());std::cout<<db.Diagnostics()<<"\n";for(const auto& piece:mesh){auto appearance=piece.material.empty()?MaterialAppearance{}:db.Find(piece.material);float low=1e9f,high=-1e9f;for(std::size_t i=2;i<piece.positions.size();i+=3){low=std::min(low,piece.positions[i]);high=std::max(high,piece.positions[i]);}std::cout<<piece.name<<" Z "<<low<<".."<<high<<" "<<piece.material<<" -> "<<appearance.texture<<" normal "<<appearance.normal<<" rough "<<appearance.roughness<<" ao "<<appearance.ao<<" opacity "<<appearance.opacity<<" tint "<<appearance.tinted<<"\n";}}
             std::size_t vertices=0,triangles=0; for(const auto& m:mesh){vertices+=m.positions.size()/3;triangles+=m.indices.size()/3;}
             if(argc>=4){std::ofstream out(argv[3],std::ios::binary);out.write(reinterpret_cast<const char*>(packed.data()),packed.size());}
             std::cout<<mesh.size()<<" pieces, "<<vertices<<" vertices, "<<triangles<<" triangles, "<<packed.size()<<" bytes\n";return 0;
         }
+        {
+            const std::string source=R"json({"Objects":[{"Components":[{"Type":"BSMaterial::LayerID","Index":0,"Data":{"ID":"layer"}}]},{"ID":"layer","Components":[{"Type":"BSMaterial::MaterialID","Data":{"ID":"material"}}]},{"ID":"material","Components":[{"Type":"BSMaterial::TextureSetID","Data":{"ID":"child"}}]},{"ID":"child","Parent":"parent","Components":[{"Type":"BSMaterial::MRTextureFile","Index":4,"Data":{"FileName":"Data\\Textures\\Mod\\unusual_metallic_name.dds"}}]},{"ID":"parent","Components":[{"Type":"BSMaterial::MRTextureFile","Index":0,"Data":{"FileName":"textures/mod/albedo_variant.dds"}},{"Type":"BSMaterial::MRTextureFile","Index":1,"Data":{"FileName":"textures/mod/detail.dds"}},{"Type":"BSMaterial::MRTextureFile","Index":3,"Data":{"FileName":"textures/mod/smooth.dds"}}]}]})json";
+            const auto read=[](const std::string& text){return ReadJsonPreviewMaterial(std::span(reinterpret_cast<const std::uint8_t*>(text.data()),text.size()));};
+            const auto a=read(source);if(!a||a->texture!="textures/mod/albedo_variant.dds"||a->normal!="textures/mod/detail.dds"||a->metal!="textures/mod/unusual_metallic_name.dds"||a->roughness!="textures/mod/smooth.dds"||a->incomplete)throw std::runtime_error("Standalone JSON material slots/inheritance failed");
+            if(read("{broken")||read(std::string(2u*1024*1024+1,' '))||read(R"({"Objects":[]})"))throw std::runtime_error("Malformed/oversized JSON material accepted");
+            auto unsafe=source;unsafe.replace(unsafe.find("textures/mod/albedo_variant.dds"),30,"../../outside.dds");if(read(unsafe))throw std::runtime_error("Unsafe JSON material path accepted");
+        }
+        {if(PreviewMannequinMale({"clothes/gloves_m.nif","clothes/outfit_f.nif"},true)||!PreviewMannequinMale({"clothes/outfit_m.nif","clothes/boots_f.nif"},false)||PreviewMannequinMale({"clothes/gloves_m.nif"},false)||PreviewMannequinMale({"clothes/outfit_m.nif"},true,"female")||!PreviewMannequinMale({"clothes/outfit_f.nif"},false,"male"))throw std::runtime_error("Mannequin body selection mixed accessories/outfit/explicit override");}
+        {TextureCache cache(192);const auto image=[](){return TexturePixels{4,4,Bytes(64,255)};};
+            cache.emplace("color",image());cache.emplace("normal",image());cache.emplace("metal",image());cache.find("color");cache.emplace("next",image());
+            if(cache.find("normal")!=cache.end()||cache.find("color")==cache.end()||cache.find("metal")==cache.end()||cache.BytesHeld()!=192||cache.evictions!=1)throw std::runtime_error("Texture cache discarded shared maps or exceeded its budget");
+            cache.SetBudget(64);if(cache.BytesHeld()>64||cache.evictions!=3)throw std::runtime_error("Texture cache failed to shrink");}
         {Mesh metal{"metal",{0,0,0,1,0,0,0,1,0},{0,1,2}};metal.metalWidth=metal.metalHeight=1;metal.metalPixels={231,231,231,255};
             const auto packet=Pack({metal});Reader r{packet};r.Skip(4);if(r.Read<std::uint32_t>()!=9)throw std::runtime_error("Metal packet version failed");r.Skip(4);const auto nv=r.Read<std::uint32_t>(),ni=r.Read<std::uint32_t>();r.Skip(nv*12+ni*4);r.Skip(4+4+12+4);if(r.Read<std::uint32_t>()!=1)throw std::runtime_error("Metal packet texture reference failed");
             metal.metalWidth=0;bool rejected=false;try{Pack({metal});}catch(...){rejected=true;}if(!rejected)throw std::runtime_error("Malformed metal texture accepted");}
@@ -49,6 +103,16 @@ int main(int argc,char** argv) {
             TexturePixels other{1,1,{80,90,100,0}};RestoreOpaqueWeaponAlpha(other,"materials/other/body.mat");if(other.pixels[3]!=0)throw std::runtime_error("Unrelated alpha overridden");}
         {TexturePixels grip{1,1,{80,90,100,0}};RestoreOpaqueWeaponAlpha(grip,"materials/weapons/dlc001/particlemachinegun/particlemachinegun_standardgrip.mat");if(grip.pixels[3]!=255)throw std::runtime_error("Standard PMG grip discarded");}
         if(!AttachmentMountMatches("meshes/weapons/m1919/m1919_scope_mount.nif","ScopeMount","Scope")||AttachmentMountMatches("meshes/weapons/other/scope_mount.nif","ScopeMount","Scope"))throw std::runtime_error("XM attachment alias escaped its asset scope");
+        {
+            Mesh mesh{"mask",{0,0,0,1,0,0,0,1,0},{0,1,2}};mesh.textureWidth=mesh.normalWidth=2;mesh.textureHeight=mesh.normalHeight=1;mesh.pixels={100,140,180,80,100,140,180,200};mesh.normalPixels={128,128,255,150,128,128,255,150};
+            const TexturePixels mask{2,1,{0,0,0,255,255,255,255,255}},black{1,1,{0,0,0,255}},normal{1,1,{200,128,230,255}},rough{1,1,{51,51,51,255}};MaterialOverlay layer;layer.blendNormal=false;
+            const auto untouchedNormal=mesh.normalPixels;CompositePreviewLayer(mesh,layer,mask,black,normal,rough);
+            if(mesh.pixels!=Bytes{100,140,180,80,0,0,0,200}||mesh.normalPixels[0]!=untouchedNormal[0]||mesh.normalPixels[4]!=untouchedNormal[4]||mesh.normalPixels[7]!=60)throw std::runtime_error("Masked compositing lost opacity, unmasked pixels, or blend-channel flags");
+            layer.positionContrast=true;layer.multiply=false;layer.position=.66f;layer.intensity=0;if(PreviewLayerWeight(1,layer)!=0)throw std::runtime_error("Disabled authored dirt mask still affected the surface");
+            layer.intensity=1;if(PreviewLayerWeight(.2f,layer)!=0||PreviewLayerWeight(1,layer)<=0||PreviewLayerWeight(1,layer)>=1)throw std::runtime_error("Position/contrast mask bounds failed");
+            Mesh liquid=mesh;liquid.flowingLiquid=true;const auto packet=Pack({liquid});Reader reader{packet};reader.Skip(4);if(reader.Read<std::uint32_t>()!=11)throw std::runtime_error("Flowing liquid transport version missing");
+        }
+        if(PreviewChunkSize(262144,1000000)!=262144||PreviewChunkSize(9999999,1000000)!=262144||PreviewChunkSize(65536,1000000)!=65536||PreviewChunkSize(0,1000000)!=4096||PreviewChunkSize(262144,17)!=17)throw std::runtime_error("Model transfer capability bounds failed");
         TestMaterialInheritance();
         {Bytes inlineShader;Append(inlineShader,std::uint32_t(0));Append(inlineShader,std::uint32_t(0));Append(inlineShader,std::uint32_t(0xffffffff));for(unsigned i=0;i<3;++i)Append(inlineShader,std::uint32_t(0));for(float v:{0.f,0.f,1.f,1.f})Append(inlineShader,v);Append(inlineShader,std::uint32_t(0xffffffff));for(float v:{1.f,.5f,.25f,1.f})Append(inlineShader,v);Append(inlineShader,std::uint32_t(0xffffffff));if(ReadInlineShaderTint(inlineShader,172)!=std::optional<std::array<float,3>>({1,.5f,.25f})||ReadInlineShaderTint(inlineShader,155)||ReadInlineShaderTint(Bytes(12),172))throw std::runtime_error("Inline texture-free shader color bounds failed");inlineShader[40]=0;if(ReadInlineShaderTint(inlineShader,172))throw std::runtime_error("Textured inline shader treated as texture-free");}
 
@@ -76,9 +140,41 @@ int main(int argc,char** argv) {
         for(const auto* path:{"../outside.mesh","C:/outside.mesh","meshes/../x.nif","/absolute.nif"}){
             bool rejected=false;try{AssetKey(path);}catch(...){rejected=true;}if(!rejected)throw std::runtime_error("Unsafe path accepted");
         }
+        ModelScene renamedReceiver;auto renamedBody=Identity();renamedBody[3]=.12f;renamedReceiver.nodes["M82Bub_Body:1"]=renamedBody;
+        const auto receiverHost=AttachmentHostTransform(renamedReceiver,"meshes/m82bubproject/m82bub/m82bub.nif","HardTarget_Body");
+        if(!receiverHost||(*receiverHost)[3]!=.12f||AttachmentHostTransform(renamedReceiver,"meshes/weapons/other.nif","HardTarget_Body")||AttachmentHostTransform(renamedReceiver,"meshes/m82bubproject/m82bub/m82bub.nif","OtherMissingHost"))throw std::runtime_error("Renamed receiver mount resolution mismatch");
+        Mesh forearmTube{"open-forearm",{.3f,-.02f,-.02f,.3f,.02f,-.02f,.3f,.02f,.02f,.3f,-.02f,.02f,.5f,-.02f,-.02f,.5f,.02f,-.02f,.5f,.02f,.02f,.5f,-.02f,.02f},{0,1,4,1,5,4,1,2,5,2,6,5,2,3,6,3,7,6,3,0,7,0,4,7}};
+        auto reverseForearm=forearmTube;for(std::size_t i=0;i<reverseForearm.indices.size();i+=3)std::swap(reverseForearm.indices[i],reverseForearm.indices[i+1]);
+        InsetMannequin(forearmTube,.004f,true);InsetMannequin(reverseForearm,.004f,true);
+        for(unsigned i=0;i<12;++i)if(i%3&& (std::abs(forearmTube.positions[i])>.0101f||std::abs(reverseForearm.positions[i])>.0101f))throw std::runtime_error("Open forearm fit expanded with winding");
         Mesh cube{"cube",{-1,-1,-1,1,-1,-1,1,1,-1,-1,1,-1,-1,-1,1,1,-1,1,1,1,1,-1,1,1},{0,2,1,0,3,2,4,5,6,4,6,7,0,1,5,0,5,4,2,3,7,2,7,6,1,2,6,1,6,5,3,0,4,3,4,7}};const auto cubeIndices=cube.indices;InsetMannequin(cube);if(cube.indices!=cubeIndices||std::any_of(cube.positions.begin(),cube.positions.end(),[](float value){return !std::isfinite(value)||std::abs(value)>=1;}))throw std::runtime_error("Mannequin inset mismatch");
         const auto header=Pack({Mesh{"triangle",{0,0,0,1,0,0,0,1,0},{0,1,2}}});
         if(header.size()!=120)throw std::runtime_error("Packed geometry size mismatch");
+        {
+            Mesh mesh{"budget",{0,0,0,1,0,0,0,1,0},{0,1,2}};
+            mesh.textureWidth=mesh.textureHeight=mesh.normalWidth=mesh.normalHeight=mesh.metalWidth=mesh.metalHeight=8;
+            mesh.pixels.resize(256);mesh.normalPixels.resize(256);mesh.metalPixels.resize(256);
+            for(unsigned i=0;i<256;i+=4){
+                for(unsigned c=0;c<4;++c){mesh.pixels[i+c]=c==3?64:100;mesh.normalPixels[i+c]=c==2?255:128;mesh.metalPixels[i+c]=200;}
+            }
+            const auto original=mesh.pixels;const auto full=Pack({mesh});const auto budget=full.size()-1;
+            const auto fitted=Pack({mesh},budget);
+            if(fitted.size()>budget||fitted.size()>=full.size()||mesh.pixels!=original||Pack({mesh})!=full)throw std::runtime_error("Packet fitting changed original textures or failed to fit");
+            Reader r{fitted};r.Skip(12);const auto nv=r.Read<std::uint32_t>(),ni=r.Read<std::uint32_t>();
+            if(nv!=3||ni!=3)throw std::runtime_error("Texture budget changed geometry");
+            r.Skip(nv*12+ni*4+4+4+12+4+4+nv*8);
+            if(r.Read<std::uint32_t>()!=3)throw std::runtime_error("Packet fitting dropped a material map");
+            for(unsigned texture=0;texture<3;++texture){const auto w=r.Read<std::uint32_t>(),h=r.Read<std::uint32_t>();
+                if(!w||!h)throw std::runtime_error("Fitted map has invalid dimensions");
+                if(texture==0)for(unsigned pixel=0;pixel<w*h;++pixel){if(r.Read<std::uint8_t>()!=100||r.Read<std::uint8_t>()!=100||r.Read<std::uint8_t>()!=100||r.Read<std::uint8_t>()!=64)throw std::runtime_error("Fitted color or transparency changed");}
+                else r.Skip(std::size_t(w)*h*4);
+            }
+            if(r.at!=fitted.size())throw std::runtime_error("Fitted packet has trailing data");
+            bool rejected=false;try{Pack({mesh},1);}catch(...){rejected=true;}if(!rejected)throw std::runtime_error("Impossible geometry budget accepted");
+            mesh.normalPixels=mesh.pixels;mesh.metalPixels=mesh.pixels;
+            const auto shared=Pack({mesh},200);Reader sharedReader{shared};sharedReader.Skip(12+8+36+12+4+4+12+4+4+24);
+            if(sharedReader.Read<std::uint32_t>()!=1)throw std::runtime_error("Fitted shared maps lost deduplication");
+        }
         if(!AttachmentSlotEqual("Receiver","receiver")||AttachmentSlotEqual("Barrel","Grip"))throw std::runtime_error("Case-insensitive attachment slot matching failed");
         {
             auto anchor=Identity();anchor[11]=1.63f;auto tiny=Identity();tiny[2]=-.000139f;tiny[3]=-.00000016f;
@@ -122,6 +218,7 @@ int main(int argc,char** argv) {
             {std::ofstream out(fixture/"Starfield - Textures.ba2",std::ios::binary);out.write(reinterpret_cast<const char*>(archive.data()),archive.size());}
             AssetStore source(fixture);TextureStore store(source);Mesh piece{"texture",{0,0,0,1,0,0,0,1,0},{0,1,2}};piece.material="materials/example.mat";piece.uv={0,0,1,0,0,1};std::vector<Mesh> pieces{piece};store.Apply(pieces,1);
             if(pieces[0].pixels.empty()||pieces[0].pixels[0]!=255||pieces[0].incompleteMaterial)throw std::runtime_error("Archive version/fallback color lookup failed");
+            pieces={piece};store.Apply(pieces,0);if(pieces[0].pixels.empty()||pieces[0].pixels[0]!=255||!pieces[0].normalPixels.empty()||!pieces[0].metalPixels.empty())throw std::runtime_error("Color-first preview must retain color without detail maps");
         }
         {
             materialData.clear();textField(0x1f4,"Missing_TextureSet1");textField(0x38a,"textures/missing_color.dds");field(0x3cc,0,rgbaConstant);
@@ -153,6 +250,28 @@ int main(int argc,char** argv) {
                 Append(archive,std::uint64_t(72));Append(archive,std::uint32_t(0));Append(archive,std::uint32_t(8));Append(archive,std::uint16_t(0));Append(archive,std::uint16_t(0));Append(archive,std::uint32_t(0));archive.insert(archive.end(),{255,0,0,255,255,0,0,255});Append(archive,std::uint16_t(name.size()));archive.insert(archive.end(),name.begin(),name.end());
                 {std::ofstream out(fixture/"Starfield - TexturesOriginal.ba2",std::ios::binary);out.write(reinterpret_cast<const char*>(archive.data()),archive.size());}
                 AssetStore originalSource(fixture);TextureStore originalStore(originalSource);auto piece=color;piece.material="materials/original.mat";std::vector<Mesh> preview{piece};originalStore.Apply(preview,1);if(preview[0].pixels!=Bytes{255,0,0,255,255,0,0,255})throw std::runtime_error("Original archive texture lost to loose replacement");
+            }
+        }
+        {
+            materialData.clear();
+            textField(0x1f4,"Label_Material1");field(0x25a,0,tint);textField(0x1f4,"Label_TextureSet1");textField(0x38a,"textures/test_mask_opacity.dds");
+            for(const auto* name:{"AlienJerky_TextureSet1","AlienJerkyPackage_TextureSet1","WaterCaustic01_IdleAnimLoop_TextureSet1"}){textField(0x1f4,name);textField(0x38a,"textures/test_food_color.dds");textField(0x38a,"textures/test_mask_opacity.dds");}
+            {std::ofstream out(fixture/"materials/materialsbeta.cdb",std::ios::binary);out.write(reinterpret_cast<const char*>(materialData.data()),materialData.size());}
+            const auto dds=[&](const char* name,const Bytes& pixels){Bytes bytes(148);const auto put=[&](std::size_t at,std::uint32_t value){std::memcpy(bytes.data()+at,&value,4);};put(0,0x20534444);put(4,124);put(12,1);put(16,2);put(28,1);put(84,0x30315844);put(128,28);bytes.insert(bytes.end(),pixels.begin(),pixels.end());std::ofstream out(fixture/name,std::ios::binary);out.write(reinterpret_cast<const char*>(bytes.data()),bytes.size());};
+            dds("textures/test_mask_opacity.dds",{0,0,0,255,128,128,128,255});dds("textures/test_food_color.dds",{120,60,20,255,160,90,30,255});
+            Mesh label{"label",{0,0,0,1,0,0,0,1,0},{0,1,2}};label.uv={0,0,1,0,0,1};label.material="materials/label.mat";
+            auto food=label;food.material="materials/items/fooddrink_singleitems/all_crafted_consumables/alienjerky.mat";
+            auto wrapper=label;wrapper.material="materials/items/fooddrink_singleitems/all_crafted_consumables/alienjerkypackage.mat";
+            auto effect=label;effect.material="materials/setdressing/animated/watercaustic01_idleanimloop.mat";
+            auto other=label;other.material="materials/mod/watercaustic01_idleanimloop.mat";
+            // Reversing order also exercises both directions of shared-atlas cache reuse.
+            for(const bool reverse:{false,true}){
+                AssetStore source(fixture);TextureStore store(source);std::vector<Mesh> pieces{label,reverse?wrapper:food,reverse?food:wrapper,effect,other};store.Apply(pieces,1);
+                if(pieces[0].pixels.size()!=8||pieces[0].pixels[3]!=0||pieces[0].pixels[7]!=128||!pieces[0].tinted||pieces[0].normalOnly)throw std::runtime_error("Tint-only label lost its authored mask");
+                const auto& meat=pieces[reverse?2:1];const auto& plastic=pieces[reverse?1:2];
+                if(meat.pixels.size()!=8||meat.pixels[3]!=255||meat.pixels[7]!=255||plastic.pixels.size()!=8||plastic.pixels[3]!=0||plastic.pixels[7]!=128)throw std::runtime_error("Food depth correction contaminated the shared wrapper atlas");
+                if(!pieces[3].causticEffect||pieces[3].pixels.size()!=8||pieces[4].causticEffect)throw std::runtime_error("Animated caustics escaped their exact material or lost authored textures");
+                const auto packet=Pack(pieces);Reader reader{packet};reader.Skip(4);if(reader.Read<std::uint32_t>()!=10)throw std::runtime_error("Animated preview version missing");
             }
         }
         {for(const auto* name:{"Addon - Voices_en.ba2","Addon - Sounds.ba2","Addon - Main.ba2"}){std::ofstream out(fixture/name,std::ios::binary);out<<"test";}AssetStore filtered(fixture,{"Addon.esm"});if(std::any_of(filtered.archives.begin(),filtered.archives.end(),[](const auto& archive){const auto name=archive.path.filename().string();return name.find("Voices")!=name.npos||name.find("Sounds")!=name.npos;}))throw std::runtime_error("Audio archive entered preview index");}
@@ -211,6 +330,9 @@ int main(int argc,char** argv) {
             {std::ofstream out(fixture/"Addon.esm",std::ios::binary);out.write(reinterpret_cast<const char*>(addon.data()),addon.size());}
             RecordScenes overrides(fixture,{{"Starfield.esm",0,0},{"Addon.esm",0,1}});auto overridden=overrides.Models(0x01000100);if(overridden.size()!=1||overridden[0].path!=overrideModel)throw std::runtime_error("Assembly master/override remapping mismatch");
         }
+        if(!SceneDistortionOnly("Materials\\Effects\\Fires\\HeatDistortion.mat"))throw std::runtime_error("Weapon scene-distortion shell was not omitted");
+        for(const auto* material:{"", "materials/weapons/CrimX_Cutter/CrimX_Cutter.mat", "materials/weapons/CrimX_Cutter/CrimX_Visor.mat", "materials/effects/liquids/LavaBubbleMesh.mat", "materials/effects/fires/HeatDistortionOther.mat"})
+            if(SceneDistortionOnly(material))throw std::runtime_error("Physical or supported effect material was omitted");
         bool rejected=false;try{ReadNif(Bytes{0,1,2});}catch(...){rejected=true;}if(!rejected)throw std::runtime_error("Truncated model accepted");
         {
             // Both layouts use stride 64: only the following stream identifies

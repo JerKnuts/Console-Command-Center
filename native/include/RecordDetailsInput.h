@@ -6,7 +6,7 @@ namespace CCC::RecordDetails {
         // JsonRequest::Get rejects missing fields immediately. Optional fields
         // must be read from Payload so the default does not consume the reply.
         const auto operation=request.Payload().value("operation",std::string("inspect"));
-        if(operation!="inspect"&&operation!="read-book")throw std::runtime_error("Unsupported inspection operation.");
+        if(operation!="inspect"&&operation!="read-book"&&operation!="read-slate-audio")throw std::runtime_error("Unsupported inspection operation.");
         return operation;
     }
 }

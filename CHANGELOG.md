@@ -1,5 +1,234 @@
 # Changelog
 
+## 1.4.0
+
+Public release consolidating the tested 1.3.37–1.3.69 updates:
+
+- Add in-CCC Audio Slate playback with themed controls, volume, speed and a scrolling line transcript. Group books, notes, text slates and image slates as Books / Notes; keep Audio Slates separate. Read/Listen sit below compact still previews.
+- Ship 4,822 official-item thumbnail mappings and generate still previews on demand for supported mod items. Add vehicle previews and correct their orientation; hide unsupported complete-ship viewers.
+- Improve model materials, reflections, filtered object/ground shadows, male/female mannequins and theme-specific gradient backgrounds. Preserve the mannequin toggle between items. Suits use neck/head only; hats, helmets and packs use full-size mannequins. Omit the heat-distortion shell that obscured several mod blades. The checkerboard and experimental shop backdrops remain removed.
+- Improve progressive color loading and negotiate larger native transfer chunks, retaining bounded transfers, cancellation and legacy fallback. Complex cold Ultra previews can still take time.
+- Refresh mod favorite IDs from plugin ownership/current load order before actions, including full, medium and small plugins. Unavailable owners block execution.
+- Improve read-only command results using supported direct queries, retain unverified results as unverified, and update reviewed names. Remove Caution/Danger tags; keep command instructions and review. Working is a manual toggle and issue reports retain the displayed category.
+- Rename Commands to Command Browser, Custom Command to Batch Commander, and Activity Log to Command Log. Sort commands alphabetically and add favorite stars.
+- Improve controller playback focus, transcript scrolling, modal-only B behavior, item-detail routes, focus outlines and navigation across all three Batch Commander columns. Stabilize the mod scan status layout.
+- Allow the saved CCC keyboard binding over supported game menus. The separate two-press shortcut issue and occasional OSF Loading hang remain known issues.
+- Consolidate current README, model, reading, controller, development and future-feature documentation. Ship maintained source and generated UI assets without local build caches, dependencies or raw game/mod assets.
+
+## 1.3.69
+
+- Omit the engine-only HeatDistortion material from model previews. This removes the gray shell covering Melee Madness blades such as Crimson Gutter and Crimson Shiv, including initial geometry and small previews, while preserving physical meshes and other effects.
+
+## 1.3.68
+
+- Connect all three Batch Commander columns for controller navigation. Right from Included files reaches the center Review Commands control; Left from the saved-panel boundary also reaches the center instead of skipping it. Up reaches the editor and Down returns to Review Commands. Keep saved-file initial focus and right-panel controls.
+
+## 1.3.67
+
+- Start the listening dialog on Play, link Left to Volume, use Up/Down to adjust a focused audio slider, and send right-stick scrolling to the transcript. Range controls no longer open the text-entry keyboard.
+- Keep short/held controller B and Escape scoped to the reading/listening dialog. Retain the dialog scope for the entire B press, including if it closes before release.
+- Add direct item-detail routes from Favorite to Copy ID and from Copy ID up to Model Viewer (or Read/Listen), with connected quantity/action rows.
+- Start Batch Commander on a saved file’s Load control, or Save .txt File when empty. Remove the panel itself as a focus stop. Link saved files, entry name, Save, Refresh, Auto-Run and the Included sidebar; preserve deliberate sidebar focus instead of resetting it into the panel.
+- Inset controller focus outlines so category and result-list clipping cannot hide their left edge.
+
+## 1.3.66
+
+- Make Read, Listen and Model Viewer buttons compact and centered beneath the preview instead of spanning its full width.
+
+## 1.3.65
+
+- Move Read for books/notes and Listen for audio slates directly below their small previews in the shared ID/Mod Browser details. Preserve the action while preview loading fails, and keep unavailable items disabled.
+- Remove the surrounding border and frame padding from small item previews across all item types. Keep their image backgrounds and Model Viewer actions.
+
+## 1.3.64
+
+- Remove the new shop backdrops, automatic shop selection and six bundled shop images at user request. Keep the original colors/gradients and Basic-mode background controls. Saved shop choices fall back to the active theme default.
+
+## 1.3.63
+
+- Restore the Model Viewer Background selector and D-pad background cycling in Basic mode as well as Advanced Options.
+- Resolve shop image URLs against the view document instead of the consuming stylesheet. This fixes the blank shop scenes in the bundled/in-game viewer. Keep the selected six images, theme defaults and remembered selections unchanged.
+
+## 1.3.62
+
+- Add the six selected shop backdrops in Advanced Options: stylized Centaurian weapons/helmet displays and CJ’s counter; realistic EIT dressing room and Rowland fitting room/pack stand. “Shop display (by item)” selects the appropriate scene in either browser. Retain Graphite/Pearl defaults and remembered theme choices.
+- Keep background controls and controller background cycling in Advanced Options.
+- Bundle REV-8 and Moonjumper thumbnails and rotate vehicle stills/full models 180 degrees.
+- Negotiate 256 KiB native model chunks instead of 64 KiB, retaining four parallel replies and existing pacing. This reduces chunk requests by about 75% without changing texture pixels. Older native plugins retain 64 KiB transfers; this improvement needs the updated DLL loaded after a game restart.
+
+## 1.3.61
+
+- Rename Custom Command to **Batch Commander** and Activity Log to **Command Log**, including navigation, page titles, help, result-window messages, command descriptions, documentation and the example translation.
+
+## 1.3.60
+
+- Replace the rounded native audio player with square CCC controls using the active dark/light palette. Use one play/pause triangle, timeline, volume/mute and a direct playback-speed selector. Remove the separate Play Recording button, three-dot menu and download control.
+- Follow the recording with a scrolling transcript: highlight the current recorded line, dim the preceding line, and fade upcoming lines. Clicking a line starts it; playback advances and keeps the chosen speed. Pause/resume preserves the current position, including pause requests made while a line is still loading.
+- Correct the audio dialog's light-theme surface and remove the empty book-text panel from audio-only recordings.
+
+## 1.3.59
+
+- Keep only the small still preview for books and all slate types, without a Model Viewer button. Stand flat reading models upright and use a slight viewing angle.
+- Combine books, image slates, notes and text slates into **Books / Notes** in the ID Browser and matching Mod Browser groups. Keep **Audio Slates** separate and preserve reading, listening and preview actions.
+
+## 1.3.58
+
+- Separate Books, Notes, Text Slates, Audio Slates and Image Slates using authored record and inventory model data. Audio Slates have an in-CCC player with transcripts, line selection, pause and seeking; playback reads installed voice assets without starting scenes or advancing quests. Books and slates can use their real inventory models in previews.
+- Rename Commands to Command Browser and sort its commands alphabetically, including searches and WIP. Preserve Recent and Favorites order.
+- Keep the Mod Browser scan panel steady for two-line mod names. Rename Armor to Armor / Apparel and face its previews forward.
+- Expand and darken ground shadows with a separate shadow projection, preserving item self-shadow detail. Resolve the installed M82Bub rifle's renamed receiver attachment host.
+- Remember the mannequin toggle across items. Use original full-size mannequins for helmets, hats and packs; use only the head/neck for spacesuits to eliminate body, hand and foot clipping.
+
+## 1.3.57 (unpublished test build)
+
+- Add 476 official update/DLC thumbnail mappings, including the reported Va'ruun and caped outfits. Restore on-demand small mod previews as static PNG captures with a bounded session cache.
+- Read standalone JSON mod materials and exact texture slots to restore missing colors, detail maps and decals, including the Armat FZ44A rifle. Complex imported material layers remain approximate.
+- Refresh plugin load order for every favorite/item quick action. Resolve stable plugin/local IDs and recover compatible legacy mod favorites; block unavailable or unidentified items.
+- Add explicit female/male/automatic mannequin selection and slimmer torso/forearms. Keep outfit body selection separate. Hide unsupported complete-ship viewers.
+- Remember separate background choices by theme, defaulting to Graphite for dark and Pearl for light, with five new light gradients.
+- Improve shadow resolution/filtering and add a soft transparent ground shadow that follows the light beneath the model.
+
+## 1.3.56 (unpublished test build)
+
+- Replace the small ID Browser model with a bundled static WebP thumbnail. Generate base-game images offline, deduplicate identical model/material/orientation packets and ship the image files with CCC. The small preview makes no native model requests, creates no live renderer and writes no thumbnail cache. Keep the interactive Model Viewer button for every supported item, including unpictured mod/DLC and unsupported offline geometry.
+- Preserve the selected thumbnail background, accessible item name and existing initial category orientations. Use worn armor models for offline apparel, spacesuit, pack and helmet images, with the same male/female fallback as live previews.
+- Pace full-model texture transfers below the OSF UI host's 128 page-messages/second limit. The user's game log confirms that exceeding this cap dropped requests and caused the reported previewChunk timeout. Keep four bounded chunks, smaller retries, cancellation and retained-preview behavior.
+- Include offline image regeneration tooling and coverage/asset checks. Normal builds and players do not run the generator.
+
+
+## 1.3.55 (unpublished test build)
+
+- Display a small base-color preview before preparing detailed textures in the full Model Viewer. Inline previews use the same lightweight color stage and share it with the full viewer. Preserve camera, zoom, lighting, opacity and material tint while the chosen quality loads.
+- Skip normal/roughness, metal, ambient-occlusion texture composition and detailed material layers during the initial 128px color pass. Full quality continues to use all supported maps and layers.
+- Replace whole-cache texture eviction with bounded least-recently-used eviction, allowing 256 MiB for Ultra decoded source maps. Retain large completed previews in bounded browser/native caches so reopening can avoid another transfer.
+- Transfer four bounded 64 KiB chunks concurrently, with smaller retries and cancellation checks. Use stronger compression for detailed packets and avoid redundant renderer redraws during material upgrades. Record native stage duration and transfer sizes in the plugin log.
+
+
+## 1.3.54 (unpublished test build)
+
+- Restore the Model Viewer Background selector with five muted gradients (Graphite, Blue, Teal, Warm and Plum) and two solid backgrounds (Charcoal and Black). Default to Graphite gradient. Remember the chosen background across viewers and restarts and share it with inline previews. Background changes do not reload models or change the camera or lighting.
+- Let controller users cycle backgrounds with D-pad left/right outside the Quality menu; retain the existing Quality navigation while that menu is open.
+- Rotate the starting view of all Apparel and Spacesuits records by 180 degrees in both inline previews and the full Model Viewer, including the geometry-first loading stage and reset orientation. Preserve the user's camera during texture/quality upgrades and retain the existing helmet orientation.
+
+
+## 1.3.53 (unpublished test build)
+
+- Add a shared shadow-map pass so opaque model parts and cutouts cast shadows onto other surfaces. Shadows follow the movable light and model rotation, with quality-scaled resolution, filtered edges, and receiver-plane depth correction to prevent striped self-shadowing. Glass and animated transparent effects do not cast opaque shadows.
+- Replace the bright gray reflection environment with a dark neutral studio and broad reflection cards. Reflections respond to viewing angle, light direction and authored roughness/metal maps. Lower ambient fill for better shape and recess contrast without darkening source textures.
+- Render glass as a thin transparent surface with Fresnel edge reflections and reduced diffuse absorption, removing the gray veil over beer, visors and other glass. Honor authored roughness and always route glass through the transparent pass.
+- Apply these changes to the shared inline/full model renderer for all items. Retain animations, material update/camera controls, texture toggle, and disabled missing-texture checkerboard. Keep the native inventory-renderer experiment separate; no OSF dependency changes or Working designations.
+
+
+## 1.3.52 (unpublished test build)
+
+- Fit the final unique preview texture maps within the existing 64 MiB / Ultra 256 MiB transfer budget, reducing the largest maps only when necessary. Preserve all geometry, map references, flags and alpha channels; keep cached source pixels unchanged. This shared fallback covers both preview viewers and all items, including the six new Aid reports, without raising the transfer limit.
+
+- Add a CCC-owned keyboard shortcut fallback for inventory, containers, shops, data, maps, missions, skills, research, crafting, status, powers, crew, books and transfer menus. Read only the exact CCC keyboard action in Starfield's saved ControlMap_Custom.txt; do not change or duplicate the user's binding.
+- Open CCC above the existing menu through the normal OSF request API; leave that menu open. Exclude Pause/Controls, OSF Settings, console, text/dialogue, character creation, loading and transition screens. The Pause menu exclusion also protects vanilla Controls key capture. Controller menu shortcuts are unchanged.
+- Require a fresh press, reject malformed/unbound saves and held keys after rebinding, check game foreground focus, and suppress duplicate callback/polling requests. Keep the normal gameplay callback and existing preview controller lifecycle observer. No OSF source changes, native launcher menu, or automatic Working status changes. The separate two-press issue remains unresolved.
+
+
+## 1.3.51 (unpublished test build)
+
+- Apply food/drink preview findings through shared material rules, without per-item ID exceptions. Resolve HasOpacity and alpha-test thresholds independently through inherited AlphaSettings components. Opaque materials ignore unused inherited opacity maps; cutouts retain their authored threshold; effect/glass transparency remains supported.
+- Read constant roughness, metalness and ambient-occlusion replacements, including inherited values. Supply material maps for scalar surfaces even when no normal/metal DDS is present, and honor tint weights without replacing textured detail. Use neutral studio reflections so silver materials do not acquire the old strong blue reflection color.
+- Resolve the sole authored surface when an effect material's first layer is empty. This restores the dark/gold beer glass appearance rather than the generic glass fallback.
+- Support normal-only decal passes without requiring a separate opacity DDS. Solid/cutout decal geometry writes depth so rotating food models correctly occlude their back faces; genuine transparent passes and normal-only overlays retain their existing blend behavior.
+- Preserve the checkerboard-disabled setting. Do not invent bottom-logo geometry for Groat: its authored model has no separate normal-only logo pass. Live game review of the material improvements remains pending; do not add Working designations.
+
+
+## 1.3.50 (unpublished test build)
+
+- Move MISC immediately above Advanced Settings. Add a gold star before favorited command and ID list names, including favorite ID rows.
+- Disable the missing-texture checkerboard at the user's request, including when Dev Mode is enabled. Keep material data and incomplete-layer notices for later review; do not claim the underlying texture reports are fixed.
+- Rotate helmet preview starting/reset views by 180 degrees, for both full and inline previews. Keep other categories' orientation unchanged.
+- Apply Boudicca Health (0029959F) and Boudicca Oxygen (0029A849) names from the export. Preserve its remaining preview reports for review in game with the checkerboard disabled.
+
+
+## 1.3.49 (unpublished test build)
+
+- Add the MISC command category. Move Get Random Percent, Toggle All Menus, Get Item Count, Get Scale, Are They Dead?, Are They Disabled?, Are They Sleeping?, and the ten newly reviewed actor/distance/lock queries there as requested in the exported 1.3.48 feedback.
+- Keep Get Credit Count in Inventory: the later report cancels its earlier move request.
+- Move Is It Raining? and Is It Snowing? into WIP → Issues alongside the existing unresolved cell/starting-position queries. Preserve command IDs, input selectors and readout behavior; do not add Working designations.
+
+
+## 1.3.48 (unpublished test build)
+
+- Apply the exported 1.3.47 results and requested titles for the next ten commands. The later IsRunning report supersedes the earlier failure report. All ten are reported working in the native console; popup validation remains pending and none ships green.
+- Add actor/reference inputs, companion target pickers, a destination picker for distance, and explicit parameterless templates. Distance defaults to Player as its source. Explain that Is Magic Out? is the engine's combined weapon/magic check.
+- Add direct Results readouts for the ten commands. Eight use inspected zero-argument execute adapters with address/byte/signature and output validation. IsInCombat uses the exact actor virtual used by the supported game's default check, avoiding its compiled optional argument parser and the mismatched CommonLib virtual declaration. Distance compares finite positions only for enabled, non-deleted references in the same cell without parent-relative coordinate flags; unsupported pairs return a clear limitation instead of a guessed distance.
+- Move Get Current Cell and Get Starting Position into WIP → Issues as explicitly requested, including when older local reports retain their previous category. Preserve command IDs, Favorites and feedback.
+
+
+## 1.3.47 (unpublished test build)
+
+- Apply October 23 feedback: Toggle All Menus has no arguments, explains the second-use restore and working console; rename Get Credit Count, Are They Dead?, Are They Disabled?, and Are They Sleeping? Preserve saved command IDs and leave Working status under user control.
+- Read GetScale from the live reference scale field using the same conversion as the supported game's handler. Do not call either previously unsafe adapter. Read GetLevel and GetSleeping through their exact zero-argument execute adapters, guarded by address, signature and byte prefix, with finite/domain validation.
+- Explain that IsRaining and IsSnowing are constant-zero stubs in Starfield 1.16.244 rather than showing a timeout or claiming a reliable weather observation.
+- Get Current Cell and Get Starting Position still require further capture work; no replacement result is fabricated. Live validation of the new direct paths remains pending.
+
+
+## 1.3.46 (unpublished test build)
+
+- Correct Get Random Percent to allow decimal percentages, as shown by the player’s 12.26 console readout. Remove the incorrect whole-number/0–99 description and validation restriction.
+- Bypass console dispatch and text capture for this command by invoking its exact, verified no-argument game execute adapter once and returning that adapter’s float output. Validate the known opcode, zero-parameter signature, Address Library ID and adapter bytes before calling; do not invoke a condition callback or substitute a random generator. Reject failed, unwritten, nonfinite or out-of-range returns.
+- Keep the card untested until the new native popup path is reviewed in game.
+
+## 1.3.45 (unpublished test build)
+
+- Read Get Item Count and Get Credits from the same locked, live inventory/stack data used by Show Player Inventory. Read Get Dead and Get Disabled from their typed runtime flags. These four no longer depend on printed console output or callback capture.
+- Correct numeric capture lifetime: the console dispatcher queues commands, so an execution-scoped thread-local listener ended before the queued callback ran. Keep a bounded pending request and require matching compiled source, arguments, operation and target before accepting a returned value. Reject unreadable, unrelated, expired or completed requests.
+- Read queued Script source through a checked, bounded copy using the verified 1.16.244 runtime layout rather than the mismatched dependency field. Do not invoke condition callbacks or revive the unsafe scale getter. Keep the 15 cards untested until player review. Live popup confirmation remains pending.
+
+## 1.3.44 (unpublished test build)
+
+- Remove Caution/Danger badges from command lists and details; use a neutral confirmation heading and retain command instructions and unavailable controls.
+- Put Working and Issues controls beside each command name in Dev Mode using the same row controls as the ID Browser. Working remains a toggle.
+- Keep reported issues and uncertain results in their command category instead of automatically moving them to WIP. Persist the displayed category with the outcome so promoted WIP commands can remain where they were reviewed.
+- Record the supplied 1.3.43 failures for Get Item Count, Get Credits and Get Random Percent. The native log shows capture armed but no matching result; these popup issues remain unresolved.
+
+## 1.3.43 (unpublished test build)
+
+- Leave all 15 revised query cards untested until the user reviews them. Add a Working toggle to command details; clicking it again clears the designation, overrides any shipped green default, and persists across reload/export without deleting previous notes.
+- Capture returned scalar values for Get Random Percent, Get Credits, Get Item Count, Get Level, Get Dead, Get Scale, Get Disabled, Get Sleeping, Get Starting Position and both weather checks. These commands can return a value without printing ConsoleLog text. Let Starfield compile and execute the original command with its own argument handling, then observe the return from that exact CCC invocation. No direct condition evaluator or previously unsafe scale adapter is enabled. Live verification remains pending.
+- Limit capture to an explicit 11-command list, matching target and execution scope. Forward unrelated calls unchanged, validate supported signatures and arguments, preserve real zero/negative/fractional values, and reject absent or invalid results. Keep ActorExposedToSky’s separate adapter unchanged.
+- Rename the weather cards Is It Raining? and Is It Snowing? Shorten the fallback timeout message so it fits the bridge error text.
+
+## 1.3.42 (unpublished test build)
+
+- Rewrite the last 15 query cards with readable titles and task-focused descriptions. Remove testing history and generic WIP instructions from these cards.
+- Add Player/companion target selection with manual placed Reference IDs, an inventory item browser, actor-value choices and an X/Y/Z axis picker. Retain the six-global picker with useful descriptions. Remove target/argument fields from commands that do not need them; require valid arguments where needed. Preserve saved card IDs.
+- Record the reported Get Random Percent Results timeout. This UI revision does not change its native output capture or mark the timeout fixed.
+
+## 1.3.41 (unpublished test build)
+
+- Move the 14 player-confirmed console queries from WIP into Player, Targets, Inventory, World, Gameplay and Advanced Settings. Load these cards at startup and retain their saved IDs; remove their WIP duplicates.
+- Move GetGlobalValue into World with a selector for GameHour, TimeScale, GameDaysPassed, GameDay, GameMonth and GameYear after all six Form IDs were confirmed in the console. Replace its timed-out console capture with a typed read of the live loaded global; reject invalid IDs, non-global forms, target prefixes and nonfinite values. The replacement popup still needs an in-game retest.
+
+## 1.3.40 (unpublished test build)
+
+- Add Results popups and saved Activity Log readouts for 14 player-confirmed console queries: GetSFSEVersion, GetCurrentCell, GetLevel, GetScale, GetDead, GetDisabled, GetSleeping, GetItemCount, GetGold, GetValue, IsRaining, IsSnowing, GetRandomPercent and GetStartingPos. Console behavior is confirmed; live popup capture remains to be tested.
+- Route GetScale through ordinary console-output capture without re-enabling either crashing direct adapter. Let GetValue use the existing GetAV direct read. Existing blocked prepared scale/open-state controls remain blocked.
+- Keep GetGlobalValue unverified after the GameHour name failed. Add Form ID guidance and a separate six-global test list verified against base-game GLOB records.
+
+## 1.3.39 (unpublished test build)
+
+- Resolve authored material ownership, inherited maps, disabled texture replacements and emissive slots across the catalog, with the existing reader retained for unsupported databases. Apply supported masked layers from their data rather than item-name exceptions; respect tiling, position/contrast, intensity and channel switches.
+- Restore dark mask-only printing and inherited glass colors. Add approximate flowing effects throughout the emissive-only inhaler family, including Amp and BattleUp, while retaining the jar caustics and bounded animation cleanup.
+- Restore the Ecliptic pack's available layers before clearing its old incomplete-material warning. Materials needing unimplemented blend inputs remain flagged rather than receiving fabricated detail. The reported .27 Caliber inventory wear still needs further work and is not marked fixed.
+- Rename the reported Fang's pack to Sturdy Fang's Balanced Pack. Mark Miner Survey Pack 0006AC01 and Pirate Survival Pack 00079206 Reference Only by owning plugin/local ID.
+
+## 1.3.38 (unpublished test build)
+
+- Move nine reported clothing helmets to Apparel by owning plugin/local ID. Keep UC AntiXeno Space Helmet under Helmets, as confirmed by the player and game records.
+- Correct Addichrone's masked labels, AddiJack's incorrect red tint, and Alien Jerky's see-through meat while preserving wrapper transparency.
+- Add the first animated preview effect for Alien Genetic Material's caustics: original texture and emissive color, soft additive blending, and an approximate idle motion. Redraw at most 30 fps only while visible with textures enabled; release the animation when closed. This does not implement arbitrary game animation or the full material binding/distortion system.
+
+## 1.3.37 (unpublished test build)
+
+- Resolve saved favorite item IDs against the current loaded plugins before displaying item actions, even when Favorites is opened before ID Browser. Refresh both packaged and mod favorites, including medium/small plugin slots, and disable entries whose owner cannot be resolved.
+- Refresh saved catalog metadata and preserve selection across favorite-key migration. Isolated browser tests pass; actual in-game inventory behavior still needs verification.
+
 ## 1.3.36
 
 - Retry the read-only native handshake after a startup timeout, with bounded backoff and an immediate retry when CCC reopens. Reconnection refreshes descriptions, stats and command availability without resetting any browser or replaying commands.

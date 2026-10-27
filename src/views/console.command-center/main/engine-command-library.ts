@@ -1,3 +1,4 @@
+import { CONFIRMED_READOUT_COMMANDS } from './confirmed-readout-commands.ts';
 import type { CommandDefinition } from './commands';
 
 type EngineCommandRecord = {
@@ -45,6 +46,7 @@ const PROMOTED_ENGINE_COMMANDS = new Set([
 // Keep this list narrow: visual toggles often print nothing and should not be
 // reported as failures merely because the capture buffer is empty.
 const CAPTURED_ENGINE_COMMANDS = new Set([
+  'getsfseversion', 'getcurrentcell', 'getlevel', 'getscale', 'getdead', 'getdisabled', 'getsleeping', 'getitemcount', 'getgold', 'getvalue', 'israining', 'issnowing', 'getrandompercent', 'getstartingpos', 'getglobalvalue',
   'getpos',
   'getangle',
   'getcurrenttime',
@@ -69,6 +71,21 @@ const CAPTURED_ENGINE_COMMANDS = new Set([
 // Legacy console diagnostics that act on an object reference accept the same
 // target prefix form used by script functions (for example, player.ShowAnim).
 const VERIFIED_READ_ONLY_COMMANDS: Readonly<Record<string, string>> = {
+  getsfseversion: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  getcurrentcell: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  getlevel: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  getscale: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  getdead: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  getdisabled: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  getsleeping: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  getitemcount: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  getgold: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  getvalue: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  israining: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  issnowing: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  getrandompercent: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+  getstartingpos: 'Player testing confirmed this command works in the native console. CCC now requests a Results popup; in-game popup capture still needs verification.',
+
   help: 'In-game testing with no arguments printed the full command/function help list. Output can exceed the CCC Results capture limit; use a console-output export mod for the complete list.',
   showglobalvars: 'In-game testing with no arguments printed global-variable names and current values. These values depend on the save and loaded mods; the full list can exceed the CCC Results capture limit.',
   getpos: 'In-game testing confirmed the position query works.',
@@ -88,11 +105,12 @@ const TARGETED_ENGINE_COMMANDS = new Set([
   'vatstarget',
 ]);
 
-export const ENGINE_COMMAND_LIBRARY_TOTAL = ENGINE_COMMAND_RECORDS.filter((record) => !PROMOTED_ENGINE_COMMANDS.has(commandName(record.name).toLowerCase())).length;
+const confirmedReadoutIds = new Set(CONFIRMED_READOUT_COMMANDS.map(command => command.id));
+export const ENGINE_COMMAND_LIBRARY_TOTAL = ENGINE_COMMAND_RECORDS.filter((record) => !PROMOTED_ENGINE_COMMANDS.has(commandName(record.name).toLowerCase())).length - confirmedReadoutIds.size;
 
 export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORDS
   .filter((record) => !PROMOTED_ENGINE_COMMANDS.has(commandName(record.name).toLowerCase()))
-  .map((record, index) => {
+  .map<CommandDefinition>((record, index) => {
   const name = commandName(record.name);
   const normalizedName = name.toLowerCase();
   if (normalizedName === 'togglefxcam') {
@@ -177,16 +195,17 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
   };
   const failedInGameReason = failedInGameReasons[name.toLowerCase()];
   const effectUnconfirmedReason = effectUnconfirmedReasons[name.toLowerCase()];
+  const globalArgumentIssue = normalizedName === 'getglobalvalue';
   const knownIssue = ['startallquests', 'completeallqueststages'].includes(normalizedName);
   const verifiedReadOnlyReason = VERIFIED_READ_ONLY_COMMANDS[normalizedName];
   return {
     id: commandId(record.name, index),
     title: record.name,
     category: 'Untested',
-    intakeGroup: knownIssue ? 'Executed — Issues' : effectUnconfirmedReason
+    intakeGroup: knownIssue || globalArgumentIssue ? 'Executed — Issues' : effectUnconfirmedReason
       ? 'Executed — Effect Unconfirmed'
       : record.group === 'Console Commands' ? 'Engine Console Commands' : 'Script Functions',
-    description: verifiedReadOnlyReason
+    description: globalArgumentIssue ? `${record.description} Player testing could not resolve GameHour by name. Try the global Form IDs in the argument guidance; those arguments still need in-game verification.` : verifiedReadOnlyReason
       ? `${record.description} ${verifiedReadOnlyReason}`
       : effectUnconfirmedReason
       ? `${record.description || 'No description was included in the engine command reference.'} ${effectUnconfirmedReason}`
@@ -207,9 +226,9 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
         label: 'Optional Arguments',
         type: 'text' as const,
         optional: true,
-        placeholder: 'Enter arguments only when required',
+        placeholder: normalizedName === 'getglobalvalue' ? '00000038 (GameHour Form ID)' : 'Enter arguments only when required',
         pattern: '^[^\r\n]{0,512}$',
-        hint: 'The engine reference does not fully define every parameter. Review the command before running it.',
+        hint: normalizedName === 'getglobalvalue' ? 'Try a global Form ID: 00000035–00000039 or 0000003A. The GameHour name failed in player testing; these ID arguments are not yet verified.' : 'The engine reference does not fully define every parameter. Review the command before running it.',
       },
     ],
     tags: [name, record.name, record.group, 'engine command', 'developer'],
@@ -222,11 +241,16 @@ export const ENGINE_COMMAND_LIBRARY: CommandDefinition[] = ENGINE_COMMAND_RECORD
       ? 'This unverified engine function may destroy state, terminate or stall the game, alter files, or make irreversible changes. Use only on a disposable save and review the final command carefully.'
       : 'This engine function has not been verified through CCC and may require undocumented arguments or developer context. Use a disposable save.',
     risk: danger || knownCrashReason ? 'danger' : 'caution',
-    testStatus: knownIssue ? 'failed' : knownCrashReason ? 'failed' : verifiedReadOnlyReason ? 'verified' : effectUnconfirmedReason ? 'inconclusive' : 'untested',
+    testStatus: globalArgumentIssue ? 'needs-adjustment' : knownIssue ? 'failed' : knownCrashReason ? 'failed' : verifiedReadOnlyReason ? 'verified' : effectUnconfirmedReason ? 'inconclusive' : 'untested',
     unavailableReason: knownCrashReason
       ? `Disabled after testing crashed Starfield 1.16.244. ${knownCrashReason}`
       : requiresCredentials
-      ? 'Reference only. CCC does not run this command because account credentials would be saved in command history and the Activity Log.'
+      ? 'Reference only. CCC does not run this command because account credentials would be saved in command history and the Command Log.'
       : undefined,
   };
-});
+}).map(command => command.id === 'engine-togglemenus-21' ? {
+  ...command, title: 'Toggle All Menus', category: 'MISC' as const,
+  description: 'Hide all menus. Run again to restore them. The console still works while menus are hidden.',
+  command: 'ToggleMenus', inputs: undefined, warning: undefined, risk: undefined,
+  captureOutput: false, testStatus: 'untested' as const,
+} : command).filter(command => !confirmedReadoutIds.has(command.id));

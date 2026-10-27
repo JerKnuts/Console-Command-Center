@@ -67,7 +67,7 @@ function isVisible(element: HTMLElement): boolean {
 }
 
 function isEditable(element: Element | null): element is EditableTarget {
-  return element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
+  return (element instanceof HTMLInputElement && !['range','checkbox','radio','button','submit'].includes(element.type)) || element instanceof HTMLTextAreaElement;
 }
 
 function currentScope(keyboard: HTMLElement): ParentNode {
@@ -105,7 +105,8 @@ export function controllerDirectionalScore(
 }
 
 function preferredInitialFocus(elements: HTMLElement[]): HTMLElement | undefined {
-  return elements.find((element) => element.matches('[aria-current="page"], .is-active'))
+  return elements.find((element) => element.matches('[data-controller-initial]'))
+    ?? elements.find((element) => element.matches('[aria-current="page"], .is-active'))
     ?? elements.find((element) => element.matches('.osf-btn--osf-accent'))
     ?? elements[0];
 }
@@ -141,6 +142,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   let bPressStartedAt: number | null = null;
   let bLongPressTimer: number | null = null;
   let bLongPressHandled = false;
+  let bReadingDialog:HTMLDialogElement|null=null;
   let lastPageFocus: HTMLElement | null = null;
   let viewerShortcutHeld=false;
 
@@ -338,13 +340,13 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
         ?? focusableElements(commandList)[0]
       : undefined;
     return commandTarget
-      ?? (customPanel && !customPanel.hidden ? focusableElements(customPanel)[0] : undefined)
+      ?? (customPanel && !customPanel.hidden ? customBatchTarget() ?? focusableElements(customPanel)[0] : undefined)
       ?? document.querySelector<HTMLElement>('#search')
       ?? undefined;
   }
 
   function idDetailTarget(): HTMLElement | undefined {
-    return document.querySelector<HTMLElement>('.id-browser-selection input:not([disabled]), .id-browser-selection button:not([disabled]), .mod-quest-selection [data-quest-inspect]:not([disabled])')
+    return document.querySelector<HTMLElement>('.id-browser-selection .id-browser-favorite:not([disabled])') ?? document.querySelector<HTMLElement>('.id-browser-selection input:not([disabled]), .id-browser-selection button:not([disabled]), .mod-quest-selection [data-quest-inspect]:not([disabled])')
       ?? undefined;
   }
 
@@ -353,11 +355,26 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       ?? undefined;
   }
 
+  function customEditorTarget(): HTMLElement | undefined {
+    const editor=document.querySelector<HTMLElement>('.custom-editor-pane');
+    if(!editor||!isVisible(editor))return;
+    return editor.querySelector<HTMLElement>('#custom-form button[type="submit"]:not([disabled])')
+      ?? editor.querySelector<HTMLElement>('#custom-command:not([disabled])') ?? undefined;
+  }
+
+  function customBatchTarget(): HTMLElement | undefined {
+    const panel=document.querySelector<HTMLElement>('.custom-saved-panel');
+    if(!panel||!isVisible(panel))return;
+    return [...panel.querySelectorAll<HTMLElement>('.custom-saved-list [data-custom-load]:not([disabled])')].find(isVisible)
+      ?? [...panel.querySelectorAll<HTMLElement>('.custom-saved-list button:not([disabled])')].find(isVisible)
+      ?? panel.querySelector<HTMLElement>('#custom-save-form button:not([disabled])')
+      ?? panel.querySelector<HTMLElement>('[data-custom-refresh]:not([disabled])') ?? undefined;
+  }
+
   function utilityViewTarget(view: string | undefined): HTMLElement | undefined {
     if (view === 'commands' || view === 'id-browser' || view === 'mod-browser' || view === 'quest-browser') return firstCategoryButton();
     if (view === 'custom') {
-      return document.querySelector<HTMLElement>('.custom-saved-list [data-custom-load], #custom-command-name, #custom-save-form button, .custom-saved-panel')
-        ?? commandAreaTarget();
+      return customBatchTarget() ?? commandAreaTarget();
     }
     if (view === 'activity') {
       return document.querySelector<HTMLElement>('.activity-list .activity-entry, .activity-list .activity-empty') ?? commandAreaTarget();
@@ -385,6 +402,25 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   }
 
   function moveMappedRegion(active: HTMLElement, direction: 'up' | 'down' | 'left' | 'right'): boolean {
+    const audioControls=active.closest<HTMLElement>('.slate-audio-controls');
+    if(audioControls){
+      const play=audioControls.querySelector<HTMLElement>('[data-slate-play]'),volume=audioControls.querySelector<HTMLInputElement>('.slate-audio-volume');
+      if((direction==='up'||direction==='down')&&active instanceof HTMLInputElement&&active.type==='range'){
+        const step=Number(active.step)||1,delta=direction==='up'?step:-step;
+        active.value=String(Math.max(Number(active.min),Math.min(Number(active.max),Number(active.value)+delta)));active.dispatchEvent(new Event('input',{bubbles:true}));return true;
+      }
+      if(direction==='left'&&active===play){focusElement(volume??undefined);return true;}
+      if(direction==='right'&&active===volume){focusElement(play??undefined);return true;}
+      if(direction==='left'||direction==='right'){
+        const controls=focusableElements(audioControls),index=controls.indexOf(active),next=controls[index+(direction==='left'?-1:1)];focusElement(next);return true;
+      }
+      if(direction==='up'){focusElement(active.closest('dialog')?.querySelector<HTMLElement>('header button')??undefined);return true;}
+      if(direction==='down'){focusElement(active.closest('dialog')?.querySelector<HTMLElement>('.slate-audio-line[aria-current="true"]')??undefined);return true;}
+    }
+    if(active.closest('.book-reader-dialog header')&&direction==='down'){
+      focusElement(active.closest('dialog')?.querySelector<HTMLElement>('[data-slate-play]')??undefined);return true;
+    }
+
     const feedbackRow=active.closest<HTMLElement>('.dev-feedback-list-row');
     if(feedbackRow){
       if(direction==='left'||direction==='right'){
@@ -399,6 +435,16 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
 
     const customEntry = active.closest<HTMLElement>('.custom-saved-entry');
     if (customEntry) {
+      const panel=customEntry.closest<HTMLElement>('.custom-saved-panel');
+      if(direction==='up'||direction==='down'){
+        const rows=panel?[...panel.querySelectorAll<HTMLElement>('.custom-saved-entry')].filter(isVisible):[],index=rows.indexOf(customEntry),next=rows[index+(direction==='up'?-1:1)];
+        focusElement(next?.querySelector<HTMLElement>('[data-custom-load]:not([disabled])')??next?.querySelector<HTMLElement>('button:not([disabled])')??(direction==='up'?panel?.querySelector<HTMLElement>('#custom-save-form button:not([disabled])'):undefined)??undefined);return true;
+      }
+      if(active.matches('[data-custom-auto-run]')){
+        focusElement(direction==='right'?customEntry.querySelector<HTMLElement>('[data-custom-favorite]')??undefined:customEditorTarget()??firstCategoryButton());return true;
+      }
+      if(active.matches('[data-custom-favorite]')&&direction==='left'){focusElement(customEntry.querySelector<HTMLElement>('[data-custom-auto-run]:not([disabled])')??customEditorTarget()??firstCategoryButton());return true;}
+
       if (active.matches('[data-custom-favorite]') && direction === 'right') {
         focusElement(customEntry.querySelector<HTMLElement>('[data-custom-load]') ?? undefined);
         return true;
@@ -411,6 +457,36 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       }
       if (active.matches('[data-custom-delete]') && direction === 'left') {
         focusElement(customEntry.querySelector<HTMLElement>('[data-custom-load]') ?? undefined);
+        return true;
+      }
+    }
+
+    const editor=active.closest<HTMLElement>('.custom-editor-pane');
+    if(editor){
+      const input=editor.querySelector<HTMLElement>('#custom-command'),review=editor.querySelector<HTMLElement>('#custom-form button[type="submit"]:not([disabled])'),clear=editor.querySelector<HTMLElement>('[data-custom-clear]:not([disabled])');
+      if(direction==='right')focusElement(active===clear?review??customBatchTarget():customBatchTarget());
+      else if(direction==='left')focusElement(active===review?clear??firstCategoryButton():firstCategoryButton());
+      else if(direction==='down'&&active===input)focusElement(review??clear??undefined);
+      else if(direction==='up'&&active!==input)focusElement(input??undefined);
+      return true;
+    }
+
+    const savedPanel=active.closest<HTMLElement>('.custom-saved-panel');
+    if(savedPanel){
+      const pick=(selector:string)=>[...savedPanel.querySelectorAll<HTMLElement>(selector)].find(isVisible);
+      const save=pick('#custom-save-form button:not([disabled])'),name=pick('#custom-command-name'),refresh=pick('[data-custom-refresh]:not([disabled])'),auto=pick('[data-custom-auto-run-master]');
+      const header=active.closest('.custom-saved-heading-actions');
+      if(header){
+        if(direction==='left'||direction==='right'){const buttons=focusableElements(header),index=buttons.indexOf(active);focusElement(buttons[index+(direction==='left'?-1:1)]??(direction==='left'?customEditorTarget()??firstCategoryButton():undefined));}
+        else if(direction==='down')focusElement(save??customBatchTarget());
+        else focusElement(activeNavigationButton());
+        return true;
+      }
+      if(active===save||active===name){
+        if(direction==='up')focusElement(active===save?refresh??auto:auto??refresh);
+        else if(direction==='down')focusElement(pick('.custom-saved-list [data-custom-load]:not([disabled])')??pick('.custom-saved-list button:not([disabled])'));
+        else if(direction==='left')focusElement(active===save?name:customEditorTarget()??firstCategoryButton());
+        else if(active===name)focusElement(save);
         return true;
       }
     }
@@ -486,6 +562,15 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
 
     const idDetail = active.closest<HTMLElement>('.id-browser-selection');
     if (idDetail) {
+      const controls=focusableElements(idDetail),pick=(selector:string)=>controls.find(e=>e.matches(selector));
+      const favorite=pick('.id-browser-favorite'),copy=pick('[data-copy-id-browser-id]'),preview=pick('[data-preview-model], [data-read-book]'),quantity=pick('#id-browser-quantity'),action=pick('[data-id-browser-action]');
+      let target:HTMLElement|undefined;
+      if(active===favorite)target=direction==='right'?copy:direction==='up'?preview:direction==='down'?quantity??action:undefined;
+      else if(active===copy)target=direction==='left'?favorite:direction==='up'?preview:direction==='down'?action:undefined;
+      else if(active===preview&&direction==='down')target=copy??favorite;
+      else if(active===quantity)target=direction==='up'?favorite:direction==='right'?action:undefined;
+      else if(active===action)target=direction==='up'?copy??favorite:direction==='left'?quantity??favorite:undefined;
+      if(target){focusElement(target);return true;}
       const next = directionalCandidate(active, focusableElements(idDetail), direction);
       if (next) focusElement(next);
       return true;
@@ -554,6 +639,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
 
     const navigation = active.closest<HTMLElement>('#navigation');
     if (navigation) {
+      if(direction==='right'&&customBatchTarget()){focusElement(customEditorTarget()??customBatchTarget());return true;}
       const buttons = focusableElements(navigation);
       const index = buttons.indexOf(active);
       if (direction === 'up' || direction === 'down') {
@@ -618,9 +704,11 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       ? document.activeElement
       : undefined;
     if (scope === document) {
+      if(!active&&customBatchTarget()){contentMode=true;focusElement(customBatchTarget());return;}
       // Switching from mouse browsing to a controller must retain the current
       // content focus instead of treating it as a request to return to categories.
       if(active?.closest('.content')){contentMode=true;return;}
+      if(active?.closest('#navigation, .utility-nav-bar')){contentMode=false;return;}
       if (contentMode) {
         if (active?.closest('.content')) return;
         focusElement(commandAreaTarget());
@@ -669,7 +757,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       return;
     }
     if (active instanceof HTMLElement && active.matches('.custom-saved-panel')) {
-      focusElement(active.querySelector<HTMLElement>('.custom-saved-list [data-custom-load], #custom-command-name, #custom-save-form button') ?? active);
+      focusElement(customBatchTarget());
       return;
     }
     if (active instanceof HTMLElement && active.matches('#navigation .nav-button')) {
@@ -694,6 +782,8 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       closeKeyboard(false);
       return;
     }
+    const readingDialog=document.querySelector<HTMLDialogElement>('dialog.book-reader-dialog[open]');
+    if(readingDialog){readingDialog.dispatchEvent(new Event('cancel',{cancelable:true}));return;}
     if (currentScope(keyboard) !== document) {
       const returnTarget = lastPageFocus?.isConnected ? lastPageFocus : null;
       document.dispatchEvent(new KeyboardEvent('keydown', {
@@ -763,10 +853,12 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   function beginControllerBackPress(): void {
     if (bPressStartedAt !== null) return;
     bPressStartedAt = performance.now();
+    bReadingDialog=document.querySelector<HTMLDialogElement>('dialog.book-reader-dialog[open]');
     bLongPressHandled = false;
     bLongPressTimer = window.setTimeout(() => {
       bLongPressHandled = true;
-      closeControllerView();
+      if(bReadingDialog){if(bReadingDialog.open)bReadingDialog.dispatchEvent(new Event('cancel',{cancelable:true}));}
+      else closeControllerView();
     }, B_LONG_PRESS_MS);
   }
 
@@ -774,13 +866,15 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     if (bPressStartedAt === null) return;
     if (bLongPressTimer !== null) window.clearTimeout(bLongPressTimer);
     const wasLongPress = bLongPressHandled || performance.now() - bPressStartedAt >= B_LONG_PRESS_MS;
+    const readingDialog=bReadingDialog;bReadingDialog=null;
     bPressStartedAt = null;
     bLongPressTimer = null;
     if (wasLongPress) {
-      if (!bLongPressHandled) closeControllerView();
+      if (!bLongPressHandled){if(readingDialog){if(readingDialog.open)readingDialog.dispatchEvent(new Event('cancel',{cancelable:true}));}else closeControllerView();}
       bLongPressHandled = false;
       return;
     }
+    if(readingDialog){if(readingDialog.open)readingDialog.dispatchEvent(new Event('cancel',{cancelable:true}));return;}
     controllerBack();
   }
 
@@ -868,6 +962,8 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   function scrollWithRightStick(axisY: number): void {
     if (Math.abs(axisY) < 0.2) return;
     const scope = currentScope(keyboard);
+    const transcript=scope.querySelector<HTMLElement>('.slate-audio-transcript');
+    if(transcript&&isVisible(transcript)){transcript.scrollTop+=-axisY*46;return;}
     const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const candidates: HTMLElement[] = [];
     let ancestor = active;
@@ -935,7 +1031,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
   const resetControllerInput=()=>{
     viewerShortcutHeld=false;stopDirectionalRepeat();
     if(bLongPressTimer!==null)window.clearTimeout(bLongPressTimer);
-    bPressStartedAt=null;bLongPressTimer=null;bLongPressHandled=false;
+    bPressStartedAt=null;bLongPressTimer=null;bLongPressHandled=false;bReadingDialog=null;
     if(focusFrame!==null)cancelAnimationFrame(focusFrame);focusFrame=null;
     controllerActive=false;document.body.classList.remove('controller-active');
   };
@@ -990,7 +1086,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
         if(payload.kind==='button'&&payload.button.id===BUTTON_Y&&payload.button.down&&viewerShortcutHeld)return;
         stopDirectionalRepeat();
         if(bLongPressTimer!==null)window.clearTimeout(bLongPressTimer);
-        bPressStartedAt=null;bLongPressTimer=null;bLongPressHandled=false;
+        bPressStartedAt=null;bLongPressTimer=null;bLongPressHandled=false;bReadingDialog=null;
         preview.dispatchEvent(new CustomEvent('ccc-preview-gamepad',{detail:payload}));
         if(preview.open)(preview.querySelector<HTMLElement>('canvas:not([hidden])')??preview).focus({preventScroll:true});
         return;

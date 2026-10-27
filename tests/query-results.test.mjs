@@ -1,3 +1,5 @@
+import {CONFIRMED_READOUT_COMMANDS} from '../src/views/console.command-center/main/confirmed-readout-commands.ts';
+import {ENGINE_COMMAND_LIBRARY} from '../src/views/console.command-center/main/engine-command-library.ts';
 import {reviewedReferenceNote} from '../src/views/console.command-center/main/reviewed-id-findings.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -30,6 +32,26 @@ const functions = [...source.matchAll(/^(?:async )?function (\w+)\b[\s\S]*?^}/gm
   .filter(match => names.has(match[1])).map(match => match[0]);
 assert.equal(functions.length, names.size, 'All production handlers must be included');
 const js = stripTypeScriptTypes(functions.join('\n'));
+
+test('the next ten readouts use their requested titles and preserve zero and numeric results in popup/history',async()=>{
+ const rows=[
+  ['engine-isweaponout-810','Is Weapon Out?',2],['engine-isweaponmagicout-648','Is Magic Out?',0],
+  ['engine-issneaking-833','Are They Sneaking?',0],['engine-isrunning-834','Are They Running?',1],
+  ['engine-isincombat-836','Are They In Combat?',1],['engine-getcombatstate-870','Combat State',2],
+  ['engine-isessential-901','Are They Essential?',1],['engine-getdistance-548','How Far Away Is It?',123.75],
+  ['engine-getlocked-552','Is It Locked?',2],['engine-getlocklevel-612','How Hard Is The Lock?',50],
+ ];
+ for(const [id,title,value] of rows){
+  const definition=CONFIRMED_READOUT_COMMANDS.find(c=>c.id===id);
+  assert.equal(definition.title,title);assert.equal(definition.captureOutput,true);assert.equal(definition.testStatus,'untested');
+  const command=definition.command.replace('{target}','player').replace('{arguments}','00005986');
+  const output=String(value),h=harness({ok:true,source:'direct',output});
+  await h.sandbox.executeConsole({command,definition});
+  assert.deepEqual(h.calls,['console.command-center.query']);assert.equal(h.sandbox.resultsDialog.open,true);
+  assert.equal(h.sandbox.resultsOutput.textContent,output);assert.equal(h.entries[0].message,'Result: '+output);
+  assert.ok(!ENGINE_COMMAND_LIBRARY.some(c=>c.id===id));
+ }
+});
 
 function harness(reply, rejection) {
   const entries = [];
@@ -324,7 +346,7 @@ test('commands under investigation remain isolated in the user-facing WIP catego
   assert.match(commandSource, /import \{ UNTESTED_COMMANDS \} from '\.\/untested-commands'/);
   assert.match(commandSource, /\| 'Untested'/);
   assert.match(commandSource, /\.\.\.UNTESTED_COMMANDS/);
-  assert.match(commandSource, /'World',\s*'Advanced Settings',\s*'Untested'/);
+  assert.match(commandSource, /'World',\s*'MISC',\s*'Advanced Settings',\s*'Untested'/);
   assert.match(source, /WORK IN PROGRESS/);
   assert.match(source, /category === 'Untested' \? 'WIP' : category/);
   assert.match(source, /if \(activeView === 'commands' && commandCategory === 'Untested'\) return 'Work in Progress'/);
@@ -442,7 +464,7 @@ test('the complete engine command reference is lazy-loaded into grouped Untested
   assert.equal(records.filter((entry) => entry.group === 'Script Functions').length, 948);
   assert.equal(new Set(records.map((entry) => `${entry.group}:${entry.name.toLowerCase()}`)).size, 1513);
 
-  assert.match(source, /const ENGINE_COMMAND_LIBRARY_TOTAL = 1493/);
+  assert.match(source, /const ENGINE_COMMAND_LIBRARY_TOTAL = 1468/);
   assert.match(source, /import\('\.\/engine-command-library'\)/);
   assert.match(source, /entries\.map\(\(entry\) => compact \? renderCommandListRow\(entry\) : renderCommandCard\(entry\)\)/);
   assert.doesNotMatch(source, /data-untested-more|untested-show-more/);
@@ -450,7 +472,7 @@ test('the complete engine command reference is lazy-loaded into grouped Untested
   assert.match(source, /ENGINE_COMMAND_LIBRARY_TOTAL/);
   assert.match(engineCommandSource, /category: 'Untested'/);
   assert.match(engineCommandSource, /const PROMOTED_ENGINE_COMMANDS = new Set\([\s\S]*?'picknextactor'[\s\S]*?'picknextref'[\s\S]*?'pickrefbyid'[\s\S]*?'show1stperson'[\s\S]*?'toggleanimations'[\s\S]*?'togglegamepause'[\s\S]*?'togglehandsculled'[\s\S]*?'usenearestteleportdoor'/);
-  assert.match(engineCommandSource, /testStatus: knownIssue \? 'failed' : knownCrashReason \? 'failed' : verifiedReadOnlyReason \? 'verified' : effectUnconfirmedReason \? 'inconclusive' : 'untested'/);
+  assert.match(engineCommandSource, /testStatus: globalArgumentIssue \? 'needs-adjustment' : knownIssue \? 'failed' : knownCrashReason \? 'failed' : verifiedReadOnlyReason \? 'verified' : effectUnconfirmedReason \? 'inconclusive' : 'untested'/);
   assert.match(engineCommandSource, /toggleborders:[\s\S]*?togglematerialgeometry:[\s\S]*?togglevolumegeometry:/);
   assert.match(engineCommandSource, /label: 'Optional Arguments'/);
   assert.match(engineCommandSource, /label: 'Optional Target \/ Prefix'/);
@@ -465,7 +487,7 @@ test('the complete engine command reference is lazy-loaded into grouped Untested
 
 test('page searches span every category in Commands, ID Browser, and Quest Browser', () => {
   assert.match(source, /let untestedQuery = ''/);
-  assert.match(source, /if \(query\) return visibleCommands\.filter\(\(command\) => commandMatches\(command\)\)/);
+  assert.match(source, /if \(query\) return ordered\(visibleCommands\.filter\(\(command\) => commandMatches\(command\)\)/);
   assert.match(source, /command\.category === 'Untested'/);
   assert.match(source, /commandMatches\(command, untestedQuery\)/);
   assert.match(source, /if \(activeView === 'commands' && commandCategory === 'Untested'\) untestedQuery = query/);
@@ -795,7 +817,7 @@ test('known-broken command cards are unavailable at both render and execution bo
   assert.match(source, /class="availability-popover is-danger" role="tooltip"/);
   assert.match(source, /<code>\$\{escapeHtml\(command\.command\)\}<\/code>/);
   assert.match(source, /const executeControl = unavailable[\s\S]*?<button class="osf-btn osf-btn--osf-accent execute-button" type="button" disabled>Unavailable<\/button>/);
-  assert.match(source, /<span class="command-heading-tags">\$\{testTag\}\$\{warningTag\}<\/span>/);
+  assert.match(source, /<span class="command-heading-tags">\$\{testTag\}<\/span>/);
   assert.doesNotMatch(source, /command-availability-tag">UNAVAILABLE/);
   assert.match(styleSource, /\.availability-wrap:hover \.availability-popover/);
   assert.match(styleSource, /\.availability-popover::before/);
@@ -807,7 +829,8 @@ test('reference scale blocks both native adapters after the direct getter also c
   const end = commandSource.indexOf("\n  {\n    id:", start);
   const commandBlock = commandSource.slice(start, end);
   assert.match(commandBlock, /category: 'Untested',[\s\S]*?captureOutput: true,[\s\S]*?testStatus: 'failed',[\s\S]*?unavailableReason:[\s\S]*?intakeGroup: 'Blocked — Known Crash'/);
-  assert.match(directQuerySource, /if \(operation == "getscale" \|\| operation == "getopenstate"\)/);
+  assert.match(directQuerySource, /reference->scale \* 0\.01f/);
+  assert.match(directQuerySource, /if \(operation == "getopenstate"\)/);
   assert.doesNotMatch(directQuerySource, /reference->GetScale\(\)/);
 });
 
@@ -1028,3 +1051,53 @@ test('verified quest reads remain available and experimental ship spawning is ex
   assert.match(commandSource, /id: 'spawn-ship',[\s\S]*?category: 'Untested'[\s\S]*?testStatus: 'untested'[\s\S]*?intakeGroup: 'Script Functions'/);
   assert.match(commandSource, /boarding ramp inaccessible/);
 });
+
+
+test('October 23 confirmed console reads use the Results popup and retain exact zero/output in Activity Log',async()=>{
+ const names=['getsfseversion','getcurrentcell','getlevel','getscale','getdead','getdisabled','getsleeping','getitemcount','getgold','getvalue','israining','issnowing','getrandompercent','getstartingpos'];
+ for(const name of names){
+  const definition=CONFIRMED_READOUT_COMMANDS.find(c=>c.command.replace('{target}.','').toLowerCase().split(' ')[0]===name);assert.ok(definition,name);assert.equal(definition.captureOutput,true,name);assert.notEqual(definition.testStatus,'verified',name);
+  const output=['getdead','getdisabled','getsleeping','israining','issnowing'].includes(name)?'0':name+' >> 42';const h=harness({ok:true,output});
+  await h.sandbox.executeConsole({command:(definition.command.startsWith('{target}.')?'player.':'')+name,definition});
+  assert.deepEqual(h.calls,['console.command-center.query']);assert.equal(h.sandbox.resultsDialog.open,true);assert.equal(h.sandbox.resultsOutput.textContent,output);assert.equal(h.entries[0].message,'Result: '+output);
+ }
+});
+test('GetGlobalValue offers six tested globals in World, uses no prefix, and saves each popup readout',async()=>{
+ const c=CONFIRMED_READOUT_COMMANDS.find(c=>c.title==='Get Global Value');assert.ok(c);assert.equal(c.category,'World');assert.equal(c.testStatus,'untested');assert.equal(c.captureOutput,true);assert.equal(c.inputs.length,1);
+ assert.equal(c.command,'GetGlobalValue {arguments}');
+ const input=c.inputs[0];assert.equal(input.defaultValue,'00000038');
+ assert.deepEqual(input.picker.options.map(o=>o.value),['00000038','0000003A','00000039','00000037','00000036','00000035']);
+ for(const option of input.picker.options){
+  const command=c.command.replace('{arguments}',option.value);const h=harness({ok:true,output:'Global '+option.value+' >> 0.000000'});
+  await h.sandbox.executeConsole({command,definition:c});assert.deepEqual(h.calls,['console.command-center.query']);assert.equal(h.payloads[0].consoleCommand,command);assert.equal(h.sandbox.resultsOutput.textContent,'Global '+option.value+' >> 0.000000');assert.equal(h.entries[0].message,'Result: Global '+option.value+' >> 0.000000');
+ }
+ assert.ok(!ENGINE_COMMAND_LIBRARY.some(other=>other.id===c.id));
+ assert.match(directQuerySource,/LookupByID<RE::TESGlobal>\(id\)/);assert.match(directQuerySource,/const auto value = global->GetValue\(\)/);assert.match(directQuerySource,/!std::isfinite\(value\)/);
+});
+
+
+test('GetValue shares the established GetAV adapter without restoring an unsafe scale getter',()=>{
+ assert.match(directQuerySource,/parsedOperation == "getvalue" \? std::string\("getav"\)/);
+ assert.doesNotMatch(directQuerySource,/reference->GetScale\(\)/);
+});
+
+test('Get Random Percent preserves a fractional game readout in the popup and Activity Log',async()=>{
+ const definition=CONFIRMED_READOUT_COMMANDS.find(c=>c.title==='Get Random Percent');
+ assert.equal(definition.testStatus,'untested');assert.match(definition.description,/decimals/);assert.doesNotMatch(definition.description,/whole number|integer|0 to 99/);
+ const output='GetRandomPercent >> 12.260000';const h=harness({ok:true,source:'direct',output});
+ await h.sandbox.executeConsole({command:'GetRandomPercent',definition});
+ assert.equal(h.sandbox.resultsOutput.textContent,output);assert.equal(h.entries[0].message,'Result: '+output);
+});
+
+ test('confirmed readouts are available at startup in their categories without WIP duplicates or changed IDs',()=>{
+ const expected={"getsfseversion":"Advanced Settings","getcurrentcell":"Untested","getlevel":"Player","getscale":"MISC","getdead":"MISC","getdisabled":"MISC","getsleeping":"MISC","getitemcount":"MISC","getgold":"Inventory","getvalue":"Player","israining":"Untested","issnowing":"Untested","getrandompercent":"MISC","getstartingpos":"Untested","getglobalvalue":"World"};
+ assert.equal(CONFIRMED_READOUT_COMMANDS.length,25);
+ for(const c of CONFIRMED_READOUT_COMMANDS){
+ const name=c.command.replace('{target}.','').split(' ')[0].toLowerCase();
+ assert.equal(c.category,expected[name] ?? 'MISC');assert.equal(c.intakeGroup,['getcurrentcell','getstartingpos','israining','issnowing'].includes(name)?'Executed — Issues':undefined);
+ assert.ok(!ENGINE_COMMAND_LIBRARY.some(other=>other.id===c.id));
+ assert.doesNotMatch(JSON.stringify([c.title,c.description,c.warning,c.inputs]),/player testing|confirmed|verified|retest|popup capture|native console|developer context/i);
+ }
+ assert.match(commandSource,/\.\.\.CONFIRMED_READOUT_COMMANDS/);
+ assert.equal(new Set([...CONFIRMED_READOUT_COMMANDS,...ENGINE_COMMAND_LIBRARY].map(c=>c.id)).size,1493);
+ });

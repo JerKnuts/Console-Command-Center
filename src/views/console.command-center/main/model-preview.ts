@@ -1,28 +1,49 @@
 import { createPreviewController, type PreviewGamepadEvent } from './preview-controller.ts';
+import {thumbnailUrl} from './preview-thumbnails.ts';
 import { createLoadingRing } from './loading-ring.ts';
 import { isDevModeEnabled } from './dev-feedback.ts';
-type RecordForPreview = { value: string; label: string; type: string; available?: boolean; source?:string };
+import {PREVIEW_BACKGROUNDS,previewBackground,type PreviewBackgroundId} from './preview-backgrounds.ts';
+type RecordForPreview = { value: string; label: string; type: string; available?: boolean; source?:string;category?:string };
 type RequestPreview = (name: string, payload: Record<string, string | number | boolean>) => Promise<unknown>;
 export function canPreviewModel(entry: RecordForPreview, _advanced?: boolean): boolean {
-  return entry.available !== false && /^[\dA-F]{8}$/i.test(entry.value) && ['MISC', 'WEAP', 'ARMO', 'AMMO', 'ALCH', 'FURN', 'STAT', 'MSTT', 'ACTI', 'CONT', 'DOOR', 'GBFM', 'PKIN', 'COBJ'].includes(entry.type.toUpperCase());
+  return entry.category !== 'Ships' && entry.available !== false && /^[\dA-F]{8}$/i.test(entry.value) && ['BOOK', 'MISC', 'WEAP', 'ARMO', 'AMMO', 'ALCH', 'FURN', 'STAT', 'MSTT', 'ACTI', 'CONT', 'DOOR', 'GBFM', 'PKIN', 'COBJ'].includes(entry.type.toUpperCase());
+}
+// Stand thin reading items on their long edge before generating a still image.
+// Existing upright inventory book art keeps its authored orientation.
+export function orientReadingPreview(meshes:import('./preview-renderer.ts').PreviewMesh[]):void {
+ const min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
+ for(const mesh of meshes)for(let i=0;i<mesh.positions.length;i++){const axis=i%3;min[axis]=Math.min(min[axis],mesh.positions[i]);max[axis]=Math.max(max[axis],mesh.positions[i]);}
+ const size=max.map((v,i)=>v-min[i]);
+ if(size[1]<Math.min(size[0],size[2])){
+  for(const mesh of meshes)for(let i=0;i<mesh.positions.length;i+=3){const [x,y,z]=mesh.positions.subarray(i,i+3);if(size[0]>=size[2]){mesh.positions[i]=z;mesh.positions[i+1]=x;mesh.positions[i+2]=y;}else {mesh.positions[i+1]=-z;mesh.positions[i+2]=y;}}
+ }else if(size[2]<size[0]&&size[0]>size[1]){
+  for(const mesh of meshes)for(let i=0;i<mesh.positions.length;i+=3){const x=mesh.positions[i];mesh.positions[i]=-mesh.positions[i+1];mesh.positions[i+1]=x;}
+ }
+}
+export function previewMannequinFit(label:string,category=''):'standard'|'outfit'|'suit'{
+ if(category==='Spacesuits'||/\bspace[ -]?suit\b/i.test(label))return 'suit';
+ return ['Helmets','Packs'].includes(category)||/\b(helmet|hat|cap|backpack|pack)\b/i.test(label)?'standard':'outfit';
 }
 export function defaultPreviewMannequin(type:string,label:string,category=''):boolean {
  return false;
 }
-export async function fetchPreview(request: RequestPreview, formId: string, current: () => boolean, mannequin = false, quality: 'low'|'medium'|'high'|'ultra' = 'high', sex: 'male'|'female' = 'female', geometryOnly=false): Promise<ArrayBuffer> {
+export async function fetchPreview(request: RequestPreview, formId: string, current: () => boolean, mannequin = false, quality: 'low'|'medium'|'high'|'ultra' = 'high', sex: 'male'|'female' = 'female', geometryOnly:boolean|'color'=false,mannequinSex:'auto'|'female'|'male'='auto',mannequinFit:'standard'|'outfit'|'suit'='outfit'): Promise<ArrayBuffer> {
   const transferLimit=(quality==='ultra'?256:64)*1024*1024;
-  const reply = await request('console.command-center.previewModel', { formId, mannequin: mannequin ? 1 : 0, quality, sex, stage:geometryOnly?'geometry':'complete' }) as { ok?: boolean; ticket?: string; bytes?: number; compression?: string; decodedBytes?: number };
+  const reply = await request('console.command-center.previewModel', { formId, mannequin: mannequin ? 1 : 0, quality, sex, mannequinSex, mannequinFit, stage:geometryOnly==='color'?'color':geometryOnly?'geometry':'complete' }) as { ok?: boolean; ticket?: string; bytes?: number; compression?: string; decodedBytes?: number; maxChunkBytes?:number };
   if (!reply?.ok || typeof reply.ticket !== 'string' || !Number.isInteger(reply.bytes) || reply.bytes! < 12 || reply.bytes! > transferLimit) throw new Error('The native plugin returned an invalid model response.');
-  const ticket=reply.ticket;
+  if(reply.maxChunkBytes!==undefined&&(!Number.isInteger(reply.maxChunkBytes)||reply.maxChunkBytes<4096||reply.maxChunkBytes>262144))throw new Error('Invalid model transfer capability.');
+  const ticket=reply.ticket;const chunkSize=reply.maxChunkBytes??65536,parallel=4;
   const data = new Uint8Array(reply.bytes!);
   const range=async(start:number,end:number)=>{for(let offset=start;offset<end;){
-    if(!current())throw new Error('Preview closed.');let chunk:{ok?:boolean;data?:string;offset?:number}|undefined;
-    for(let attempt=0;attempt<3;++attempt){try{chunk=await request('console.command-center.previewChunk',{ticket,offset,maxBytes:Math.min(end-offset,attempt===0?32768:attempt===1?16384:8192)}) as typeof chunk;break;}catch(error){if(!current())throw new Error('Preview closed.');if(attempt===2)throw error;}}
-    if(!chunk?.ok||chunk.offset!==offset||typeof chunk.data!=='string'||chunk.data.length>90000)throw new Error('Invalid model transfer chunk.');const bytes=atob(chunk.data);
-    if(!bytes.length||bytes.length>65536||offset+bytes.length>end)throw new Error('Model transfer size mismatch.');for(let i=0;i<bytes.length;++i)data[offset+i]=bytes.charCodeAt(i);offset+=bytes.length;
+    if(!current())throw new Error('Preview closed.');let chunk:{ok?:boolean;data?:string;offset?:number}|undefined,receivedLimit=chunkSize;
+    for(let attempt=0;attempt<3;++attempt){try{receivedLimit=Math.min(end-offset,attempt===0?chunkSize:attempt===1?Math.max(4096,Math.min(65536,Math.floor(chunkSize/2))):Math.max(4096,Math.min(16384,Math.floor(chunkSize/4))));chunk=await request('console.command-center.previewChunk',{ticket,offset,maxBytes:receivedLimit}) as typeof chunk;break;}catch(error){if(!current())throw new Error('Preview closed.');if(attempt===2)throw error;}}
+    if(!chunk?.ok||chunk.offset!==offset||typeof chunk.data!=='string'||chunk.data.length>Math.ceil(receivedLimit/3)*4)throw new Error('Invalid model transfer chunk.');const bytes=atob(chunk.data);
+    if(!bytes.length||bytes.length>receivedLimit||offset+bytes.length>end)throw new Error('Model transfer size mismatch.');for(let i=0;i<bytes.length;++i)data[offset+i]=bytes.charCodeAt(i);offset+=bytes.length;
   }};
-  // Keep host messages small; drain both outstanding replies before advancing or retrying a preview.
-  for(let start=0;start<data.length;start+=2*32768){const results=await Promise.allSettled(Array.from({length:Math.min(2,Math.ceil((data.length-start)/32768))},(_,i)=>range(start+i*32768,Math.min(data.length,start+(i+1)*32768))));const failure=results.find(result=>result.status==='rejected');if(failure?.status==='rejected')throw failure.reason;await new Promise(resolve=>setTimeout(resolve,0));}
+  // Four bounded negotiated ranges stay below the native per-reply cap. Drain
+  // every outstanding reply on failure before another preview can take over.
+  // Pace batches below the host's 128 page-messages/sec cap, leaving room for UI requests.
+  for(let start=0;start<data.length;start+=parallel*chunkSize){const batchStarted=performance.now();const results=await Promise.allSettled(Array.from({length:Math.min(parallel,Math.ceil((data.length-start)/chunkSize))},(_,i)=>range(start+i*chunkSize,Math.min(data.length,start+(i+1)*chunkSize))));const failure=results.find(result=>result.status==='rejected');if(failure?.status==='rejected')throw failure.reason;if(start+parallel*chunkSize<data.length)await new Promise(resolve=>setTimeout(resolve,Math.max(0,70-(performance.now()-batchStarted))));}
 
   if(reply.compression){
     if(reply.compression!=='deflate'||!Number.isInteger(reply.decodedBytes)||reply.decodedBytes!<12||reply.decodedBytes!>transferLimit)throw new Error('Invalid compressed model response.');
@@ -31,10 +52,12 @@ export async function fetchPreview(request: RequestPreview, formId: string, curr
   }
   return data.buffer;
 }
-export function installModelPreview(request: RequestPreview, options?: { quality: () => 'low'|'medium'|'high'|'ultra'; setQuality?: (quality:'low'|'medium'|'high'|'ultra') => void }): void {
+export function installModelPreview(request: RequestPreview, options?: { advanced?:()=>boolean; quality: () => 'low'|'medium'|'high'|'ultra'; setQuality?: (quality:'low'|'medium'|'high'|'ultra') => void; background?:()=>PreviewBackgroundId;setBackground?:(background:PreviewBackgroundId)=>void }): void {
+  document.documentElement.style.setProperty('--ccc-preview-background',previewBackground(options?.background?.()).css);
   const renderers=new Set<ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']>>();
   const track=(renderer:ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']>)=>{renderers.add(renderer);renderer.showMissingTextures(isDevModeEnabled());const dispose=renderer.dispose;renderer.dispose=()=>{renderers.delete(renderer);dispose();};return renderer;};
   document.addEventListener('ccc-dev-mode-change',()=>{for(const renderer of renderers)renderer.showMissingTextures(isDevModeEnabled());});
+  let rememberedMannequin:boolean|undefined;
   let transfer: Promise<unknown> = Promise.resolve();
   const queuedPreview = (...args: Parameters<typeof fetchPreview> extends [unknown, ...infer Rest] ? Rest : never) => {
     const result = transfer.catch(() => {}).then(() => { if (!args[1]()) throw new Error('Preview closed.'); return fetchPreview(request, ...args); });
@@ -42,10 +65,10 @@ export function installModelPreview(request: RequestPreview, options?: { quality
   };
   const inlineCache = new Map<string, ArrayBuffer>();
   const fullCache = new Map<string,ArrayBuffer>();
-  const remember=(cacheKey:string,buffer:ArrayBuffer)=>{if(buffer.byteLength<=64*1024*1024){fullCache.delete(cacheKey);let bytes=buffer.byteLength;for(const value of fullCache.values())bytes+=value.byteLength;while(fullCache.size&&(fullCache.size>=2||bytes>64*1024*1024)){const oldest=fullCache.keys().next().value!;bytes-=fullCache.get(oldest)!.byteLength;fullCache.delete(oldest);}fullCache.set(cacheKey,buffer);}};
+  const remember=(cacheKey:string,buffer:ArrayBuffer)=>{if(buffer.byteLength<=256*1024*1024){fullCache.delete(cacheKey);let bytes=buffer.byteLength;for(const value of fullCache.values())bytes+=value.byteLength;while(fullCache.size&&(fullCache.size>=4||bytes>256*1024*1024)){const oldest=fullCache.keys().next().value!;bytes-=fullCache.get(oldest)!.byteLength;fullCache.delete(oldest);}fullCache.set(cacheKey,buffer);}};
   document.addEventListener('click', async event => {
     const trigger = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-preview-model]');
-    if (!trigger || document.querySelector('dialog.model-preview-dialog[open]')) return;
+    if (!trigger || trigger.dataset.previewType?.toUpperCase()==='BOOK' || document.querySelector('dialog.model-preview-dialog[open]')) return;
     const id = trigger.dataset.previewModel; if (!id || !/^[\dA-F]{8}$/i.test(id)) return;
     if (!trigger.isConnected || document.querySelector('dialog.model-preview-dialog[open]')) return;
     const dialog = document.createElement('dialog'); dialog.className = 'model-preview-dialog osf-card';dialog.tabIndex=-1;
@@ -56,15 +79,21 @@ export function installModelPreview(request: RequestPreview, options?: { quality
     const canvas = document.createElement('canvas'); canvas.className = 'model-preview-canvas'; canvas.hidden = true; canvas.tabIndex = 0; canvas.setAttribute('aria-label', 'Left-drag to move the model. Hold the mouse wheel and drag to orbit. Hold right mouse and drag up to zoom in or down to zoom out. Scroll to zoom. Shift plus arrow keys also moves the model.');
     const controls = document.createElement('div'); controls.className = 'model-preview-controls';
     const stage = document.createElement('div');stage.className = 'model-preview-stage';stage.append(canvas);
-    const supportsMannequin = trigger.dataset.previewType === 'ARMO'; let mannequin = defaultPreviewMannequin(trigger.dataset.previewType??'',trigger.dataset.previewLabel??'',trigger.dataset.previewCategory);
+    const supportsMannequin = trigger.dataset.previewType === 'ARMO'; let mannequin = supportsMannequin?(rememberedMannequin??defaultPreviewMannequin(trigger.dataset.previewType??'',trigger.dataset.previewLabel??'',trigger.dataset.previewCategory)):false;
     let sex: 'male'|'female' = trigger.dataset.previewSex === 'male' ? 'male' : 'female';
     const sexButton = document.createElement('button'); sexButton.type = 'button'; sexButton.className = 'osf-btn osf-btn--sm';
     const mannequinButton = document.createElement('button'); mannequinButton.type = 'button'; mannequinButton.className = 'osf-btn osf-btn--sm';
-    if (supportsMannequin) controls.append(mannequinButton, sexButton);
+    let mannequinSex:'auto'|'female'|'male'='auto';const mannequinSexButton=document.createElement('button');mannequinSexButton.type='button';mannequinSexButton.className='osf-btn osf-btn--sm';mannequinSexButton.title='Choose the mannequin independently from the outfit body';
+    if (supportsMannequin) controls.append(mannequinButton, sexButton,mannequinSexButton);
     let renderer: ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']> | undefined;
     const qualityLabel=document.createElement('label');qualityLabel.className='model-preview-quality';qualityLabel.textContent='Quality ';
     const qualitySelect=document.createElement('select');qualitySelect.className='osf-input';qualitySelect.setAttribute('aria-label','3D preview quality');
     for(const value of ['low','medium','high','ultra']){const option=document.createElement('option');option.value=value;option.textContent=value[0].toUpperCase()+value.slice(1);qualitySelect.append(option);}qualitySelect.value=options?.quality()??'high';qualityLabel.append(qualitySelect);controls.append(qualityLabel);
+    const backgroundLabel=document.createElement('label');backgroundLabel.className='model-preview-background';backgroundLabel.textContent='Background ';
+    const backgroundSelect=document.createElement('select');backgroundSelect.className='osf-input';backgroundSelect.setAttribute('aria-label','Model Viewer background');
+    for(const background of PREVIEW_BACKGROUNDS){const option=document.createElement('option');option.value=background.id;option.textContent=background.label;backgroundSelect.append(option);}
+    backgroundSelect.value=previewBackground(options?.background?.()).id;backgroundLabel.append(backgroundSelect);controls.append(backgroundLabel);
+    backgroundSelect.addEventListener('change',()=>{const background=previewBackground(backgroundSelect.value);backgroundSelect.value=background.id;document.documentElement.style.setProperty('--ccc-preview-background',background.css);options?.setBackground?.(background.id);});
     let lightMode=false,texturesEnabled=true;
     const textureButton=document.createElement('button');textureButton.type='button';textureButton.className='osf-btn osf-btn--sm';textureButton.textContent='Textures: On';textureButton.setAttribute('aria-pressed','true');controls.append(textureButton);
     textureButton.addEventListener('click',()=>{texturesEnabled=!texturesEnabled;textureButton.textContent=`Textures: ${texturesEnabled?'On':'Off'}`;textureButton.setAttribute('aria-pressed',String(texturesEnabled));renderer?.showTextures(texturesEnabled);});
@@ -86,10 +115,11 @@ export function installModelPreview(request: RequestPreview, options?: { quality
     close.dataset.controllerHint='B';mannequinButton.dataset.controllerHint='LB';sexButton.dataset.controllerHint='RB';qualityLabel.dataset.controllerHint='Y';textureButton.dataset.controllerHint='X';moveLight.dataset.controllerHint='R3';brightness.dataset.controllerHint='L3';
     let qualityIndex=qualitySelect.selectedIndex,controllerMode='object';
     const setControllerHint=()=>{controllerHint.textContent=qualityMenu.hidden
-      ? `LB mannequin · RB body · Y quality · X textures · R3 light · L3 brightness · LS ${controllerMode==='light'?'move light':controllerMode==='brightness'?'up/down brightness':'move object'} · RS rotate · L2/R2 zoom · B close`
+      ? `LB mannequin · RB body · Y quality · D-pad ←/→ background · X textures · R3 light · L3 brightness · LS ${controllerMode==='light'?'move light':controllerMode==='brightness'?'up/down brightness':'move object'} · RS rotate · L2/R2 zoom · B close`
       : 'Quality: D-pad or left stick to choose · A apply · B cancel';};
     const pad=createPreviewController({
       mannequin:()=>{if(supportsMannequin)mannequinButton.click();},body:()=>{if(supportsMannequin)sexButton.click();},textures:()=>textureButton.click(),close:()=>dialog.close(),
+      background:delta=>{backgroundSelect.selectedIndex=(backgroundSelect.selectedIndex+delta+backgroundSelect.options.length)%backgroundSelect.options.length;backgroundSelect.dispatchEvent(new Event('change'));},
       lightingAvailable:()=>!lighting.hidden&&Boolean(renderer),
       quality:(open,delta=0,apply=false)=>{
         if(open&&qualityMenu.hidden)qualityIndex=qualitySelect.selectedIndex;
@@ -137,26 +167,31 @@ export function installModelPreview(request: RequestPreview, options?: { quality
       sexButton.textContent = `Body: ${sex === 'male' ? 'Male' : 'Female'}`;
       const quality=qualitySelect.value as 'low'|'medium'|'high'|'ultra';
       lighting.hidden=false;if(lighting.hidden){lightMode=false;moveLight.setAttribute('aria-pressed','false');moveLight.classList.remove('osf-btn--osf-accent');}renderer?.setQuality(quality);updateLightMarker();setControllerHint();
-      const geometryKey=`${id}:${mannequin}:${sex}`,cacheKey=`${id}:${mannequin}:${quality}:${sex}`,lowKey=`${id}:${mannequin}:low:${sex}`;
-      const selectedMannequin=mannequin,selectedSex=sex;
+      mannequinSexButton.textContent='Mannequin body: '+mannequinSex[0].toUpperCase()+mannequinSex.slice(1);
+      const mannequinFit=previewMannequinFit(trigger.dataset.previewLabel??'',trigger.dataset.previewCategory);
+      const mannequinSuffix=mannequin?':'+mannequinSex+':'+mannequinFit:'';
+      const geometryKey=`${id}:${mannequin}:${sex}${mannequinSuffix}`,cacheKey=`${id}:${mannequin}:${quality}:${sex}${mannequinSuffix}`,lowKey=`${id}:${mannequin}:low:${sex}${mannequinSuffix}`,colorKey=`${id}:${mannequin}:color:${sex}${mannequinSuffix}`;
+      const selectedMannequin=mannequin,selectedSex=sex,selectedMannequinSex=mannequinSex;
       const { decodePreview, createPreviewRenderer } = await import('./preview-renderer');if(!current())return;
       const paint=(buffer:ArrayBuffer,packetQuality:typeof quality,geometryOnly=false)=>{geometryStage=geometryOnly;const meshes=decodePreview(buffer,packetQuality);canvas.hidden=false;
-        if(!renderer||renderedKey!==geometryKey||!renderer.updateMaterials(meshes)){const view=renderer?.getView()??previousView;renderer?.dispose();renderer=track(createPreviewRenderer(canvas,meshes,geometryOnly?'low':quality));if(view)renderer.restoreView(view);}
-        renderedKey=geometryKey;renderer.showMissingTextures(!geometryOnly&&isDevModeEnabled());renderer.setQuality(geometryOnly?'low':quality);renderer.showTextures(texturesEnabled);updateLightMarker();controls.querySelectorAll('button').forEach(button=>{button.disabled=false;});lighting.querySelectorAll<HTMLInputElement|HTMLButtonElement>('button,input').forEach(control=>{control.disabled=false;});return meshes;};
+        if(!renderer||renderedKey!==geometryKey||!renderer.updateMaterials(meshes,geometryOnly?'low':packetQuality)){const view=renderer?.getView()??previousView;renderer?.dispose();renderer=track(createPreviewRenderer(canvas,meshes,geometryOnly?'low':packetQuality,['Helmets','Apparel','Spacesuits','Armor','Armor / Apparel','Vehicles'].includes(trigger.dataset.previewCategory??'')?Math.PI:0));if(view)renderer.restoreView(view);}
+        renderedKey=geometryKey;renderer.showMissingTextures(!geometryOnly&&isDevModeEnabled());renderer.setQuality(geometryOnly?'low':packetQuality);renderer.showTextures(texturesEnabled);updateLightMarker();controls.querySelectorAll('button').forEach(button=>{button.disabled=false;});lighting.querySelectorAll<HTMLInputElement|HTMLButtonElement>('button,input').forEach(control=>{control.disabled=false;});return meshes;};
       let buffer=fullCache.get(cacheKey);
+      const cachedColor=fullCache.get(lowKey)??fullCache.get(colorKey)??(!selectedMannequin?inlineCache.get(id+':'+selectedSex):undefined);
+      if(!buffer&&cachedColor&&(!renderer||renderedKey!==geometryKey)){paint(cachedColor,'low');status.textContent='Color preview ready • Loading sharper textures… You can move and zoom now.';}
       if(!buffer&&(!renderer||renderedKey!==geometryKey)){
-        const geometryCacheKey=`${id}:${mannequin}:geometry:${sex}`;
-        const geometry=fullCache.get(geometryCacheKey)??await queuedPreview(id,current,selectedMannequin,'low',selectedSex,true);if(!current())return;
+        const geometryCacheKey=`${id}:${mannequin}:geometry:${sex}${mannequinSuffix}`;
+        const geometry=fullCache.get(geometryCacheKey)??await queuedPreview(id,current,selectedMannequin,'low',selectedSex,true,selectedMannequinSex,mannequinFit);if(!current())return;
         paint(geometry,'low',true);remember(geometryCacheKey,geometry);
         status.textContent='Model ready • Loading textures… You can move and zoom now.';
         await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));if(!current())return;
       }
-      if(!buffer&&quality!=='low'&&geometryStage){
-        const low=fullCache.get(lowKey)??(!selectedMannequin&&selectedSex==='male'?inlineCache.get(`${id}:male`):undefined)??await queuedPreview(id,current,selectedMannequin,'low',selectedSex);if(!current())return;
-        const lowMeshes=paint(low,'low');remember(lowKey,low);if(low.byteLength<=16*1024*1024){while(inlineCache.size>=2)inlineCache.delete(inlineCache.keys().next().value!);if(!selectedMannequin&&selectedSex==='male')inlineCache.set(`${id}:male`,low);}
-        status.textContent='Low textures ready • Loading sharper textures… You can move and zoom now.'+(lowMeshes.some(mesh=>mesh.incompleteMaterial)?' • Some material layers are unavailable.':'');
+      if(!buffer&&geometryStage){
+        const low=fullCache.get(colorKey)??(!selectedMannequin?inlineCache.get(id+':'+selectedSex):undefined)??await queuedPreview(id,current,selectedMannequin,'low',selectedSex,'color',selectedMannequinSex,mannequinFit);if(!current())return;
+        const lowMeshes=paint(low,'low');remember(colorKey,low);if(low.byteLength<=16*1024*1024){while(inlineCache.size>=2)inlineCache.delete(inlineCache.keys().next().value!);if(!selectedMannequin&&selectedSex==='male')inlineCache.set(`${id}:male`,low);}
+        status.textContent='Color preview ready • Loading sharper textures… You can move and zoom now.'+(lowMeshes.some(mesh=>mesh.incompleteMaterial)?' • Some material layers are unavailable.':'');
       }
-      buffer??=await queuedPreview(id,current,selectedMannequin,quality,selectedSex);
+      buffer??=await queuedPreview(id,current,selectedMannequin,quality,selectedSex,false,selectedMannequinSex,mannequinFit);
       if(!current())return;
       remember(cacheKey,buffer);
       const meshes=paint(buffer,quality);
@@ -166,55 +201,46 @@ export function installModelPreview(request: RequestPreview, options?: { quality
       status.textContent = `Left: move • Hold wheel: orbit • Right up/down: zoom • Scroll: zoom • ${textured} textured ${textured === 1 ? 'piece' : 'pieces'}${incomplete ? ' • Some material layers are unavailable.' : ''}${mannequin && !meshes.some(mesh => mesh.mannequin) ? ' • Mannequin unavailable' : ''}`; controls.querySelectorAll('button').forEach(button => { button.disabled = false; });
     } catch (error) { if (current()) { canvas.hidden = !renderer; controls.querySelectorAll('button').forEach(button=>{button.disabled=false;});lighting.querySelectorAll<HTMLInputElement|HTMLButtonElement>('button,input').forEach(control=>{control.disabled=!renderer;});const message=error instanceof Error ? error.message : 'This item cannot be previewed yet.';status.textContent=renderer?'Preview retained • Texture upgrade unavailable: '+message:message; } } finally{if(current()){loading.hidden=true;stage.setAttribute('aria-busy','false');}} };
     qualitySelect.addEventListener('change',()=>{const quality=qualitySelect.value as 'low'|'medium'|'high'|'ultra';options?.setQuality?.(quality);void load();});
-    mannequinButton.addEventListener('click', () => { mannequin = !mannequin; void load(); });
+    mannequinButton.addEventListener('click', () => { mannequin = !mannequin;rememberedMannequin=mannequin; void load(); });
+    mannequinSexButton.addEventListener('click',()=>{mannequinSex=mannequinSex==='auto'?'female':mannequinSex==='female'?'male':'auto';void load();});
     sexButton.addEventListener('click', () => { sex = sex === 'female' ? 'male' : 'female'; void load(); });
     await load();
   });
+  const thumbnailImages=new Map<string,Blob>();
   const active = new Map<HTMLElement, () => void>();
   const mount = (host: HTMLElement) => {
-    let disposed = false, revision = 0;
-    let renderer: ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']> | undefined;
-    const canvas = document.createElement('canvas'); canvas.className = 'inline-model-canvas'; canvas.tabIndex = 0; canvas.hidden = true;
-    canvas.setAttribute('aria-label', 'Item preview. Left-drag to rotate; scroll to zoom. Arrow keys rotate; plus and minus zoom.');
-    const status = document.createElement('p'); status.className = 'inline-model-status'; status.textContent = 'Loading preview…'; status.setAttribute('role', 'status');
-    const fullButton = document.createElement('button'); fullButton.type = 'button'; fullButton.className = 'osf-btn osf-btn--sm'; fullButton.textContent = 'Model Viewer';fullButton.dataset.controllerHint='Y';
-    fullButton.dataset.previewModel = host.dataset.inlinePreview; fullButton.dataset.previewLabel = host.dataset.previewLabel ?? 'Item model'; fullButton.dataset.previewType = host.dataset.previewType; fullButton.dataset.previewSex = 'male'; fullButton.dataset.previewCategory=host.dataset.previewCategory;
-    const armor = defaultPreviewMannequin(host.dataset.previewType??'',host.dataset.previewLabel??'',host.dataset.previewCategory);
-    const inlineLoading=createLoadingRing('small');host.append(canvas, inlineLoading,status, fullButton);
-    const load = async () => {
-      const version = ++revision, current = () => !disposed && host.isConnected && version === revision;
-      renderer?.dispose(); renderer = undefined; canvas.hidden = true;
-      status.textContent = 'Loading preview…';inlineLoading.hidden=false;
-      try {
-        const id = host.dataset.inlinePreview!, key = `${id}:male`;
-        const { decodePreview, createPreviewRenderer } = await import('./preview-renderer');if(!current())return;
-        let buffer=inlineCache.get(key);
-        if(!buffer){
-          const geometryKey=`${id}:${armor}:geometry:male`;
-          const geometry=fullCache.get(geometryKey)??await queuedPreview(id,current,armor,'low','male',true);if(!current())return;
-          remember(geometryKey,geometry);canvas.hidden=false;renderer=track(createPreviewRenderer(canvas,decodePreview(geometry,'low'),'low'));renderer.showMissingTextures(false);
-          status.textContent='Model ready • Loading textures…';
-          await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));if(!current())return;
-          buffer=await queuedPreview(id,current,armor,'low','male');
+    let disposed=false,objectUrl:string|undefined;
+    const previewOnly=host.dataset.previewType?.toUpperCase()==='BOOK';
+    const current=()=>!disposed&&host.isConnected;
+    const image=document.createElement('img');image.className='inline-model-image';image.hidden=true;image.draggable=false;
+    image.alt=(host.dataset.previewLabel??'Item')+' preview';
+    const status=document.createElement('p');status.className='inline-model-status';status.textContent='Loading preview…';status.setAttribute('role','status');
+    const fullButton=document.createElement('button');fullButton.type='button';fullButton.className='osf-btn osf-btn--sm';fullButton.textContent='Model Viewer';fullButton.dataset.controllerHint='Y';
+    fullButton.dataset.previewModel=host.dataset.inlinePreview;fullButton.dataset.previewLabel=host.dataset.previewLabel??'Item model';fullButton.dataset.previewType=host.dataset.previewType;fullButton.dataset.previewSex='male';fullButton.dataset.previewCategory=host.dataset.previewCategory;
+    const loading=createLoadingRing('small');host.prepend(image,loading,status);if(!previewOnly)host.append(fullButton);
+    const url=thumbnailUrl(host.dataset.previewPlugin??'Starfield.esm',host.dataset.previewLocalId??host.dataset.inlinePreview??'');
+    const dynamic=(host.dataset.previewSource==='mod'||host.dataset.previewType==='BOOK');
+    image.addEventListener('load',()=>{if(!current())return;image.hidden=false;loading.hidden=true;status.textContent=previewOnly?'Item preview':'Open Model Viewer to rotate and zoom';},{once:true});
+    const loadDynamic=async()=>{let renderer:ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']>|undefined;let canvas:HTMLCanvasElement|undefined;
+      try{const id=host.dataset.inlinePreview!,yaw=['Helmets','Apparel','Spacesuits','Armor','Armor / Apparel','Vehicles'].includes(host.dataset.previewCategory??'')?Math.PI:0,key=id+':'+host.dataset.previewPlugin+':'+yaw;
+        let blob=thumbnailImages.get(key);
+        if(!blob){status.textContent='Loading preview…';loading.hidden=false;const colorKey=`${id}:false:color:male`;const buffer=fullCache.get(colorKey)??await queuedPreview(id,current,false,'low','male','color');if(!current())return;remember(colorKey,buffer);
+          const {decodePreview,createPreviewRenderer}=await import('./preview-renderer');if(!current())return;
+          canvas=document.createElement('canvas');canvas.className='inline-model-capture';canvas.setAttribute('aria-hidden','true');host.append(canvas);const meshes=decodePreview(buffer,'low');if(previewOnly)orientReadingPreview(meshes);renderer=createPreviewRenderer(canvas,meshes,'low',yaw);
+          const captured=new Promise<Blob>((resolve,reject)=>canvas!.toBlob(value=>value?resolve(value):reject(new Error('Preview unavailable.')),'image/png'));renderer.dispose();renderer=undefined;canvas.remove();canvas=undefined;blob=await captured;if(!current())return;
+          if(blob.size<=2*1024*1024){let bytes=blob.size;for(const image of thumbnailImages.values())bytes+=image.size;while(thumbnailImages.size&&(thumbnailImages.size>=12||bytes>2*1024*1024)){const first=thumbnailImages.keys().next().value!;bytes-=thumbnailImages.get(first)!.size;thumbnailImages.delete(first);}thumbnailImages.set(key,blob);}
         }
-        if(!current())return;
-        if (!inlineCache.has(key)) { while (inlineCache.size >= 2) inlineCache.delete(inlineCache.keys().next().value!); if (buffer.byteLength <= 16*1024*1024) inlineCache.set(key, buffer); }
-        const meshes=decodePreview(buffer,'low');
-        if(!renderer||!renderer.updateMaterials(meshes)){const view=renderer?.getView();renderer?.dispose();renderer=track(createPreviewRenderer(canvas,meshes,'low'));if(view)renderer.restoreView(view);}
-        renderer.showMissingTextures(isDevModeEnabled());canvas.hidden=false;
-        status.textContent = 'Drag to rotate • Scroll to zoom';
-      } catch { if (current()) status.textContent = renderer?'Model ready • Textures unavailable. Try Model Viewer.':'Preview unavailable. Try Model Viewer.'; }finally{if(current())inlineLoading.hidden=true;}
+        if(!current())return;objectUrl=URL.createObjectURL(blob);image.src=objectUrl;
+      }catch{if(current()){loading.hidden=true;status.textContent=previewOnly?'Preview unavailable.':'Preview unavailable. Open Model Viewer for details.';}}
+      finally{renderer?.dispose();canvas?.remove();}
     };
-    let pointer: number | null = null, x = 0, y = 0;
-    canvas.addEventListener('pointerdown', e => { if (e.button !== 0) return; e.preventDefault(); pointer = e.pointerId; x = e.clientX; y = e.clientY; canvas.setPointerCapture(e.pointerId); canvas.focus({preventScroll:true}); });
-    canvas.addEventListener('pointermove', e => { if (pointer !== e.pointerId) return; if (!(e.buttons & 1)) { pointer = null; return; } renderer?.move((e.clientX-x)*.008, (e.clientY-y)*.008); x = e.clientX; y = e.clientY; });
-    for (const name of ['pointerup','pointercancel','lostpointercapture']) canvas.addEventListener(name, () => { pointer = null; });
-    canvas.addEventListener('wheel', e => { e.preventDefault(); renderer?.zoomAt(e.clientX,e.clientY,e.deltaY<0?1.12:1/1.12); }, {passive:false});
-    canvas.addEventListener('dblclick', () => renderer?.reset());
-    canvas.addEventListener('keydown', e => { if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-','0'].includes(e.key)) return; e.preventDefault(); e.stopPropagation(); if(e.key==='0')renderer?.reset();else renderer?.move(e.key==='ArrowLeft'?-.15:e.key==='ArrowRight'?.15:0,e.key==='ArrowUp'?-.12:e.key==='ArrowDown'?.12:0,e.key==='+'?1.15:e.key==='-'?1/1.15:1); });
-    const observer = new IntersectionObserver(entries => { if (entries.some(e=>e.isIntersecting)) { observer.disconnect(); void load(); } }); observer.observe(host);
-    active.set(host, () => { disposed = true; ++revision; observer.disconnect(); renderer?.dispose(); });
+    let observer:IntersectionObserver|undefined;
+    const startDynamic=()=>{if(observer)return;observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){observer!.disconnect();void loadDynamic();}});observer.observe(host);};
+    image.addEventListener('error',()=>{if(!current())return;if(dynamic&&!objectUrl)startDynamic();else{image.hidden=true;loading.hidden=true;status.textContent=previewOnly?'Preview unavailable.':'Open Model Viewer for a 3D preview';}},{once:true});
+    if(url)image.src=url;else if(dynamic)startDynamic();else{loading.hidden=true;status.textContent=previewOnly?'Preview unavailable.':'Open Model Viewer for a 3D preview';}
+    active.set(host,()=>{disposed=true;observer?.disconnect();if(objectUrl)URL.revokeObjectURL(objectUrl);image.removeAttribute('src');});
   };
+
   let timer: ReturnType<typeof setTimeout> | undefined;
   const sync = () => {
     for (const [host, cleanup] of active) if (!host.isConnected) { cleanup(); active.delete(host); }

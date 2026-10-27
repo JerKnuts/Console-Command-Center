@@ -1,0 +1,170 @@
+Console Command Center — Test Feedback
+
+Report 1
+Time: 2026-10-24T02:33:22.012Z
+CCC: 1.3.47
+Kind: Command
+Name: Get Current Cell
+ID: engine-getcurrentcell-507
+Category: World
+Command: GetCurrentCell
+Result: Issues
+Comment:
+move to WIP-issues
+----------------------------------------
+
+Report 2
+Time: 2026-10-24T02:34:11.638Z
+CCC: 1.3.47
+Kind: Command
+Name: Get Starting Position
+ID: engine-getstartingpos-557
+Category: Targets
+Command: {target}.GetStartingPos {arguments}
+Result: Issues
+Comment:
+move to WIP - Issues
+----------------------------------------
+
+Report 3
+Time: 2026-10-24T02:35:44.034Z
+CCC: 1.3.47
+Kind: Command
+Name: IsWeaponOut
+ID: engine-isweaponout-810
+Category: Untested
+Command: {target}IsWeaponOut {arguments}
+Result: Issues
+Comment:
+works in console. Needs a readout.
+----------------------------------------
+
+Report 4
+Time: 2026-10-24T02:36:43.955Z
+CCC: 1.3.47
+Kind: Command
+Name: IsWeaponMagicOut
+ID: engine-isweaponmagicout-648
+Category: Untested
+Command: {target}IsWeaponMagicOut {arguments}
+Result: Issues
+Comment:
+working in console. needs a readout
+----------------------------------------
+
+Report 5
+Time: 2026-10-24T02:37:24.818Z
+CCC: 1.3.47
+Kind: Command
+Name: IsSneaking
+ID: engine-issneaking-833
+Category: Untested
+Command: {target}IsSneaking {arguments}
+Result: Issues
+Comment:
+works in console. needs a readout
+----------------------------------------
+
+Report 6
+Time: 2026-10-24T02:38:17.300Z
+CCC: 1.3.47
+Kind: Command
+Name: IsRunning
+ID: engine-isrunning-834
+Category: Untested
+Command: {target}IsRunning {arguments}
+Result: Issues
+Comment:
+does not work. WIP - Issues
+----------------------------------------
+
+Report 7
+Time: 2026-10-24T02:39:01.980Z
+CCC: 1.3.47
+Kind: Command
+Name: IsInCombat
+ID: engine-isincombat-836
+Category: Untested
+Command: {target}IsInCombat {arguments}
+Result: Issues
+Comment:
+works in console. needs readout
+----------------------------------------
+
+Report 8
+Time: 2026-10-24T02:39:25.595Z
+CCC: 1.3.47
+Kind: Command
+Name: IsRunning
+ID: engine-isrunning-834
+Category: Untested
+Command: {target}IsRunning {arguments}
+Result: Issues
+Comment:
+forget last issue for this. it works in console. needs a readout
+----------------------------------------
+
+Report 9
+Time: 2026-10-24T02:39:50.741Z
+CCC: 1.3.47
+Kind: Command
+Name: GetCombatState
+ID: engine-getcombatstate-870
+Category: Untested
+Command: {target}GetCombatState {arguments}
+Result: Issues
+Comment:
+works in console. needs readout
+----------------------------------------
+
+Report 10
+Time: 2026-10-24T02:40:45.839Z
+CCC: 1.3.47
+Kind: Command
+Name: IsEssential
+ID: engine-isessential-901
+Category: Untested
+Command: {target}IsEssential {arguments}
+Result: Issues
+Comment:
+works in console, needs readout
+----------------------------------------
+
+Report 11
+Time: 2026-10-24T02:42:42.229Z
+CCC: 1.3.47
+Kind: Command
+Name: GetDistance
+ID: engine-getdistance-548
+Category: Untested
+Command: {target}GetDistance {arguments}
+Result: Issues
+Comment:
+works in console. should default to "player." needs a readout
+----------------------------------------
+
+Report 12
+Time: 2026-10-24T02:44:29.431Z
+CCC: 1.3.47
+Kind: Command
+Name: GetLocked
+ID: engine-getlocked-552
+Category: Untested
+Command: {target}GetLocked {arguments}
+Result: Issues
+Comment:
+works in console. needs readout. should be called "Is It Locked?"
+----------------------------------------
+
+Report 13
+Time: 2026-10-24T02:45:09.626Z
+CCC: 1.3.47
+Kind: Command
+Name: GetLockLevel
+ID: engine-getlocklevel-612
+Category: Untested
+Command: {target}GetLockLevel {arguments}
+Result: Issues
+Comment:
+works in console. needs a readout
+----------------------------------------

@@ -24,11 +24,15 @@ export function workingCommandCategory(command: CommandDefinition): CommandCateg
 
 // Project local reports onto immutable definitions. Changing a result can undo
 // promotion; reports never remove a native safety block or another user's data.
-export function applyCommandFeedback(command: CommandDefinition, outcome?: string): CommandDefinition {
+export function applyCommandFeedback(command: CommandDefinition, outcome?: string, reportedCategory?: string): CommandDefinition {
   if (!outcome) return command;
   if (command.unavailableReason) return command;
+  const categories: CommandCategory[] = ['Camera','Gameplay','Inventory','MISC','Player','Quests','Ship','Skills','Targets','World','Advanced Settings','Untested'];
+  const category = command.category === 'Untested' && command.intakeGroup !== 'Executed — Issues' && categories.includes(reportedCategory as CommandCategory)
+    ? reportedCategory as CommandCategory : command.category;
+  if (outcome === 'unreviewed') return { ...command, category, testStatus: 'untested', intakeGroup: undefined };
   if (outcome === 'working') return { ...command, category: workingCommandCategory(command), testStatus: 'verified', intakeGroup: undefined };
-  if (outcome === 'issues') return { ...command, category: 'Untested', testStatus: 'needs-adjustment', intakeGroup: 'Executed — Issues' };
-  if (outcome === 'uncertain') return { ...command, category: 'Untested', testStatus: 'inconclusive', intakeGroup: 'Executed — Effect Unconfirmed' };
+  if (outcome === 'issues') return { ...command, category, testStatus: 'needs-adjustment', intakeGroup: 'Executed — Issues' };
+  if (outcome === 'uncertain') return { ...command, category, testStatus: 'inconclusive', intakeGroup: 'Executed — Effect Unconfirmed' };
   return command;
 }

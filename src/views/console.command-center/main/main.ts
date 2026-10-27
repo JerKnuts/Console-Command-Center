@@ -1,3 +1,4 @@
+import { resolveFavoriteIds } from './favorite-id-resolution';
 import { createNativeReconnect } from './native-reconnect';
 import { installBookReader } from './book-reader';
 import { canInspectRecord, installRecordDetails } from './record-details';
@@ -10,12 +11,12 @@ import { updateCommandHighlight, syncCommandHighlight } from './command-syntax';
 import { SAMPLE_BATCHES, prepareSampleCommands } from './sample-batches';
 import { createLoadingRing, loadingRingHtml } from './loading-ring';
 import { canPreviewModel, installModelPreview } from './model-preview';
-import { uiPreferences, installUiSettings, setPreviewResolution, visibleIdCategory, visibleIdRecord, visibleQuestRecord, visibleCommandRecord } from './ui-preferences';
+import { uiPreferences, installUiSettings, setPreviewResolution, setPreviewBackground, visibleIdCategory, visibleIdRecord, visibleQuestRecord, visibleCommandRecord } from './ui-preferences';
 import { reviewedReferenceNote, applyReviewedFindings, reviewedWasTested } from './reviewed-id-findings';
 import { orderIdEntries } from './id-record-order';
 import { armorReferenceNote, applyArmorFindings } from './armor-test-findings';
 import { rerenderKeepingPosition } from './preserve-report-position';
-import { devFeedbackIdReference, devFeedbackButton, devFeedbackRow, installDevFeedback, isDevModeEnabled, devFeedbackTestedClass, devFeedbackCommandOutcome, hasEngineCommandFeedback } from './dev-feedback';
+import { devFeedbackIdReference, devFeedbackButton, devFeedbackRow, installDevFeedback, isDevModeEnabled, devFeedbackTestedClass, devFeedbackCommandOutcome, devFeedbackCommandCategory, hasEngineCommandFeedback } from './dev-feedback';
 import { ammoReferenceNote, applyAmmoFindings } from './ammo-test-findings';
 import './style.css';
 import './light-theme.css';
@@ -229,8 +230,8 @@ const MAX_ACTIVITY = 100;
 const MAX_CUSTOM_COMMAND_LENGTH = 1024;
 const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
-const ENGINE_COMMAND_LIBRARY_TOTAL = 1493;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.3.36';
+const ENGINE_COMMAND_LIBRARY_TOTAL = 1468;
+const CONSOLE_COMMAND_CENTER_VERSION = '1.4.0';
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -240,7 +241,7 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
     sections: [
       { title: 'RUN AGAIN', text: 'Review the inputs and warnings on a recent card, then use its action button to run it again.' },
       { title: 'KEEP A COMMAND', text: 'Select the star on a card to keep it in Favorites after it leaves the recent list.' },
-      { title: 'CLEAR THE LIST', text: 'Clear Recent removes the history shown here. It does not reverse commands or remove Activity Log entries.' },
+      { title: 'CLEAR THE LIST', text: 'Clear Recent removes the history shown here. It does not reverse commands or remove Command Log entries.' },
     ],
   },
   favorites: {
@@ -249,8 +250,8 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
     intro: 'Favorites collects command cards, saved command batches, and browser IDs you mark with a star.',
     sections: [
       { title: 'ADD FAVORITES', text: 'Select the star on any command, saved command batch, or selected ID. The filled star means it is saved here.' },
-      { title: 'USE SAVED COMMANDS', text: 'Load a saved batch from Favorites to open it in Custom Command for review before execution.' },
-      { title: 'REMOVE FAVORITES', text: 'Select the star again to remove a card. Removing it does not affect Recent or Activity Log.' },
+      { title: 'USE SAVED COMMANDS', text: 'Load a saved batch from Favorites to open it in Batch Commander for review before execution.' },
+      { title: 'REMOVE FAVORITES', text: 'Select the star again to remove a card. Removing it does not affect Recent or Command Log.' },
     ],
   },
   categories: {
@@ -303,9 +304,9 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
     note: 'Keep a backup save before repairing a quest. Prefer the smallest stage change that moves the stuck objective forward.',
   },
   custom: {
-    eyebrow: 'CUSTOM COMMAND HELP',
+    eyebrow: 'BATCH COMMANDER HELP',
     title: 'Build and reuse command batches',
-    intro: 'Custom Command runs raw Starfield console commands that are not represented by prepared cards.',
+    intro: 'Batch Commander runs raw Starfield console commands that are not represented by prepared cards.',
     sections: [
       { title: 'ENTER COMMANDS', text: 'Enter one command per line. Empty lines and lines beginning with # are ignored.' },
       { title: 'REVIEW THE BATCH', text: 'Review Commands shows the exact lines before CCC runs them in order. Execution stops when a command reports an error.' },
@@ -317,9 +318,9 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
     note: 'Raw commands may have undocumented effects. Save the game before experimenting with syntax you do not recognize.',
   },
   activity: {
-    eyebrow: 'ACTIVITY LOG HELP',
+    eyebrow: 'COMMAND LOG HELP',
     title: 'Review what CCC executed',
-    intro: 'Activity Log keeps recent command outcomes and captured inspection results.',
+    intro: 'Command Log keeps recent command outcomes and captured inspection results.',
     sections: [
       { title: 'CHECK RESULTS', text: 'Each entry records the command, time, outcome, and any readable result or error returned to CCC.' },
       { title: 'REOPEN OUTPUT', text: 'Inspection entries can reopen their saved Results window without running the command a second time.' },
@@ -357,6 +358,7 @@ let nativeBackendReady = false;
 let idCatalog: IdCatalogEntry[] = CURATED_ID_CATALOG;
 let packagedIdCatalog: IdCatalogEntry[] = CURATED_ID_CATALOG;
 let idCatalogLoaded = false;
+let idCatalogLoadOrderKnown = false;
 let idCatalogLoading: Promise<void> | null = null;
 let officialLoadOrderLoading: Promise<PluginLoadOrderReply | null> | null = null;
 let modCatalogs: ModCatalogSummary[] = [];
@@ -416,7 +418,7 @@ app.innerHTML = `
     <nav class="utility-nav-bar" aria-label="Main pages">
       <span class="controller-bumper-hint controller-bumper-hint--left" aria-hidden="true">LB</span>
       <button class="nav-button nav-button--commands" type="button" data-view="commands">
-        <span>Commands</span><span class="nav-count">${currentCommands().filter((command) => command.category !== 'Untested').length}</span>
+        <span>Command Browser</span><span class="nav-count">${currentCommands().filter((command) => command.category !== 'Untested').length}</span>
       </button>
       <button class="nav-button nav-button--ids" type="button" data-view="id-browser">
         <span>ID Browser</span><span class="nav-count" id="id-browser-nav-count">${ID_BROWSER_TOTAL}</span>
@@ -428,10 +430,10 @@ app.innerHTML = `
         <span>Quest Browser</span><span class="nav-count">${QUEST_BROWSER_TOTAL}</span>
       </button>
       <button class="nav-button nav-button--custom" type="button" data-view="custom">
-        <span>Custom Command</span><span class="nav-count">&gt;_</span>
+        <span>Batch Commander</span><span class="nav-count">&gt;_</span>
       </button>
       <button class="nav-button nav-button--utility" type="button" data-view="activity">
-        <span>Activity Log</span><span class="nav-count" id="activity-nav-count">0</span>
+        <span>Command Log</span><span class="nav-count" id="activity-nav-count">0</span>
       </button>
       <span class="controller-bumper-hint controller-bumper-hint--right" aria-hidden="true">RB</span>
     </nav>
@@ -591,7 +593,7 @@ resultsDialog.innerHTML = `
   </div>
   <div class="inventory-results" id="inventory-results" hidden></div>
   <pre id="results-output" tabindex="0" aria-label="Command output"></pre>
-  <footer id="results-footer">Results are saved in Activity Log. Select text to copy it. Escape closes this window.</footer>`;
+  <footer id="results-footer">Results are saved in Command Log. Select text to copy it. Escape closes this window.</footer>`;
 document.body.append(resultsDialog);
 const resultsTitle = requiredElement('#results-title', HTMLElement);
 const resultsCommand = requiredElement('#results-command', HTMLElement);
@@ -637,7 +639,7 @@ function showResults(title: string, command: string, output: string, state: 'loa
   resultsCommand.textContent = command;
   resultsStatus.textContent = state === 'loading' ? 'Reading game data…'
     : state === 'error' ? 'Inspection failed — no value was verified.'
-    : `${output.length.toLocaleString()} characters • saved in Activity Log`;
+    : `${output.length.toLocaleString()} characters • saved in Command Log`;
   resultsStatus.dataset.state = state;resultsStatus.setAttribute('aria-busy',String(state==='loading'));if(state==='loading')resultsStatus.prepend(createLoadingRing('small'));
   const isInventory = state === 'ready' && output.startsWith('CCC_INVENTORY_V1\n');
   const resultIds = state === 'ready' && !isInventory ? extractResultIds(output) : [];
@@ -648,8 +650,8 @@ function showResults(title: string, command: string, output: string, state: 'loa
   inventoryResults.hidden = !isInventory;
   resultsOutput.hidden = isInventory;
   resultsFooter.textContent = isInventory
-    ? 'Use Copy ID beside any item. Results are saved in Activity Log. Escape closes this window.'
-    : 'Results are saved in Activity Log. Select text to copy it. Escape closes this window.';
+    ? 'Use Copy ID beside any item. Results are saved in Command Log. Escape closes this window.'
+    : 'Results are saved in Command Log. Select text to copy it. Escape closes this window.';
   if (isInventory) {
     inventoryResultsSearch.value = '';
     syncSearchClear(inventoryResultsSearch, inventoryResultsSearchClear);
@@ -848,7 +850,7 @@ function writeFavoriteIds(): void {
 
 function idFavoriteKey(entry: IdCatalogEntry): string {
   return entry.plugin && entry.localFormId
-    ? `${entry.source === 'mod' ? 'mod' : 'official'}:${entry.plugin.toLowerCase()}:${entry.localFormId.toUpperCase()}:${entry.type.toUpperCase()}`
+    ? `${entry.source === 'mod' ? 'mod' : 'official'}:${entry.plugin.toLowerCase()}:${entry.localFormId.toUpperCase().replace(/^0+/,'')||'0'}:${entry.type.toUpperCase()}`
     : `id:${entry.value.toUpperCase()}:${entry.type.toUpperCase()}`;
 }
 
@@ -924,7 +926,7 @@ async function importCommandBatchAutoRunReports(): Promise<void> {
     for (const report of reply.reports) {
       addActivitySummary(
         'Automatic Batch Run',
-        'Custom Command',
+        'Batch Commander',
         'Run after loading save',
         report.success ? 'success' : 'error',
         report.message,
@@ -1039,7 +1041,7 @@ function addActivitySummary(label: string, category: string, command: string, ou
 
 function addActivity(execution: PendingExecution, outcome: 'success' | 'error', message: string): void {
   addActivitySummary(
-    execution.definition?.title ?? 'Custom Command',
+    execution.definition?.title ?? 'Batch Commander',
     execution.definition?.category ?? 'Custom',
     execution.command,
     outcome,
@@ -1058,7 +1060,7 @@ function escapeHtml(value: string): string {
 }
 
 function currentCommands(): CommandDefinition[] {
-  return COMMANDS.map(command => applyCommandFeedback(command, devFeedbackCommandOutcome(command.id)));
+  return COMMANDS.map(command => applyCommandFeedback(command, devFeedbackCommandOutcome(command.id), devFeedbackCommandCategory(command.id)));
 }
 
 function categoryCount(category: string): number {
@@ -1221,13 +1223,14 @@ function commandMatches(command: CommandDefinition, searchText = query): boolean
 }
 
 function activeCommands(): CommandDefinition[] {
+  const ordered=(items:CommandDefinition[])=>activeView==='commands'?[...items].sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true,sensitivity:'base'})||a.id.localeCompare(b.id)):items;
   const visibleCommands = currentCommands().filter((command) => visibleCommandRecord(command, uiPreferences.advanced));
-  if (query) return visibleCommands.filter((command) => commandMatches(command));
+  if (query) return ordered(visibleCommands.filter((command) => commandMatches(command)));
 
   if (activeView === 'commands' && commandCategory === 'Untested') {
-    return visibleCommands
+    return ordered(visibleCommands
       .filter((command) => command.category === 'Untested')
-      .filter((command) => commandMatches(command, untestedQuery));
+      .filter((command) => commandMatches(command, untestedQuery)));
   }
 
   let commands = visibleCommands;
@@ -1244,7 +1247,7 @@ function activeCommands(): CommandDefinition[] {
     commands = visibleCommands.filter((command) => command.category === commandCategory);
   }
 
-  return commands.filter((command) => commandMatches(command));
+  return ordered(commands.filter((command) => commandMatches(command)));
 }
 
 function viewTitle(): string {
@@ -1258,8 +1261,8 @@ function viewTitle(): string {
   if (activeView === 'quest-browser') return questBrowserCategory === 'all' ? 'All Quests' : questBrowserCategory;
   if (activeView === 'id-browser') return idBrowserCategory === 'all' ? 'All Included IDs' : activeIdBrowserCategory().label;
   if (activeView === 'mod-browser') return modBrowserSort==='category' ? (modBrowserCategory==='Cells'?'Cells / Teleport':modBrowserCategory||'All Mod Categories') : modCatalogs.find((catalog) => catalog.key === idBrowserCategory)?.name ?? 'Installed Mods';
-  if (activeView === 'activity') return 'Activity Log';
-  if (activeView === 'custom') return 'Custom Command';
+  if (activeView === 'activity') return 'Command Log';
+  if (activeView === 'custom') return 'Batch Commander';
   if (activeView === 'commands' && commandCategory === 'Untested') return 'Work in Progress';
   if (activeView === 'commands') return commandCategory;
   return activeView;
@@ -1340,13 +1343,12 @@ function ensureIdCatalogLoaded(): Promise<void> {
     .then(async ({ GENERATED_ID_CATALOG }) => {
       const loadOrder = await readOfficialPluginLoadOrder();
       packagedIdCatalog = resolvePackagedIdCatalog(mergeGeneratedIdCatalog(GENERATED_ID_CATALOG), loadOrder);
-      idFavorites = resolvePackagedIdCatalog(idFavorites.map((favorite) => {
-        const localId = (favorite.localFormId ?? favorite.value).toUpperCase().slice(-6);
-        const metadata = packagedIdCatalog.find((candidate) => candidate.type === favorite.type
-          && (candidate.plugin ?? 'Starfield.esm').toLowerCase() === (favorite.plugin ?? 'Starfield.esm').toLowerCase()
-          && ((candidate.localFormId ?? candidate.value).toUpperCase().slice(-6) === localId || candidate.alternateFormIds?.some(id => id.slice(-6) === localId)));
-        return metadata ? { ...favorite, ...metadata } : favorite;
-      }), loadOrder).map((entry) => ({ ...entry, favoriteKey: idFavoriteKey(entry), savedFrom: entry.source === 'mod' ? 'mod-browser' as const : 'id-browser' as const })).filter((entry, index, entries) => entries.findIndex(candidate => candidate.favoriteKey === entry.favoriteKey) === index);
+      idCatalogLoadOrderKnown = loadOrder?.ok === true;
+      const selectedIndex = idFavorites.findIndex(entry => entry.favoriteKey === selectedFavoriteIdKey);
+      const resolvedFavorites = resolveFavoriteIds(idFavorites, packagedIdCatalog, loadOrder)
+        .map(entry => ({ ...entry, favoriteKey: idFavoriteKey(entry), savedFrom: entry.source === 'mod' ? 'mod-browser' as const : 'id-browser' as const }));
+      if (selectedIndex >= 0) selectedFavoriteIdKey = resolvedFavorites[selectedIndex]?.favoriteKey ?? null;
+      idFavorites = resolvedFavorites.filter((entry, index, entries) => entries.findIndex(candidate => candidate.favoriteKey === entry.favoriteKey) === index);
       writeFavoriteIds();
       idCatalog = [...packagedIdCatalog, ...modCatalogs.flatMap((catalog) => catalog.entries)];
       idCatalogLoaded = true;
@@ -1356,7 +1358,7 @@ function ensureIdCatalogLoaded(): Promise<void> {
     })
     .finally(() => {
       idCatalogLoading = null;
-      if (activeView === 'id-browser' || activeView === 'mod-browser') render();
+      if (activeView === 'id-browser' || activeView === 'mod-browser' || activeView === 'favorites') render();
     });
   return idCatalogLoading;
 }
@@ -1562,11 +1564,10 @@ function renderCommandListRow(command: CommandDefinition): string {
         : command.testStatus === 'needs-adjustment'
           ? 'ISSUE'
           : '';
-  const risk = command.warning ? (command.risk === 'danger' ? 'DANGER' : 'CAUTION') : '';
-  return `<button class="command-list-row${commandTestedClass(command)}${unavailable ? ' is-unavailable' : ''}" type="button" data-select-command="${escapeHtml(command.id)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(command.title)} command">
-    <span class="command-list-row-title">${escapeHtml(command.title)}</span>
-    <span class="command-list-row-tags">${status ? `<span>${status}</span>` : ''}${risk ? `<span class="${command.risk === 'danger' ? 'is-danger' : ''}">${risk}</span>` : ''}${unavailable ? '<span>UNAVAILABLE</span>' : ''}</span>
-  </button>`;
+  return devFeedbackRow(`<button class="command-list-row${commandTestedClass(command)}${unavailable ? ' is-unavailable' : ''}" type="button" data-select-command="${escapeHtml(command.id)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(command.title)} command">
+    <span class="command-list-row-title">${favorites.includes(command.id) ? '<span class="row-favorite-star" aria-hidden="true">★</span>' : ''}${escapeHtml(command.title)}</span>
+    <span class="command-list-row-tags">${status ? `<span>${status}</span>` : ''}${unavailable ? '<span>UNAVAILABLE</span>' : ''}</span>
+  </button>`, { kind: 'Command', name: command.title, id: command.id, category: command.category, command: command.command, alreadyTested: command.testStatus === 'verified' });
 }
 
 function renderCommandDetail(command: CommandDefinition | undefined): string {
@@ -1614,7 +1615,7 @@ function renderSavedCommandFavorites(): string {
 function renderIdFavorites(): string {
   return orderIdEntries(idFavorites.filter((entry) => visibleIdRecord(entry, uiPreferences.advanced))).map((entry) => {
     const selected = entry.favoriteKey === selectedFavoriteIdKey;
-    return devFeedbackRow(`<button class="command-list-row favorite-id-row${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? ' is-reference-only' : ''}${idTestedClass(entry)}${selected ? ' is-selected' : ''}" type="button" data-select-favorite-id="${escapeHtml(entry.favoriteKey)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(entry.label)} favorite ID"><span class="command-list-row-title">${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? '<span class="id-reference-cross" aria-hidden="true">✕</span>' : ''}${escapeHtml(entry.label)}</span>${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? '<span class="id-browser-reference-tag">REFERENCE ONLY</span>' : ''}</button>`,{kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category,referenceOnly:devFeedbackIdReference(entry) ?? Boolean(entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)),recordType:entry.type,editorId:entry.editorId??entry.keywords?.[0]});
+    return devFeedbackRow(`<button class="command-list-row favorite-id-row${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? ' is-reference-only' : ''}${idTestedClass(entry)}${selected ? ' is-selected' : ''}" type="button" data-select-favorite-id="${escapeHtml(entry.favoriteKey)}" role="option" aria-selected="${selected}" aria-label="${escapeHtml(entry.label)} favorite ID"><span class="command-list-row-title"><span class="row-favorite-star" aria-hidden="true">★</span>${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? '<span class="id-reference-cross" aria-hidden="true">✕</span>' : ''}${escapeHtml(entry.label)}</span>${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? '<span class="id-browser-reference-tag">REFERENCE ONLY</span>' : ''}</button>`,{kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category,referenceOnly:devFeedbackIdReference(entry) ?? Boolean(entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)),recordType:entry.type,editorId:entry.editorId??entry.keywords?.[0]});
   }).join('');
 }
 
@@ -1704,6 +1705,14 @@ function render(): void {
     commandList.hidden = true;
     customPanel.hidden = false;
     renderGameSettingsPanel();
+    return;
+  }
+
+  if (activeView === 'favorites' && idFavorites.length > 0 && !idCatalogLoaded) {
+    customPanel.hidden = true;
+    commandList.hidden = false;
+    clearForDatasetLoad();
+    void ensureIdCatalogLoaded();
     return;
   }
 
@@ -1966,7 +1975,6 @@ function renderCommandCard(command: CommandDefinition, detailView = false): stri
   const unavailable = Boolean(command.unavailableReason);
   const canRunWithoutNative = Boolean(command.catalogSearch);
   const inputs = (command.inputs ?? []).map((input) => renderInput(command, input)).join('');
-  const riskLabel = command.risk === 'danger' ? 'DANGER' : 'CAUTION';
   const selectedAction = selectedCommandAction(command);
   const displayedCommand = commandActionTemplate(command, selectedAction);
   const testTag = !isDevModeEnabled() ? '' : command.testStatus === 'untested'
@@ -1978,15 +1986,6 @@ function renderCommandCard(command: CommandDefinition, detailView = false): stri
         : command.testStatus === 'needs-adjustment'
           ? '<span class="command-test-tag">ISSUE</span>'
           : '';
-  const warningTag = command.warning
-    ? `<span class="caution-wrap">
-        <button class="command-warning-tag${command.risk === 'danger' ? ' is-danger' : ''}" type="button" data-caution="${escapeHtml(command.id)}" aria-expanded="false" aria-controls="caution-${escapeHtml(command.id)}">${riskLabel}</button>
-        <span class="caution-popover${command.risk === 'danger' ? ' is-danger' : ''}" id="caution-${escapeHtml(command.id)}" role="tooltip">
-          <strong>WHY THIS IS MARKED ${riskLabel}</strong>
-          <span>${escapeHtml(command.warning)}</span>
-        </span>
-      </span>`
-    : '';
   const executeControl = unavailable
     ? `<span class="availability-wrap" tabindex="0">
         <button class="osf-btn osf-btn--osf-accent execute-button" type="button" disabled>Unavailable</button>
@@ -2011,17 +2010,17 @@ function renderCommandCard(command: CommandDefinition, detailView = false): stri
           <div class="command-heading-main">
             <h3>${escapeHtml(command.title)}</h3>
           </div>
-          <span class="command-heading-tags">${testTag}${warningTag}</span>
+          <span class="command-heading-tags">${testTag}</span>
         </div>
         ${detailView ? `<code class="command-detail-syntax">${escapeHtml(displayedCommand)}</code>` : ''}
         <p class="command-description">${escapeHtml(command.description)}</p>
-        ${detailView && command.warning ? `<div class="command-detail-warning${command.risk === 'danger' ? ' is-danger' : ''}"><strong>${riskLabel}</strong><span>${escapeHtml(command.warning)}</span></div>` : ''}
+        ${command.warning ? `<p class="command-description command-instructions">${escapeHtml(command.warning)}</p>` : ''}
         ${command.unavailableReason ? `<p class="command-unavailable-reason">${escapeHtml(command.unavailableReason)}</p>` : ''}
         ${inputs ? `<div class="command-inputs">${inputs}</div>` : ''}
       </div>
       ${detailView && command.secondaryAction ? '<p class="command-action-note">Double-click the highlighted action to execute it.</p>' : ''}
       <div class="command-actions">
-        ${devFeedbackButton({ kind: 'Command', name: command.title, id: command.id, category: command.category, command: displayedCommand })}
+        ${devFeedbackButton({ kind: 'Command', name: command.title, id: command.id, category: command.category, command: displayedCommand, alreadyTested: command.testStatus === 'verified' })}
         <button class="favorite-button${isFavorite ? ' is-favorite' : ''}" type="button" data-favorite="${escapeHtml(command.id)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
           <span aria-hidden="true">${isFavorite ? '★' : '☆'}</span>
         </button>
@@ -2212,23 +2211,20 @@ function addRecent(commandId: string): void {
   writeStringArray(STORAGE_RECENT, recent);
 }
 
-function showConfirmation(execution: PendingExecution, message: string, risk: 'normal' | 'caution' | 'danger' = 'normal'): void {
+function showConfirmation(execution: PendingExecution, message: string, _risk: 'normal' | 'caution' | 'danger' = 'normal'): void {
   pendingExecution = execution;
-  const caution = risk === 'caution';
-  const danger = risk === 'danger';
-  confirmDialog.classList.toggle('is-caution', caution);
-  confirmDialog.classList.toggle('is-danger', danger);
-  confirmLabel.textContent = danger ? 'DANGER' : caution ? 'CAUTION' : 'CONFIRM';
+  confirmDialog.classList.remove('is-caution', 'is-danger');
+  confirmLabel.textContent = 'CONFIRM';
   confirmTitle.textContent = execution.definition
     ? `Execute ${execution.definition.title}?`
     : execution.commands && execution.commands.length > 1
-      ? `Execute ${execution.commands.length} Custom Commands?`
-      : 'Execute Custom Command?';
+      ? `Execute ${execution.commands.length} commands?`
+      : 'Execute batch?';
   confirmMessage.textContent = message;
   confirmCommand.textContent = execution.command;
   confirmRun.textContent = 'Execute';
-  confirmRun.classList.toggle('osf-btn--danger', caution || danger);
-  confirmRun.classList.toggle('osf-btn--osf-accent', !caution && !danger);
+  confirmRun.classList.remove('osf-btn--danger');
+  confirmRun.classList.add('osf-btn--osf-accent');
   confirmBackdrop.hidden = false;
   confirmCancel.focus();
 }
@@ -2367,7 +2363,7 @@ async function inspectQuest(
     }
 
     showResults(resultTitle, command, output, 'ready');
-    setStatus('Quest inspection complete. Results saved in Activity Log.', 'success');
+    setStatus('Quest inspection complete. Results saved in Command Log.', 'success');
     if (definition) addRecent(definition.id);
     addActivity(execution, 'success', `Result: ${output}`);
     if (activeView === 'recent' || activeView === 'activity' || activeView === 'quest-browser' || activeView === 'mod-browser') {
@@ -2444,7 +2440,7 @@ async function executeConsole(execution: PendingExecution): Promise<void> {
         ? `Command sent: ${executedCommand}. Verify the resulting game state.`
         : `Executed: ${executedCommand}`;
     const statusMessage = capturesOutput
-      ? 'Inspection complete. Results saved in Activity Log.'
+      ? 'Inspection complete. Results saved in Command Log.'
       : needsGameVerification
         ? `Command sent: ${executedCommand}. Verify its effect in game.`
         : `Executed: ${executedCommand}`;
@@ -2506,7 +2502,7 @@ function appendCommandToBatch(command: CommandDefinition): void {
   }
   const currentCommands = parseCustomCommands(customCommandDraft);
   customCommandDraft += customCommandDraft && !customCommandDraft.endsWith('\n') ? `\n${builtCommand}` : builtCommand;
-  setStatus(`Added ${actionDefinition.title} to the Custom Command batch (${currentCommands.length + 1} commands).`, 'success');
+  setStatus(`Added ${actionDefinition.title} to the batch in Batch Commander (${currentCommands.length + 1} commands).`, 'success');
 }
 
 async function executeCustomBatch(execution: PendingExecution): Promise<void> {
@@ -2582,14 +2578,14 @@ function renderActivityPanel(): void {
     <section class="activity-panel">
       <div class="activity-toolbar">
         <div>
-          <p class="osf-eyebrow">ACTIVITY HISTORY</p>
+          <p class="osf-eyebrow">COMMAND HISTORY</p>
           <p>Executed commands, captured inspection results, and Mod Browser scans.</p>
         </div>
         <button class="osf-btn osf-btn--sm osf-btn--ghost" id="clear-activity" type="button" ${activityLog.length === 0 ? 'disabled' : ''}>Clear Log</button>
       </div>
 
       <div class="activity-list">
-        ${entries || '<div class="empty-state activity-empty" tabindex="0"><p class="osf-eyebrow">NO ACTIVITY</p><h3>No commands logged yet</h3><p>Commands you execute will appear here, including raw custom commands and errors.</p></div>'}
+        ${entries || '<div class="empty-state activity-empty" tabindex="0"><p class="osf-eyebrow">NO COMMANDS LOGGED</p><h3>No commands logged yet</h3><p>Commands you execute will appear here, including raw custom commands and errors.</p></div>'}
       </div>
     </section>
   `;
@@ -2607,7 +2603,7 @@ function renderActivityPanel(): void {
     clearButton.addEventListener('click', () => {
       activityLog = [];
       writeActivityLog();
-      setStatus('Activity log cleared.');
+      setStatus('Command log cleared.');
       render();
     });
   }
@@ -2739,13 +2735,14 @@ function renderIdBrowserSelection(): string {
             : action === 'spawn'
                 ? entry.category === 'Workshop / Outpost Objects' ? 'Spawn Object' : 'Spawn 1'
                 : '';
+  const readingAction = entry.type.toUpperCase() === 'BOOK' ? `<button class="osf-btn osf-btn--sm" type="button" data-read-book="${escapeHtml(entry.value)}" data-book-title="${escapeHtml(entry.label)}"${entry.available === false ? ' disabled' : ''}>${entry.category==='Audio Slates'?'Listen':'Read'}</button>` : '';
   return `
     <aside class="id-browser-selection" aria-label="Selected ID">
       <div class="id-browser-selection-copy">
         <span class="osf-eyebrow">SELECTED ID</span>
         <strong>${escapeHtml(entry.label)}</strong>
         <div class="id-browser-detail-body">
-        ${canPreviewModel(entry, uiPreferences.advanced) ? `<div class="inline-model-preview" data-inline-preview="${escapeHtml(entry.value)}" data-preview-label="${escapeHtml(entry.label)}" data-preview-type="${escapeHtml(entry.type.toUpperCase())}" data-preview-category="${escapeHtml(entry.category)}" aria-label="Item model preview"></div>` : ''}
+        ${canPreviewModel(entry, uiPreferences.advanced) ? `<div class="inline-model-preview" data-inline-preview="${escapeHtml(entry.value)}" data-preview-source="${escapeHtml(entry.source??'')}" data-preview-plugin="${escapeHtml(entry.plugin??'Starfield.esm')}" data-preview-local-id="${escapeHtml(entry.localFormId??entry.value)}" data-preview-label="${escapeHtml(entry.label)}" data-preview-type="${escapeHtml(entry.type.toUpperCase())}" data-preview-category="${escapeHtml(entry.category)}" aria-label="Item model preview">${readingAction}</div>` : readingAction ? `<div class="inline-model-preview"><p class="inline-model-status">Preview unavailable.</p>${readingAction}</div>` : ''}
         <div class="id-browser-detail-text">
         ${canInspectRecord(entry) ? `<section class="record-details" data-record-details="${escapeHtml(entry.value)}" data-record-type="${escapeHtml(entry.type.toUpperCase())}" aria-label="Description and stats" aria-live="polite"></section>` : ''}
         <dl class="id-browser-metadata">
@@ -2769,7 +2766,6 @@ function renderIdBrowserSelection(): string {
         <button class="favorite-button id-browser-favorite${isFavorite ? ' is-favorite' : ''}" type="button" data-id-favorite-toggle="${escapeHtml(favoriteKey)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">${isFavorite ? '★' : '☆'}</button>
         ${entry.available === false ? '<span class="id-browser-unavailable">Required plugin is not active. ID actions are disabled.</span>' : `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(entry.value)}">Copy ID</button>`}
         ${editorId ? `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(editorId)}">Copy Editor ID</button>` : ''}
-        ${entry.type.toUpperCase() === 'BOOK' ? `<button class="osf-btn osf-btn--sm" type="button" data-read-book="${escapeHtml(entry.value)}" data-book-title="${escapeHtml(entry.label)}"${entry.available === false ? ' disabled' : ''}>Read</button>` : ''}
         ${action === 'additem'
           ? `<div class="id-browser-add-row"><label class="id-browser-quantity"><span class="osf-eyebrow">QUANTITY</span><input class="osf-input" id="id-browser-quantity" type="text" value="${idBrowserQuantity}" inputmode="numeric" autocomplete="off" aria-label="Item quantity from 1 to 999999"></label><button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-id-browser-action="additem">Add to Player</button></div>`
           : action ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-id-browser-action="${action}">${actionLabel}</button>` : ''}
@@ -2875,7 +2871,7 @@ function renderIdBrowserPanel(): void {
 
   const renderResultRow = (entry: IdCatalogEntry, index: number) => devFeedbackRow(`
     <button class="id-browser-row${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? ' is-reference-only' : ''}${idTestedClass(entry)}${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type && idBrowserSelected?.plugin === entry.plugin ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
-      <strong title="${escapeHtml(entry.label)}">${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? '<span class="id-reference-cross" aria-hidden="true">✕</span>' : ''}${escapeHtml(entry.label)}</strong>
+      <strong title="${escapeHtml(entry.label)}">${idFavorites.some(favorite=>favorite.favoriteKey===idFavoriteKey(entry)) ? '<span class="row-favorite-star" aria-hidden="true">★</span>' : ''}${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? '<span class="id-reference-cross" aria-hidden="true">✕</span>' : ''}${escapeHtml(entry.label)}</strong>
       ${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? '<span class="id-browser-reference-tag">REFERENCE ONLY</span>' : ''}
       ${globalModSearch || (activeView==='mod-browser'&&modBrowserSort==='category') ? `<span class="id-browser-row-source">${escapeHtml(entry.sourceName ?? entry.plugin ?? 'Mod')}</span>` : ''}
     </button>`, {kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin??entry.source,category:entry.category,referenceOnly:devFeedbackIdReference(entry) ?? Boolean(entry.referenceOnly || reviewedReferenceNote(entry) || ammoReferenceNote(entry) || armorReferenceNote(entry)),recordType:entry.type,editorId:entry.editorId??entry.keywords?.[0]});
@@ -2888,7 +2884,7 @@ function renderIdBrowserPanel(): void {
           group.push({ entry, index });
           groups.set(category, group);
         });
-        const categoryOrder = ['Weapons', 'Armor', 'Ammo', 'Aid', 'Resources & Miscellaneous', 'Books & Notes', 'Perks', 'Powers', 'NPCs', 'Mods', 'Factions', 'Quests', 'Cells', 'Locations', 'Ships', 'Ship Parts & Other Forms', 'Furniture', 'Weather'];
+        const categoryOrder = ['Weapons', 'Armor / Apparel', 'Ammo', 'Aid', 'Resources & Miscellaneous', 'Books / Notes', 'Audio Slates', 'Perks', 'Powers', 'NPCs', 'Mods', 'Factions', 'Quests', 'Cells', 'Locations', 'Ships', 'Ship Parts & Other Forms', 'Furniture', 'Weather'];
         return [...groups.entries()]
           .sort(([left], [right]) => {
             const leftIndex = categoryOrder.indexOf(left);
@@ -2993,7 +2989,13 @@ function bindIdBrowserSelectionActions(root: ParentNode = customPanel): void {
   root.querySelector<HTMLButtonElement>('[data-cancel-catalog-picker]')?.addEventListener('click', () => finishCatalogPicker());
 }
 
-function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): void {
+async function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): Promise<void> {
+  if(entry.source==='mod'&&!entry.plugin){setStatus('This older mod favorite has no owner information. Remove it and favorite the item again from its mod.','error');return;}
+  // Resolve at the point of use; a persisted runtime ID or earlier scan is only a snapshot.
+  if(entry.plugin){try{const reply=await window.osfui?.request<PluginLoadOrderReply>('console.command-center.pluginLoadOrder',{});const resolved=resolveFavoriteIds([entry],packagedIdCatalog,reply??null)[0];if(!resolved.available){setStatus('The item owner or local ID could not be resolved. Rescan its mod before using this item.','error');return;}entry=resolved;idBrowserSelected=entry;
+    const key=idFavoriteKey(entry);idFavorites=idFavorites.map(favorite=>idFavoriteKey(favorite)===key?{...favorite,...entry}:favorite);writeFavoriteIds();
+  }catch(error){setStatus('Could not resolve the item against the current load order: '+describe(error),'error');return;}}
+
   const action = idBrowserAction(entry);
   if (!action) return;
 
@@ -3117,7 +3119,7 @@ function renderCustomPanel(): void {
           </form>
           <div class="custom-note"><strong>NOTE</strong><span>Commands run in order, and the batch stops if a command reports an error. Save before experimenting with commands you do not recognize.</span></div>
         </div>
-        <aside class="custom-saved-panel" aria-label="Saved custom commands" tabindex="0">
+        <aside class="custom-saved-panel" aria-label="Saved command batches">
           <div class="custom-saved-heading">
             <h4>Batch Files</h4>
             <div class="custom-saved-heading-actions">
@@ -3194,7 +3196,7 @@ function renderCustomPanel(): void {
     customCommandDraft = '';
     renderCustomPanel();
     customPanel.querySelector<HTMLTextAreaElement>('#custom-command')?.focus({ preventScroll: true });
-    setStatus('Cleared the current Custom Command batch.', 'success');
+    setStatus('Cleared the current batch in Batch Commander.', 'success');
   });
 
   if (saveForm instanceof HTMLFormElement && nameInput instanceof HTMLInputElement && input instanceof HTMLTextAreaElement) {
@@ -4129,6 +4131,8 @@ confirmBackdrop.addEventListener('click', (event) => {
 });
 
 document.addEventListener('keydown', (event) => {
+  const readingDialog = document.querySelector<HTMLDialogElement>('dialog.book-reader-dialog[open]');
+  if(event.key==='Escape'&&readingDialog){event.preventDefault();event.stopPropagation();readingDialog.dispatchEvent(new Event('cancel',{cancelable:true}));return;}
   const modelDialog = document.querySelector<HTMLDialogElement>('dialog.model-preview-dialog[open]');
   if (event.key === 'Escape' && modelDialog) { event.preventDefault(); event.stopPropagation(); modelDialog.close(); return; }
   const settingsDialog = document.querySelector<HTMLDialogElement>('dialog.ui-settings-dialog[open]');
@@ -4225,6 +4229,10 @@ async function connectNativeBackend(): Promise<boolean> {
       return true; // An unsupported runtime must not be retried as a transient failure.
     }
     nativeBackendReady = true;
+    if (idCatalogLoaded && !idCatalogLoadOrderKnown) {
+      idCatalogLoaded = false;
+      officialLoadOrderLoading = null;
+    }
     void importCommandBatchAutoRunReports();
     footerNativeStatus.textContent = 'READY';
     setStatus(`${reply.backend}${reply.build ? ` ${reply.build}` : ''} connected.`, 'success');
@@ -4302,7 +4310,7 @@ installRecordDetails(async (name, payload) => {
 installModelPreview(async (name, payload) => {
   if (previewReady || !window.osfui?.request) throw new Error('Live model loading requires the in-game native plugin.');
   return window.osfui.request(name, payload, { timeoutMs: name.endsWith('previewChunk') ? 12000 : 120000 });
-}, { quality: () => uiPreferences.previewResolution, setQuality: quality => { setPreviewResolution(quality); } });
+}, { advanced:()=>uiPreferences.advanced, quality: () => uiPreferences.previewResolution, setQuality: quality => { setPreviewResolution(quality); }, background:()=>uiPreferences.previewBackground,setBackground:background=>{setPreviewBackground(background);} });
 
 installUiSettings({ changed: render, status: (message, error = false) => setStatus(message, error ? 'error' : 'success') });
 

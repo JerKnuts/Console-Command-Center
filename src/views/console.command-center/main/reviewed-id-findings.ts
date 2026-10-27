@@ -4,6 +4,9 @@ import { applyAreaNameOverride } from './area-name-overrides.ts';
 import { cellReferenceNote } from './cell-reference.ts';
 type ReviewedRecord = { value: string; type?: string; editorId?: string; keywords?: string[]; plugin?: string; localFormId?: string };
 const REVIEWED_NAMES: Record<string, { label: string; original: string }> = {
+  'starfield.esm:29959F': {label:'Boudicca Health',original:'Boudicca'},
+  'starfield.esm:29A849': {label:'Boudicca Oxygen',original:'Boudicca'},
+  "shatteredspace.esm:11BB99": {label:"Sturdy Fang's Balanced Pack",original:"Fang's"},
   "sfbgs00d.esm:03D1E5": {"label": "RedCap Asteroid Mine Excavation", "original": "Redcap Asteroid Mine"},
   "starfield.esm:051BBB": {"label": "Neon: Reliant Medical", "original": "Reliant Medical"},
   "starfield.esm:1FB254": {"label": "Research Outpost: U3-09", "original": "Research Station U3-09"},
@@ -423,7 +426,7 @@ const INVISIBLE_FURNITURE = new Set([
   "shatteredspace.esm:0FC0B0",
   "shatteredspace.esm:11CFF7",
 ]);
-const REFERENCE_ONLY = new Set([
+const REFERENCE_ONLY = new Set(["starfield.esm:06AC01","starfield.esm:079206",
   "starfield.esm:343C01", "sfbgs00d.esm:088729",
   "sfbgs047.esm:000018",
   "sfbgs004.esm:000046",
@@ -822,7 +825,12 @@ const REFERENCE_ONLY = new Set([
   "starfield.esm:2619F7",
   "starfield.esm:20675B"
 ]);
-const REVIEWED_APPAREL = new Set(["starfield.esm:04B5A0","starfield.esm:1676D3","shatteredspace.esm:0CD169","sfbgs00d.esm:0872D8","sfbgs00d.esm:0897D1","starfield.esm:002FA4","starfield.esm:015C9D","starfield.esm:015CA8","starfield.esm:01D1D7","starfield.esm:01D1D9","starfield.esm:01D1E7","starfield.esm:027189","starfield.esm:02B5EE","starfield.esm:04008C","starfield.esm:040091","starfield.esm:09B72F","starfield.esm:09F0EF","starfield.esm:09F0F6","starfield.esm:0A6FEF","starfield.esm:0A6FFA","starfield.esm:0A7001","starfield.esm:0A7018","starfield.esm:0A701C","starfield.esm:0A7021","starfield.esm:0CC4D1","starfield.esm:0CC4F6","starfield.esm:11F3A7","starfield.esm:11F3A8","starfield.esm:11F3AC","starfield.esm:11F3AD","starfield.esm:11F3B0","starfield.esm:177492","starfield.esm:177493","starfield.esm:177494","starfield.esm:177495","starfield.esm:18B54A","starfield.esm:190D0B","starfield.esm:19F9C1","starfield.esm:1A4253","starfield.esm:1A52D1","starfield.esm:1BF2F8","starfield.esm:1C84DB","starfield.esm:2074B5","starfield.esm:208E8C","starfield.esm:21BBEC","starfield.esm:220B07","starfield.esm:223430","starfield.esm:225FC9","starfield.esm:2265B0","starfield.esm:2265B1","starfield.esm:2266A2","starfield.esm:2266A3","starfield.esm:235B7D","starfield.esm:250BC5","starfield.esm:250C86","starfield.esm:251F56","starfield.esm:2619EF","starfield.esm:2619F1","starfield.esm:26D8AA","starfield.esm:29AEAE","starfield.esm:29E171","starfield.esm:3556E7","starfield.esm:362F13","starfield.esm:362F14","starfield.esm:362F15","starfield.esm:37033D","starfield.esm:37033E","starfield.esm:37033F","starfield.esm:3B2A81","starfield.esm:3E8E7F","starfield.esm:3FDBF7","starfield.esm:1466F6","starfield.esm:1466FA","starfield.esm:1466F8", "starfield.esm:1466F9", "starfield.esm:0781F7", "starfield.esm:1466FC", "starfield.esm:0781F8", "starfield.esm:1466FD", "starfield.esm:1466F7", "starfield.esm:1466FB"]);
+// October 22 headwear feedback: these exact ARMO records use clothing models/keywords.
+const REVIEWED_APPAREL = new Set([
+  "sfbgs050.esm:093519", "starfield.esm:21F3F4", "starfield.esm:3CD812",
+  "starfield.esm:1F73EF", "starfield.esm:37A34F", "starfield.esm:165718",
+  "starfield.esm:14E44E", "shatteredspace.esm:0C94CA", "shatteredspace.esm:0C94CB",
+"starfield.esm:04B5A0","starfield.esm:1676D3","shatteredspace.esm:0CD169","sfbgs00d.esm:0872D8","sfbgs00d.esm:0897D1","starfield.esm:002FA4","starfield.esm:015C9D","starfield.esm:015CA8","starfield.esm:01D1D7","starfield.esm:01D1D9","starfield.esm:01D1E7","starfield.esm:027189","starfield.esm:02B5EE","starfield.esm:04008C","starfield.esm:040091","starfield.esm:09B72F","starfield.esm:09F0EF","starfield.esm:09F0F6","starfield.esm:0A6FEF","starfield.esm:0A6FFA","starfield.esm:0A7001","starfield.esm:0A7018","starfield.esm:0A701C","starfield.esm:0A7021","starfield.esm:0CC4D1","starfield.esm:0CC4F6","starfield.esm:11F3A7","starfield.esm:11F3A8","starfield.esm:11F3AC","starfield.esm:11F3AD","starfield.esm:11F3B0","starfield.esm:177492","starfield.esm:177493","starfield.esm:177494","starfield.esm:177495","starfield.esm:18B54A","starfield.esm:190D0B","starfield.esm:19F9C1","starfield.esm:1A4253","starfield.esm:1A52D1","starfield.esm:1BF2F8","starfield.esm:1C84DB","starfield.esm:2074B5","starfield.esm:208E8C","starfield.esm:21BBEC","starfield.esm:220B07","starfield.esm:223430","starfield.esm:225FC9","starfield.esm:2265B0","starfield.esm:2265B1","starfield.esm:2266A2","starfield.esm:2266A3","starfield.esm:235B7D","starfield.esm:250BC5","starfield.esm:250C86","starfield.esm:251F56","starfield.esm:2619EF","starfield.esm:2619F1","starfield.esm:26D8AA","starfield.esm:29AEAE","starfield.esm:29E171","starfield.esm:3556E7","starfield.esm:362F13","starfield.esm:362F14","starfield.esm:362F15","starfield.esm:37033D","starfield.esm:37033E","starfield.esm:37033F","starfield.esm:3B2A81","starfield.esm:3E8E7F","starfield.esm:3FDBF7","starfield.esm:1466F6","starfield.esm:1466FA","starfield.esm:1466F8", "starfield.esm:1466F9", "starfield.esm:0781F7", "starfield.esm:1466FC", "starfield.esm:0781F8", "starfield.esm:1466FD", "starfield.esm:1466F7", "starfield.esm:1466FB"]);
 function key(record: ReviewedRecord): string { return (record.plugin ?? 'Starfield.esm').toLowerCase() + ':' + (record.localFormId ?? record.value).toUpperCase().slice(-6).padStart(6, '0'); }
 export function reviewedWasTested(record: ReviewedRecord): boolean {
   return key(record)==='starfield.esm:16D2C4' || reportedCellWasTested(record) || RECENT_TESTED.has(key(record)) || (REFERENCE_ONLY.has(key(record)) || INVISIBLE_FURNITURE.has(key(record))) || Boolean(REVIEWED_NAMES[key(record)]) || key(record) === 'starfield.esm:03B423';

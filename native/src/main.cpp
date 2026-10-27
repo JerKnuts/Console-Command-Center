@@ -4,6 +4,7 @@
 #include <RE/B/BSScriptUtil.h>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <charconv>
 #include <cctype>
@@ -27,6 +28,8 @@
 #include <REX/REX.h>
 #include "DirectQuery.h"
 #include "ScalarResult.h"
+#include "NumericQuery.h"
+#include "QueuedQueryMatch.h"
 #include "ModCatalogs.h"
 #include "CommandBatches.h"
 #include "DevFeedback.h"
@@ -34,6 +37,7 @@
 #include "RecordDetails.h"
 #include "PreviewTriggerInput.h"
 #include "CommandBatchAutoRun.h"
+#include "MenuHotkey.h"
 
 namespace
 {
@@ -43,10 +47,10 @@ namespace
     constexpr const char* kViewId = "console.command-center/main";
     void OnOpenHotkey(const char*, const char*, void*) noexcept
     {
-        if (!g_ui.RequestMenu(kViewId, true)) REX::WARN("CCC hotkey could not queue its view");
+        if (!CCC::MenuHotkey::RequestOpen(g_ui)) REX::WARN("CCC hotkey could not queue its view");
     }
 
-    constexpr const char* kBuildId = "1.3.36";
+    constexpr const char* kBuildId = "1.4.0";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -265,6 +269,11 @@ namespace
         std::string bufferBefore;
         std::string lastOutput;
         std::optional<float> scalarResult;
+        std::optional<float> numericResult;
+        std::size_t numericSlot{ static_cast<std::size_t>(-1) };
+        std::optional<CCC::NumericQuery::Plan> numericPlan;
+        std::chrono::steady_clock::time_point numericDeadline{};
+        bool complete{ false };
         std::uint32_t scalarTargetID{ 0 };
         std::uint32_t polls{ 0 };
         std::uint32_t stablePolls{ 0 };
@@ -334,12 +343,103 @@ namespace
         g_skyQueryState = state;
     }
 
+    // Numeric execute callbacks often set a return value without adding any
+    // ConsoleLog text. Observe the game's normal compiled invocation; never
+    // invoke execute/condition callbacks ourselves or reconstruct their args.
+    std::mutex g_numericQueryMutex;
+    std::array<RE::SCRIPT_FUNCTION::ExecuteFunction_t, CCC::NumericQuery::specs.size()> g_numericOriginals{};
+    std::array<CCC::QueuedQuery::PendingSlot<ConsoleQueryCapture>, CCC::NumericQuery::specs.size()> g_numericPending;
+    thread_local unsigned g_numericDepth = 0;
+
+    template <std::size_t Slot>
+    bool NumericQueryExecute(const RE::SCRIPT_PARAMETER* params, const char* data,
+        RE::TESObjectREFR* object, RE::TESObjectREFR* container, RE::Script* script,
+        RE::ScriptLocals* locals, float* result, std::uint32_t* offset)
+    {
+        RE::SCRIPT_FUNCTION::ExecuteFunction_t original;
+        { std::scoped_lock lock{g_numericQueryMutex}; original = g_numericOriginals[Slot]; }
+        if (!original) return false;
+        std::shared_ptr<ConsoleQueryCapture> state;
+        {
+            std::scoped_lock lock{g_numericQueryMutex};
+            state = g_numericPending[Slot].Active(std::chrono::steady_clock::now());
+        }
+        const auto& spec = CCC::NumericQuery::specs[Slot];
+        const bool targetMatches = state && (!spec.target || (object && object->GetFormID() == state->scalarTargetID));
+        const auto source = state && targetMatches && g_numericDepth == 0
+            ? CCC::QueuedQuery::ReadSource(reinterpret_cast<std::uintptr_t>(script), [](std::uintptr_t address, void* destination, std::size_t size) {
+                SIZE_T copied = 0;
+                return ::ReadProcessMemory(::GetCurrentProcess(), reinterpret_cast<const void*>(address), destination, size, &copied) && copied == size;
+            }) : std::nullopt;
+        const bool capture = state && state->numericPlan && targetMatches && source
+            && CCC::QueuedQuery::MatchesSource(*source, *state->numericPlan) && g_numericDepth == 0;
+        if (state) REX::INFO("CCC queued query {}: target match={}, source readable={}, source match={}", spec.name, targetMatches, source.has_value(), capture);
+        struct Depth { Depth(){ ++g_numericDepth; } ~Depth(){ --g_numericDepth; } } depth;
+        const auto outcome = CCC::ScalarResult::CaptureNumber(result, capture, [&] {
+            return original(params, data, object, container, script, locals, result, offset);
+        });
+        if (capture) REX::INFO("CCC numeric query {}: callback success={}, wrote finite result={}", spec.name, outcome.success, outcome.value.has_value());
+        if (outcome.value && CCC::NumericQuery::ValidResult(spec.kind, *outcome.value)) {
+            std::scoped_lock lock{g_numericQueryMutex};
+            if (!state->complete && !state->numericResult && std::chrono::steady_clock::now() <= state->numericDeadline)
+                state->numericResult = *outcome.value;
+        }
+        return outcome.success;
+    }
+
+    constexpr std::array<RE::SCRIPT_FUNCTION::ExecuteFunction_t, CCC::NumericQuery::specs.size()> kNumericWrappers{
+        &NumericQueryExecute<0>, &NumericQueryExecute<1>, &NumericQueryExecute<2>,
+        &NumericQueryExecute<3>, &NumericQueryExecute<4>, &NumericQueryExecute<5>,
+        &NumericQueryExecute<6>, &NumericQueryExecute<7>, &NumericQueryExecute<8>,
+        &NumericQueryExecute<9>, &NumericQueryExecute<10>
+    };
+
+    void PrepareNumericQueryCapture(const std::shared_ptr<ConsoleQueryCapture>& state)
+    {
+        const auto plan = CCC::NumericQuery::Parse(state->command);
+        if (!plan) return;
+        const auto& spec = CCC::NumericQuery::specs[plan->slot];
+        if (spec.target) {
+            auto* form = RE::TESForm::LookupByID(plan->targetID);
+            auto* reference = form ? starfield_cast<RE::TESObjectREFR*>(form) : nullptr;
+            if (!reference || (spec.actor && !starfield_cast<RE::Actor*>(form)))
+                throw std::runtime_error("The chosen reference is unavailable or is not a suitable actor. Use a placed Reference ID, not a Base ID.");
+        }
+        if (std::string_view(spec.name) == "GetItemCount" && !RE::TESForm::LookupByID(CCC::NumericQuery::FormID(plan->argument)))
+            throw std::runtime_error("Item Form ID not found in the loaded game.");
+        auto* function = RE::Script::LocateScriptCommand(spec.name);
+        if (!function || !function->executeFunction || function->numParams < spec.params
+            || (function->numParams && !function->params))
+            throw std::runtime_error("This command's result handler is unavailable or has an unexpected signature.");
+        for (unsigned i = spec.params; i < function->numParams; ++i) {
+            if (!function->params[i].optional) throw std::runtime_error("This command requires additional parameters that CCC does not support.");
+        }
+        std::scoped_lock lock{g_numericQueryMutex};
+        auto& original = g_numericOriginals[plan->slot];
+        if (!original) {
+            original = function->executeFunction;
+            if (!REL::WriteSafeData(reinterpret_cast<std::uintptr_t>(&function->executeFunction), kNumericWrappers[plan->slot])) {
+                original = nullptr;
+                throw std::runtime_error("Could not install this command's result capture.");
+            }
+        } else if (function->executeFunction != kNumericWrappers[plan->slot]) {
+            throw std::runtime_error("Another plugin replaced this command's handler; CCC cannot capture it safely.");
+        }
+        state->numericSlot = plan->slot;
+        state->numericPlan = *plan;
+        state->scalarTargetID = plan->targetID;
+        state->numericDeadline = std::chrono::steady_clock::now() + std::chrono::seconds{2};
+        g_numericPending[plan->slot].Arm(state);
+        REX::INFO("CCC numeric query armed: {}, target={:08X}", spec.name, plan->targetID);
+    }
+
     constexpr std::uint32_t kConsoleQueryMaxPolls = 40;
     constexpr auto kConsoleQueryPollDelay = std::chrono::milliseconds{ 50 };
 
     void RejectConsoleQuery(const std::shared_ptr<ConsoleQueryCapture>& state, const char* code, const char* message) noexcept
     {
         if (state) {
+            { std::scoped_lock lock{g_numericQueryMutex}; state->complete = true; }
             state->request.Reject(code, message);
         }
     }
@@ -347,6 +447,7 @@ namespace
     void RespondConsoleQuery(const std::shared_ptr<ConsoleQueryCapture>& state, const std::string& output) noexcept
     {
         try {
+            { std::scoped_lock lock{g_numericQueryMutex}; state->complete = true; }
             const auto payload = OSFUI::API::Json{
                 { "ok", true },
                 { "command", state->command },
@@ -361,6 +462,14 @@ namespace
     void PollConsoleQueryOutput(const std::shared_ptr<ConsoleQueryCapture>& state) noexcept
     {
         try {
+            {
+                std::optional<float> numeric;
+                { std::scoped_lock lock{g_numericQueryMutex}; numeric = state->numericResult; }
+                if (numeric) {
+                    RespondConsoleQuery(state, std::format("{} >> {:.9g}", state->command, *numeric));
+                    return;
+                }
+            }
             std::optional<float> scalar;
             {
                 std::scoped_lock lock{ g_skyQueryMutex };
@@ -389,7 +498,9 @@ namespace
             }
 
             if (++state->polls >= kConsoleQueryMaxPolls) {
-                RejectConsoleQuery(state, "query-timeout", "No complete console output was captured. The command may have run without printing text. Try it in Starfield's console; this is not a zero or empty result.");
+                if (state->numericSlot < CCC::NumericQuery::specs.size())
+                    REX::WARN("CCC numeric query timed out: {}. No matching valid return or new console text was captured.", state->command);
+                RejectConsoleQuery(state, "query-timeout", "No result was captured. This command may return a value without printing text; this is not a zero result.");
                 return;
             }
 
@@ -443,6 +554,7 @@ namespace
             state->command = *command;
             state->bufferBefore = ReadConsoleBuffer();
             PrepareSkyQueryCapture(state);
+            PrepareNumericQueryCapture(state);
 
             if (!ExecuteConsoleCommand(*command)) {
                 request.Reject("query-failed", "Native Starfield console execution failed.");
@@ -941,6 +1053,9 @@ namespace
 
     void OnSFSEMessage(SFSE::MessagingInterface::Message* message)
     {
+        if (message->type == SFSE::MessagingInterface::kPostDataLoad && IsRuntimeSupported() && g_ui) {
+            CCC::MenuHotkey::Install(g_ui);
+        }
         if (message->type != SFSE::MessagingInterface::kPostPostLoad) {
             return;
         }
@@ -978,6 +1093,12 @@ namespace
         g_ui.RegisterRequest("console.command-center.previewModel", &CCC::ModelPreview::OnModel, nullptr);
         g_ui.RegisterRequest("console.command-center.previewChunk", &CCC::ModelPreview::OnChunk, nullptr);
         CCC::PreviewTriggerInput::Install(g_ui);
+        // One lifecycle registration owns both observers; do not replace the
+        // controller-preview observer with an independent hotkey callback.
+        g_ui.RegisterViewLifecycle(kViewId, [](const char* view, OSFUI::API::ViewLifecyclePhase phase, void* context) noexcept {
+            CCC::MenuHotkey::OnView(phase);
+            CCC::PreviewTriggerInput::OnView(view, phase, context);
+        }, nullptr);
         g_ui.RegisterRequest("console.command-center.devFeedbackExport", &OnDevFeedbackExport, nullptr);
         g_ui.RegisterRequest("console.command-center.includedBatch", &OnIncludedBatch, nullptr);
         g_ui.RegisterRequest("console.command-center.translationPack", &CCC::Translations::OnRead, nullptr);

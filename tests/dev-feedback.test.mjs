@@ -50,7 +50,7 @@ test('Settings sidebar has no counter and Escape closes a dev report without clo
  assert.doesNotMatch(context.sidebarCategoryButton('command','Advanced Settings','Advanced Settings',8705,false),/nav-count|8,705/);
  assert.match(context.sidebarCategoryButton('id','ammo','Ammo',66,false),/nav-count/);
  let closed=0;
- context.document={querySelector:()=>({close:()=>closed++})};
+ context.document={querySelector:selector=>selector.includes('.dev-feedback-dialog')?({close:()=>closed++}):null};
  context.resultsDialog={open:true,close:()=>assert.fail('Results must not close')};
  const body=source.match(/document.addEventListener\('keydown', \(event\) => \{([\s\S]*?)^\}\);/m)[1];
  vm.runInContext(stripTypeScriptTypes(`function key(event: KeyboardEvent){${body}}`),context);

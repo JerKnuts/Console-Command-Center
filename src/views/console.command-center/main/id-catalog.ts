@@ -1,3 +1,4 @@
+import { classifyAudioSlate } from './audio-slates';
 import { applyReviewedFindings, reviewedDuplicate } from './reviewed-id-findings';
 import { applyArmorFindings } from './armor-test-findings';
 import { applyAmmoFindings } from './ammo-test-findings';
@@ -63,7 +64,8 @@ export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   { label: 'Ammo', value: 'ammo', detail: 'Ammunition records.', recordType: 'AMMO', builtInCategories: ['Ammo'] },
   { label: 'Aid / Consumables', value: 'aid', detail: 'Medicine and consumable records.', recordType: 'ALCH', builtInCategories: ['Aid'] },
   { label: 'Resources / Miscellaneous', value: 'resources', detail: 'Resources, components, and miscellaneous items.', recordType: 'MISC', builtInCategories: ['Resources', 'Resources & Miscellaneous'] },
-  { label: 'Books / Notes', value: 'books', detail: 'Books, magazines, slates, and notes.', recordType: 'BOOK', builtInCategories: ['Books & Notes'] },
+  { label: 'Audio Slates', value: 'audio-slates', detail: 'Audio recordings stored on inventory data slates.', recordType: 'BOOK', builtInCategories: ['Audio Slates'] },
+  { label: 'Books / Notes', value: 'books', detail: 'Books, magazines, notes, letters, text slates and image slates.', recordType: 'BOOK', builtInCategories: ['Books / Notes','Books','Books & Notes','Notes','Text Slates','Image Slates'] },
   { label: 'Perks / Skills / Traits', value: 'perks', detail: 'Skills, perks, backgrounds, and traits.', recordType: 'PERK', builtInCategories: ['Perks'] },
   { label: 'Powers / Effects', value: 'powers', detail: 'Starborn powers and removable environmental effects.', recordType: 'SPEL', builtInCategories: ['Powers', 'Effects'] },
   { label: 'NPCs / Companions', value: 'npcs', detail: 'NPC base records and included companion references.', recordType: 'NPC_', builtInCategories: ['Companions', 'NPCs'] },
@@ -514,7 +516,7 @@ export function mergeGeneratedIdCatalog(generated: GeneratedIdCatalogEntry[]): I
       detail: entry.detail ?? undefined,
       action: entry.action ?? undefined,
     })),
-  ].filter(entry => !reviewedDuplicate(entry)).map(applyAmmoFindings).map(applyArmorFindings).map(applyReviewedFindings).sort((a, b) => a.label.localeCompare(b.label));
+  ].filter(entry => !reviewedDuplicate(entry)).map(classifyAudioSlate).map(applyAmmoFindings).map(applyArmorFindings).map(applyReviewedFindings).sort((a, b) => a.label.localeCompare(b.label));
 }
 
 export function runtimeFormId(localFormId: string, pluginKind: PluginLoadInfo['pluginKind'], index: number): string | null {

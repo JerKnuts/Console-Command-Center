@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {decodePreview,orbitState,smoothNormals,previewAlphaMode,previewCanvasSize} from '../src/views/console.command-center/main/preview-renderer.ts';
-import {canPreviewModel,fetchPreview,defaultPreviewMannequin} from '../src/views/console.command-center/main/model-preview.ts';
+import {canPreviewModel,fetchPreview,defaultPreviewMannequin,previewMannequinFit,orientReadingPreview} from '../src/views/console.command-center/main/model-preview.ts';
 import {deflateSync} from 'node:zlib';
 
 test('compressed cutout edges remain in the solid depth pass instead of glass',()=>{
@@ -62,7 +62,7 @@ test('preview buttons work in ordinary and advanced browsing for supported loade
  assert.equal(canPreviewModel(item,true),true);assert.equal(canPreviewModel(item,false),true);
  assert.equal(canPreviewModel({...item,available:false},true),false);
  assert.equal(canPreviewModel({...item,type:'QUST'},true),false);
- assert.equal(canPreviewModel({...item,type:'BOOK'},true),false);
+ assert.equal(canPreviewModel({...item,type:'BOOK'},true),true);
  assert.equal(canPreviewModel({...item,value:'xx00000F'},true),false);
 });
 test('shared texture transfer reads one pool entry and rejects missing references',()=>{
@@ -134,10 +134,10 @@ test('workshop and ship assembly types expose previews without enabling unrelate
  assert.equal(canPreviewModel({value:'0003059B',label:'Build object',type:'GBFM'},false),true);
  assert.equal(canPreviewModel({value:'0003059B',label:'Quest',type:'QUST'},true),false);
 });
-test('model transfer pipelines two small bounded ranges and accepts out-of-order replies',async()=>{
+test('model transfer pipelines four bounded ranges and accepts out-of-order replies',async()=>{
  const bytes=Buffer.alloc(300000);for(let i=0;i<bytes.length;++i)bytes[i]=i%251;let pending=0,peak=0;
- const result=await fetchPreview(async(name,p)=>{if(name.endsWith('previewModel'))return{ok:true,ticket:'parallel',bytes:bytes.length};assert.ok(p.maxBytes<=32768);peak=Math.max(peak,++pending);await new Promise(resolve=>setTimeout(resolve,p.offset===0?8:1));--pending;return{ok:true,offset:p.offset,data:bytes.subarray(p.offset,p.offset+p.maxBytes).toString('base64')};},'00000001',()=>true);
- assert.deepEqual(Buffer.from(result),bytes);assert.equal(peak,2);
+ const result=await fetchPreview(async(name,p)=>{if(name.endsWith('previewModel'))return{ok:true,ticket:'parallel',bytes:bytes.length};assert.ok(p.maxBytes<=65536);peak=Math.max(peak,++pending);await new Promise(resolve=>setTimeout(resolve,p.offset===0?8:1));--pending;return{ok:true,offset:p.offset,data:bytes.subarray(p.offset,p.offset+p.maxBytes).toString('base64')};},'00000001',()=>true);
+ assert.deepEqual(Buffer.from(result),bytes);assert.equal(peak,4);
 });
 
 test('geometry-first requests explicitly omit expensive textures',async()=>{
@@ -161,13 +161,13 @@ test('failed transfer shrinks retries and drains outstanding replies before retu
   ++pending;await new Promise(resolve=>setTimeout(resolve,20));--pending;
   return{ok:true,offset:p.offset,data:bytes.subarray(p.offset,p.offset+p.maxBytes).toString('base64')};
  },'00000001',()=>true),/simulated timeout/);
- assert.deepEqual(sizes,[32768,16384,8192]);assert.equal(pending,0);
+ assert.deepEqual(sizes,[65536,32768,16384]);assert.equal(pending,0);
 });
 
 
 test('supported mod assets expose previews in ordinary mode with full, medium and small runtime IDs',()=>{
  for(const value of ['05001234','FD020123','FE005ABC'])for(const type of ['WEAP','ARMO','MISC','FURN','STAT','GBFM'])assert.equal(canPreviewModel({source:'mod',value,type,label:'Mod asset'},false),true);
- for(const type of ['QUST','BOOK','NPC_'])assert.equal(canPreviewModel({source:'mod',value:'05001234',type,label:'No model'},false),false);
+ for(const type of ['QUST','NPC_'])assert.equal(canPreviewModel({source:'mod',value:'05001234',type,label:'No model'},false),false);
  assert.equal(canPreviewModel({source:'mod',available:false,value:'05001234',type:'WEAP',label:'Not loaded'},false),false);
 });
 
@@ -201,4 +201,68 @@ test('Ultra transport accepts compressed full-resolution payloads above the norm
  const request=async(name,p)=>{if(name.endsWith('previewModel')){requested=p;return{ok:true,ticket:'ultra',bytes:compressed.length,decodedBytes:raw.length,compression:'deflate'};}return{ok:true,offset:p.offset,data:compressed.subarray(p.offset,p.offset+p.maxBytes).toString('base64')};};
  await assert.rejects(fetchPreview(request,'00000001',()=>true,false,'high'),/compressed model response/);
  const buffer=await fetchPreview(request,'00000001',()=>true,false,'ultra');assert.equal(buffer.byteLength,raw.length);assert.equal(requested.quality,'ultra');assert.equal(new Uint8Array(buffer).at(-1),0);
+});
+
+
+test('animated caustic packets retain textures and metal layout while older packets reject effect flags',()=>{
+ const bytes=new Uint8Array(136),v=new DataView(bytes.buffer);bytes.set(new Uint8Array(triangle()));
+ v.setUint32(4,10,true);v.setUint32(68,64,true);v.setUint32(72,1,true);
+ v.setUint32(120,1,true);v.setUint32(124,1,true);v.setUint32(128,1,true);bytes.set([40,100,80,128],132);
+ const [mesh]=decodePreview(bytes.buffer);assert.equal(mesh.effect,'caustic');assert.equal(mesh.texture.width,1);assert.equal(mesh.metalTexture,undefined);
+ v.setUint32(4,9,true);assert.throws(()=>decodePreview(bytes.buffer),/texture/);v.setUint32(4,10,true);
+ v.setUint32(68,128,true);assert.throws(()=>decodePreview(bytes.buffer),/texture/);
+ v.setUint32(68,65,true);assert.throws(()=>decodePreview(bytes.buffer),/animated effect/);
+ v.setUint32(68,64,true);v.setUint32(72,0,true);assert.throws(()=>decodePreview(bytes.buffer),/animated effect/);
+});
+
+
+test('flowing liquid packets are distinct from caustic effects and reject ambiguous flags',()=>{
+ const bytes=new Uint8Array(136),v=new DataView(bytes.buffer);bytes.set(new Uint8Array(triangle()));v.setUint32(4,11,true);v.setUint32(68,128,true);v.setUint32(72,1,true);v.setUint32(120,1,true);v.setUint32(124,1,true);v.setUint32(128,1,true);bytes.set([80,90,100,255],132);
+ assert.equal(decodePreview(bytes.buffer)[0].effect,'liquid');v.setUint32(68,192,true);assert.throws(()=>decodePreview(bytes.buffer),/animated effect/);v.setUint32(68,128,true);v.setUint32(4,10,true);assert.throws(()=>decodePreview(bytes.buffer),/texture/);
+});
+
+test('color-first requests use a separate lightweight native stage',async()=>{
+ const data=Buffer.from(triangle());let payload;
+ await fetchPreview(async(name,p)=>{if(name.endsWith('previewModel')){payload=p;return{ok:true,ticket:'color',bytes:data.length};}return{ok:true,offset:p.offset,data:data.toString('base64')};},'00000001',()=>true,false,'low','male','color');
+ assert.equal(payload.stage,'color');assert.equal(payload.quality,'low');
+});
+
+test('large transfers pace request batches below the game bridge message cap',async()=>{
+ const bytes=Buffer.alloc(1100000),times=[];
+ await fetchPreview(async(name,p)=>{if(name.endsWith('previewModel'))return{ok:true,ticket:'paced',bytes:bytes.length};times.push(performance.now());return{ok:true,offset:p.offset,data:bytes.subarray(p.offset,p.offset+p.maxBytes).toString('base64')};},'00000001',()=>true);
+ assert.ok(times.length>16);for(let i=4;i<times.length;i+=4)assert.ok(times[i]-times[i-4]>=55,'Batches exceeded safe request rate');
+});
+
+test('complete ships do not advertise an unsupported viewer while individual ship parts still do',()=>{
+ assert.equal(canPreviewModel({value:'0003059B',label:'Complete ship',type:'GBFM',category:'Ships'},true),false);
+ assert.equal(canPreviewModel({value:'0003059B',label:'Ship part',type:'GBFM',category:'Ship Parts & Other Forms'},true),true);
+});
+
+test('female mannequin selection is transmitted separately from male outfit body and quality',async()=>{
+ const data=Buffer.from(triangle());let payload;await fetchPreview(async(name,p)=>{if(name.endsWith('previewModel')){payload=p;return{ok:true,ticket:'female',bytes:data.length}}return{ok:true,offset:p.offset,data:data.toString('base64')};},'00000001',()=>true,true,'low','male',true,'female');
+ assert.equal(payload.mannequinSex,'female');assert.equal(payload.sex,'male');assert.equal(payload.mannequin,1);assert.equal(payload.stage,'geometry');
+});
+
+test('mannequin fit keeps accessories full size and spacesuits head only',()=>{
+ for(const [name,category] of [['Explorer Helmet','Armor / Apparel'],['Baseball Cap','Armor / Apparel'],['Explorer Pack','Packs']])assert.equal(previewMannequinFit(name,category),'standard');
+ assert.equal(previewMannequinFit('Explorer','Spacesuits'),'suit');
+ assert.equal(previewMannequinFit('Explorer Spacesuit','Armor / Apparel'),'suit');
+ assert.equal(previewMannequinFit('Business Suit','Apparel'),'outfit');
+});
+
+test('reading previews stand flat slates upright without rotating upright book art',()=>{
+ const make=(x,y,z)=>[{positions:new Float32Array([-x,-y,-z,x,y,z]),indices:new Uint32Array([0,1,0])}];
+ const slate=make(8,1,6);orientReadingPreview(slate);assert.deepEqual([...slate[0].positions],[-6,-8,-1,6,8,1]);
+ const book=make(1,8,6);const original=[...book[0].positions];orientReadingPreview(book);assert.deepEqual([...book[0].positions],original);
+ const face=make(8,6,1);orientReadingPreview(face);assert.deepEqual([...face[0].positions],[6,-8,-1,-6,8,1]);
+});
+
+test('advertised large transfers preserve bytes with fewer requests and legacy fallback remains bounded',async()=>{
+ const bytes=Buffer.alloc(1050000);for(let i=0;i<bytes.length;i++)bytes[i]=i%251;let calls=0,peak=0,pending=0;
+ const run=async(maxChunkBytes)=>{calls=0;const result=await fetchPreview(async(name,p)=>{if(name.endsWith('previewModel'))return{ok:true,ticket:'large',bytes:bytes.length,...(maxChunkBytes?{maxChunkBytes}:{})};calls++;assert.ok(p.maxBytes<=(maxChunkBytes??65536));peak=Math.max(peak,++pending);await new Promise(r=>setTimeout(r,1));pending--;return{ok:true,offset:p.offset,data:bytes.subarray(p.offset,p.offset+p.maxBytes).toString('base64')};},'00000001',()=>true);assert.deepEqual(Buffer.from(result),bytes);return calls;};
+ assert.equal(await run(262144),5);assert.equal(await run(undefined),17);assert.ok(peak<=4);
+});
+test('malformed transfer capability and oversized chunk replies fail before allocation or overlap',async()=>{
+ for(const maxChunkBytes of [0,262145,1.5,'262144'])await assert.rejects(fetchPreview(async()=>({ok:true,ticket:'bad',bytes:100,maxChunkBytes}),'00000001',()=>true),/capability/);
+ await assert.rejects(fetchPreview(async(name,p)=>name.endsWith('previewModel')?{ok:true,ticket:'bad',bytes:20,maxChunkBytes:262144}:{ok:true,offset:0,data:Buffer.alloc(21).toString('base64')},'00000001',()=>true),/transfer|chunk/);
 });

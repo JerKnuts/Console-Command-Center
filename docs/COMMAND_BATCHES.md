@@ -1,8 +1,8 @@
-# Command batches — 1.3.2
+# Batch Commander
 
 ## Included files and saved files
 
-Custom Command's flat INCLUDED sidebar lists files in Documents\My Games\Starfield\Console Command Center\Included Batches. Each file is an actual runnable .txt batch with comments explaining its effects. Selecting one loads its contents for review/editing and never executes it. Editing files in a text editor and selecting Refresh updates the list/content. Saving a draft uses the separate Command Batches folder.
+Batch Commander's flat INCLUDED sidebar lists files in Documents\My Games\Starfield\Console Command Center\Included Batches. Each file is an actual runnable .txt batch with comments explaining its effects. Selecting one loads its contents for review/editing and never executes it. Editing files in a text editor and selecting Refresh updates the list/content. Saving a draft uses the separate Command Batches folder.
 
 The source defaults live in batches/included and are bundled into the UI from those exact .txt files. Defaults are installed once per filename. Existing user files are retained, modified files are not overwritten, and deleted defaults are not recreated. The three original native samples still seed only an empty Command Batches folder; they are separate from the included library.
 
@@ -31,3 +31,11 @@ Saved files can be marked On Load and controlled by a master Auto-Run switch, of
 ## Reset filenames (1.3.15)
 
 Boostpack Explosions RESET.txt, Quick Surveying RESET.txt and Scanner Visibility RESET.txt sort after their matching presets. The former More Boostpack Explosions.txt is now Boostpack Explosions.txt. During included-file setup, old names migrate without changing their contents. Previously deleted defaults stay deleted. If both old and new filenames already exist, both user files are kept without overwriting either. Saved Command Batches and Auto-Run selections are separate and unchanged.
+
+## Controller navigation
+
+Entering Batch Commander focuses the first saved file’s Load button, or Save .txt File when no saved file is available. Up from the first saved row reaches Save; Up again reaches Refresh. Left/Right moves across Refresh and Auto-Run. Left from Save reaches Entry Name, then Left reaches the center Review Commands control. Right from the Included sidebar also reaches Review Commands. Up reaches the editor and Down returns to Review; A opens the existing command review. Left crosses the center controls back to Included files, and Right returns to saved files. Select an included file with A to load it for review. The saved-file panel itself is not a focus target.
+
+## Controller navigation
+
+The saved-files panel starts on the first saved Load button, or Save .txt File when empty. Up reaches Save, Refresh and Auto-Run; Left/Right connects the header controls. The panel itself is not a focus stop. Right from Included files reaches the center Review Commands button; Up reaches the editor and Down returns to Review. Left from the saved-panel boundary returns to the center. Loading a file focuses its editor so it can be reviewed and run.
