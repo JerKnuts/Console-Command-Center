@@ -1,291 +1,44 @@
-# Console Command Center — Command Catalog
+# Command Browser catalog
 
-Version: 1.2.35
+Current source: v1.4.0. The prepared catalog contains 213 cards, including 43 WIP entries, plus 1,468 remaining lazy-loaded engine reference cards. Displayed counts can differ with Advanced Options, saved test outcomes and promoted WIP entries.
 
-Established command cards: 149
+| Prepared category | Cards |
+| --- | ---: |
+| Camera | 8 |
+| Gameplay | 11 |
+| Inventory | 14 |
+| Player | 25 |
+| Quests | 7 |
+| Ship | 25 |
+| Skills | 8 |
+| Targets | 33 |
+| World | 22 |
+| MISC | 16 |
+| Advanced Settings | 1 |
+| WIP | 43 |
 
-WIP command intake: 1,532 (39 prepared cards plus 1,493 raw engine entries: 546 console commands and 947 script functions)
+Commands sort alphabetically within categories. MISC, Advanced Settings and WIP are pinned after the ordinary categories. Recent and Favorites preserve their own ordering. Advanced Options reveals WIP and Advanced Settings.
 
-Quest Browser: 2,568 quest records with 19,061 structurally recorded stages across the base game, Shattered Space, Free Lanes, and Terran Armada
+## Instructions and test outcomes
 
-Risk levels:
-- **Normal** — ordinary confirmation before execution.
-- **Caution** — command can materially change gameplay/state; review the command-specific warning.
-- **Danger** — command can significantly alter quests, actors, world state, or save behavior; use a backup/disposable save.
+Caution/Danger badges are removed from the interface. Command-specific instructions, review before execution and unavailable-action blocks remain. Internal risk metadata is retained for compatibility; it does not create visible badges. Make a manual save before changing quests or important game state.
 
-Testing status is intentionally conservative. Verification records the reported in-game command result. A command working in the ordinary console does not guarantee that CCC can capture its output; adapter-specific checks remain separate.
+Working is a manual Dev Mode toggle: click again to clear it. A successful dispatch or build never marks a command Working. Reporting Issues or Not noticeable retains the displayed category. Some explicitly reviewed unresolved commands remain assigned to WIP. Saved outcomes survive report export and reload.
 
-Latest user test reports incorporated: October 12, 2026. The user confirmed the latest editor layout looks correct; the v1.2.18 sky-result adapter still requires its indoor/outdoor in-game check. This file is the maintained command-status record; superseded test-build notes have been removed.
+A historical Verified source status records a reported command result; it does not certify every input or the current Results adapter. The actual card definitions, templates, instructions and status notes are maintained in commands.ts, untested-commands.ts and confirmed-readout-commands.ts under src/views/console.command-center/main. The engine-command library is generated from [the help-derived reference](docs/ENGINE_COMMAND_REFERENCE.md). Inclusion is not proof that an engine command is available or useful in the retail game.
 
-## Gameplay
+## Results and remaining query limits
 
-| Command | Console syntax | Risk | CCC test |
-|---|---|---|---|
-| God Mode | `tgm` | Normal | Verified |
-| Immortal Mode | `tim` | Normal | Verified |
-| Toggle Collision | `tcl` | Caution | Verified; nearby NPCs were repeatedly stuck in place while TCL was enabled |
-| Toggle Detection | `tdetect` | Normal | Verified |
-| Toggle Combat AI | `tcai` | Normal | Verified |
-| Toggle All AI | `tai` | Caution | Verified |
-| Kill Nearby Hostiles | `kah` | Caution | Verified |
-| Kill Everyone Nearby | `killall` | Danger | Verified |
-| Speech Challenge Success | `setforcespeechchallengealwayssucceed 1` / `setforcespeechchallengealwayssucceed 0` | Caution | Verified; Always Succeed and Restore Normal share one card |
-| Speech Challenge Failure | `setforcespeechchallengealwaysfail 1` / `setforcespeechchallengealwaysfail 0` | Caution | Accepted as working; Always Fail and Restore Normal share one card |
-| Pay Bounty | `player.paycrimegold 0 0 {factionId}` | Caution | Verified |
+Supported read-only commands use typed native readers or narrowly checked execute adapters where available. Companion affinity and player inventory provide direct reads; the revised numeric paths avoid depending on printed console text where supported. Timeouts and unsupported results are failures to verify a value, not zero results. See [the capture investigation](docs/QUERY_CAPTURE_1345.md) for the original failure and subsequent direct-query work.
 
-**Pay Bounty** uses the compact ID field + **CHOOSE FACTION** box layout. The choice list is intentionally limited to bounty-relevant faction records (including supported Shattered Space entries), while manual faction-ID entry remains available. Inline preset-button grids are not used. The command spends the player's credits; it does not erase the bounty for free.
+Get Current Cell and Get Starting Position remain under WIP / Executed — Issues. Is It Raining? and Is It Snowing? are also there: the supported runtime's commands are constant-zero stubs, so they are not reliable weather observations. Actor state, distance and lock readouts have parameter/target and runtime validation; their in-game review remains separate from successful native fixtures. Do not infer Working status from the readout module's name.
 
-## Player
+Raw engine references accept optional arguments and, for supported target-scoped entries, an optional target/prefix. They must be reviewed before execution. Known crash paths remain disabled. LinkFullAccount is unavailable because entering credentials would retain them in command history.
 
-| Command | Console syntax | Risk | CCC test |
-|---|---|---|---|
-| Add Experience | `player.modav experience {amount}` | Caution | Verified |
-| Increase Player Level | `player.setlevel {level}` | Caution | Verified |
-| Adjust Carry Weight (+/-) | `player.modav carryweight {amount}` | Caution | Verified |
-| Set Carry Weight Effective Total | calculated native setter | Caution | Verified — compensates for active modifiers |
-| Change Player Size | `player.setscale {scale}` | Caution | Verified |
-| Set Movement Speed | `player.setav speedmult {value}` | Caution | Verified |
-| Set Max Health | `player.setav health {value}` | Caution | Verified |
-| Restore Player Health | `player.resethealth` | Normal | Verified |
-| Inspect Player Actor Value | `player.getav {actorValue}` | Normal | Verified (Health only) |
-| Force Enable Player Controls | `fepc` | Caution | Verified |
-| Reset Forced Player Controls | `resetforceenabledplayercontrols` | Normal | Verified |
-| Open Full Character Creator (Advanced) | `showlooksmenu player 1` | Danger | Verified |
-| Open Appearance Editor | `showlooksmenu player 2` | Normal | Verified |
-| Teleport Player to Reference | `player.moveto {refId}` | Caution | Verified |
-| Set Player Coordinate Axis | `player.setpos {axis} {value}` | Caution | Verified |
-| Set Boostpack Horizontal Base Value | `player.setav BoostpackHorizontalPercentage {value}` | Caution | Verified — base value stacks with modifiers |
-| Set Boostpack Horizontal Effective Total | calculated native setter | Caution | Verified |
-| Set Boostpack Initial Thrust Base | `player.setav BoostpackThrustInitial {value}` | Caution | Verified — base value stacks with modifiers |
-| Set Boostpack Initial Thrust Effective Total | calculated native setter | Caution | Verified |
-| Set Boostpack Sustained Thrust Base | `player.setav BoostpackThrustSustained {value}` | Caution | Verified — base value stacks with modifiers |
-| Set Boostpack Sustained Thrust Effective Total | calculated native setter | Caution | Verified in v0.3.1 |
-| Set Boostpack Transition-Time Base | `player.setav BoostpackTimetoSustained {value}` | Caution | Verified — base value stacks with modifiers |
-| Set Boostpack Transition-Time Effective Total | calculated native setter | Caution | Verified in v0.3.1 |
+## Browser and quest actions
 
+The packaged ID Browser contains 23,308 entries; Mod Browser scans supported records from the active load order. The Quest Browser separately contains 2,568 quests with 19,061 structurally recorded stage indexes. These counts are data coverage, not gameplay certification. See [ID catalog sources](docs/ID_CATALOG_SOURCES.md) and [Mod Browser](docs/MOD_ID_CATALOGS.md).
 
-**Full Character Creator warning:** `showlooksmenu player 1` resets the player's current appearance when it opens and enters the original character-creation flow. Treat it as a very dangerous command: make a manual save first and use **Open Appearance Editor** (`showlooksmenu player 2`) for safer appearance-only edits.
+Supported quick actions include adding inventory/perks/powers, placing supported objects, weather changes and cell teleports. Reference-only and unavailable records block gameplay actions. Quest Start, Stop, Complete, Reset and Set Stage require review and can skip scripts or prerequisites; inspection itself is read-only.
 
-## Inventory
-
-| Command | Console syntax | Risk | CCC test |
-|---|---|---|---|
-| Show Player Inventory | `player.showinventory` | Normal | Verified |
-| Search Form IDs | Packaged ID Browser search | Normal | Verified in game |
-| Search Form IDs by Type | Packaged ID/Quest Browser search with exact record-type filter | Normal | Verified in game |
-| Add Credits | `player.additem 0000000F {amount}` | Caution | Verified |
-| Add Digipicks | `player.additem 0000000A {amount}` | Normal | Verified |
-| Add Med Packs | `player.additem 0000ABF9 {amount}` | Normal | Verified |
-| Add Ship Parts | `player.additem 0003FB19 {amount}` | Normal | Verified |
-| Add Item by Form ID | `player.additem {formId} {amount}` | Caution | Verified |
-| Remove Item by Form ID | `player.removeitem {formId} {amount}` | Danger | Verified |
-| Equip Item by Form ID | `player.equipitem {formId}` | Caution | Verified |
-| Unequip Item by Form ID | `player.unequipitem {formId}` | Normal | Verified |
-| Drop Item by Form ID | `player.drop {formId} {amount}` | Caution | Verified |
-| Spawn Object / NPC by Base ID | `player.placeatme {baseId} {amount}` | Danger | Verified |
-
-
-**Credits safety:** CCC limits **Add Credits** to 100,000,000 credits per execution. Starfield becomes unreliable as the total approaches or exceeds 999,999,999 credits. CCC does not know the player's current balance, so users should avoid pushing the total near that limit; the command can be run multiple times when more credits are needed.
-
-## Skills
-
-| Command | Console syntax | Risk | CCC test |
-|---|---|---|---|
-| Add Skill Points | `CGF "Game.AddPerkPoints" {amount}` | Caution | Verified |
-| Add Perk / Skill by Form ID | `player.addperk {formId}` | Caution | Verified |
-| Remove Perk / Skill by Form ID | `player.removeperk {formId}` | Danger | Verified |
-| Grant All Powers | `psb` | Danger | Verified |
-| Set Star Power | `player.setav starpower {value}` | Caution | Verified |
-| Set Star Power Recharge Rate | `player.setav starpowerratemult {value}` | Caution | Verified |
-| Add Power / Spell by Form ID | `player.addspell {formId}` | Danger | Verified |
-| Remove Spell / Status Effect by Form ID | `player.removespell {formId}` | Caution | Verified |
-
-## Camera
-
-| Command | Console syntax | Risk | CCC test |
-|---|---|---|---|
-| Toggle Free Camera | `tfc` | Normal | Verified |
-| Enter Free Camera + Freeze | `tfc 1` | Caution | Verified |
-| Toggle HUD / Interface | `tm` | Caution | Verified |
-| Set Free Camera Speed | `sucsm {speed}` | Normal | Verified |
-| Clear Screen Blood | `ClearScreenBlood` | Normal | Accepted in game; no active blood overlay was available for a visual check |
-| Toggle First-Person Hands | `ToggleHandsCulled` | Caution | Verified — hid the held weapon/first-person hands |
-| Show First-Person Model in Third Person | `Show1stPerson` | Caution | Verified — displayed the first-person arms beside the third-person character |
-
-## World
-
-| Command | Console syntax | Risk | CCC test |
-|---|---|---|---|
-| Toggle Game Pause | `tgp` | Normal | Verified |
-| Toggle All Actor Animations | `ToggleAnimations` | Caution | Verified — froze nearby actor animations; run again to restore them |
-| Use Nearest Teleport Door | `UseNearestTeleportDoor` | Caution | Verified — moved the player through the nearest door |
-| Set Game Speed | `sgtm {value}` | Caution | Verified |
-| Wait Anywhere | `passtime {hours}` | Normal | Verified; replaces the removed post-1.10.32 wait-menu command |
-| Toggle Grass | `ToggleGrass` | Normal | Verified |
-| Toggle Sky | `ts` | Normal | Verified; `ts` is the short alias for the raw engine command `ToggleSky` |
-| Set Interior Gravity | `setgravityscale {value}` | Caution | Verified — interior cells only; 1 restores normal gravity |
-| Set Scanner Scan Range | `setgs fHandScannerScanRange {value}` | Caution | Verified |
-| Set Scanner Base Range | `setgs fHandScannerBaseRange {value}` | Caution | Verified |
-| Set Scanner Social Range | `setgs fHandScannerSocialRange {value}` | Caution | Verified |
-| Reveal Planet Map Markers | `tmm 1` | Danger | Verified |
-| Teleport to Cell | `coc {cellName}` | Danger | Verified |
-| Inspect Game Setting | `getgs {setting}` | Normal | Verified — `fHandScannerScanRange` returned 60.0 |
-| Force Weather | `fw {weatherId}` | Caution | Verified |
-| Set Weather Gradually | `setweather {weatherId}` | Caution | Verified |
-
-**Weather choices:** both weather commands use the same compact ID field + **CHOOSE WEATHER** box layout as the companion commands. Clear, Rain, Snow, Heavy Snow, Thunderstorm, Sandstorm, Dense Mist, Light Mist, and Burning Haze are available through the chooser, while manual Weather Form IDs remain supported. No inline weather-button grid is used.
-
-## Targets
-
-| Command | Console syntax | Risk | CCC test |
-|---|---|---|---|
-| Select Closest Actor | `PickClosestActor` | Normal | Verified |
-| Select Console Reference by ID | `PickRefByID {refId}` | Normal | Verified — requested object appeared selected when the console reopened |
-| Select Next Actor | `PickNextActor` | Normal | Verified — selected the actor near the center of the screen |
-| Select Next Reference | `PickNextRef` | Normal | Verified — selected the reference near the center of the screen |
-| Move Reference to Player | `{refId}.moveto player` | Caution | Verified |
-| Kill Actor by Reference ID | `{refId}.kill` | Danger | Verified |
-| Resurrect Actor by Reference ID | `{refId}.resurrect` | Danger | Verified |
-| Recycle Actor / Reference | `{refId}.recycleactor` | Danger | Verified |
-| Disable Reference | `{refId}.disable` | Danger | Verified |
-| Enable Reference | `{refId}.enable` | Caution | Verified |
-| Unlock Door / Container by Reference ID | `{refId}.unlock` | Danger | Verified |
-| Lock Door / Container by Reference ID | `{refId}.lock {level}` | Caution | Verified |
-| Set Target / Reference Scale | `{refId}.setscale {scale}` | Caution | Verified |
-| Set Reference Ownership | `{refId}.setownership` | Caution | Verified |
-| Move Reference Along Axis | `{refId}.modpos {axis} {amount}` | Caution | Verified |
-| Rotate Reference Along Axis | `{refId}.modangle {axis} {degrees}` | Caution | Verified |
-| Restore Actor Health | `{refId}.resethealth` | Normal | Verified |
-| Stop Actor Combat | `{refId}.stopcombat` | Caution | Needs adjustment / inconclusive |
-| Activate Reference | `{refId}.activate` | Caution | Verified |
-| Reset Actor AI | `{refId}.resetai` | Caution | Verified |
-| Force Actor Repath | `{refId}.forcerepath` | Caution | Verified |
-| Reevaluate Actor Behavior | `{refId}.evp` | Caution | Verified — resumed a stopped NPC's movement |
-| Open or Close Reference | `{refId}.setopenstate {state}` | Caution | Verified; includes Open/Closed chooser |
-| Inspect Reference Actor Value | `{refId}.getav {actorValue}` | Normal | Verified |
-| Mark Reference for Permanent Deletion | `{refId}.markfordelete` | Danger | Untested |
-| Set Exact Reference Position | `{refId}.setpos {axis} {value}` | Caution | Verified |
-| Set Exact Reference Rotation | `{refId}.setangle {axis} {degrees}` | Caution | Verified |
-| Inspect Reference Position | `{refId}.getpos {axis}` | Normal | Verified |
-| Inspect Reference Rotation | `{refId}.getangle {axis}` | Normal | Verified |
-| Inspect Reference Scale | `{refId}.getscale` | Normal | Blocked — the condition evaluator crashed previously, and the direct getter later terminated Starfield while resolving missing Address Library ID 0 |
-| Attach Weapon / Armor Mod | `{refId}.amod {modId}` | Caution | Untested |
-| Remove Weapon / Armor Mod | `{refId}.rmod {modId}` | Caution | Untested |
-| Inspect Companion Affinity | `{refId}.getav com_affinity` | Normal | Verified |
-| Inspect Companion Relationship Level | `{refId}.getav com_affinitylevel` | Normal | Verified |
-| Inspect Companion Anger Level | `{refId}.getav com_angerlevel` | Normal | Verified |
-| Set Companion Affinity | `{refId}.setav com_affinity {value}` | Danger | Verified |
-| Set Companion Relationship Level | `{refId}.setav com_affinitylevel {value}` | Danger | Verified |
-| Set Companion Anger Level | `{refId}.setav com_angerlevel {value}` | Danger | Verified in v0.3.1 |
-
-**Companion choices:** the affinity and anger commands use the compact ID field + **CHOOSE COMPANION** box for Sarah Morgan (`00005986`), Barrett (`00005788`), Sam Coe (`0029D488`), and Andreja (`000059A9`). These are the four core companions that use Starfield's affinity/relationship progression; other recruitable crew are intentionally not presented for these commands. Manual Reference ID entry remains available.
-
-
-**Read-only inspection:** CCC's native query bridge powers supported reference inspection, inventory listing, Game Setting inspection, player/ship actor-value inspection, and ship-ID lookup. Known-broken Scale and quest inspections are displayed as unavailable and cannot be executed. Open-state inspection was removed because CommonLibSF does not expose a verified safe reader; the verified Open/Close action remains available. Held-object inspection was also removed because the native event source remains unresolved. Advanced users can hold an object and run `getplayergrabbedref` in Starfield's own console; testing confirmed it returns the held Reference ID and `00000000` after release. Results from supported CCC inspections are preserved in the Results window and Activity Log. This requires rebuilding `ConsoleCommandCenter.dll`.
-
-## Quests
-
-| Command | Console syntax | Risk | CCC test |
-|---|---|---|---|
-| Show Current Quest Targets | `sqt` | Normal | Executed with console history, but blocked in CCC because the unfiltered output was too large to use |
-| Get Current Quest Stage | `getstage {questId}` | Normal | Verified — native quest read returned the running quest's current stage immediately |
-| Show Quest Stage History | `sqs {questId}` | Normal | Verified — native stage checks returned the full done/not-set history without console capture |
-| Start Quest by ID | `startquest {questId}` | Danger | Needs adjustment — command was sent, but some quests need a stage before visible activation |
-| Stop Quest by ID | `stopquest {questId}` | Danger | Verified — quest changed to Stopped |
-| Set Quest Stage | `setstage {questId} {stage}` | Danger | Verified — activated the selected quest stage |
-| Complete Quest by ID | `completequest {questId}` | Danger | Verified on an ordinary active quest; not every quest accepts generic completion |
-| Reset Quest by ID | `resetquest {questId}` | Danger | Verified — cleared recorded stages and removed the quest from the log; quest remained Stopped |
-| Teleport to Quest Target | `movetoqt {questId}` | Caution | Verified |
-
-## Ship
-
-| Command | Console syntax | Risk | CCC test |
-|---|---|---|---|
-| Get Current Ship Reference ID | `player.getspaceship` | Normal | Verified |
-| Inspect Ship Actor Value | `{shipRef}.getav {actorValue}` | Normal | Verified |
-| Set Ship Cargo Base Value | `{shipRef}.setav CarryWeight {value}` | Caution | Verified — base value stacks with module modifiers |
-| Set Ship Cargo Effective Total | calculated native setter | Caution | Verified |
-| Set Shielded Cargo Capacity | `{shipRef}.setav CarryWeightShielded {value}` | Caution | Verified — base value stacks with module modifiers |
-| Set Shielded Cargo Effective Total | calculated native setter | Caution | Verified |
-| Set Ship Crew Capacity | `{shipRef}.setav SpaceshipCrewRating {value}` | Caution | Verified |
-| Set Player Ship Command Slots | `player.setav SpaceshipCrewCommandSlots {value}` | Caution | Verified |
-| Set Ship Reactor Power Actor Value | `{shipRef}.setav SpaceshipReactorPower {value}` | Caution | Verified — base value stacks with module modifiers |
-| Set Ship Reactor Power Effective Total | calculated native setter | Caution | Verified |
-| Set Ship Grav Jump Fuel | `{shipRef}.setav SpaceshipGravJumpFuel {value}` | Caution | Verified |
-| Set Ship Boost Fuel | `{shipRef}.setav SpaceshipBoostFuel {value}` | Caution | Verified |
-| Set Ship Boost Recharge Rate | `{shipRef}.setav SpaceshipBoostRechargeRate {value}` | Caution | Verified |
-| Set Maximum Owned Ships | `setgs uSpaceshipMaximumOwnedSpaceships {value}` | Caution | Verified |
-| Set Ship Looting Distance | `setgs fSpaceshipLootingDistanceDefault {value}` | Caution | Verified |
-| Set Maximum Docking Distance | `setgs fSpaceshipMaxDockingDistance {value}` | Caution | Verified |
-| Set Ship Cargo Transfer Distance | `setgs fMaxShipTransferDistance {value}` | Caution | Verified |
-| Set Ship Builder Max Height | `setgs fSpaceshipBuilderMaxSizeZ {value}` | Caution | Verified |
-| Set Landable Ship Max Size X | `setgs fSpaceshipLandableMaxSizeX {value}` | Caution | Verified |
-| Set Landable Ship Max Size Y | `setgs fSpaceshipLandableMaxSizeY {value}` | Caution | Verified |
-| Set Landable Ship Max Size Z | `setgs fSpaceshipLandableMaxSizeZ {value}` | Caution | Verified |
-| Set Landable Small Ship Size | `setgs fSpaceshipLandableSmallSize {value}` | Caution | Verified |
-| Set Ship Builder Module Limit | `setgs uSpaceshipBuilderMaxModules {value}` | Caution | Verified |
-| Set Ship Builder Module Hard Limit | `setgs uSpaceshipBuilderModuleHardLimit {value}` | Caution | Verified |
-| Refuel Player Spaceship | `RefuelSpaceship` | Normal | Verified |
-| Spawn Ship by Base ID | `player.placeatme {baseId}` | Danger | WIP Executed — Issues; ship spawned directly on the player and partly underground, leaving the boarding ramp inaccessible |
-
-**Ship workflow:** run **Get Current Ship Reference ID** while aboard the ship, then use that Reference ID with the ship actor-value commands. Use **Inspect Ship Actor Value** before changing a stat so you can record its existing value. Game Setting commands (owned-ship limit, docking/looting/transfer distance, and builder module limits) normally reset when Starfield restarts. The documented vanilla values used in CCC hints are 10 owned ships, 500 docking distance, 500 looting distance, and 130 for both ship-builder module limits; the transfer-distance default is less consistently documented, so inspect it first if exact restoration matters.
-
-## Work in Progress command intake (1,532)
-
-Newly discovered commands enter this isolated category before they can appear alongside verified everyday, cheat, repair, or developer tools. Commands with destructive or uncertain effects retain Caution or Danger confirmation. Test them on a disposable save; successful commands can then move into their permanent category with an accurate description and warning.
-
-Untested prepared cards belong to **Engine Console Commands** or **Script Functions**. **Executed — Effect Unconfirmed** keeps commands with no confirmed result, **Executed — Issues** retains confirmed usability problems, and **Blocked — Known Crash** retains disabled crash paths. There is no Ready to Test group. The raw reference contains 546 console commands and 947 script functions; test-result grouping can move individual entries out of their original group. The complete 1,493-entry engine library loads when WIP is opened or searched. Raw engine cards accept optional arguments, and target-scoped diagnostics and script functions also accept an optional target or prefix. Selected status commands capture their console text in CCC's Results window. Their parameters are not fully documented, so the final command must be reviewed before execution. `LinkFullAccount` remains visible for completeness but is disabled because entering account credentials would save them in CCC history. Hovering or focusing the large disabled Unavailable action reveals the underlying console syntax for advanced manual use.
-
-The first intake includes:
-
-- Player body-type switching, player death, Start All Quests, and Complete All Quest Stages
-- Camera FOV plus sky, wireframe, collision-geometry, motion-blur, TAA, FSR2, VRS, rain-occlusion, lens-flare, and marker toggles
-- Subtitle overrides, one-frame advancement, projectile cleanup, and weather/climate reloads
-- Ship takeoff and planetary-marker landing; Workshop entry is verified inside ships
-- Returning a reference to its start position, forcing combat, resetting dialogue flags, screenshots, and named save/load commands
-
-The syntax and descriptions were imported from and cross-checked against the game-help-derived [SFSE console-command list](https://gist.github.com/eacpereira/25f00410b1940d04a24f8a49b0b1bf44) and public Starfield command references. Inclusion means “available for controlled testing,” not “verified.” The complete reference is included even when required parameters are unclear; those entries use optional raw argument fields and remain isolated from the established catalog.
-
-
-
-## ID Browser + Reference ID Picker
-
-The current source includes a standalone **ID Browser** with **23,319 included IDs** covering weapons, armor and apparel, ammunition, aid, resources and miscellaneous items, books and notes, skills, traits, powers, effects, object mods, factions, NPCs, ships, named locations and cells, and weather. Search filters the catalog instantly by name, Form ID, type, category, and Editor ID. Location and cell selections expose separate Form ID and Editor ID copy actions. ID categories use compact selectable rows with a separate details panel. Active selected records offer **Copy ID**, with conservative quick actions for supported record types, including **Change Weather** for Weather records and **Teleport Here** for Cell records. Location records can narrow the browser to matching teleportable Cells because the console's `coc` command requires a Cell Editor ID rather than a Location Form ID. The experimental loaded-game scanner was removed after test9 caused an access violation on Starfield 1.16.244. Shattered Space entries are labeled in their visible detail text and use cleaned Editor IDs when no verified localized name is available. Free Lanes and Terran Armada include all named non-deleted records in supported types; internal/test records are reference-only.
-
-The browser supports category filtering across its packaged records and exposes conservative quick actions such as **Add to Player**, **Add Perk**, **Add Spell / Power**, **Spawn**, **Change Weather**, and **Teleport Here** where the record type makes the action reasonably clear. It does not query or scrape Starfield's live console output.
-
-The command cards continue to use the compact editable ID field + boxed **CHOOSE ...** control for known curated choices. Inline preset-button grids are intentionally avoided.
-
-## Quest Browser (2,568 quests / 19,061 recorded stages)
-
-Quest Browser is separate from ID Browser and lists Base Game, Shattered Space, Free Lanes, and Terran Armada with alphabetical categories. Internal / System is visible only with Advanced Options.
-Its packaged Quest IDs and 19,061 recorded stage indexes are structurally validated against `Starfield.esm`, `ShatteredSpace.esm`, `SFBGS00D.esm`, and `SFBGS050.esm`.
-CCC executes the vanilla Starfield console command directly.
-
-Quest Browser offers confirmed `startquest`, `stopquest`, `completequest`, `resetquest`, and `setstage` actions. Every state-changing action is treated as **Danger** because it can skip dialogue, scripts, rewards, scenes, or prerequisites. Make a manual save first. **Inspect Quest State** uses the verified native reader to show the current stage and mark completed stages without depending on console-output capture.
-
-## Latest camera and read-only findings
-
-| Command | Finding |
-|---|---|
-| ToggleWorkshopFlyCam | Verified inside and outside Workshop mode; moves freely high above the world. Promoted to Camera. |
-| workshop | Verified inside a player ship. Promoted to World; outpost use remains unconfirmed. |
-| ToggleFXCam | Disabled under Executed — Issues: free camera trapped the player, actors froze/twitched, and a restart was required. |
-| KAP | Triggered without confirmed projectile removal; Effect Unconfirmed. |
-| TakeOffToSpace | Triggered without takeoff; Effect Unconfirmed. |
-| SetAtStart | No position change on FF1E9A89 or 003CD1C6; Effect Unconfirmed. |
-| GetPos / GetAngle / GetCurrentTime | User reported working. Position and angle have direct CCC readers; time still uses printed output capture. |
-| ActorExposedToSky | Ordinary console returned 1 outside and 0 inside. Prior CCC popup timed out; v1.2.18 exact return capture is built and awaits in-game comparison. |
-| IsOnPlayerHomeSpaceShip | Ordinary query returned 0 outside and 1 inside; CCC output capture still needs verification. |
-| GetPlayerGravityScale / AreHostileActorsNear / GetPCIsReloading / IsBoostPackActive / IsBoostPackHovering | Triggered without a confirmed visible result; remain unconfirmed pending output/state testing. |
-
-## Current display and test findings
-
-Advanced Options is off by default. WIP and reference-only records remain in the datasets but are hidden from basic browsing/search. Settings, Cells, Ship Parts, and Internal / System quests are also advanced. Dev Mode reports include the tested item/command identity; Reference Only items have no gameplay quick action and sort last when visible.
-
-- `saq` and `caqs` ran but flooded the game with quest notifications; remain under Executed — Issues with strong warnings. `caqs` affected quests outside the journal.
-- `ShowSubtitle 0` hides all dialogue subtitles, including those enabled in Options. The card is named Hide All Dialogue Subtitles; normal-preference restoration remains unconfirmed.
-- `LandOnPlanetMarker` requires Marker Name; a valid name/context remains unconfirmed.
-- `ResetDialogueFlags` executed without a confirmed effect.
-- `Help` and `ShowGlobalVars` printed large console lists; full CCC capture completeness remains unconfirmed.
-- Companion/creature/special-effect ammo and specifically reported armor records remain reference-only. Restrictions match plugin/local ID, not display name or the presence of a Local ID. Cydonia Pack (0003B423) was reported working.
+Historical player observations are retained in [console test findings](docs/CONSOLE_TEST_FINDINGS.md). Current release checks and remaining in-game limits are in [release validation](RELEASE_VALIDATION.md). The [README](README.md) describes current navigation, shortcut behavior and feature availability.

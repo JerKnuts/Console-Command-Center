@@ -1,6 +1,6 @@
-# Console test findings
+# Historical console test findings
 
-Reported in-game by the player on 2026-10-11. Observed gameplay is separate from CCC Results capture verification.
+These dated observations preserve player reports and their original test context. They are not a current feature list. See [the command catalog](../COMMAND_CATALOG.md) for current placement/readout limits and [the README](../README.md) for the menu shortcut added later. Observed gameplay is separate from CCC Results capture verification.
 
 - **saq:** starts all quests; long delays, screen flashes and overwhelming popups make normal play impractical. WIP Issues; not advisable.
 - **caqs:** completes quests globally, including those outside the player log; long completion-screen sequence. WIP Issues; not advisable.
