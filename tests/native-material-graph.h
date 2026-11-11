@@ -2,16 +2,16 @@
 inline void TestMaterialInheritance() {
     using namespace CCC::Preview;
     Bytes strings;std::unordered_map<std::string,std::uint32_t> ids;
-    for(const auto* name:{"BSComponentDB2::DBFileIndex::ObjectInfo","BSComponentDB2::DBFileIndex::ComponentInfo","BSComponentDB2::DBFileIndex::EdgeInfo","BSComponentDB::CTName","BSMaterial::LayerID","BSMaterial::MaterialID","BSMaterial::TextureSetID","BSMaterial::MRTextureFile","BSMaterial::TextureReplacement","BSMaterial::Color","BSMaterial::ShaderModelComponent","BSMaterial::BlenderID","BSMaterial::UVStreamID","BSMaterial::Scale","BSMaterial::BlendModeComponent","BSMaterial::AlphaSettingsComponent"}){ids[name]=strings.size();for(auto c:std::string(name))strings.push_back(c);strings.push_back(0);}
+    for(const auto* name:{"BSComponentDB2::DBFileIndex::ObjectInfo","BSComponentDB2::DBFileIndex::ComponentInfo","BSComponentDB2::DBFileIndex::EdgeInfo","BSComponentDB::CTName","BSMaterial::LayerID","BSMaterial::MaterialID","BSMaterial::TextureSetID","BSMaterial::MRTextureFile","BSMaterial::TextureReplacement","BSMaterial::Color","BSMaterial::ShaderModelComponent","BSMaterial::BlenderID","BSMaterial::UVStreamID","BSMaterial::Scale","BSMaterial::BlendModeComponent","BSMaterial::AlphaSettingsComponent","BSMaterial::DecalSettingsComponent","BSMaterial::FlipbookComponent"}){ids[name]=strings.size();for(auto c:std::string(name))strings.push_back(c);strings.push_back(0);}
     const auto id=[&](const char* name){return ids.at(name);};
     Bytes db;const auto chunk=[&](std::string tag,const Bytes& data){for(auto c:tag)db.push_back(c);Append(db,std::uint32_t(data.size()));db.insert(db.end(),data.begin(),data.end());};
     chunk("BETH",Bytes(8));chunk("STRT",strings);
     for(const auto& [name,number]:ids){Bytes data;Append(data,number);chunk("CLAS",data);}
-    const std::vector<std::string> names{"BSComponentDB::CTName","BSMaterial::LayerID","BSMaterial::MaterialID","BSMaterial::TextureSetID","BSMaterial::MRTextureFile","BSMaterial::TextureReplacement","BSMaterial::Color","BSMaterial::ShaderModelComponent","BSMaterial::BlenderID","BSMaterial::UVStreamID","BSMaterial::Scale","BSMaterial::BlendModeComponent","BSMaterial::AlphaSettingsComponent"};
+    const std::vector<std::string> names{"BSComponentDB::CTName","BSMaterial::LayerID","BSMaterial::MaterialID","BSMaterial::TextureSetID","BSMaterial::MRTextureFile","BSMaterial::TextureReplacement","BSMaterial::Color","BSMaterial::ShaderModelComponent","BSMaterial::BlenderID","BSMaterial::UVStreamID","BSMaterial::Scale","BSMaterial::BlendModeComponent","BSMaterial::AlphaSettingsComponent","BSMaterial::DecalSettingsComponent","BSMaterial::FlipbookComponent"};
     Bytes map;Append(map,std::uint32_t(0xffffff0b));Append(map,std::uint32_t(0));Append(map,std::uint32_t(names.size()));for(unsigned i=0;i<names.size();++i){Append(map,std::uint16_t(i));map.insert(map.end(),3,0);}chunk("MAPC",map);
     for(const auto& name:names){Bytes data(8);Append(data,std::uint16_t(name.size()+1));data.insert(data.end(),name.begin(),name.end());data.push_back(0);chunk("USER",data);}
-    Bytes objects;Append(objects,id("BSComponentDB2::DBFileIndex::ObjectInfo"));Append(objects,std::uint32_t(26));
-    for(unsigned i=1;i<=26;++i){objects.insert(objects.end(),12,0);Append(objects,std::uint32_t(i));Append(objects,std::uint32_t(i>=20&&i<=22?8:i==12?11:i==7?6:i==6?7:i==5?4:0));objects.insert(objects.end(),13,0);}chunk("LIST",objects);
+    Bytes objects;Append(objects,id("BSComponentDB2::DBFileIndex::ObjectInfo"));Append(objects,std::uint32_t(27));
+    for(unsigned i=1;i<=27;++i){objects.insert(objects.end(),12,0);Append(objects,std::uint32_t(i));Append(objects,std::uint32_t(i>=20&&i<=22?8:i==10?3:i==12?11:i==7?6:i==6?7:i==5?4:0));objects.insert(objects.end(),13,0);}chunk("LIST",objects);
     struct Component{unsigned object,type,index;Bytes value;};std::vector<Component> components;
     const auto text=[&](unsigned object,unsigned type,unsigned index,std::string value){Bytes data;Append(data,id(names[type].c_str()));Append(data,std::uint16_t(0));Append(data,std::uint16_t(value.size()+1));data.insert(data.end(),value.begin(),value.end());data.push_back(0);components.push_back({object,type,index,data});};
     const auto ref=[&](unsigned object,unsigned type,unsigned target){Bytes data;Append(data,id(names[type].c_str()));Append(data,std::uint32_t(0));Append(data,std::uint32_t(target));components.push_back({object,type,0,data});};
@@ -30,14 +30,21 @@ inline void TestMaterialInheritance() {
     text(20,0,0,"AlphaInheritedChild");text(21,0,0,"AlphaCutout");text(22,0,0,"OpaqueWithUnusedMask");
     const auto alpha=[&](unsigned object,bool enabled,float threshold){Bytes data;Append(data,id("BSMaterial::AlphaSettingsComponent"));Append(data,std::uint16_t(0));Append(data,std::uint8_t(enabled));Append(data,std::uint16_t(1));Append(data,threshold);components.push_back({object,12,0,data});};
     alpha(8,false,.25f);alpha(21,true,.45f);
+    text(27,0,0,"GenericSmoothDecal");text(27,7,0,"1LayerStandard");ref(27,1,2);alpha(27,true,0.f);
+    {Bytes data;Append(data,id("BSMaterial::DecalSettingsComponent"));Append(data,std::uint16_t(0));Append(data,std::uint8_t(1));components.push_back({27,13,0,data});}
     Bytes alphaDiff;Append(alphaDiff,id("BSMaterial::AlphaSettingsComponent"));Append(alphaDiff,std::uint16_t(4));Append(alphaDiff,std::uint8_t(1));components.push_back({20,12,0,alphaDiff});
     text(12,4,2,"textures/template/unused_opacity.dds");
     for(const auto [slot,value]:std::array<std::pair<unsigned,float>,3>{{{3,.2f},{4,.85f},{5,.5f}}}){Bytes data;Append(data,id("BSMaterial::TextureReplacement"));Append(data,std::uint16_t(0));Append(data,std::uint8_t(1));Append(data,std::uint16_t(1));for(unsigned c=0;c<4;++c){Append(data,std::uint16_t(c));Append(data,c==3?1.f:value);}components.push_back({11,5,slot,data});}
 
     text(23,0,0,"EmptyFirstLayer");text(23,7,0,"2LayerEffect");ref(23,1,24);ref(24,2,25);ref(25,3,26);ref(23,1,2);components.back().index=1;
+    {Bytes data;Append(data,id("BSMaterial::FlipbookComponent"));Append(data,std::uint16_t(0));Append(data,std::uint8_t(1));Append(data,std::uint16_t(1));Append(data,std::uint32_t(10));Append(data,std::uint16_t(2));Append(data,std::uint32_t(2));components.push_back({3,14,0,data});}
+    {Bytes data;Append(data,id("BSMaterial::FlipbookComponent"));Append(data,std::uint16_t(1));Append(data,std::uint32_t(5));components.push_back({10,14,0,data});}
     Bytes indices;Append(indices,id("BSComponentDB2::DBFileIndex::ComponentInfo"));Append(indices,std::uint32_t(components.size()));for(const auto& c:components){Append(indices,std::uint32_t(c.object));Append(indices,std::uint16_t(c.index));Append(indices,std::uint16_t(c.type));}chunk("LIST",indices);
     Bytes edges;Append(edges,id("BSComponentDB2::DBFileIndex::EdgeInfo"));Append(edges,std::uint32_t(0));chunk("LIST",edges);for(const auto& c:components)chunk("DIFF",c.value);
     const auto result=ReadMaterialInheritance(db);const auto found=result.find("example");if(found==result.end()||found->second.texture!="textures/shared/actual_color.dds"||found->second.normal!="textures/shared/actual_normal.dds"||result.contains("cycle"))throw std::runtime_error("Authored inherited TextureSet lookup/cycle bounds failed");
+    if(!result.at("example").flipbook||result.at("example").flipbookColumns!=10||result.at("example").flipbookRows!=2||!result.at("solid").flipbook||result.at("solid").flipbookColumns!=5||result.at("solid").flipbookRows!=2)throw std::runtime_error("Authored flipbook grid inheritance failed");
+    if(result.at("genericsmoothdecal").opacityMode!=3||!result.at("genericsmoothdecal").decal)throw std::runtime_error("Smooth decal was treated as a binary cutout");
+    {MaterialAppearance decal;decal.authored=true;decal.opacityMode=AuthoredOpacityMode(true,0.f,true);Bytes pixels{10,20,30,0,10,20,30,32,10,20,30,128,10,20,30,255};const auto expected=pixels;ApplyAuthoredOpacity(pixels,decal);if(pixels!=expected)throw std::runtime_error("Smooth decal opacity was thresholded or color changed");}
     {
         MaterialAppearance opaque;opaque.authored=true;opaque.opacityMode=1;
         Bytes pixels{40,60,80,0,70,90,110,100};ApplyAuthoredOpacity(pixels,opaque);

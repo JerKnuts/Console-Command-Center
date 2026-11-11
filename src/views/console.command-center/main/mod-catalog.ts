@@ -1,3 +1,4 @@
+import {throwableKind} from './throwables.ts';
 import type { IdCatalogEntry } from './id-catalog';
 import { modDisplayName } from './mod-display-names.ts';
 
@@ -57,6 +58,7 @@ export type ModCatalogReply = {
 };
 
 export function modRecordCategory(record: { type: string; category: string; label: string; editorId?: string }): string {
+  if(throwableKind(record))return 'Throwables';
   if (['Books','Books & Notes','Notes','Text Slates','Image Slates'].includes(record.category)) return 'Books / Notes';
   if (record.type.toUpperCase() === 'ARMO') return 'Armor / Apparel';
   if (record.type.toUpperCase() !== 'GBFM') return record.category;

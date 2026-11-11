@@ -1,9 +1,9 @@
 {
-  "build": "1.3.62",
+  "build": "1.4.17",
   "attempted": 6072,
-  "covered": 4822,
-  "uniqueImages": 3459,
-  "bytes": 14704182,
+  "covered": 4823,
+  "uniqueImages": 3460,
+  "bytes": 15415088,
   "categories": {
     "Aid": {
       "attempted": 311,
@@ -38,8 +38,8 @@
       "covered": 182
     },
     "Weapons": {
-      "attempted": 93,
-      "covered": 89
+      "attempted": 77,
+      "covered": 74
     },
     "Workshop / Outpost Objects": {
       "attempted": 459,
@@ -48,6 +48,10 @@
     "Vehicles": {
       "attempted": 4,
       "covered": 4
+    },
+    "Throwables": {
+      "attempted": 16,
+      "covered": 16
     }
   },
   "unsupported": {
@@ -5183,12 +5187,6 @@
       "plugin": "SFBGS050.esm",
       "localFormId": "02B462"
     },
-    "sfbgs050.esm:06DA56": {
-      "label": "Custom Antique Revolver",
-      "error": "This modular model has an unresolved attachment point.",
-      "plugin": "SFBGS050.esm",
-      "localFormId": "06DA56"
-    },
     "shatteredspace.esm:0FC0B0": {
       "label": "ESCAPE!",
       "error": "This object has no supported model or assembly geometry.",
@@ -5296,6 +5294,8 @@
     "starfield.esm": 4342,
     "shatteredspace.esm": 190,
     "sfbgs00d.esm": 110,
-    "sfbgs050.esm": 176
+    "sfbgs050.esm": 177,
+    "sfbgs004.esm": 2,
+    "sfbgs047.esm": 2
   }
 }

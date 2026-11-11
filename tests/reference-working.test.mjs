@@ -6,7 +6,7 @@ import vm from 'node:vm';
 import {installDevFeedback,devFeedbackIdReference,devFeedbackTestedClass} from '../src/views/console.command-center/main/dev-feedback.ts';
 import {visibleIdRecord} from '../src/views/console.command-center/main/ui-preferences.ts';
 import {orderIdEntries} from '../src/views/console.command-center/main/id-record-order.ts';
-import {reviewedReferenceNote} from '../src/views/console.command-center/main/reviewed-id-findings.ts';
+import {applyReviewedFindings,reviewedReferenceNote} from '../src/views/console.command-center/main/reviewed-id-findings.ts';
 import {armorReferenceNote} from '../src/views/console.command-center/main/armor-test-findings.ts';
 import {ammoReferenceNote} from '../src/views/console.command-center/main/ammo-test-findings.ts';
 
@@ -21,7 +21,7 @@ test('Working clears a shipped reference restriction across actions, visibility,
  const record={kind:'ID',name:entry.label,id:entry.value,localId:entry.localFormId,source:entry.plugin,referenceOnly:true};
  const result=status=>click({target:{closest:()=>({dataset:{devRecord:JSON.stringify(record),devAction:status}})}});
  const source=readFileSync(new URL('../src/views/console.command-center/main/main.ts',import.meta.url),'utf8');
- const context=vm.createContext({devFeedbackIdReference,reviewedReferenceNote,armorReferenceNote,ammoReferenceNote,uiPreferences:{advanced:false},visibleIdRecord,orderIdEntries,activeIdBrowserCategory:()=>({builtInCategories:['*']}),modCatalogs:[],idBrowserCategory:'all',activeCatalogPicker:null,idCatalog:[entry],activeView:'id-browser',idBrowserRecordTypeFilter:'',query:'',idBrowserTextMatches:()=>true});
+ const context=vm.createContext({activityItemContext:null,devFeedbackIdReference,reviewedReferenceNote,armorReferenceNote,ammoReferenceNote,uiPreferences:{advanced:false},visibleIdRecord,orderIdEntries,activeIdBrowserCategory:()=>({builtInCategories:['*']}),modCatalogs:[],idBrowserCategory:'all',activeCatalogPicker:null,idCatalog:[entry],activeView:'id-browser',idBrowserRecordTypeFilter:'',query:'',idBrowserTextMatches:()=>true});
  vm.runInContext(stripTypeScriptTypes(source.match(/^function idBrowserAction\b[\s\S]*?^}/m)[0]+'\n'+source.match(/^function matchingIds\b[\s\S]*?^}/m)[0]),context);
  try {
   install();for(let i=0;i<5;i++)toggle();
@@ -39,3 +39,12 @@ test('Working clears a shipped reference restriction across actions, visibility,
   result('Working');assert.equal(visibleIdRecord(entry,false),true);
  } finally {for(let i=0;i<5;i++)toggle();delete globalThis.document;delete globalThis.localStorage;}
 });
+
+ test('November weapon review hides only the reported plugin-local variants',()=>{
+  const fixtures=[['Starfield.esm','030B30','CE-19 missile launcher'],['SFBGS00D.esm','088727','Coachman'],['Starfield.esm','2C7D29','CombaTech EquiNOX']];
+  for(const [plugin,localFormId,label]of fixtures){
+    const row=applyReviewedFindings({label,plugin,localFormId,value:'09'+localFormId,type:'WEAP',category:'Weapons'});
+    assert.equal(row.referenceOnly,true);assert.equal(visibleIdRecord(row,false),false);assert.equal(visibleIdRecord(row,true),true);
+    const ordinary={...row,plugin:'Other.esm',referenceOnly:false};assert.equal(reviewedReferenceNote(ordinary),null);assert.equal(visibleIdRecord(ordinary,false),true);assert.equal(orderIdEntries([row,ordinary])[0],ordinary);
+  }
+ });

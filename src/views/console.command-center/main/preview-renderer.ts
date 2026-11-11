@@ -1,13 +1,16 @@
 import { createPreviewPost } from './preview-post.ts';
 import { createPreviewShadow, previewShadowMatrix,previewShadowSize } from './preview-lighting.ts';
 export type PreviewCamera={yaw:number;pitch:number;zoom:number;panX:number;panY:number;lightYaw:number;lightPitch:number;lightPower:number};
-export type PreviewMesh = { positions: Float32Array; indices: Uint32Array; uv?: Float32Array; texture?: { width: number; height: number; pixels: Uint8Array }; normalTexture?: {width:number;height:number;pixels:Uint8Array}; metalTexture?: {width:number;height:number;pixels:Uint8Array}; glass?:boolean; decal?:boolean; mannequin?: boolean; incompleteMaterial?:boolean;normalOnly?:boolean; effect?:'caustic'|'liquid'; tint?: [number,number,number] };
+export type PreviewMesh = { positions: Float32Array; indices: Uint32Array; uv?: Float32Array; texture?: { width: number; height: number; pixels: Uint8Array }; normalTexture?: {width:number;height:number;pixels:Uint8Array}; metalTexture?: {width:number;height:number;pixels:Uint8Array}; glass?:boolean; decal?:boolean; mannequin?: boolean; incompleteMaterial?:boolean;normalOnly?:boolean;smoothDecal?:boolean; effect?:'caustic'|'liquid'; tint?: [number,number,number] };
+export function previewCastsShadow(surface:{transparent?:boolean;glass?:boolean;effect?:string;decal?:boolean}):boolean {
+  return !surface.transparent && !surface.glass && !surface.effect && !surface.decal;
+}
 export function decodePreview(buffer: ArrayBuffer, quality: 'low'|'medium'|'high'|'ultra' = 'high'): PreviewMesh[] {
   if (buffer.byteLength > (quality==='ultra'?256:64) * 1024 * 1024 || buffer.byteLength < 12) throw new Error('Invalid model transfer size.');
   const view = new DataView(buffer); let at = 0;
   const uint = () => { if (at + 4 > buffer.byteLength) throw new Error('Incomplete model transfer.'); const v = view.getUint32(at, true); at += 4; return v; };
   if (uint() !== 0x50504343) throw new Error('Unsupported model transfer format.');
-  const version = uint(); if (![1,2,3,4,5,6,7,8,9,10,11].includes(version)) throw new Error('Unsupported model transfer format.');
+  const version = uint(); if (![1,2,3,4,5,6,7,8,9,10,11,12].includes(version)) throw new Error('Unsupported model transfer format.');
   const count = uint(); if (!count || count > 512) throw new Error('Invalid number of model pieces.');
   const meshes: PreviewMesh[] = []; const textureIds: number[] = [],normalIds:number[]=[],metalIds:number[]=[]; let vertices = 0, indices = 0;
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
@@ -29,7 +32,8 @@ export function decodePreview(buffer: ArrayBuffer, quality: 'low'|'medium'|'high
       textureIds.push(textureId);
       if(version>=4){if(at+12>buffer.byteLength)throw new Error('Incomplete material color.');const tint: [number,number,number]=[view.getFloat32(at,true),view.getFloat32(at+4,true),view.getFloat32(at+8,true)];at+=12;if(tint.some(c=>!Number.isFinite(c)||c<0||c>1))throw new Error('Invalid material color.');if(flags&2)mesh.tint=tint;}
       normalIds.push(version>=5?uint():0);metalIds.push(version>=9?uint():0);mesh.glass=Boolean(flags&4);mesh.decal=Boolean(flags&8);
-      if (flags > (version>=11?255:version>=10?127:version>=8?63:version>=7?31:version>=6?15:version>=5?7:version===4?3:1) || width > 4096 || height > 4096 || Boolean(width) !== Boolean(height) || at + nv * 8 + width * height * 4 > buffer.byteLength) throw new Error('Invalid preview texture.');
+      if (flags > (version>=12?511:version>=11?255:version>=10?127:version>=8?63:version>=7?31:version>=6?15:version>=5?7:version===4?3:1) || width > 4096 || height > 4096 || Boolean(width) !== Boolean(height) || at + nv * 8 + width * height * 4 > buffer.byteLength) throw new Error('Invalid preview texture.');
+      if(flags&256){if(version<12||!(flags&8))throw new Error('Invalid smooth decal.');mesh.smoothDecal=true;}
       mesh.incompleteMaterial=Boolean(flags&16);mesh.normalOnly=Boolean(flags&32);if(flags&64)mesh.effect='caustic';if(flags&128){if(flags&64)throw new Error('Invalid animated effect.');mesh.effect='liquid';}mesh.mannequin = Boolean(flags&1); mesh.uv = new Float32Array(nv * 2);
       for (let i = 0; i < mesh.uv.length; ++i) { const value = view.getFloat32(at, true); at += 4; if (!Number.isFinite(value) || Math.abs(value) > 10000) throw new Error('Invalid texture coordinates.'); mesh.uv[i] = value; }
       if (width) { mesh.texture = { width, height, pixels: new Uint8Array(buffer,at,width*height*4) }; at += width * height * 4; }
@@ -77,7 +81,7 @@ export function smoothNormals(mesh: PreviewMesh): Float32Array {
   if(mesh.mannequin){const key=(i:number)=>`${Math.round(p[i]*1e5)},${Math.round(p[i+1]*1e5)},${Math.round(p[i+2]*1e5)}`;const joined=new Map<string,number[]>();for(let i=0;i<n.length;i+=3){const k=key(i),sum=joined.get(k)??[0,0,0];for(let j=0;j<3;++j)sum[j]+=n[i+j];joined.set(k,sum);}for(let i=0;i<n.length;i+=3){const sum=joined.get(key(i))!;for(let j=0;j<3;++j)n[i+j]=sum[j];}}
   for(let i=0;i<n.length;i+=3){const length=Math.hypot(n[i],n[i+1],n[i+2]);if(length>1e-10){n[i]/=length;n[i+1]/=length;n[i+2]/=length;}else n[i+2]=1;}return n;
 }
-export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: PreviewMesh[], quality: 'low'|'medium'|'high'|'ultra' = 'high', initialYawOffset = 0) {
+export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: PreviewMesh[], quality: 'low'|'medium'|'high'|'ultra' = 'high', initialYawOffset = 0, initialPitch = -.08, initialYaw?:number) {
   const gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: true, preserveDrawingBuffer: true });
   if (!gl) throw new Error('This OSF UI installation does not provide WebGL 2. Model previews are unavailable.');
   const buffers: WebGLBuffer[] = [], shaders: WebGLShader[] = [], textures: WebGLTexture[] = []; let program: WebGLProgram | null = null;
@@ -312,6 +316,7 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
         gl.generateMipmap(gl.TEXTURE_2D);{gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);if(anisotropy)gl.texParameterf(gl.TEXTURE_2D,anisotropy.TEXTURE_MAX_ANISOTROPY_EXT,Math.min(16,gl.getParameter(anisotropy.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number));}
       }
+      if(mesh.smoothDecal)mode='blend';
       let normalTexture:WebGLTexture|null=null;
       if(mesh.normalTexture){normalTexture=normalCache.get(mesh.normalTexture)??null;if(!normalTexture){normalTexture=gl.createTexture();if(!normalTexture)throw new Error('Could not allocate normal texture.');normalCache.set(mesh.normalTexture,normalTexture);textures.push(normalTexture);gl.bindTexture(gl.TEXTURE_2D,normalTexture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,mesh.normalTexture.width,mesh.normalTexture.height,0,gl.RGBA,gl.UNSIGNED_BYTE,mesh.normalTexture.pixels);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);gl.generateMipmap(gl.TEXTURE_2D);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);if(anisotropy)gl.texParameterf(gl.TEXTURE_2D,anisotropy.TEXTURE_MAX_ANISOTROPY_EXT,Math.min(16,gl.getParameter(anisotropy.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number));}}
       let metalTexture:WebGLTexture|null=null;
@@ -344,7 +349,7 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
     gl.bindBuffer(gl.ARRAY_BUFFER,floorVertices);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([floorX-floorRadius,floorY,floorZ-floorRadius,floorX+floorRadius,floorY,floorZ-floorRadius,floorX+floorRadius,floorY,floorZ+floorRadius,floorX-floorRadius,floorY,floorZ+floorRadius]),gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER,floorUv);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([0,0,1,0,1,1,0,1]),gl.STATIC_DRAW);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,floorIndices);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint32Array([0,1,2,0,2,3]),gl.STATIC_DRAW);
-    const initial = () => orbitState((meshes.some(mesh => mesh.mannequin) ? Math.PI - .25 : maxZ-minZ>(maxX-minX)*1.7 ? Math.PI/2+.2 : -.5) + initialYawOffset, -.08, 1.6);
+    const initial = () => orbitState(initialYaw??((meshes.some(mesh => mesh.mannequin) ? Math.PI - .25 : maxZ-minZ>(maxX-minX)*1.7 ? Math.PI/2+.2 : -.5) + initialYawOffset), initialPitch, 1.6);
     let state = initial();let panX=0,panY=0;
     let lightYaw=-.45,lightPitch=.6,lightPower=1;
     const lightPoint=()=>[Math.sin(lightYaw)*Math.cos(lightPitch)*1.8,Math.sin(lightPitch)*1.8,Math.cos(lightYaw)*Math.cos(lightPitch)*1.8];
@@ -358,7 +363,7 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
       if(!postActive)gl.bindFramebuffer(gl.FRAMEBUFFER,null);
       gl.viewport(0, 0, w, h); gl.depthMask(true); gl.disable(gl.BLEND); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE); gl.useProgram(program);
       const cy = Math.cos(state.yaw), sy = Math.sin(state.yaw), cp = Math.cos(state.pitch), sp = Math.sin(state.pitch);
-      gl.uniformMatrix3fv(rotation, false, new Float32Array([cy, sp * sy, -cp * sy, 0, cp, sp, sy, -sp * cy, cp * cy]));
+      gl.uniformMatrix3fv(rotation,false,new Float32Array([cy,sp*sy,-cp*sy,0,cp,sp,sy,-sp*cy,cp*cy]));
       gl.uniform1i(groundUniform,0);gl.uniform1i(markerUniform,0);gl.uniform3f(offsetUniform,0,0,0);gl.uniform1f(aspect, box.width/Math.max(1,box.height)); gl.uniform1f(zoom, state.zoom);gl.uniform2f(pan,panX,panY); gl.enableVertexAttribArray(position); gl.enableVertexAttribArray(uv);gl.enableVertexAttribArray(normal); gl.activeTexture(gl.TEXTURE0); gl.uniform1i(sampler, 0);
       gl.uniform1f(timeUniform,(performance.now()/1000)%12000);gl.uniform1i(causticUniform,0);
       gl.uniform1i(showTextures,texturesEnabled?1:0);gl.uniform1i(ultra,1);gl.uniform1i(cinematic,1);gl.uniform1i(detail,1);const point=lightPoint();gl.uniform3f(light,point[0],point[1],point[2]);gl.uniform1f(strength,lightPower);
@@ -374,7 +379,7 @@ export function createPreviewRenderer(canvas: HTMLCanvasElement, meshes: Preview
         target.begin();gl.disable(gl.BLEND);gl.disable(gl.CULL_FACE);gl.disable(gl.POLYGON_OFFSET_FILL);gl.enable(gl.DEPTH_TEST);gl.uniform1i(shadowPass,1);
         // Transparent/effect layers must not turn glass into an opaque shadow
         // caster. Solid cutouts retain their authored silhouette in the map.
-        for(const part of parts)if(!part.transparent&&!part.glass&&!part.effect){
+        for(const part of parts)if(previewCastsShadow(part)){
           gl.uniform1i(textured,part.texture?1:0);gl.bindTexture(gl.TEXTURE_2D,part.texture);
           gl.bindBuffer(gl.ARRAY_BUFFER,part.texcoords);gl.vertexAttribPointer(uv,2,gl.FLOAT,false,0,0);
           gl.bindBuffer(gl.ARRAY_BUFFER,part.normals);gl.vertexAttribPointer(normal,3,gl.FLOAT,false,0,0);

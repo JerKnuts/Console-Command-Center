@@ -54,6 +54,7 @@ namespace CCC::Preview {
         for(std::size_t i=3;i<pixels.size();i+=4){
             if(appearance.opacityMode==1)pixels[i]=255;
             else if(appearance.opacityMode==2){const auto alpha=appearance.constantOpacity>=0?appearance.constantOpacity:pixels[i]/255.f;pixels[i]=alpha>0&&alpha>=appearance.alphaThreshold?255:0;}
+            else if(appearance.opacityMode==3&&appearance.constantOpacity>=0)pixels[i]=std::uint8_t(std::clamp(appearance.constantOpacity,0.f,1.f)*255);
         }
     }
     inline void ApplyAuthoredTint(Mesh& mesh,const MaterialAppearance& appearance){
@@ -68,6 +69,22 @@ namespace CCC::Preview {
     inline bool OpaqueFoodSurface(const std::string& material){
         // The jerky and clear wrapper share an atlas; only the meat writes opaque depth.
         return MaterialKey(material)=="materials/items/fooddrink_singleitems/all_crafted_consumables/alienjerky.mat";
+    }
+    // Static inventory previews show frame zero, never the whole animation atlas.
+    inline void FreezePreviewFlipbook(Mesh& mesh,const MaterialAppearance& appearance){
+        if(!appearance.flipbook)return;
+        const auto columns=appearance.flipbookColumns,rows=appearance.flipbookRows;
+        if(!columns||columns>64||!rows||rows>64){mesh.incompleteMaterial=true;return;}
+        const auto crop=[&](std::uint32_t& width,std::uint32_t& height,Bytes& pixels){
+            if(pixels.empty()||(width==1&&height==1))return;
+            if(width<columns||height<rows||pixels.size()!=std::size_t(width)*height*4){mesh.incompleteMaterial=true;return;}
+            const auto w=width/columns,h=height/rows;Bytes frame(std::size_t(w)*h*4);
+            for(unsigned y=0;y<h;++y)std::copy_n(pixels.begin()+std::size_t(y)*width*4,std::size_t(w)*4,frame.begin()+std::size_t(y)*w*4);
+            width=w;height=h;pixels=std::move(frame);
+        };
+        crop(mesh.textureWidth,mesh.textureHeight,mesh.pixels);
+        crop(mesh.normalWidth,mesh.normalHeight,mesh.normalPixels);
+        crop(mesh.metalWidth,mesh.metalHeight,mesh.metalPixels);
     }
     inline void RestoreOpaqueFoodAlpha(TexturePixels& image,const std::string& material){
         if(OpaqueFoodSurface(material))for(std::size_t i=3;i<image.pixels.size();i+=4)image.pixels[i]=255;
@@ -214,7 +231,14 @@ namespace CCC::Preview {
                     if(materialKey.ends_with("_color.mat")){const auto surface=this->materials.Find(paired->material);if(appearance.opacity.empty())appearance.opacity=surface.opacity;if(appearance.normal.empty())appearance.normal=surface.normal;}
                     else if(appearance.texture.empty()&&!appearance.normal.empty()&&!this->materials.Find(paired->material).texture.empty()){mesh.textureWidth=mesh.textureHeight=1;mesh.pixels={0,0,0,0};continue;}
                 }
-                mesh.decal=mesh.decal||appearance.decal;mesh.glass=appearance.glass||MaterialName(mesh.material).find("_visor")!=std::string::npos||MaterialName(mesh.material).find("glass")!=std::string::npos;if(!mesh.causticEffect){mesh.tint=appearance.tint;mesh.tinted=appearance.tinted;}
+                mesh.smoothDecal=appearance.decal&&appearance.opacityMode==3;
+                mesh.decal=mesh.decal||appearance.decal;
+                const auto materialName=MaterialName(mesh.material);
+                // Fiberglass is opaque plastic even when the legacy name contains "glass".
+                const bool namedGlass=materialName.find("glass")!=std::string::npos&&
+                    materialName.find("fiberglass")==std::string::npos;
+                mesh.glass=appearance.glass||materialName.find("_visor")!=std::string::npos||namedGlass;
+                if(!mesh.causticEffect){mesh.tint=appearance.tint;mesh.tinted=appearance.tinted;}
                 if(mesh.uv.size()!=mesh.positions.size()/3*2){if(appearance.constantColor){mesh.tint=appearance.color;mesh.tinted=true;}continue;}
                 auto key=MaterialKey(mesh.material);if(key.starts_with("data/"))key.erase(0,5);if(!key.starts_with("materials/")||!key.ends_with(".mat"))continue;
                 key="textures/"+key.substr(10,key.size()-14)+"_color.dds";
@@ -282,6 +306,7 @@ namespace CCC::Preview {
                     if(!complete)mesh.incompleteMaterial=true;
                     else if(KnownIncompletePreviewMaterial(mesh.material)&&appearance.overlays.size()==3)mesh.incompleteMaterial=false;
                 }
+                FreezePreviewFlipbook(mesh,appearance);
                 if(mesh.flowingLiquid&&mesh.pixels.empty()){mesh.flowingLiquid=false;mesh.incompleteMaterial=true;}
                 if(mesh.normalOnly&&mesh.normalPixels.empty())mesh.incompleteMaterial=true;
             }catch(...){} // Shaded geometry remains available if its texture is unsupported.

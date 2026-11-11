@@ -1,3 +1,4 @@
+import {throwableKind} from '../src/views/console.command-center/main/throwables.ts';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
@@ -31,7 +32,7 @@ function armorCategory(editorID) {
 }
 function categoryFor(record) {
   switch (record.type) {
-  case 'WEAP': return 'Weapons';
+  case 'WEAP': return throwableKind({type:record.type,label:record.name,editorId:record.editorID})?'Throwables':'Weapons';
   case 'ARMO': return armorCategory(record.editorID);
   case 'AMMO': return 'Ammo';
   case 'ALCH': return 'Aid';

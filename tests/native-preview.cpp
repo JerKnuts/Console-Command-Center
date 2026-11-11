@@ -52,12 +52,13 @@ int main(int argc,char** argv) {
         if((argc==6||argc==7)&&std::string(argv[2])=="--mannequin-preview"){
             std::vector<ScenePlugin> plugins{{"Starfield.esm",0,0}};std::vector<std::string> names{"Starfield.esm"};if(const auto* extra=std::getenv("CCC_PREVIEW_PLUGINS")){std::istringstream list(extra);std::string name;while(std::getline(list,name,';'))if(!name.empty()){names.push_back(name);plugins.push_back({name,0,unsigned(plugins.size())});}}AssetStore assets(argv[1],names);RecordScenes scenes(argv[1],plugins);const auto id=std::stoul(argv[3],nullptr,16);const auto paths=scenes.ArmorModels(id,std::string(argv[5])!="female");for(const auto& path:paths)std::cout<<path<<"\n";auto meshes=Load(assets,paths,1);const auto before=meshes.size();if(std::string(argv[5])!="none")AddMannequin(assets,meshes,std::string(argv[5])=="male",1,argc<7||std::string(argv[6])=="outfit",argc==7&&std::string(argv[6])=="suit");if(std::string(argv[5])!="none"&&meshes.size()==before)throw std::runtime_error("Requested mannequin is unavailable.");scenes.ApplyMaterialSwaps(id,meshes,true);TextureStore textures(assets);textures.Apply(meshes,1);const auto bytes=Pack(meshes);std::ofstream out(argv[4],std::ios::binary);out.write(reinterpret_cast<const char*>(bytes.data()),bytes.size());std::cout<<argv[5]<<" mannequin: "<<meshes.size()-before<<" parts, "<<bytes.size()<<" bytes\n";return 0;
         }
-        if(argc==5&&std::string(argv[2])=="--thumbnail-batch"){
+        if(argc==5&&(std::string(argv[2])=="--thumbnail-batch"||std::string(argv[2])=="--thumbnail-batch-final")){
+            const bool finalMaterials=std::string(argv[2])=="--thumbnail-batch-final";
 
             std::vector<ScenePlugin> plugins{{"Starfield.esm",0,0}};std::vector<std::string> names{"Starfield.esm"};if(const auto* extra=std::getenv("CCC_PREVIEW_PLUGINS")){std::istringstream list(extra);std::string name;while(std::getline(list,name,';'))if(!name.empty()){names.push_back(name);plugins.push_back({name,0,unsigned(plugins.size())});}}
             AssetStore assets(argv[1],names);TextureStore textures(assets);RecordScenes scenes(argv[1],plugins);std::ifstream input(argv[3]);std::string id;
             while(std::getline(input,id)){if(id.empty())continue;try{const auto form=std::stoul(id,nullptr,16);const auto output=std::filesystem::path(argv[4])/(id+".bin");if(std::filesystem::exists(output)){std::cout<<id<<" OK cached"<<std::endl;continue;}
-                const auto armor=scenes.ArmorModels(form,true);auto meshes=armor.empty()?scenes.LoadModels(assets,form):Load(assets,armor,1);scenes.ApplyMaterialSwaps(form,meshes,true);textures.Apply(meshes,0);auto bytes=Pack(meshes);std::ofstream out(output,std::ios::binary);if(!out.write(reinterpret_cast<const char*>(bytes.data()),bytes.size()))throw std::runtime_error("Thumbnail packet write failed.");out.close();std::cout<<id<<" OK "<<bytes.size()<<std::endl;
+                const auto armor=scenes.ArmorModels(form,true);auto meshes=armor.empty()?scenes.LoadModels(assets,form):Load(assets,armor,1);scenes.ApplyMaterialSwaps(form,meshes,true);textures.Apply(meshes,finalMaterials?1:0);auto bytes=Pack(meshes);std::ofstream out(output,std::ios::binary);if(!out.write(reinterpret_cast<const char*>(bytes.data()),bytes.size()))throw std::runtime_error("Thumbnail packet write failed.");out.close();std::cout<<id<<" OK "<<bytes.size()<<std::endl;
             }catch(const std::exception& e){std::cout<<id<<" ERROR "<<e.what()<<std::endl;}}
             return 0;
         }
@@ -87,6 +88,11 @@ int main(int argc,char** argv) {
             const std::string source=R"json({"Objects":[{"Components":[{"Type":"BSMaterial::LayerID","Index":0,"Data":{"ID":"layer"}}]},{"ID":"layer","Components":[{"Type":"BSMaterial::MaterialID","Data":{"ID":"material"}}]},{"ID":"material","Components":[{"Type":"BSMaterial::TextureSetID","Data":{"ID":"child"}}]},{"ID":"child","Parent":"parent","Components":[{"Type":"BSMaterial::MRTextureFile","Index":4,"Data":{"FileName":"Data\\Textures\\Mod\\unusual_metallic_name.dds"}}]},{"ID":"parent","Components":[{"Type":"BSMaterial::MRTextureFile","Index":0,"Data":{"FileName":"textures/mod/albedo_variant.dds"}},{"Type":"BSMaterial::MRTextureFile","Index":1,"Data":{"FileName":"textures/mod/detail.dds"}},{"Type":"BSMaterial::MRTextureFile","Index":3,"Data":{"FileName":"textures/mod/smooth.dds"}}]}]})json";
             const auto read=[](const std::string& text){return ReadJsonPreviewMaterial(std::span(reinterpret_cast<const std::uint8_t*>(text.data()),text.size()));};
             const auto a=read(source);if(!a||a->texture!="textures/mod/albedo_variant.dds"||a->normal!="textures/mod/detail.dds"||a->metal!="textures/mod/unusual_metallic_name.dds"||a->roughness!="textures/mod/smooth.dds"||a->incomplete)throw std::runtime_error("Standalone JSON material slots/inheritance failed");
+            auto decalDoc=nlohmann::json::parse(source);decalDoc["Objects"][0]["Components"].push_back({{"Type","BSMaterial::DecalSettingsComponent"},{"Data",{{"IsDecal",true}}}});decalDoc["Objects"][0]["Components"].push_back({{"Type","BSMaterial::AlphaSettingsComponent"},{"Data",{{"HasOpacity",true},{"AlphaTestThreshold",0.f}}}});
+            const auto decal=read(decalDoc.dump());if(!decal||decal->opacityMode!=3||!decal->decal)throw std::runtime_error("JSON smooth decal opacity was not preserved");
+            auto atlasDoc=nlohmann::json::parse(source);atlasDoc["Objects"][2]["Components"].push_back({{"Type","BSMaterial::FlipbookComponent"},{"Data",{{"IsAFlipbook",true},{"Columns",10},{"Rows",1}}}});
+            const auto atlas=read(atlasDoc.dump());if(!atlas||!atlas->flipbook||atlas->flipbookColumns!=10||atlas->flipbookRows!=1)throw std::runtime_error("JSON material flipbook failed");
+            atlasDoc["Objects"][2]["Components"].back()["Data"]["Columns"]=9999;const auto invalid=read(atlasDoc.dump());if(!invalid||invalid->flipbook||!invalid->incomplete)throw std::runtime_error("Invalid flipbook grid accepted");
             if(read("{broken")||read(std::string(2u*1024*1024+1,' '))||read(R"({"Objects":[]})"))throw std::runtime_error("Malformed/oversized JSON material accepted");
             auto unsafe=source;unsafe.replace(unsafe.find("textures/mod/albedo_variant.dds"),30,"../../outside.dds");if(read(unsafe))throw std::runtime_error("Unsafe JSON material path accepted");
         }
@@ -102,6 +108,15 @@ int main(int argc,char** argv) {
             TexturePixels mask{2,1,{80,90,100,0,80,90,100,255}};RestoreOpaqueWeaponAlpha(mask,"materials/weapons/dlc001/particlemachinegun/particlemachinegun_receiver.mat");if(mask.pixels[3]!=0)throw std::runtime_error("Partial mask overridden");
             TexturePixels other{1,1,{80,90,100,0}};RestoreOpaqueWeaponAlpha(other,"materials/other/body.mat");if(other.pixels[3]!=0)throw std::runtime_error("Unrelated alpha overridden");}
         {TexturePixels grip{1,1,{80,90,100,0}};RestoreOpaqueWeaponAlpha(grip,"materials/weapons/dlc001/particlemachinegun/particlemachinegun_standardgrip.mat");if(grip.pixels[3]!=255)throw std::runtime_error("Standard PMG grip discarded");}
+        {
+            MaterialAppearance atlas;atlas.flipbook=true;atlas.flipbookColumns=atlas.flipbookRows=2;
+            Mesh mesh;mesh.textureWidth=mesh.textureHeight=mesh.normalWidth=mesh.normalHeight=mesh.metalWidth=mesh.metalHeight=4;
+            for(unsigned i=0;i<16;++i)for(unsigned c=0;c<4;++c)mesh.pixels.push_back(std::uint8_t(i*4+c));mesh.normalPixels=mesh.metalPixels=mesh.pixels;
+            const Bytes expected{0,1,2,3,4,5,6,7,16,17,18,19,20,21,22,23};
+            FreezePreviewFlipbook(mesh,atlas);if(mesh.textureWidth!=2||mesh.textureHeight!=2||mesh.pixels!=expected||mesh.normalPixels!=expected||mesh.metalPixels!=expected||mesh.incompleteMaterial)throw std::runtime_error("Flipbook frame crop changed channels or included neighboring frames");
+            auto ordinary=mesh;atlas.flipbook=false;FreezePreviewFlipbook(ordinary,atlas);if(ordinary.pixels!=mesh.pixels||ordinary.textureWidth!=2)throw std::runtime_error("Ordinary material cropped as flipbook");
+            atlas.flipbook=true;atlas.flipbookColumns=0;FreezePreviewFlipbook(ordinary,atlas);if(!ordinary.incompleteMaterial||ordinary.pixels!=mesh.pixels)throw std::runtime_error("Invalid flipbook grid changed pixels");
+        }
         if(!AttachmentMountMatches("meshes/weapons/m1919/m1919_scope_mount.nif","ScopeMount","Scope")||AttachmentMountMatches("meshes/weapons/other/scope_mount.nif","ScopeMount","Scope"))throw std::runtime_error("XM attachment alias escaped its asset scope");
         {
             Mesh mesh{"mask",{0,0,0,1,0,0,0,1,0},{0,1,2}};mesh.textureWidth=mesh.normalWidth=2;mesh.textureHeight=mesh.normalHeight=1;mesh.pixels={100,140,180,80,100,140,180,200};mesh.normalPixels={128,128,255,150,128,128,255,150};
@@ -330,9 +345,21 @@ int main(int argc,char** argv) {
             {std::ofstream out(fixture/"Addon.esm",std::ios::binary);out.write(reinterpret_cast<const char*>(addon.data()),addon.size());}
             RecordScenes overrides(fixture,{{"Starfield.esm",0,0},{"Addon.esm",0,1}});auto overridden=overrides.Models(0x01000100);if(overridden.size()!=1||overridden[0].path!=overrideModel)throw std::runtime_error("Assembly master/override remapping mismatch");
         }
-        if(!SceneDistortionOnly("Materials\\Effects\\Fires\\HeatDistortion.mat"))throw std::runtime_error("Weapon scene-distortion shell was not omitted");
+        if(!HiddenPreviewGeometry("Materials\\Effects\\Fires\\HeatDistortion.mat"))throw std::runtime_error("Weapon scene-distortion shell was not omitted");
+        if(!HiddenPreviewGeometry("\\Materials\\Effects\\Fires\\HeatDistortion.mat")||!HiddenPreviewGeometry("/Data/Materials/Effects/Fires/HeatDistortion.mat"))throw std::runtime_error("Rooted material effect normalization failed");
+        for(const auto* material:{"\\materials\\clothes\\sfbgs050\\spacesuit_armada\\spacesuit_armada_visor.mat", "\\materials\\clothes\\sfbgs050\\spacesuit_armada\\spacesuit_armada_helmet.mat"})
+            if(HiddenPreviewGeometry(material))throw std::runtime_error("Armada helmet material was omitted");
+        for(const auto* material:{"C:/materials/test.mat","//server/materials/test.mat","/materials/../outside.mat","/unrelated/test.mat"}){
+            bool blocked=false;try{MaterialAssetKey(material);}catch(...){blocked=true;}if(!blocked)throw std::runtime_error("Invalid material path accepted");
+        }
         for(const auto* material:{"", "materials/weapons/CrimX_Cutter/CrimX_Cutter.mat", "materials/weapons/CrimX_Cutter/CrimX_Visor.mat", "materials/effects/liquids/LavaBubbleMesh.mat", "materials/effects/fires/HeatDistortionOther.mat"})
-            if(SceneDistortionOnly(material))throw std::runtime_error("Physical or supported effect material was omitted");
+            if(HiddenPreviewGeometry(material))throw std::runtime_error("Physical or supported effect material was omitted");
+        for(const auto* material:{"Materials/Weapons/SpaceMine/RadialGlow_01_Red.mat", "/Data/Materials/Weapons/SpaceMine/RadialGlow_01_Red.mat", R"(\Materials\Weapons\SpaceMine\RadialGlow_01_Red.mat)"})
+            if(!HiddenPreviewGeometry(material))throw std::runtime_error("Animated mine glow carrier was not omitted");
+        for(const auto* material:{"Materials/Weapons/SpaceMine/BaseMetal.mat", "Materials/Weapons/SpaceMine/Decal_02_glow.mat", "Materials/Weapons/SpaceMine/RadialGlow_01_Red_Other.mat", "Materials/Other/RadialGlow_01_Red.mat"})
+            if(HiddenPreviewGeometry(material))throw std::runtime_error("Mine effect filter removed physical or unrelated material");
+        if(!HiddenPreviewGeometry("Materials/Effects/Weapons/AmmoCounters/CombaTech_EInk_AmmoCounter.mat","AmmoCountFinalNine:0")||HiddenPreviewGeometry("Materials/Effects/Weapons/AmmoCounters/CombaTech_EInk_AmmoCounter.mat","AmmoCountOnes:0")||HiddenPreviewGeometry("Materials/Other/display.mat","AmmoCountFinalNine:0"))throw std::runtime_error("Conditional ammo digit selection escaped its authored material");
+        if(!UnusedRevolverMagazine("weapons/m1919/m1919_magazine.nif",true,false)||UnusedRevolverMagazine("weapons/m1919/m1919_magazine.nif",true,true)||UnusedRevolverMagazine("weapons/m1919/m1919_magazine.nif",false,false)||UnusedRevolverMagazine("weapons/other/magazine.nif",true,false))throw std::runtime_error("Unused antique magazine handling removed a compatible attachment");
         bool rejected=false;try{ReadNif(Bytes{0,1,2});}catch(...){rejected=true;}if(!rejected)throw std::runtime_error("Truncated model accepted");
         {
             // Both layouts use stride 64: only the following stream identifies

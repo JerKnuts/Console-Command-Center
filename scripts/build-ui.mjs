@@ -19,6 +19,7 @@ await cp(resolve(projectRoot, 'native/third_party/LICENSE-bcdec.txt'), resolve(o
 await cp(resolve(projectRoot, 'THIRD_PARTY_NOTICES.md'), resolve(outRoot, 'licenses/THIRD_PARTY_NOTICES.md'));
 
 await build({
+  define: { __CCC_DIAGNOSTIC_TEST__: JSON.stringify(process.env.CCC_DIAGNOSTIC_TEST === '1') },
   root: sourceRoot,
   base: './',
   build: {

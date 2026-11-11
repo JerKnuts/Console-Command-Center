@@ -2,9 +2,11 @@
 
 Console Command Center turns Starfield console commands into a searchable in-game menu for mouse, keyboard, and controller. It provides command inputs, ID selection, quest tools, mod scanning, editable command batches, read-only Results popups, item previews, and book/slate playback.
 
-**Current release: v1.4.0.** See the [changelog](CHANGELOG.md) for release history and [release validation](RELEASE_VALIDATION.md) for completed checks and remaining in-game checks.
+**Current release: v1.4.17.** Reopen items and teleport destinations from Command Log, find grenades and mines in Throwables, and browse refreshed item previews. See the [changelog](CHANGELOG.md) and [release validation](RELEASE_VALIDATION.md).
 
 Translation authors can use the [JSON/CSV translator guide](docs/TRANSLATION_GUIDE.md). CCC uses a web interface; SWF editing is not required. Translation packs are optional and fall back to English.
+
+Small item previews show packaged artwork immediately, then refresh from current game materials after a selection remains visible for one second. Refreshed still images use a bounded memory cache for the current session; no persistent user cache is required. The existing picture stays visible if a refresh fails.
 
 ## Requirements
 
@@ -39,12 +41,12 @@ The assigned CCC keyboard shortcut also opens CCC over inventory, containers, sh
 ## Features
 
 - **Command Browser:** alphabetical commands within categories, with WIP and engine-reference entries available through Advanced Options. Command-specific instructions and review dialogs remain; Caution/Danger badges have been removed.
-- Search, command and ID favorites, Recent commands, saved batch favorites, and Command Log. Favorite IDs use compact selectable rows with their details and supported actions on the right.
-- **ID Browser: 23,308 packaged entries**, including reviewed ships, vehicle forms, workshop objects, and supported Free Lanes/Terran Armada record types. Duplicate names can identify different underlying records.
+- Search, command and ID favorites, Recent commands, saved batch favorites, and Command Log. Favorite IDs use compact selectable rows with their details and supported actions on the right. New item-action entries in Command Log offer Open Item to revisit those details without running the command again. Back to Command Log restores the previous entry and position. Teleport entries offer Teleport Here through the normal review instead of opening cell details.
+- **ID Browser: 23,308 packaged entries**, including reviewed ships, vehicle forms, workshop objects, and supported Free Lanes/Terran Armada record types. Duplicate names can identify different underlying records. Grenades and mines are grouped under **Throwables** in ID Browser and Mod Browser.
 - **Descriptions and base stats:** inspect aid effects, gear values, skill ranks, traits and powers before adding them. Description/stats appear on the left, with a sticky model preview on the right. See [item details and reading](docs/ID_BROWSER_DETAILS.md).
 - **Books / Notes:** read books, notes and supported text slates in a scrolling popup. Image slates share this category; embedded image layouts are not decoded. Reading does not add inventory or grant skill-book rewards.
 - **Audio Slates:** listen inside CCC while the game stays paused, with themed playback controls, volume, speed and a scrolling line transcript. Missing voice files report unavailable. See [books and slates](docs/AUDIO_SLATES.md).
-- **Item previews:** 4,822 official-item thumbnail mappings, on-demand mod still previews, and a full Model Viewer for supported items. Books/slates use stills with Read/Listen beneath them; complete ships have no viewer.
+- **Item previews:** 4,823 official-item thumbnail mappings, on-demand mod still previews, and a full Model Viewer for supported items. Books/slates use stills with Read/Listen beneath them; complete ships have no viewer.
 - **JSON translations:** install a separate language pack, choose it in Settings or use automatic selection, and reload translations without editing SWF files.
 - **Advanced Settings in Command Browser:** Search grouped game-setting references, inspect live values, review numeric changes, and reset to supplied base-game values. String settings remain read-only.
 - **Quest Browser: 2,568 quests and 19,061 recorded stage indexes** from Base Game, Shattered Space, Free Lanes, and Terran Armada. Packaged quests are kept out of ID Browser.
@@ -84,7 +86,7 @@ Packaged and scanned quests provide live inspection and confirmed Start, Stop, C
 
 Batch Commander offers a flat **INCLUDED** list of ready-to-run, user-editable `.txt` files. Select a file to load it into the editor, then edit or review before running. Included files live in `Documents\My Games\Starfield\Console Command Center\Included Batches`; saved user batches remain in `Command Batches`. Refresh rereads files. Default installation preserves existing files, edits and deletions.
 
-The INCLUDED library contains 25 files covering unlocks, supplies, outposts, components, cooking, playing cards, baseball caps, four weapon kits, suit/clothing collections and three settings presets with matching resets. The new kits use base-game item IDs. Reset files restore documented base-game values, not a backup of modded settings.
+The INCLUDED library contains 26 files covering unlocks, supplies, outposts, components, cooking, playing cards, baseball caps, all 20 Burden of Proof evidence slates, four weapon kits, suit/clothing collections and three settings presets with matching resets. The new kits use base-game item IDs. Reset files restore documented base-game values, not a backup of modded settings.
 
 The editor highlights commands, targets, IDs, numbers and quoted strings, with italic comments. One command goes on each line; `#` and `;` start comments outside double-quoted strings. Blank lines are ignored. Normal text editing and controller entry remain available.
 
@@ -114,3 +116,11 @@ Generated catalogs are committed so normal builds do not need the game data or s
 CCC is **GPL-3.0-or-later with the CommonLibSF Modding Exception and GPL-3.0 Linking Exception (with Corresponding Source)**. See [LICENSE](LICENSE), [EXCEPTIONS](EXCEPTIONS), and [third-party notices](THIRD_PARTY_NOTICES.md) for dependency pins, licenses, and source restoration.
 
 Current test findings are maintained in [Command catalog](COMMAND_CATALOG.md) and [Console test findings](docs/CONSOLE_TEST_FINDINGS.md). Candidate future improvements are in [Future features](docs/FUTURE_FEATURES.md).
+
+## Reporting errors
+
+Include the displayed error, the item or command involved, and the automatic diagnostic log at `Documents/My Games/Starfield/SFSE/Logs/Console Command Center.log`. Use your actual Windows Documents folder, including OneDrive if redirected. Reproduce the problem and copy the log before restarting Starfield, since a new session can replace it. No Dev Mode or report export is required. If the CCC native plugin cannot connect, also include `OSF UI.log` from the same folder; CCC cannot write UI diagnostics through a disconnected bridge.
+
+The log records native/runtime versions, UI versions on reported failures, item owner/local/runtime IDs and load-order lookup results. It does not upload anything. Dev Mode Export Reports remains the author's test-feedback workflow.
+
+Diagnostic fault tests are included only in a test build made with `CCC_DIAGNOSTIC_TEST=1`; normal builds exclude the test panel. See [diagnostic testing](docs/DIAGNOSTIC_TESTING.md).

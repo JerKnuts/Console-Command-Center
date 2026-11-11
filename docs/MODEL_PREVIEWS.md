@@ -4,9 +4,9 @@ CCC reads installed geometry and materials in its own WebGL viewer. It does not 
 
 ## Small previews
 
-Official items with a packaged thumbnail show a still image immediately, without native model requests or WebGL. There are 4,822 mappings to 3,459 images, including REV-8 and Moonjumper. These vanilla snapshots do not reflect installed replacers. See [thumbnail coverage and regeneration](PACKAGED_THUMBNAILS.md).
+Official items with packaged artwork show a still image immediately. There are 4,823 mappings to 3,460 images, including REV-8 and Moonjumper. Bundled vanilla artwork can differ from installed replacers. After a selection stays visible for one second in the game, CCC refreshes it from current game materials; completed Model Viewer packets are reused when available. See [thumbnail coverage and regeneration](PACKAGED_THUMBNAILS.md).
 
-Mod items and books/slates without a bundled image request a small color model when visible, render a still image, and dispose the temporary renderer. Up to 12 generated stills / 2 MiB are retained in session memory; no thumbnail cache is written to disk. Unsupported assets show an unavailable message. Small previews have no rotation controls or surrounding frame.
+Items without bundled art, including supported mod records and books/slates, begin their still-image request when visible. The shared low-quality complete material stage renders a PNG and disposes the temporary renderer. Up to 12 generated stills / 2 MiB remain in session memory; no thumbnail cache is written to disk. Existing artwork stays visible if a refresh fails. Small previews have no rotation controls or surrounding frame.
 
 Books / Notes and Audio Slates offer only a still preview, with a compact Read or Listen button beneath it. Flat reading models stand upright at a slight angle. These items have no full Model Viewer button. See [books and slates](AUDIO_SLATES.md).
 
@@ -27,7 +27,7 @@ Left-drag pans, middle-drag orbits, right-drag up/down zooms, and the wheel zoom
 | L2 / R2 | Hold to zoom out / in |
 | B | Close chooser or viewer |
 
-Light and brightness modes are mutually exclusive. Textures Off shows neutral shaded geometry while retaining supported cutout masks. Supported apparel, spacesuits, helmets and vehicles use their corrected initial/reset orientation. Texture upgrades preserve the current camera.
+Light and brightness modes are mutually exclusive. Textures Off shows neutral shaded geometry while retaining supported cutout masks. Supported apparel, spacesuits, helmets and vehicles use their corrected initial/reset orientation. Texture upgrades preserve the current camera. Mines start at a raised three-quarter angle; grenades stand upright and face forward. These defaults also apply to still previews and camera reset. Ammo starts from a raised front view. Selected aid and food models use their own starting views, including upright pouches and label-forward bottles. Native model-path metadata applies these views to renamed mod records that reuse the same assets.
 
 ## Mannequins
 
@@ -77,3 +77,5 @@ The missing-material checkerboard is disabled, including in Dev Mode. Incomplete
 Native lookup runs on the SFSE task queue, with asset reading on a bounded worker and compressed transport into WebGL 2. Packet versions 1–11 remain readable. Native fixtures cover paths, bounds, decompression, inheritance, attachment placement and transport; browser checks cover transfer cancellation, rendering and state preservation. See [release validation](../RELEASE_VALIDATION.md) for completed checks and remaining in-game review.
 
 The BA2/NIF/mesh readers and shaders were independently written. SFShopExplorer 0.8.123 was examined for format research; its renderer and shaders were not copied. DDS decoding uses the unmodified bcdec v0.985 header under its MIT option. See [third-party notices](../THIRD_PARTY_NOTICES.md). Raw game/mod model, texture and audio assets are not included in the source package; generated still previews are shipped as UI assets.
+
+Ammunition starts facing forward with an elevated camera so the lid and front label are visible. Packaged images, on-demand mod snapshots and full-viewer reset use the same orientation.

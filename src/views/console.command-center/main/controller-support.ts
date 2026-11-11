@@ -542,6 +542,13 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
     }
 
     const activityEntry = active.closest<HTMLElement>('.activity-entry');
+    if (activityEntry && (direction === 'left' || direction === 'right')) {
+      const targets = [activityEntry, ...activityEntry.querySelectorAll<HTMLElement>('button:not([disabled])')].filter(isVisible);
+      const index = targets.indexOf(active);
+      const next = targets[index + (direction === 'right' ? 1 : -1)];
+      if (index >= 0 && next) focusElement(next);
+      return true;
+    }
     if (activityEntry && (direction === 'up' || direction === 'down')) {
       const entries = [...document.querySelectorAll<HTMLElement>('.activity-list .activity-entry')].filter(isVisible);
       const next = directionalCandidate(activityEntry, entries, direction);
@@ -552,11 +559,16 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       return true;
     }
 
+    if (active.matches('[data-back-to-command-log]') && direction === 'down') {
+      focusElement(document.querySelector<HTMLElement>('#id-browser-results .is-selected') ?? document.querySelector<HTMLElement>('#id-browser-results .id-browser-row') ?? undefined);
+      return true;
+    }
     const idList=active.closest<HTMLElement>('#id-browser-results');
     if(idList&&(direction==='up'||direction==='down')){
       const rows=[...idList.querySelectorAll<HTMLElement>('.id-browser-row,summary')].filter(isVisible),index=rows.indexOf(active);
       const next=rows[index+(direction==='up'?-1:1)];
       if(index>=0&&next)focusElement(next);
+      else if(index===0&&direction==='up')focusElement(document.querySelector<HTMLElement>('[data-back-to-command-log]') ?? undefined);
       return true;
     }
 
@@ -753,7 +765,7 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
       return;
     }
     if (active instanceof HTMLElement && active.matches('.activity-entry')) {
-      focusElement(active.querySelector<HTMLElement>('[data-show-result]') ?? active);
+      focusElement(active.querySelector<HTMLElement>('[data-open-activity-item], [data-show-result]') ?? active);
       return;
     }
     if (active instanceof HTMLElement && active.matches('.custom-saved-panel')) {
@@ -832,6 +844,10 @@ export function installControllerSupport(bridge?: OSFUIBridge): void {
         focusElement(selectedIdRow);
         return;
       }
+    }
+    if (active?.matches('[data-back-to-command-log]') || active?.closest('#id-browser-results')) {
+      const backToLog = document.querySelector<HTMLButtonElement>('[data-back-to-command-log]');
+      if (backToLog) { backToLog.click(); return; }
     }
     const activityEntry = active?.closest<HTMLElement>('.activity-entry');
     if (activityEntry && active !== activityEntry) {

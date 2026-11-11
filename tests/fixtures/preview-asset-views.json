@@ -1,0 +1,1154 @@
+[
+  {
+    "plugin": "Starfield.esm",
+    "value": "0025CF05",
+    "type": "MISC",
+    "editorId": "FoodDrink_Set_PortableKit_TrayOpen01",
+    "model": "Items\\FoodDrink_Set\\FoodDrink_Set_PortableKit_TrayOpen01.nif",
+    "group": "meal-tray"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "000304D0",
+    "type": "ALCH",
+    "editorId": "Food_ButchersBest_MultiMeat",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\foodpackets_multimeat.nif",
+    "group": "midnight"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0003D3A9",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Antibiotics_02",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Antibiotics_Green_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0003D3AA",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Bandages_02",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Ziipper_Bandaids_Red_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0003D3AB",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_HealPaste_02",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Heal_Paste_Red_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0003D3AC",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Injector_02",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Injector_Green_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0003D3AD",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Immobilizer_02",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Immobilizer_Blue_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0003D3AE",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Multi_AntibioticPaste",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Heal_Paste_Green_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0003D3AF",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Multi_AntibioticInjector",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Injector_Green_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0003D3B0",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Multi_InfusedBandages",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Bandages_Red_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0003D3B1",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Multi_RepairingImmobilizer",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Immobilizer_Blue_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0003D3B2",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Multi_AnalgesicPoultice",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Bandages_Green_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00122E9C",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_HyperGiantHeart",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_amp_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00122EA3",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_GiantHeart",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_amp_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00122EA8",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_BlackHoleHeart",
+    "model": "items/drugs_or_medical\\Crafted_InHailer_White.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00122EAD",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_SuperMassiveHeart",
+    "model": "Items\\drugs_or_medical\\Crafted_InHailer_White.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00122EB1",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_SubgiantHeart",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_amp_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00122EB6",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_DwarfHeart",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_amp_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00139E4B",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_Magz_STEVE",
+    "model": "Items\\Drugs_Or_Medical\\Crafted_InHailer_Steve_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00143CB1",
+    "type": "ALCH",
+    "editorId": "Aid_Craft_JunkFlush",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_junk_flush_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00191214",
+    "type": "ALCH",
+    "editorId": "Food_Boxed_Generic_MealKit",
+    "model": "Items\\FoodDrink_SingleItems\\EnjoyFoodItems\\Enjoy_FoodBox01.nif",
+    "group": "meal-kit"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "001F3E84",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_Magz_O2Shot",
+    "model": "Items\\Drugs_Or_Medical\\Crafted_InHailer_02_Shot.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "001F3E85",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_Magz_AddiJack",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_addijack.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "001F3E86",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_Magz_RedAMP",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_red_amp_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "001F3E87",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_Magz_BattleUp",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_battle_up_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00224D61",
+    "type": "ALCH",
+    "editorId": "NOCLUTTER_ResearchUI_Aid_Affl_Multi_RepairingImmobilizer",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Immobilizer_Blue_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00240220",
+    "type": "ALCH",
+    "editorId": "Food_Served_Generic_MealTray",
+    "model": "Items\\FoodDrink_Set\\FoodDrink_Set_PortableKit_TrayOpen01.nif",
+    "group": "meal-tray"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00249C13",
+    "type": "ALCH",
+    "editorId": "Food_Served_Tavern_Pierogis",
+    "model": "Items\\FoodDrink_SingleItems\\Marios_Special_Dumpling\\marios special_dumpling.nif",
+    "group": "pierogis"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00249C14",
+    "type": "ALCH",
+    "editorId": "Food_Served_Tavern_Kiffles",
+    "model": "Items\\FoodDrink_SingleItems\\Kiffles\\Consumable_Kiffles.nif",
+    "group": "kiffles"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00249C21",
+    "type": "ALCH",
+    "editorId": "Food_Served_Tavern_PattyMelt",
+    "model": "Items\\FoodDrink_SingleItems\\Patty_Melt\\Patty_Melt.nif",
+    "group": "patty-melt"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00255DCB",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_PickMeUp",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_pick_me_up_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029958F",
+    "type": "ALCH",
+    "editorId": "NOCLUTTER_ResearchUI_Chem_Craft_Neurajack",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_neurajack_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00299590",
+    "type": "ALCH",
+    "editorId": "NOCLUTTER_ResearchUI_Aid_Affl_Multi_AntibioticPaste",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Heal_Paste_Green_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00299591",
+    "type": "ALCH",
+    "editorId": "NOCLUTTER_ResearchUI_Chem_Craft_Panopticon",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_panopticon_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00299592",
+    "type": "ALCH",
+    "editorId": "NOCLUTTER_ResearchUI_Chem_Craft_Amp",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_amp_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00299599",
+    "type": "ALCH",
+    "editorId": "NOCLUTTER_ResearchUI_Chem_Craft_DwarfHeart",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_amp_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029959A",
+    "type": "ALCH",
+    "editorId": "NOCLUTTER_ResearchUI_Chem_Craft_GiantHeart",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_amp_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029959D",
+    "type": "ALCH",
+    "editorId": "NOCLUTTER_ResearchUI_Chem_Craft_SuperMassiveHeart",
+    "model": "Items\\drugs_or_medical\\Crafted_InHailer_White.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029959F",
+    "type": "ALCH",
+    "editorId": "NOCLUTTER_ResearchUI_Aid_Craft_Boudicca",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_boudica_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002995A1",
+    "type": "ALCH",
+    "editorId": "NOCLUTTER_ResearchUI_Chem_Craft_Frostwolf",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_frost_wolf.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029A849",
+    "type": "ALCH",
+    "editorId": "Aid_Craft_Boudicca",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_boudica_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029A84F",
+    "type": "ALCH",
+    "editorId": "Aid_Craft_PenicillinX",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_penicilinx_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029A850",
+    "type": "ALCH",
+    "editorId": "Aid_Craft_SnakeOil",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_snake_oil_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029A856",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_Amp",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_amp_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002A5025",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_Panopticon",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_panopticon_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C587F",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_RedTrench",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_red_trench_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C5881",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_Paramour",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_paramour_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C5882",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_Neurajack",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_neurajack_01.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C5885",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_Frostwolf",
+    "model": "Items\\Drugs_Or_Medical\\crafted_inhailer_frost_wolf.nif",
+    "group": "inhaler"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C721C",
+    "type": "ALCH",
+    "editorId": "Food_Pack_AdvNutrition_Chicken",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_MealPack_Chicken.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C721D",
+    "type": "ALCH",
+    "editorId": "Food_Pack_AdvNutrition_Shrimp",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_MealPack_Shrimp.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C721E",
+    "type": "ALCH",
+    "editorId": "Food_Pack_AdvNutrition_Tofu",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_MealPack_Tofu.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C721F",
+    "type": "ALCH",
+    "editorId": "Food_Pack_AdvNutrition_Ramen",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_MealPack_Ramen.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7220",
+    "type": "ALCH",
+    "editorId": "Food_Pack_AdvNutrition_Sushi",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_MealPack_Sushi.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7221",
+    "type": "ALCH",
+    "editorId": "Food_Pack_AdvNutrition_Cereal",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_MealPack_Cereal.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7222",
+    "type": "ALCH",
+    "editorId": "Food_Pack_AdvNutrition_Eggs",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_MealPack_Eggs.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C722C",
+    "type": "ALCH",
+    "editorId": "Food_Pack_Generic_MidnightDelight",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\foodpackets_multimeat.nif",
+    "group": "midnight"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C723F",
+    "type": "ALCH",
+    "editorId": "Food_RedHarvest_NaanBread",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_NaanBread.nif",
+    "group": "naan"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002F4436",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Antibiotics_01",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Antibiotics_Green_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002F4459",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Bandages_01",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Bandages_Red_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002F445A",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Injector_01",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Injector_Green_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002F445B",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_Immobilizer_01",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Immobilizer_Blue_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002F445C",
+    "type": "ALCH",
+    "editorId": "Aid_Affl_HealPaste_01",
+    "model": "Items\\Drugs_Or_medical\\Affliction_Cures\\AfflictionCure_Heal_Paste_Red_01.nif",
+    "group": "medical-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7202",
+    "type": "ALCH",
+    "editorId": "Drink_Alc_Bottle_Chandra_WineCabernet",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\beveragefood_chandracabernet.nif",
+    "group": "wine-bottle"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7203",
+    "type": "ALCH",
+    "editorId": "Drink_Alc_Bottle_Chandra_WineMalbec",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\beveragefood_chandramelbec.nif",
+    "group": "wine-bottle"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7204",
+    "type": "ALCH",
+    "editorId": "Drink_Alc_Bottle_Chandra_WineChard",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\beveragefood_chardonnay.nif",
+    "group": "wine-bottle"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7205",
+    "type": "ALCH",
+    "editorId": "Drink_Alc_Bottle_Chandra_WineRiesling",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\beveragefood_chandrariesling.nif",
+    "group": "wine-bottle"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7206",
+    "type": "ALCH",
+    "editorId": "Drink_Alc_Bottle_Chandra_WinePinot",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\beveragefood_chandrapinotnoir.nif",
+    "group": "wine-bottle"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7207",
+    "type": "ALCH",
+    "editorId": "Drink_Alc_Bottle_Chandra_WineSavignon",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\beveragefood_chandrasavigonblanc.nif",
+    "group": "wine-bottle"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7208",
+    "type": "ALCH",
+    "editorId": "Drink_Alc_Bottle_Chandra_WineMerlot",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\beveragefood_merlot.nif",
+    "group": "wine-bottle"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7209",
+    "type": "ALCH",
+    "editorId": "Drink_Alc_Bottle_Chandra_WinePort",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\beveragefood_chandraport.nif",
+    "group": "wine-bottle"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7223",
+    "type": "ALCH",
+    "editorId": "Food_Pack_AdvNutrition_Apples",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_SP_Apple_Slices.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7224",
+    "type": "ALCH",
+    "editorId": "Food_Pack_AdvNutrition_Bar",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_SP_ProteinBar.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7225",
+    "type": "ALCH",
+    "editorId": "Food_Pack_AdvNutrition_Choco",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_SP_ChocolateBites.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7226",
+    "type": "ALCH",
+    "editorId": "Food_Pack_AdvNutrition_Gummi",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_SP_GummiBugs.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7233",
+    "type": "ALCH",
+    "editorId": "Food_CentauriMills_Pizza",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_Frozen_Pizza.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7236",
+    "type": "ALCH",
+    "editorId": "Food_CentauriMills_Crackers",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_SPCrackersCheese.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C723A",
+    "type": "ALCH",
+    "editorId": "Food_CentauriMills_OatClusters",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_Oat_Clusters.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C723B",
+    "type": "ALCH",
+    "editorId": "Food_CentauriMills_ChocoLabs",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_Chocolate_Labs.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7240",
+    "type": "ALCH",
+    "editorId": "Food_RedHarvest_Spaghetti",
+    "model": "Items\\FoodDrink_SingleItems\\all_packaged_consumables\\PackagedFood_Spaghetti.nif",
+    "group": "meal-pack"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00249C4A",
+    "type": "ALCH",
+    "editorId": "Food_Served_CanUck_Edmontonian",
+    "model": "Items\\FoodDrink_SingleItems\\theedmontonian\\Food_RS_CanUck_Edmontonian.nif",
+    "group": "edmontonian"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00249C4B",
+    "type": "ALCH",
+    "editorId": "Food_Served_CanUck_PateChinois",
+    "model": "Items\\FoodDrink_SingleItems\\PateChinois\\Food_RS_CanUck_PateChinois.nif",
+    "group": "shepherds-pie"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00249C4C",
+    "type": "ALCH",
+    "editorId": "Food_Served_CanUck_HamBoys",
+    "model": "Items\\FoodDrink_SingleItems\\Ham_Boys\\Ham_Boy.nif",
+    "group": "ham-boys"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00249C4D",
+    "type": "ALCH",
+    "editorId": "Food_Served_CanUck_Haligonian",
+    "model": "Items\\FoodDrink_SingleItems\\TheHaligonian\\The_Haligonian.nif",
+    "group": "haligonian"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002543B8",
+    "type": "ALCH",
+    "editorId": "Food_Served_Generic_Sandwich02",
+    "model": "Architecture\\Outpost\\OutpostIndustrial\\Interiors\\Pod\\OpiInd_Sandwich02.nif",
+    "group": "bitten-sandwich"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7C0C",
+    "type": "ALCH",
+    "editorId": "Food_Craft_AlienJerky",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_AlienJerky.nif",
+    "group": "alien-jerky"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "001AF661",
+    "type": "MISC",
+    "editorId": "FoodDrink_Set_Chunks_Empty",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_Empty_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "001E29A8",
+    "type": "ALCH",
+    "editorId": "Food_ChunksPack_Chunks_Egg",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_Egg_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0020675E",
+    "type": "ALCH",
+    "editorId": "Drink_Alc_ChunksPack_Chunks_Wine",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_Wine_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00206760",
+    "type": "ALCH",
+    "editorId": "Food_ChunksPack_Chunks_PumpkinPie",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_PumpkinPie_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00206762",
+    "type": "ALCH",
+    "editorId": "Food_ChunksPack_Chunks_Potato",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_Potato_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00206767",
+    "type": "ALCH",
+    "editorId": "Drink_NonAlc_ChunksPack_Chunks_Cola",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_Cola_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00206768",
+    "type": "ALCH",
+    "editorId": "Food_ChunksPack_Chunks_Chocolate",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_Cocolate_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0020676A",
+    "type": "ALCH",
+    "editorId": "Food_ChunksPack_Chunks_Chicken",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_Chicken_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0020676C",
+    "type": "ALCH",
+    "editorId": "Food_ChunksPack_Chunks_CheeseSteak",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_CheeseSteak_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0020676E",
+    "type": "ALCH",
+    "editorId": "Food_ChunksPack_Chunks_CheeseCake",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_CHeeseCake_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0020676F",
+    "type": "ALCH",
+    "editorId": "Food_ChunksPack_Chunks_Beef",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_Beef_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00206771",
+    "type": "ALCH",
+    "editorId": "Food_ChunksPack_Chunks_Apple",
+    "model": "Items\\FoodDrink_SingleItems\\FoodChunk\\Chunk_Food_Apple_Pack.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "SFBGS00D.esm",
+    "value": "0204AE38",
+    "type": "ALCH",
+    "editorId": "SFFL_SE01_Food",
+    "model": "Items\\FoodDrink_SingleItems\\BartsChilli\\BartsChilli_01.nif",
+    "group": "food-bowl"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00249C46",
+    "type": "ALCH",
+    "editorId": "NOCLUTTER_Food_ExclMenuItem_PitStop_BartsChili",
+    "model": "Items\\FoodDrink_SingleItems\\BartsChilli\\BartsChilli_01.nif",
+    "group": "food-bowl"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00249C20",
+    "type": "ALCH",
+    "editorId": "Food_Served_Tavern_FriedPickles",
+    "model": "Items\\FoodDrink_SingleItems\\Fried_Pickles\\Food_RS_Tavern_FriedPickles.nif",
+    "group": "fried-pickles"
+  },
+  {
+    "plugin": "ShatteredSpace.esm",
+    "value": "01035DF3",
+    "type": "ALCH",
+    "editorId": "SFBGS001_Food_Craft_GroatPie",
+    "model": "Items\\dlc001\\Food\\groatpie\\SFBGS001_GroatPie01.nif",
+    "group": "groat-pie"
+  },
+  {
+    "plugin": "ShatteredSpace.esm",
+    "value": "01035DF9",
+    "type": "ALCH",
+    "editorId": "SFBGS001_Food_Meat_Groat",
+    "model": "Items\\dlc001\\Food\\groatmeat\\SFBGS001_PackagedFood_GroatMeat01.nif",
+    "group": "groat-meat"
+  },
+  {
+    "plugin": "ShatteredSpace.esm",
+    "value": "01060F02",
+    "type": "ALCH",
+    "editorId": "SFBGS001_Food_ChunksPack_Chunks_GroatChunks",
+    "model": "Items\\DLC001\\Food\\GroatChunk\\SFBGS001_Chunk_GroatMeat_Pack01.nif",
+    "group": "chunks-packaged"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "000304CC",
+    "type": "ALCH",
+    "editorId": "Drink_NonAlc_DrinkPouch_Generic_SparklingWater",
+    "model": "Items\\FoodDrink_SingleItems\\FoodPackets_CrystalPouch\\FoodPackets_CrystalPouch.nif",
+    "group": "fullfood-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "000304CE",
+    "type": "ALCH",
+    "editorId": "Food_Packets_FoodPouch",
+    "model": "Items\\FoodPackets_FoodPouch.nif",
+    "group": "fullfood-pouch"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029CAD9",
+    "type": "ALCH",
+    "editorId": "Aid_HeartPlus",
+    "model": "items/drugs_or_medical\\Chem_HeartPlus.nif",
+    "group": "heart-plus"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029A851",
+    "type": "ALCH",
+    "editorId": "Aid_Addichrone",
+    "model": "items/drugs_or_medical\\chem_addichrone.nif",
+    "group": "heart-plus"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029A85E",
+    "type": "ALCH",
+    "editorId": "Chem_CQBX",
+    "model": "items/drugs_or_medical\\chem_cqb-x.nif",
+    "group": "pill-bottle"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C5883",
+    "type": "ALCH",
+    "editorId": "Chem_Hippolyta",
+    "model": "items/drugs_or_medical\\chem_hippolyta.nif",
+    "group": "pill-bottle"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00143CB2",
+    "type": "ALCH",
+    "editorId": "Chem_Craft_Whiteout",
+    "model": "items/drugs_or_medical\\chem_whiteout_01.nif",
+    "group": "squall"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002A9DE7",
+    "type": "ALCH",
+    "editorId": "Chem_Squall",
+    "model": "items/drugs_or_medical\\chem_squall_01.nif",
+    "group": "squall"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00122E94",
+    "type": "ALCH",
+    "editorId": "Food_Craft_GalaxyMein",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_Chapaguri.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00122E95",
+    "type": "ALCH",
+    "editorId": "Food_Craft_ClusterMarsala",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_ChickenMarsala.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00122E96",
+    "type": "ALCH",
+    "editorId": "Food_Craft_NebulaWat",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_DoroWat.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00137524",
+    "type": "ALCH",
+    "editorId": "Food_Generic_SweetRolls",
+    "model": "Items\\FoodDrink_SingleItems\\SweetRolls_Packaged\\CraftedFood_Container_SweetRolls.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "00165073",
+    "type": "ALCH",
+    "editorId": "Food_Craft_KidStuffTraitMeatloaf",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_MeatLoaf.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "001944E4",
+    "type": "ALCH",
+    "editorId": "CF05_Food_Sandwich",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_AlienSandwhich.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002383E9",
+    "type": "ALCH",
+    "editorId": "Food_Craft_Latkes",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_Latkes.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002543B7",
+    "type": "ALCH",
+    "editorId": "Food_Served_Generic_Sandwich01",
+    "model": "Architecture\\Outpost\\OutpostIndustrial\\Interiors\\Pod\\OpiInd_Sandwich01.nif",
+    "group": "sandwich"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B054",
+    "type": "ALCH",
+    "editorId": "Food_Craft_BarbacoaWrap",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_BarbacoaWrap.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B055",
+    "type": "ALCH",
+    "editorId": "Food_Craft_ReubenSand",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_Ruben.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B056",
+    "type": "ALCH",
+    "editorId": "Food_Craft_MadrasLentils",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_Madras_Lentils.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B057",
+    "type": "ALCH",
+    "editorId": "Food_Craft_Bolognese",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_Bolognese.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B058",
+    "type": "ALCH",
+    "editorId": "Food_Craft_Carbonara",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_Carbonara.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B059",
+    "type": "ALCH",
+    "editorId": "Food_Craft_DoroWat",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_DoroWat.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B05A",
+    "type": "ALCH",
+    "editorId": "Food_Craft_ChickenTikka",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_ChickenTikka.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B05B",
+    "type": "ALCH",
+    "editorId": "Food_Craft_Meatloaf",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_MeatLoaf.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B05C",
+    "type": "ALCH",
+    "editorId": "Food_Craft_ChickenMarsala",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_ChickenMarsala.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B05D",
+    "type": "ALCH",
+    "editorId": "Food_Craft_GrilledCheeseSand",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_GrillCheese.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B05F",
+    "type": "ALCH",
+    "editorId": "Food_Craft_Xenowurst",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_CreatureWurst.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B060",
+    "type": "ALCH",
+    "editorId": "Food_Craft_CrispyNuggets",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\craftedfood_container_aliennuggets.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B062",
+    "type": "ALCH",
+    "editorId": "Food_Craft_AlienSandwich",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_AlienSandwhich.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B063",
+    "type": "ALCH",
+    "editorId": "Food_Craft_AlienPie",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_AlienPie.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B064",
+    "type": "ALCH",
+    "editorId": "Food_Craft_AlienStirFry",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_AlienStirFry.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B065",
+    "type": "ALCH",
+    "editorId": "Food_Craft_AlienScramble",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_AlienScrambledEggs.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029B066",
+    "type": "ALCH",
+    "editorId": "Food_Craft_AlienStew",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_AlienStew.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C722B",
+    "type": "ALCH",
+    "editorId": "Food_Craft_HamCheeseSand",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_HC_Sandwhich.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7C0D",
+    "type": "ALCH",
+    "editorId": "Food_Craft_Chapaguri",
+    "model": "Items\\FoodDrink_SingleItems\\all_crated_consumables\\CraftedFood_Container_Chapaguri.nif",
+    "group": "takeout-container"
+  },
+  {
+    "plugin": "ShatteredSpace.esm",
+    "value": "01035DF4",
+    "type": "ALCH",
+    "editorId": "SFBGS001_Food_Craft_SeaweedEggPorridge",
+    "model": "Items\\dlc001\\Food\\seaweedandeggporridge\\SFBGS001_SeaweedandEggPorridge01.nif",
+    "group": "porridge"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029A860",
+    "type": "ALCH",
+    "editorId": "Food_Packets_SmokedFillet",
+    "model": "Items\\FoodDrink_Set\\FoodDrink_Set_FishFillet01.nif",
+    "group": "smoked-fillet"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "001DFCB3",
+    "type": "ALCH",
+    "editorId": "Food_CarryKit_SuperfoodPasteSet",
+    "model": "Items\\FoodDrink_Set\\FoodDrink_Set_CarryKit_Container01.nif",
+    "group": "superfood-paste"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "0029A861",
+    "type": "ALCH",
+    "editorId": "Food_ButchersBest_Turkey",
+    "model": "Items\\FoodDrink_Set\\FoodDrink_Set_Turkey01.nif",
+    "group": "synthameat"
+  },
+  {
+    "plugin": "Starfield.esm",
+    "value": "002C7242",
+    "type": "ALCH",
+    "editorId": "Food_ButchersBest_Chicken",
+    "model": "Items\\FoodDrink_Set\\FoodDrink_Set_Chicken.nif",
+    "group": "synthameat"
+  }
+]

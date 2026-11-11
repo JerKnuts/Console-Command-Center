@@ -23,6 +23,13 @@ export function resolveFavoriteIds<T extends IdCatalogEntry>(favorites: T[], cat
     const metadata = isMod ? undefined : records.get(identity(favorite, local));
     const entry = metadata ? { ...favorite, ...metadata } : { ...favorite,...(isMod?{source:'mod' as const}:{}),...(recoveredLocal?{localFormId:recoveredLocal}:{}) };
     if (!entry.plugin) return isMod?{...entry,available:false}:entry;
+    // Starfield.esm always occupies slot 00. Its validated local identity does
+    // not depend on a successful optional load-order request. Never apply this
+    // fallback to DLC or mods, whose runtime slots can change.
+    if (!isMod && entry.plugin.toLowerCase() === 'starfield.esm' && entry.localFormId) {
+      const value = runtimeFormId(entry.localFormId, 'full', 0);
+      return { ...entry, value: value ?? entry.value, pluginKind: 'full', available: value !== null };
+    }
     const plugin = plugins.get(entry.plugin.toLowerCase());
     if (!plugin || !entry.localFormId) return { ...entry, available: false };
     const value = runtimeFormId(entry.localFormId, plugin.pluginKind, plugin.index);

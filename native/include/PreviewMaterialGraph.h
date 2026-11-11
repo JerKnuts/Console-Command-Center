@@ -31,14 +31,14 @@ inline std::unordered_map<std::string,MaterialAppearance> ReadMaterialInheritanc
         if(nodes.empty()||components.empty()||!dataStart)return {};
         const auto ctName=classId("BSComponentDB::CTName"),layer=classId("BSMaterial::LayerID"),material=classId("BSMaterial::MaterialID"),textureSet=classId("BSMaterial::TextureSetID"),file=classId("BSMaterial::MRTextureFile"),replacement=classId("BSMaterial::TextureReplacement"),color=classId("BSMaterial::Color");
         const auto blender=classId("BSMaterial::BlenderID"),uvStream=classId("BSMaterial::UVStreamID"),scale=classId("BSMaterial::Scale"),shaderModel=classId("BSMaterial::ShaderModelComponent"),blendMode=classId("BSMaterial::BlendModeComponent"),tintMode=classId("BSMaterial::MaterialOverrideColorTypeComponent"),floatParam=classId("BSMaterial::MaterialParamFloat"),boolParam=classId("BSMaterial::ParamBool");
-        const auto alphaSettings=classId("BSMaterial::AlphaSettingsComponent");
+        const auto alphaSettings=classId("BSMaterial::AlphaSettingsComponent"),decalSettings=classId("BSMaterial::DecalSettingsComponent"),flipbook=classId("BSMaterial::FlipbookComponent");
         Reader list{components};std::size_t at=dataStart;
         while(list.at<components.size()){const auto id=list.Read<std::uint32_t>();const auto index=list.Read<std::uint16_t>(),type=list.Read<std::uint16_t>();const auto t=types.find(type);const auto node=nodes.find(id);if(t==types.end()||node==nodes.end())return {};
             // Composite components own following nested chunks. Their child class
             // IDs differ from the next indexed component; stay on chunk boundaries.
             while(at<chunks.size()){const auto& c=chunks[at];if(c.data.size()>=4){Reader r{c.data};if(r.Read<std::uint32_t>()==t->second)break;}++at;}
             if(at==chunks.size())return {};const auto& c=chunks[at++];
-            if(t->second==ctName||t->second==layer||t->second==material||t->second==textureSet||t->second==file||t->second==replacement||t->second==color||t->second==blender||t->second==uvStream||t->second==scale||t->second==shaderModel||t->second==blendMode||t->second==tintMode||t->second==floatParam||t->second==boolParam||t->second==alphaSettings)node->second.fields.push_back({t->second,index,c});}
+            if(t->second==ctName||t->second==layer||t->second==material||t->second==textureSet||t->second==file||t->second==replacement||t->second==color||t->second==blender||t->second==uvStream||t->second==scale||t->second==shaderModel||t->second==blendMode||t->second==tintMode||t->second==floatParam||t->second==boolParam||t->second==alphaSettings||t->second==flipbook||t->second==decalSettings)node->second.fields.push_back({t->second,index,c});}
         if(at!=chunks.size())return {};
         const auto field=[&](std::uint32_t id,std::uint32_t type,unsigned index)->const Field*{for(unsigned depth=0;id&&depth<32;++depth){const auto n=nodes.find(id);if(n==nodes.end())return nullptr;for(const auto& f:n->second.fields)if(f.type==type&&f.index==index)return &f;id=n->second.parent;}return nullptr;};
         const auto link=[&](std::uint32_t id,std::uint32_t type,unsigned index=0){const auto f=field(id,type,index);if(!f)return 0u;Reader r{f->chunk.data};r.Skip(f->chunk.tag=="DIFF"?8:4);return r.Read<std::uint32_t>();};
@@ -50,7 +50,22 @@ inline std::unordered_map<std::string,MaterialAppearance> ReadMaterialInheritanc
             const auto hasSurface=[&](std::uint32_t mat,std::uint32_t set){if(field(mat,color,0))return true;for(unsigned slot=0;slot<8;++slot)if(field(set,replacement,slot)||!text(field(set,file,slot)).empty())return true;return false;};
             if(!hasSurface(m,t)){unsigned candidates=0;std::uint32_t nextL=0,nextM=0,nextT=0;for(unsigned index=1;index<4;++index){const auto cl=link(id,layer,index),cm=link(cl,material),ct=link(cm,textureSet);if(cm&&ct&&hasSurface(cm,ct)){++candidates;nextL=cl;nextM=cm;nextT=ct;}}if(candidates==1){l=nextL;m=nextM;t=nextT;}}
             auto key=text(&*rootName);try{key=MaterialKey(key);if(key.starts_with("data/"))key.erase(0,5);}catch(...){continue;}MaterialAppearance appearance;appearance.authored=true;appearance.tintMultiply=text(field(m,tintMode,0))=="Multiply";
+            // Freeze authored texture-atlas animation on its first frame. Resolve
+            // partial child overrides independently rather than displaying every digit.
+            std::optional<bool> animated;std::optional<unsigned> columns,rows;
+            for(std::uint32_t current=m,depth=0;current&&depth<32;++depth){const auto node=nodes.find(current);if(node==nodes.end())break;
+                for(const auto& f:node->second.fields)if(f.type==flipbook&&f.index==0)try{Reader reader{f.chunk.data};reader.Skip(4);unsigned property=0;while(reader.at<reader.bytes.size()){
+                    if(f.chunk.tag=="DIFF")property=reader.Read<std::uint16_t>();
+                    if(property==0){const auto value=reader.Read<std::uint8_t>();if(value>1)break;if(!animated)animated=value!=0;}
+                    else if(property==1){const auto value=reader.Read<std::uint32_t>();if(!columns)columns=value;}
+                    else if(property==2){const auto value=reader.Read<std::uint32_t>();if(!rows)rows=value;}
+                    else break;
+                    ++property;
+                }}catch(...){}current=node->second.parent;
+            }
+            if(animated.value_or(false)){const auto c=columns.value_or(1),r=rows.value_or(1);if(c>=1&&c<=64&&r>=1&&r<=64){appearance.flipbook=true;appearance.flipbookColumns=c;appearance.flipbookRows=r;}else appearance.incomplete=true;}
             const auto shader=text(field(id,shaderModel,0));appearance.glass=shader.find("Glass")!=std::string::npos;appearance.decal=shader.find("Decal")!=std::string::npos;
+            for(std::uint32_t current=id,depth=0;current&&depth<32;++depth){const auto node=nodes.find(current);if(node==nodes.end())break;bool resolved=false;for(const auto& f:node->second.fields)if(f.type==decalSettings&&f.index==0)try{Reader r{f.chunk.data};r.Skip(4);if(f.chunk.tag=="DIFF"&&r.Read<std::uint16_t>()!=0)continue;const auto value=r.Read<std::uint8_t>();if(value<=1){appearance.decal=value!=0;resolved=true;break;}}catch(...){}if(resolved)break;current=node->second.parent;}
             // AlphaSettings DIFF fields are ordered: HasOpacity(bool), threshold
             // (float), source layer(byte), Blender(struct), dither(bool). Resolve
             // each leading property independently through component inheritance.
@@ -59,7 +74,7 @@ inline std::unordered_map<std::string,MaterialAppearance> ReadMaterialInheritanc
                 for(const auto& f:n->second.fields)if(f.type==alphaSettings&&f.index==0&&f.chunk.tag=="DIFF")try{Reader r{f.chunk.data};r.Skip(4);while(r.at+2<=r.bytes.size()){const auto property=r.Read<std::uint16_t>();if(property==0){const auto v=r.Read<std::uint8_t>();if(v>1)break;if(!hasOpacity)hasOpacity=v!=0;}else if(property==1){const auto v=r.Float();if(!threshold&&std::isfinite(v)&&v>=0&&v<=1)threshold=v;}else break;}}catch(...){}
                 if(hasOpacity&&threshold)break;current=n->second.parent;
             }
-            if(!shader.empty()&&shader.find("Effect")==std::string::npos&&!appearance.glass){appearance.opacityMode=hasOpacity.value_or(false)?2:1;appearance.alphaThreshold=threshold.value_or(.5f);}
+            if(!shader.empty()&&shader.find("Effect")==std::string::npos&&!appearance.glass){appearance.alphaThreshold=threshold.value_or(.5f);appearance.opacityMode=AuthoredOpacityMode(hasOpacity.value_or(false),appearance.alphaThreshold,appearance.decal);}
             if(auto tint=rgba(field(m,color,0))){appearance.tint={(*tint)[0],(*tint)[1],(*tint)[2]};appearance.tintWeight=(*tint)[3];appearance.tinted=true;}
             for(unsigned slot=0;slot<8;++slot){std::optional<bool> constant;std::optional<std::array<float,4>> replacementColor;
                 // DIFF can override only the replacement color and inherit its

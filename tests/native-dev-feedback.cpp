@@ -1,9 +1,20 @@
 #include "DevFeedback.h"
+#include "DiagnosticLog.h"
 #include <iostream>
 
 int main()
 {
     try {
+        std::string diagnostic;
+        CCC::Diagnostics::Record("item-resolution\nforged", "1.4.3", "1.4.3", "1.16.244",
+            "plugin=Starfield.esm; local=1DEDB1; form=001DEDB1; plugins=0; error=timeout\nsecond\tline",
+            [&](const std::string& line) { diagnostic = line; });
+        if (diagnostic.find('\n') != std::string::npos || diagnostic.find('\t') != std::string::npos ||
+            diagnostic.find("UI=1.4.3; native=1.4.3; runtime=1.16.244") == std::string::npos ||
+            diagnostic.find("form=001DEDB1") == std::string::npos)
+            throw std::runtime_error("Diagnostic line lost context or allowed control characters.");
+        if (CCC::Diagnostics::SafeField(std::string(9000, 'x'), 2048).size() != 2048)
+            throw std::runtime_error("Diagnostic detail was not bounded.");
         CCC::DevFeedback::Uploads uploads;
         const std::string large=std::string(180000,'x')+"\r\nChinese: \xE8\xAE\xBE\xE7\xBD\xAE\r\n";
         const auto token=uploads.Accept({{"action","begin"},{"bytes",large.size()}}).at("upload").get<std::string>();
@@ -23,6 +34,12 @@ int main()
         uploads.Accept({{"action","cancel"},{"upload",cancelled}});
         mustReject({{"action","append"},{"upload",cancelled},{"index",0},{"content","test"}});
         const auto directory = std::filesystem::temp_directory_path() / (L"ccc-feedback-test-" + std::to_wstring(GetCurrentProcessId()) + L"-" + std::to_wstring(GetTickCount64()));
+        std::filesystem::create_directories(directory);
+        const auto diagnosticFile = directory / L"diagnostic.log";
+        { std::ofstream stream(diagnosticFile); stream << diagnostic << '\n'; }
+        { std::ifstream stream(diagnosticFile); std::string line; std::getline(stream, line);
+          if (line != diagnostic) throw std::runtime_error("Diagnostic file round trip lost context."); }
+        std::filesystem::remove(diagnosticFile);
         const std::string first = "Report 1\r\nWorking\r\nUnicode: \xE2\x80\x94\r\n";
         auto result = CCC::DevFeedback::ExportAt(directory, first);
         const auto largeResult=CCC::DevFeedback::ExportAt(directory,assembled);

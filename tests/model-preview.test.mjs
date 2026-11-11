@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {decodePreview,orbitState,smoothNormals,previewAlphaMode,previewCanvasSize} from '../src/views/console.command-center/main/preview-renderer.ts';
+import {decodePreview,orbitState,smoothNormals,previewAlphaMode,previewCanvasSize,previewCastsShadow} from '../src/views/console.command-center/main/preview-renderer.ts';
 import {canPreviewModel,fetchPreview,defaultPreviewMannequin,previewMannequinFit,orientReadingPreview} from '../src/views/console.command-center/main/model-preview.ts';
 import {deflateSync} from 'node:zlib';
 
@@ -13,6 +13,17 @@ test('compressed cutout edges remain in the solid depth pass instead of glass',(
 test('broad fractional opacity still uses transparent blending for glass and pouches',()=>{
  const pixels=new Uint8Array(100*4).fill(255);for(let i=0;i<60;i++)pixels[i*4+3]=80;
  assert.equal(previewAlphaMode(pixels),'blend');
+});
+
+test('painted and engraved decal planes do not cast independent surface shadows',()=>{
+ assert.equal(previewCastsShadow({}),true);assert.equal(previewCastsShadow({transparent:false}),true);
+ for(const surface of [{decal:true},{glass:true},{transparent:true},{effect:'caustic'},{decal:true,transparent:false}])assert.equal(previewCastsShadow(surface),false);
+});
+
+test('version twelve preserves authored smooth decal flags independently of pixel coverage',()=>{
+ const bytes=new Uint8Array(136),v=new DataView(bytes.buffer);bytes.set(new Uint8Array(triangle()));v.setUint32(4,12,true);v.setUint32(68,264,true);v.setUint32(72,1,true);v.setUint32(120,1,true);v.setUint32(124,1,true);v.setUint32(128,1,true);bytes.set([80,90,100,32],132);
+ const mesh=decodePreview(bytes.buffer)[0];assert.equal(mesh.smoothDecal,true);assert.equal(mesh.decal,true);assert.equal(mesh.texture.pixels[3],32);
+ v.setUint32(68,256,true);assert.throws(()=>decodePreview(bytes.buffer),/smooth decal/);v.setUint32(68,264,true);v.setUint32(4,11,true);assert.throws(()=>decodePreview(bytes.buffer),/texture|smooth decal/);
 });
 
 function triangle(){

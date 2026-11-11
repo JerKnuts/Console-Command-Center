@@ -49,6 +49,13 @@ namespace CCC::Preview
         }
         return path;
     }
+    inline std::string MaterialAssetKey(std::string path) {
+        for (auto& c : path) { if (c == '\\') c = '/'; else if (c >= 'A' && c <= 'Z') c += 'a' - 'A'; }
+        // NIF materials may use a logical game-root prefix. This is not a
+        // filesystem path: only these established material roots are accepted.
+        if (path.starts_with("/materials/") || path.starts_with("/data/materials/")) path.erase(0, 1);
+        return AssetKey(std::move(path));
+    }
     inline Bytes ReadRange(const std::filesystem::path& path, std::uint64_t offset, std::size_t size) {
         if (size > MaxAssetBytes) throw std::runtime_error("Model asset exceeds the preview limit.");
         std::ifstream stream(path, std::ios::binary | std::ios::ate);
@@ -140,7 +147,7 @@ namespace CCC::Preview
     inline Matrix Multiply(const Matrix& a, const Matrix& b) {
         Matrix out{}; for (int row = 0; row < 4; ++row) for (int col = 0; col < 4; ++col) for (int k = 0; k < 4; ++k) out[row*4+col] += a[row*4+k]*b[k*4+col]; return out;
     }
-    struct Mesh { std::string name; std::vector<float> positions; std::vector<std::uint32_t> indices; std::vector<float> uv; std::string material; std::uint32_t textureWidth=0,textureHeight=0; Bytes pixels; bool mannequin=false; std::array<float,3> tint{1,1,1};bool tinted=false; std::uint32_t normalWidth=0,normalHeight=0; Bytes normalPixels; bool glass=false; bool decal=false; bool incompleteMaterial=false; bool normalOnly=false;std::uint32_t metalWidth=0,metalHeight=0;Bytes metalPixels;bool causticEffect=false;bool flowingLiquid=false; };
+    struct Mesh { std::string name; std::vector<float> positions; std::vector<std::uint32_t> indices; std::vector<float> uv; std::string material; std::uint32_t textureWidth=0,textureHeight=0; Bytes pixels; bool mannequin=false; std::array<float,3> tint{1,1,1};bool tinted=false; std::uint32_t normalWidth=0,normalHeight=0; Bytes normalPixels; bool glass=false; bool decal=false; bool incompleteMaterial=false; bool normalOnly=false;std::uint32_t metalWidth=0,metalHeight=0;Bytes metalPixels;bool causticEffect=false;bool flowingLiquid=false;bool smoothDecal=false; };
     struct GeometryRef { std::string name, path; Matrix transform; std::string material; std::string bone; Matrix bind=Identity(); bool rigid=false; Bytes embedded; std::optional<std::array<float,3>> inlineTint; };
     inline Matrix InverseAffine(const Matrix& m) {
         const float a=m[0],b=m[1],c=m[2],d=m[4],e=m[5],f=m[6],g=m[8],h=m[9],i=m[10];const float det=a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g);
@@ -306,11 +313,27 @@ namespace CCC::Preview
             if(const auto body=scene.nodes.find("M82Bub_Body:1");body!=scene.nodes.end())return body->second;
         return {};
     }
-    inline bool SceneDistortionOnly(const std::string& material) {
-        // This engine effect refracts the scene behind a weapon. Drawing its
-        // smoke opacity as an ordinary surface instead covers the blade in gray.
-        // Omit only this known effect, including during geometry-only previews.
-        return !material.empty() && AssetKey(material)=="materials/effects/fires/heatdistortion.mat";
+    inline bool HiddenPreviewGeometry(const std::string& material,const std::string& name={}) {
+        // Static previews cannot reproduce these engine-only effects: weapon
+        // scene refraction and the animated space-mine warning glow. Drawing
+        // their carrier meshes as ordinary lit surfaces creates gray shells or
+        // solid white discs. Omit only the exact known materials at every quality,
+        // including geometry-only previews; retain physical and supported effects.
+        if (material.empty()) return false;
+        auto key = MaterialAssetKey(material);
+        if (key.starts_with("data/")) key.erase(0, 5);
+        return key == "materials/effects/fires/heatdistortion.mat" ||
+            key == "materials/weapons/spacemine/radialglow_01_red.mat" ||
+            // The single-digit last-nine counter is an alternative to the tens/
+            // ones pair, not a third overlapping digit. Static previews show 00.
+            (key == "materials/effects/weapons/ammocounters/combatech_eink_ammocounter.mat" && name == "AmmoCountFinalNine:0");
+    }
+    inline bool UnusedRevolverMagazine(const std::string& path,bool builtInCylinder,bool magazineMount){
+        // The official Antique Revolver template includes an M1919 magazine,
+        // although its receiver already contains the cylinder and has no Mag mount.
+        // Never drop magazines from unrelated receivers or a mod-added Mag mount.
+        auto key=AssetKey(path);if(!key.starts_with("meshes/"))key="meshes/"+key;
+        return builtInCylinder&&!magazineMount&&key=="meshes/weapons/m1919/m1919_magazine.nif";
     }
     inline std::vector<Mesh> Load(AssetStore& store, const std::vector<std::string>& models,unsigned quality=4) {
         std::vector<Mesh> out; std::size_t totalVertices=0,totalIndices=0;
@@ -321,6 +344,9 @@ namespace CCC::Preview
         }
         // Origin-authored wearable pieces need the installed body's bind pose even
         // when the mannequin is hidden. Already positioned pieces remain untouched.
+        const bool antiqueCylinder=std::any_of(parts.begin(),parts.end(),[](const Part& part){return part.path=="meshes/weapons/sfbgs050/antiquerevolver/receiver_standard.nif"&&std::any_of(part.geometry.begin(),part.geometry.end(),[](const GeometryRef& ref){return ref.name=="Magazine_Cylinder:0";});});
+        const bool magazineMount=std::any_of(parts.begin(),parts.end(),[](const Part& part){return std::any_of(part.scene.mounts.begin(),part.scene.mounts.end(),[](const ModelMount& mount){return mount.slot=="P-Mag";});});
+        std::erase_if(parts,[&](const Part& part){return UnusedRevolverMagazine(part.path,antiqueCylinder,magazineMount);});
         const bool needsPose=std::any_of(parts.begin(),parts.end(),[](const Part& part){return std::any_of(part.geometry.begin(),part.geometry.end(),[](const GeometryRef& ref){return OriginAttachment(ref);});});
         if(needsPose){std::unordered_map<std::string,Matrix> bones;const bool female=std::any_of(models.begin(),models.end(),[](std::string path){path=AssetKey(path);return path.ends_with("_f.nif");});
             for(const auto* body:{"body","head","hands","neck"})try{ModelScene scene;ReadNif(store.Read("meshes/actors/mannequin/mesh/outpost_mannequin_01/outpost_mannequin_"+std::string(body)+"_01_"+(female?"f":"m")+".nif"),&scene);for(const auto& [name,matrix]:scene.bones)bones.try_emplace(name,matrix);}catch(...){}
@@ -334,7 +360,7 @@ namespace CCC::Preview
         }
         for(const auto& part:parts){if(!part.placed)throw std::runtime_error("This modular model has an unresolved attachment point.");
             for(auto ref:part.geometry) {
-                if(SceneDistortionOnly(ref.material))continue;
+                if(HiddenPreviewGeometry(ref.material,ref.name))continue;
                 ref.transform=Multiply(part.placement,ref.transform);
                 // Keep instancing when the same mesh appears at different transforms.
                 auto mesh=ReadMesh(ref.embedded.empty()?store.Read(ref.path):ref.embedded,ref); totalVertices+=mesh.positions.size()/3; totalIndices+=mesh.indices.size();
@@ -386,8 +412,9 @@ namespace CCC::Preview
         std::size_t vertices=0,indices=0;for(const auto& mesh:meshes){vertices+=mesh.positions.size()/3;indices+=mesh.indices.size();}
         if(meshes.empty()||meshes.size()>MaxPieces||vertices>MaxVertices||indices>MaxIndices)throw std::runtime_error("This combined model exceeds the preview limits.");
         const bool hasEffect=std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.causticEffect||mesh.flowingLiquid;});
-        const bool hasMetal=std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return !mesh.metalPixels.empty();});
-        Bytes out; Append(out,std::uint32_t(0x50504343)); Append(out,std::uint32_t(std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.flowingLiquid;})?11:hasEffect?10:std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return !mesh.metalPixels.empty();})?9:std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.normalOnly;})?8:7)); Append(out,std::uint32_t(meshes.size()));
+        const bool hasSmoothDecal=std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.smoothDecal;});
+        const bool hasMetal=hasSmoothDecal||std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return !mesh.metalPixels.empty();});
+        Bytes out; Append(out,std::uint32_t(0x50504343)); Append(out,std::uint32_t(hasSmoothDecal?12:std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.flowingLiquid;})?11:hasEffect?10:std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return !mesh.metalPixels.empty();})?9:std::any_of(meshes.begin(),meshes.end(),[](const Mesh& mesh){return mesh.normalOnly;})?8:7)); Append(out,std::uint32_t(meshes.size()));
         struct PackedTexture{
             std::uint32_t width,height;const Bytes* pixels;Bytes reduced;
             const Bytes& Data()const{return reduced.empty()?*pixels:reduced;}
@@ -411,7 +438,7 @@ namespace CCC::Preview
         };
         for(const auto& mesh:meshes){Append(out,std::uint32_t(mesh.positions.size()/3));Append(out,std::uint32_t(mesh.indices.size()));for(auto v:mesh.positions)Append(out,v);for(auto i:mesh.indices)Append(out,i);
             const auto color=textureId(mesh.textureWidth,mesh.textureHeight,mesh.pixels),normal=textureId(mesh.normalWidth,mesh.normalHeight,mesh.normalPixels);
-            Append(out,std::uint32_t(mesh.mannequin?1:0)|(mesh.tinted?2u:0u)|(mesh.glass?4u:0u)|((mesh.decal||[&]{auto name=mesh.material;for(auto& c:name)if(c>='A'&&c<='Z')c+=32;return name;}().find("decal")!=std::string::npos)?8u:0u)|(mesh.incompleteMaterial?16u:0u)|(mesh.normalOnly?32u:0u)|(mesh.causticEffect?64u:0u)|(mesh.flowingLiquid?128u:0u));Append(out,color);for(auto c:mesh.tint)Append(out,c);Append(out,normal);if(hasMetal||hasEffect)Append(out,textureId(mesh.metalWidth,mesh.metalHeight,mesh.metalPixels));
+            Append(out,std::uint32_t(mesh.mannequin?1:0)|(mesh.tinted?2u:0u)|(mesh.glass?4u:0u)|((mesh.decal||[&]{auto name=mesh.material;for(auto& c:name)if(c>='A'&&c<='Z')c+=32;return name;}().find("decal")!=std::string::npos)?8u:0u)|(mesh.incompleteMaterial?16u:0u)|(mesh.normalOnly?32u:0u)|(mesh.causticEffect?64u:0u)|(mesh.flowingLiquid?128u:0u)|(mesh.smoothDecal?256u:0u));Append(out,color);for(auto c:mesh.tint)Append(out,c);Append(out,normal);if(hasMetal||hasEffect)Append(out,textureId(mesh.metalWidth,mesh.metalHeight,mesh.metalPixels));
             for(std::size_t i=0;i<mesh.positions.size()/3*2;++i)Append(out,mesh.uv.size()>i?mesh.uv[i]:0.f);
         }
         // Material composition can produce distinct images from one shared DDS,

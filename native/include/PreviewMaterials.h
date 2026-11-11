@@ -4,13 +4,15 @@
 namespace CCC::Preview {
     struct MaterialOverlay {std::string mask,texture,normal,roughness;std::array<float,3> tint{1,1,1};std::array<float,2> scale{1,1};bool multiply=true,positionContrast=false,tintMultiply=false,blendColor=true,blendNormal=true,blendRoughness=true,addNormals=true;float tintWeight=0,position=.5f,contrast=1,intensity=1;bool needsVertexColor=false,needsDetailMask=false;};
     struct MaterialAppearance {std::string texture;std::array<float,3> tint{1,1,1};bool tinted=false;std::string opacity,normal,ao,roughness,metal;std::array<float,3> color{1,1,1};bool constantColor=false;float tintWeight=1;std::string emissive;std::vector<MaterialOverlay> overlays;bool glass=false,decal=false;float constantOpacity=-1;bool authored=false,tintMultiply=false;
-        // 0: unknown/effect transparency, 1: opaque, 2: authored alpha test.
+        // 0: unknown/effect, 1: opaque, 2: authored alpha test, 3: smooth decal blend.
+        bool flipbook=false;unsigned flipbookColumns=1,flipbookRows=1;
         bool incomplete=false;unsigned opacityMode=0;float alphaThreshold=.5f,constantRoughness=-1,constantMetal=-1,constantAO=-1;
     };
+    inline unsigned AuthoredOpacityMode(bool hasOpacity, float threshold, bool decal) {
+        return !hasOpacity ? 1u : decal && threshold <= 0.f ? 3u : 2u;
+    }
     inline std::string MaterialKey(std::string name) {
-        for(auto& c:name){if(c=='\\')c='/';else if(c>='A'&&c<='Z')c=char(c-'A'+'a');}
-        if(name.starts_with("/materials/")||name.starts_with("/data/materials/"))name.erase(0,1);
-        return AssetKey(std::move(name));
+        return MaterialAssetKey(std::move(name));
     }
     inline std::string MaterialName(std::string name) {
         name=MaterialKey(std::move(name));const auto slash=name.find_last_of('/');if(slash!=name.npos)name.erase(0,slash+1);

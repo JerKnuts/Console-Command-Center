@@ -1,4 +1,5 @@
 import {CONFIRMED_READOUT_COMMANDS} from '../src/views/console.command-center/main/confirmed-readout-commands.ts';
+import {errorReportGuidance} from '../src/views/console.command-center/main/error-guidance.ts';
 import {ENGINE_COMMAND_LIBRARY} from '../src/views/console.command-center/main/engine-command-library.ts';
 import {reviewedReferenceNote} from '../src/views/console.command-center/main/reviewed-id-findings.ts';
 import test from 'node:test';
@@ -63,7 +64,7 @@ function harness(reply, rejection) {
   const calls = [];
   const payloads = [];
   const sandbox = {
-    ...elements, Error, console, createLoadingRing() { return {}; },
+    ...elements, Error, console, errorReportGuidance, createLoadingRing() { return {}; },
     localStorage: { getItem() { return null; }, setItem() {} },
     resultsDialog: { open: false, showModal() { this.open = true; } },
     window: { osfui: { async request(route, payload) { calls.push(route); payloads.push(payload); if (rejection) throw new Error(rejection); return typeof reply === 'function' ? reply(route, payload, calls.length) : reply; } } },
@@ -688,7 +689,7 @@ test('perk, power, and effect commands use filtered ID Browser selection', () =>
   assert.match(source, /pickerCategories\.includes\(entry\.category\)/);
   assert.match(source, /: results\.map\(renderResultRow\)\.join\(''\)/);
   assert.match(source, /id-browser-panel\$\{activeCatalogPicker\?\.browser === 'id' \? ' is-selecting' : ''\}/);
-  assert.match(styleSource, /\.id-browser-panel\.is-selecting\s*\{[\s\S]*?grid-template-rows:\s*auto minmax\(0, 1fr\);/);
+  assert.match(styleSource, /\.id-browser-panel\.is-selecting(?:,\s*\.id-browser-panel\.has-log-item)?\s*\{[\s\S]*?grid-template-rows:\s*auto minmax\(0, 1fr\);/);
   assert.equal((idCatalogSource.match(/category: 'Powers'/g) ?? []).length, 24);
   assert.equal((idCatalogSource.match(/category: 'Effects'/g) ?? []).length, 6);
   assert.match(idCatalogSource, /label: 'Anti-Gravity Field', value: '002BACBA'/);
@@ -766,7 +767,7 @@ test('ID Browser quick actions build item, weather, and cell commands', () => {
     .map((match) => match[0]);
   assert.equal(quickActionFunctions.length, 2);
   let requested;
-  const sandbox = { devFeedbackIdReference:()=>undefined, reviewedReferenceNote, ammoReferenceNote, armorReferenceNote, requestExecution(execution) { requested = execution; } };
+  const sandbox = { activityItemFromRecord:()=>undefined, devFeedbackIdReference:()=>undefined, reviewedReferenceNote, ammoReferenceNote, armorReferenceNote, requestExecution(execution) { requested = execution; } };
   vm.createContext(sandbox);
   vm.runInContext(stripTypeScriptTypes(quickActionFunctions.join('\n')), sandbox);
   const medPack = { label: 'Med Pack', value: '0000ABF9', type: 'ALCH', category: 'Aid', action: 'additem' };

@@ -1,4 +1,5 @@
 #include "Translations.h"
+#include "DiagnosticLog.h"
 #include <SFSE/SFSE.h>
 #include <RE/Starfield.h>
 #include <RE/B/BSScriptUtil.h>
@@ -50,7 +51,7 @@ namespace
         if (!CCC::MenuHotkey::RequestOpen(g_ui)) REX::WARN("CCC hotkey could not queue its view");
     }
 
-    constexpr const char* kBuildId = "1.4.0";
+    constexpr const char* kBuildId = "1.4.17";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -879,15 +880,57 @@ namespace
         }
     }
 
+    void OnDiagnostic(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{raw};
+        if (!request) return;
+        try {
+            const auto& payload = request.Payload();
+            if (!payload.is_object() || !payload.contains("event") || !payload["event"].is_string() ||
+                !payload.contains("uiVersion") || !payload["uiVersion"].is_string() || !payload.contains("detail") || !payload["detail"].is_string()) {
+                REX::WARN("CCC diagnostic request rejected: invalid field types; native={}", kBuildId);
+                request.Reject("invalid-diagnostic", "Invalid diagnostic fields.");
+                return;
+            }
+            const auto event = request.Get<std::string>("event");
+            const auto version = request.Get<std::string>("uiVersion");
+            const auto detail = request.Get<std::string>("detail");
+            if (!event || event->empty() || event->size() > 64 || !version || version->size() > 32 || !detail || detail->size() > 8192) {
+                REX::WARN("CCC diagnostic request rejected: invalid event/version/detail fields; native={}", kBuildId);
+                request.Reject("invalid-diagnostic", "Invalid diagnostic fields.");
+                return;
+            }
+            CCC::Diagnostics::Record(*event, *version, kBuildId, g_runtimeVersion.string(), *detail,
+                [](const std::string& line) { REX::WARN("{}", line); });
+            (void)request.Reply(OSFUI::API::Json{{"ok", true}});
+        } catch (...) {
+            REX::WARN("CCC diagnostic request failed; native={}", kBuildId);
+            request.Reject("diagnostic-failed", "Could not record diagnostic.");
+        }
+    }
+
     void OnPluginLoadOrder(const OSFUI::API::Request& raw, void*) noexcept
     {
         OSFUI::API::JsonRequest request{ raw };
         if (!request) return;
         try {
-            (void)request.Reply(CCC::ModCatalogs::PluginLoadOrder());
+            const auto reply = CCC::ModCatalogs::PluginLoadOrder();
+            const auto owner = request.Get<std::string>("plugin").value_or("");
+            const auto version = request.Get<std::string>("uiVersion").value_or("");
+            auto found = OSFUI::API::Json::object();
+            for (const auto& plugin : reply.at("plugins")) {
+                if (LowerASCII(plugin.at("plugin").get<std::string>()) == LowerASCII(owner)) { found = plugin; break; }
+            }
+            CCC::Diagnostics::Record("plugin-load-order", version, kBuildId, g_runtimeVersion.string(),
+                OSFUI::API::Json{{"pluginCount", reply.at("plugins").size()}, {"compiledPlugins", reply.value("compiledPlugins", 0u)}, {"requestedOwner", owner}, {"owner", found},
+                    {"localFormId", request.Get<std::string>("localFormId").value_or("")}, {"formId", request.Get<std::string>("formId").value_or("")}}.dump(-1, ' ', false, OSFUI::API::Json::error_handler_t::replace),
+                [](const std::string& line) { REX::INFO("{}", line); });
+            (void)request.Reply(reply);
         } catch (const std::exception& error) {
+            REX::WARN("CCC plugin-load-order-failed: {}", CCC::Diagnostics::SafeField(error.what(), 1024));
             request.Reject("plugin-load-order-failed", error.what());
         } catch (...) {
+            REX::WARN("CCC plugin-load-order-failed: unknown exception");
             request.Reject("plugin-load-order-failed", "Could not read the active plugin load order.");
         }
     }
@@ -1070,6 +1113,7 @@ namespace
         }
 
         g_ui.RegisterRequest("console.command-center.ping", &OnPing, nullptr);
+        g_ui.RegisterRequest("console.command-center.diagnostic", &OnDiagnostic, nullptr);
         g_ui.RegisterRequest("console.command-center.close", &OnClose, nullptr);
         (void)g_ui.RegisterView(kViewId);
         if (g_settings.Init() && g_settings.IsReady()) {
@@ -1117,6 +1161,7 @@ SFSE_PLUGIN_LOAD(const SFSE::LoadInterface* sfse)
 {
     g_runtimeVersion = sfse->RuntimeVersion();
     SFSE::Init(sfse);
+    REX::INFO("CCC diagnostics ready: native={}, runtime={}; UI errors and item-owner lookups are logged automatically", kBuildId, g_runtimeVersion.string());
 
     auto* messaging = SFSE::GetMessagingInterface();
     if (!messaging) {

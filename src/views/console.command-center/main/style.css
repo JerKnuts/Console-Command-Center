@@ -1451,6 +1451,7 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
   border-left: 2px solid var(--osf-signal-go);
   background: var(--ccc-surface-row);
 }
+.activity-entry > button { margin-top: 8px; margin-right: 8px; }
 .activity-entry:nth-child(even) { background: var(--ccc-orange-soft); }
 .activity-entry:first-child { border-top: 1px solid var(--osf-line); }
 .activity-entry--error { border-left-color: var(--osf-signal-stop); }
@@ -2222,7 +2223,8 @@ body.controller-active [data-controller-hint="Y"]::before { color: #f2c84b; }
   gap: 5px;
   padding: var(--ccc-master-detail-top-inset) 0 0;
 }
-.id-browser-panel.is-selecting {
+.id-browser-panel.is-selecting,
+.id-browser-panel.has-log-item {
   grid-template-rows: auto minmax(0, 1fr);
 }
 

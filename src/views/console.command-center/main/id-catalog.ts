@@ -56,6 +56,7 @@ export type IdBrowserCategory = {
 export const ID_BROWSER_CATEGORIES: IdBrowserCategory[] = [
   { label: 'All Categories', value: 'all', detail: 'Every ID included with CCC.', recordType: '', builtInCategories: ['*'] },
   { label: 'Weapons', value: 'weapons', detail: 'Weapons and guns.', recordType: 'WEAP', builtInCategories: ['Weapons'] },
+  { label: 'Throwables', value: 'throwables', detail: 'Grenades, mines, and throwable explosives.', recordType: 'WEAP', builtInCategories: ['Throwables'] },
   { label: 'Suits', value: 'suits', detail: 'Spacesuits and suit records.', recordType: 'ARMO', builtInCategories: ['Spacesuits'] },
   { label: 'Packs', value: 'packs', detail: 'Boost packs and other pack records.', recordType: 'ARMO', builtInCategories: ['Packs'] },
   { label: 'Apparel', value: 'apparel', detail: 'Clothing, outfits, and wearable accessories.', recordType: 'ARMO', builtInCategories: ['Apparel'] },

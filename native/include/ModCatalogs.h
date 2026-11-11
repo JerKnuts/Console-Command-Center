@@ -464,6 +464,23 @@ namespace CCC::ModCatalogs
             });
         };
         if (auto* handler = RE::TESDataHandler::GetSingleton()) {
+            // Compiled collections are the active full/small/medium plugins.
+            // Prefer them over the general file list, which can contain stale
+            // or uncompiled entries. Keep their actual runtime indices.
+            const auto appendActive = [&](auto& files) {
+                for (auto* file : files) {
+                    if (!file || file->fileName[0] == '\0') continue;
+                    const auto plugin = RuntimePluginMetadata(*file);
+                    if (plugin.kind == PluginKind::full && plugin.index >= 0xFD) continue;
+                    if (plugin.kind == PluginKind::medium && plugin.index > 0xFF) continue;
+                    if (plugin.kind == PluginKind::small && plugin.index > 0xFFF) continue;
+                    append(plugin);
+                }
+            };
+            appendActive(handler->compiledFileCollection.files);
+            appendActive(handler->compiledFileCollection.smallFiles);
+            appendActive(handler->compiledFileCollection.mediumFiles);
+            response["compiledPlugins"] = seen.size();
             for (auto* file : handler->files) {
                 if (!file || file->fileName[0] == '\0') continue;
                 const auto plugin = RuntimePluginMetadata(*file);

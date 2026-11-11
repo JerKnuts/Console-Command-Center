@@ -5,6 +5,17 @@ registerHooks({resolve(specifier,context,next){return next(specifier.startsWith(
 const {resolveFavoriteIds}=await import('../src/views/console.command-center/main/favorite-id-resolution.ts');
 const mod=(plugin,local,value,kind='full')=>({favoriteKey:'stable:'+plugin,label:'Same item name',value,type:'MISC',category:'Resources',plugin,localFormId:local,pluginKind:kind,source:'mod',savedFrom:'mod-browser',available:true});
 
+test('base-game evidence uses its fixed slot even when the optional load order is unavailable',()=>{
+ const item={label:'Request Denied (Evidence)',value:'001DEDB1',type:'BOOK',category:'Books / Notes',plugin:'Starfield.esm',localFormId:'1DEDB1',source:'Base Game',available:false};
+ for(const reply of [null,{ok:false},{ok:true,plugins:[]},{ok:true,plugins:[{plugin:'Other.esm',pluginKind:'full',index:7}]}]){
+  const [result]=resolveFavoriteIds([item],[],reply);
+  assert.equal(result.value,'001DEDB1');assert.equal(result.available,true);assert.equal(result.pluginKind,'full');
+  assert.equal(resolveFavoriteIds([{...item,plugin:'DLC.esm'}],[],reply)[0].available,false);
+ }
+ for(const localFormId of ['1000000','not-hex']) assert.equal(resolveFavoriteIds([{...item,localFormId}],[],null)[0].available,false);
+ assert.equal(resolveFavoriteIds([{...item,source:'mod'}],[],null)[0].available,false);
+});
+
 test('saved mod favorites use current full, medium and small slots without changing stable identity',()=>{
  const favorites=[mod('Full.esm','001234','05001234'),mod('Medium.esm','0234','FD020234','medium'),mod('Small.esm','234','FE002234','small')];
  const original=structuredClone(favorites);

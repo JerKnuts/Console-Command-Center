@@ -31,3 +31,11 @@ The reader accepts up to 256 KiB per text entry, preserves basic paragraph/empha
 Small previews and Model Viewer are available for supported loaded model types with Advanced Options either on or off. Technical metadata still follows Advanced Options.
 
 The selected-item panel places descriptions, effects, stats and optional metadata in the left half, with a sticky model preview in the right half. Items without a supported model use the full text width. Read and Listen appear as compact buttons below the still preview. Other item actions remain below the columns. Books/slates do not have a full Model Viewer button; see [books and slates](AUDIO_SLATES.md).
+
+## Reopen an item from Command Log
+
+New item actions from ID Browser, Mod Browser and Favorites store the selected record identity with their existing log entry. Open Item returns to its usual details without executing anything. Back to Command Log restores the entry and scroll position; on controller, B from the item list returns as well.
+
+Current plugin/local IDs are resolved on each opening, including full, medium and small plugins. Missing or unresolved owners leave saved information readable with ID actions and live previews disabled. Current catalog restrictions take precedence. An unscanned mod snapshot does not become part of the scanned catalog. Older log entries and raw batch commands have no inferred item link. Viewing, reading, copying or previewing an item does not create a new recent-items history.
+
+Teleport destination entries are an exception: Teleport Here opens the normal teleport review rather than the cell details. Confirming runs the existing teleport action and closes CCC as usual; Cancel does not execute. Missing owners or blocked destination actions cannot be replayed.

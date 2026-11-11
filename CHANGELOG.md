@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.17
+
+This release includes the changes tested since v1.4.0.
+
+- **Command Log:** Open item details from new item-action entries and return to the same place in the log. Use **Teleport Here** on saved teleport entries to review and repeat a teleport.
+- **ID Browser:** Keep base-game actions available if plugin lookup fails. Refresh optional plugin availability and offer **Retry Plugin Lookup** for unavailable selections. Unresolved DLC and mod owners still block actions that require a runtime ID. The reviewed CE-19, Coachman, and CombaTech EquiNOX variants are marked Reference Only.
+- **Throwables:** Find hand grenades and mines in their own category in ID Browser and Mod Browser. Weapon pickers still accept them.
+- **Item previews:** Show bundled artwork immediately, then refresh it from installed game materials after the selection has been visible for one second. Keep the existing image while loading and if refresh fails. Still previews stay in session memory.
+- **Model Viewer:** Improve starting angles for ammo, throwables, food and aid items. Apply shared views to items that reuse the same models, including 26 meals in the Reuben-style container. Fix Armada helmet previews, the Custom Antique Revolver assembly, mine glow discs, Cathode’s ammo display, decals such as the Beowulf engraving, and the translucent Seaweed and Egg Porridge bowl.
+- **Batch Commander:** Add **Burden of Proof - All Evidence** to the Included Batches library. It adds one of each of the 20 named evidence slates to the player’s inventory.
+- **Error reporting:** Include the automatic log location in failure messages and record more context for item lookups and model preview failures. Players can share the native log with their report.
+
 ## 1.4.0
 
 Public release consolidating the tested 1.3.37–1.3.69 updates:

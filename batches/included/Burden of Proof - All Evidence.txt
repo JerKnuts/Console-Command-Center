@@ -1,0 +1,46 @@
+# Burden of Proof - All Evidence
+# Adds one copy of each of the 20 Burden of Proof evidence slates.
+# Run once. Running again adds another copy of every slate.
+# Hand the evidence to Lieutenant Toft through the quest's normal dialogue.
+# This file contains inventory commands only; it does not set quest stages.
+
+# Ayumi's Offer (Evidence)
+player.additem 001DEDAE 1
+# Carter's Gig (Evidence)
+player.additem 00246D81 1
+# Chiroptera (Evidence)
+player.additem 001DEDA9 1
+# Chunks Heist (Evidence)
+player.additem 001DEDAB 1
+# Eubanks & Woods (Evidence)
+player.additem 001DEDAF 1
+# GalBank Plan (Evidence)
+player.additem 0023750A 1
+# GBLR013: Mortem Obire (Evidence)
+player.additem 001F257E 1
+# Gennady Ayton (Evidence)
+player.additem 001DEDA4 1
+# HopeTown Raid (Evidence)
+player.additem 001DEDAA 1
+# Huan's Talk (Evidence)
+player.additem 001DEDB0 1
+# Kreet Offer (Evidence)
+player.additem 001DEDA8 1
+# Meeting With Bayu (Evidence)
+player.additem 001F77E0 1
+# Message For Bog (Evidence)
+player.additem 001DEDA5 1
+# Mira's Demise (Evidence)
+player.additem 001DEDAC 1
+# Naeva Meetup (Evidence)
+player.additem 001DEDB3 1
+# Request A17 (Evidence)
+player.additem 001DEDA7 1
+# Request Denied (Evidence)
+player.additem 001DEDB1 1
+# The Big Score (Evidence)
+player.additem 001DEDAD 1
+# Voss's Parts (Evidence)
+player.additem 001DEDA6 1
+# Warden's Log (Evidence)
+player.additem 001DEDB2 1

@@ -10,7 +10,7 @@ const names = await readdir(directory);
 const read = async name => (await readFile(new URL(name + '.txt', directory), 'utf8')).replace(/\r\n/g,'\n');
 
 test('included library contains real, documented .txt batches and all four weapon kits', async () => {
-  assert.equal(names.filter(name => name.endsWith('.txt')).length, 25);
+  assert.equal(names.filter(name => name.endsWith('.txt')).length, 26);
   for (const name of names) {
     const content = await readFile(new URL(name, directory), 'utf8');
     assert.ok(content.trimStart().startsWith('#'), name);
@@ -21,6 +21,14 @@ test('included library contains real, documented .txt batches and all four weapo
   ]);
   for (const kind of ['Laser','Particle','Melee']) assert.ok(names.includes(`Weapon Test Kit - ${kind}.txt`));
   for (const stem of ['Quick Surveying','Scanner Visibility','Boostpack Explosions']) assert.ok(names.includes(`${stem} RESET.txt`));
+});
+
+test('Burden of Proof adds exactly the 20 catalogued evidence slates with named comments',async()=>{
+ const content=await read('Burden of Proof - All Evidence'),commands=parseBatchCommands(content);
+ const evidence=GENERATED_ID_CATALOG.filter(row=>row.type==='BOOK'&&row.plugin==='Starfield.esm'&&row.label.endsWith('(Evidence)'));
+ assert.equal(evidence.length,20);assert.equal(commands.length,20);assert.equal(new Set(commands).size,20);
+ assert.deepEqual(new Set(commands),new Set(evidence.map(row=>`player.additem ${row.value} 1`)));
+ for(const row of evidence)assert.ok(content.includes(`# ${row.label}\n`),row.label);
 });
 
 test('All Playing Cards adds exactly one complete 52-card deck with named comments',async()=>{

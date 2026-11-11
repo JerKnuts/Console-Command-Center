@@ -1,3 +1,4 @@
+import {throwableKind} from './throwables.ts';
 import { applyReviewedCellName } from './reviewed-cell-names.ts';
 import { reportedCellWasTested } from './reviewed-cell-feedback.ts';
 import { applyAreaNameOverride } from './area-name-overrides.ts';
@@ -426,7 +427,9 @@ const INVISIBLE_FURNITURE = new Set([
   "shatteredspace.esm:0FC0B0",
   "shatteredspace.esm:11CFF7",
 ]);
-const REFERENCE_ONLY = new Set(["starfield.esm:06AC01","starfield.esm:079206",
+const REFERENCE_ONLY = new Set([
+  // Author review: November 8, 2026. Stable plugin/local IDs preserve normal variants.
+  "starfield.esm:030B30", "sfbgs00d.esm:088727", "starfield.esm:2C7D29","starfield.esm:06AC01","starfield.esm:079206",
   "starfield.esm:343C01", "sfbgs00d.esm:088729",
   "sfbgs047.esm:000018",
   "sfbgs004.esm:000046",
@@ -847,6 +850,7 @@ export function applyReviewedFindings<T extends ReviewedRecord & { label: string
     const aliases = REVIEWED_ALIASES[local];
     if (aliases) record = { ...record, alternateFormIds: aliases.map(id => '00' + id), keywords: [...new Set([...(record.keywords ?? []), ...aliases, ...aliases.map(id => '00' + id)])] };
   }
+  if(throwableKind(record))record={...record,category:'Throwables'};
   if(REVIEWED_APPAREL.has(key(record)))record={...record,category:"Apparel"};
   const name = REVIEWED_NAMES[key(record)];
   if (name) record = { ...record, label: name.label, originalName: name.original, keywords: [...new Set([...(record.keywords ?? []), name.original])] };

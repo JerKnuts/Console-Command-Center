@@ -1,4 +1,8 @@
+import { activityItemIsTeleport, activityItemFromRecord, readActivityItem, resolveActivityItem, sameActivityItem, type ActivityItem } from './activity-items';
 import { resolveFavoriteIds } from './favorite-id-resolution';
+import { errorReportGuidance } from './error-guidance';
+import { createDiagnosticLog } from './diagnostic-log';
+declare const __CCC_DIAGNOSTIC_TEST__: boolean;
 import { createNativeReconnect } from './native-reconnect';
 import { installBookReader } from './book-reader';
 import { canInspectRecord, installRecordDetails } from './record-details';
@@ -65,6 +69,7 @@ type PendingExecution = {
   definition?: CommandDefinition;
   rememberRecent?: boolean;
   effectiveTotal?: EffectiveTotalRequest;
+  item?: ActivityItem;
 };
 
 type CommandActionChoice = 'primary' | 'secondary';
@@ -100,6 +105,7 @@ type ActivityEntry = {
   category: string;
   outcome: 'success' | 'error';
   message: string;
+  item?: ActivityItem;
 };
 
 type SavedCustomCommand = {
@@ -231,7 +237,12 @@ const MAX_CUSTOM_COMMAND_LENGTH = 1024;
 const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1468;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.4.0';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.4.17';
+const recordDiagnostic = createDiagnosticLog((name, payload, options) => {
+  if (!window.osfui?.request) return Promise.reject(new Error('OSF UI bridge unavailable'));
+  return window.osfui.request(name, payload, options);
+}, CONSOLE_COMMAND_CENTER_VERSION);
+let officialEntryRefreshToken = 0;
 
 const HELP_PAGES: Record<HelpPageId, HelpPage> = {
   recent: {
@@ -323,6 +334,7 @@ const HELP_PAGES: Record<HelpPageId, HelpPage> = {
     intro: 'Command Log keeps recent command outcomes and captured inspection results.',
     sections: [
       { title: 'CHECK RESULTS', text: 'Each entry records the command, time, outcome, and any readable result or error returned to CCC.' },
+      { title: 'OPEN ITEM', text: 'New item-action entries can reopen item details. Teleport entries offer Teleport Here with the normal command review. Back to Command Log returns to the same entry. Older entries without an item identity keep their original text and results.' },
       { title: 'REOPEN OUTPUT', text: 'Inspection entries can reopen their saved Results window without running the command a second time.' },
       { title: 'CLEAR THE LOG', text: 'Clear Log removes the saved history from CCC. It does not undo commands or change the game state.' },
     ],
@@ -336,6 +348,8 @@ let favorites = readStringArray(STORAGE_FAVORITES);
 let idFavorites = readFavoriteIds().map(applyAmmoFindings).map(applyArmorFindings).map(applyReviewedFindings);
 let recent = readStringArray(STORAGE_RECENT);
 let activityLog = readActivityLog();
+let activityItemContext: { logId: string; entry: IdCatalogEntry; scrollTop: number } | null = null;
+let activityItemOpenToken = 0;
 let savedCustomCommands = readSavedCustomCommands();
 let savedCustomCommandFavorites = new Set(readStringArray(STORAGE_CUSTOM_COMMAND_FAVORITES).map((name) => name.toLowerCase()));
 for (const entry of savedCustomCommands) if (entry.favorite) savedCustomCommandFavorites.add(entry.name.toLowerCase());
@@ -651,7 +665,9 @@ function showResults(title: string, command: string, output: string, state: 'loa
   resultsOutput.hidden = isInventory;
   resultsFooter.textContent = isInventory
     ? 'Use Copy ID beside any item. Results are saved in Command Log. Escape closes this window.'
-    : 'Results are saved in Command Log. Select text to copy it. Escape closes this window.';
+    : state === 'error'
+      ? errorReportGuidance('Results are saved in Command Log. Select text to copy it. Escape closes this window.')
+      : 'Results are saved in Command Log. Select text to copy it. Escape closes this window.';
   if (isInventory) {
     inventoryResultsSearch.value = '';
     syncSearchClear(inventoryResultsSearch, inventoryResultsSearchClear);
@@ -1004,7 +1020,7 @@ function readActivityLog(): ActivityEntry[] {
         && typeof value.category === 'string'
         && (value.outcome === 'success' || value.outcome === 'error')
         && typeof value.message === 'string';
-    }).slice(0, MAX_ACTIVITY);
+    }).slice(0, MAX_ACTIVITY).map(entry => ({ ...entry, item: readActivityItem(entry.item) }));
   } catch {
     return [];
   }
@@ -1019,7 +1035,7 @@ function writeActivityLog(): void {
   }
 }
 
-function addActivitySummary(label: string, category: string, command: string, outcome: 'success' | 'error', message: string): void {
+function addActivitySummary(label: string, category: string, command: string, outcome: 'success' | 'error', message: string, item?: ActivityItem): void {
   const entry: ActivityEntry = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     timestamp: Date.now(),
@@ -1028,6 +1044,7 @@ function addActivitySummary(label: string, category: string, command: string, ou
     category,
     outcome,
     message,
+    item: readActivityItem(item),
   };
   activityLog = [entry, ...activityLog].slice(0, MAX_ACTIVITY);
   // Large inventory snapshots should not exhaust the webview's storage quota.
@@ -1046,6 +1063,7 @@ function addActivity(execution: PendingExecution, outcome: 'success' | 'error', 
     execution.command,
     outcome,
     message,
+    execution.item,
   );
 }
 
@@ -1639,7 +1657,7 @@ function render(): void {
   if (!uiPreferences.advanced) {
     if (commandCategory === 'Untested' || commandCategory === 'Advanced Settings') commandCategory = CATEGORY_ORDER[0];
     if (!visibleIdCategory(idBrowserCategory, false)) { idBrowserCategory = 'all'; idBrowserSelected = null; }
-    if (idBrowserSelected && !visibleIdRecord(idBrowserSelected, false)) idBrowserSelected = null;
+    if (idBrowserSelected && !visibleIdRecord(idBrowserSelected, false) && !(activityItemContext && sameActivityItem(idBrowserSelected, activityItemContext.entry))) idBrowserSelected = null;
     if (questBrowserCategory === 'Internal / System') { questBrowserCategory = QUEST_BROWSER_CATEGORY_ORDER[0]; selectedQuestKey = null; }
   }
   if (activeView === 'quest-browser' && questBrowserLoaded && !query && !questBrowserEntries.some((entry) => (questBrowserSource === 'all' || entry.source === questBrowserSource) && entry.category === questBrowserCategory && visibleQuestRecord(entry, uiPreferences.advanced))) {
@@ -2549,14 +2567,16 @@ function describe(error: unknown): string {
 }
 
 function setStatus(message: string, kind: 'normal' | 'working' | 'success' | 'error' = 'normal'): void {
-  status.textContent = message;
+  if (kind === 'error') recordDiagnostic('ui-error', message);
+  status.textContent = kind === 'error' ? errorReportGuidance(message) : message;
+  status.title = status.textContent ?? '';
   status.dataset.kind = kind;status.setAttribute('aria-busy',String(kind==='working'));if(kind==='working')status.prepend(createLoadingRing('small'));
 }
 
 
 function renderActivityPanel(): void {
   const entries = activityLog.map((entry) => `
-    <article class="activity-entry activity-entry--${entry.outcome}" tabindex="0">
+    <article class="activity-entry activity-entry--${entry.outcome}" data-activity-id="${escapeHtml(entry.id)}" tabindex="0">
       <div class="activity-entry-head">
         <div>
           <span class="activity-outcome">${entry.outcome === 'success' ? (entry.message.startsWith('Command sent:') ? 'SENT' : 'SUCCESS') : 'ERROR'}</span>
@@ -2566,6 +2586,7 @@ function renderActivityPanel(): void {
         <time datetime="${new Date(entry.timestamp).toISOString()}">${escapeHtml(formatActivityTime(entry.timestamp))}</time>
       </div>
       <code class="activity-command">${escapeHtml(entry.command)}</code>
+      ${entry.item ? `<button class="osf-btn osf-btn--sm" type="button" data-open-activity-item="${escapeHtml(entry.id)}" aria-label="${activityItemIsTeleport(entry.item) ? 'Teleport to' : 'Open item'}: ${escapeHtml(entry.item.label)}">${activityItemIsTeleport(entry.item) ? 'Teleport Here' : 'Open Item'}</button>` : ''}
       ${entry.message.startsWith('Result:') || entry.outcome === 'error'
         ? `<button class="osf-btn osf-btn--sm" type="button" data-show-result="${escapeHtml(entry.id)}">Open Results</button><p>${entry.outcome === 'error' ? 'Error details saved' : `${(entry.message.length - 'Result:'.length).toLocaleString()} characters saved`}</p>`
         : entry.message !== `Executed: ${entry.command}`
@@ -2590,6 +2611,9 @@ function renderActivityPanel(): void {
     </section>
   `;
 
+  customPanel.querySelectorAll<HTMLButtonElement>('[data-open-activity-item]').forEach(button => {
+    button.addEventListener('click', () => { if (button.dataset.openActivityItem) void openActivityItem(button.dataset.openActivityItem); });
+  });
   const clearButton = document.querySelector('#clear-activity');
   customPanel.querySelectorAll<HTMLButtonElement>('[data-show-result]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -2607,6 +2631,56 @@ function renderActivityPanel(): void {
       render();
     });
   }
+}
+
+async function openActivityItem(logId: string): Promise<void> {
+  const logged = activityLog.find(entry => entry.id === logId);
+  if (!logged?.item || activeView !== 'activity') return;
+  const token = ++activityItemOpenToken;
+  const scrollTop = customPanel.querySelector<HTMLElement>('.activity-list')?.scrollTop ?? 0;
+  setStatus(activityItemIsTeleport(logged.item) ? 'Preparing teleport…' : 'Opening item details…', 'working');
+  await ensureIdCatalogLoaded();
+  let loadOrder: PluginLoadOrderReply | null = null;
+  try { loadOrder = await window.osfui?.request<PluginLoadOrderReply>('console.command-center.pluginLoadOrder', {}) ?? null; }
+  catch { /* Saved details remain readable; unavailable owners have no ID actions. */ }
+  if (token !== activityItemOpenToken || activeView !== 'activity' || !activityLog.some(entry => entry.id === logId)) return;
+  const entry = resolveActivityItem(logged.item, idCatalog, loadOrder);
+  if (activityItemIsTeleport(logged.item)) {
+    if (idBrowserAction(entry) !== 'teleport') {
+      setStatus('This destination is unavailable or no longer permits teleporting.', 'error');
+      return;
+    }
+    await requestIdBrowserQuickAction(entry);
+    return;
+  }
+  activityItemContext = { logId, entry, scrollTop };
+  activeView = entry.source === 'mod' ? 'mod-browser' : 'id-browser';
+  selectedCommandId = null;
+  query = entry.label;
+  search.value = query;
+  idBrowserCategory = 'all';
+  idBrowserRecordTypeFilter = '';
+  if (entry.source === 'mod') { modBrowserSort = 'category'; modBrowserCategory = ''; modSearchScope = 'all'; }
+  idBrowserSelected = entry;
+  idBrowserQuantity = 1;
+  render();
+  const selected = customPanel.querySelector<HTMLElement>('#id-browser-results .is-selected');
+  selected?.scrollIntoView({ block: 'nearest' });
+  (selected ?? customPanel.querySelector<HTMLElement>('[data-back-to-command-log]'))?.focus({ preventScroll: true });
+  setStatus(entry.available === false ? 'Saved item details opened. Its plugin could not be resolved; ID actions are disabled.' : `Opened ${entry.label} from Command Log.`, entry.available === false ? 'normal' : 'success');
+}
+
+function returnToActivityItem(): void {
+  const context = activityItemContext;
+  activityItemContext = null;
+  ++activityItemOpenToken;
+  activeView = 'activity';
+  query = '';
+  search.value = '';
+  render();
+  const list = customPanel.querySelector<HTMLElement>('.activity-list');
+  if (list && context) list.scrollTop = context.scrollTop;
+  customPanel.querySelector<HTMLElement>(`[data-open-activity-item="${CSS.escape(context?.logId ?? '')}"]`)?.focus({ preventScroll: true });
 }
 
 function formatActivityTime(timestamp: number): string {
@@ -2641,7 +2715,7 @@ function matchingIds(): IdCatalogEntry[] {
   const modCatalog = modCatalogs.find((catalog) => catalog.key === idBrowserCategory);
   const pickerTypes = activeCatalogPicker?.browser === 'id' ? activeCatalogPicker.allowedTypes : [];
   const pickerCategories = activeCatalogPicker?.browser === 'id' ? activeCatalogPicker.allowedCategories : [];
-  return orderIdEntries(idCatalog.filter((entry) => {
+  const results = orderIdEntries(idCatalog.filter((entry) => {
     if (!uiPreferences.advanced && (devFeedbackIdReference(entry) ?? entry.referenceOnly)) return false;
     if (activeView !== 'mod-browser' && !visibleIdRecord(entry, uiPreferences.advanced)) return false;
     const sourceMatches = !activeCategory.sources?.length || activeCategory.sources.includes(entry.source);
@@ -2660,6 +2734,11 @@ function matchingIds(): IdCatalogEntry[] {
       : entry.source !== 'mod';
     return browserScopeMatches && sourceScopeMatches && pickerTypeMatches && pickerCategoryMatches && idBrowserTextMatches(entry);
   }));
+  // A log can reopen saved details before a mod scan, or after its owner was
+  // removed. Keep that one explicit selection out of the scanned catalog.
+  if (activityItemContext && activeView === (activityItemContext.entry.source === 'mod' ? 'mod-browser' : 'id-browser') && sameActivityItem(idBrowserSelected, activityItemContext.entry)
+    && !results.some(entry => sameActivityItem(entry, activityItemContext!.entry))) results.unshift(idBrowserSelected!);
+  return results;
 }
 
 function idTestedClass(entry: IdCatalogEntry): string {
@@ -2742,7 +2821,7 @@ function renderIdBrowserSelection(): string {
         <span class="osf-eyebrow">SELECTED ID</span>
         <strong>${escapeHtml(entry.label)}</strong>
         <div class="id-browser-detail-body">
-        ${canPreviewModel(entry, uiPreferences.advanced) ? `<div class="inline-model-preview" data-inline-preview="${escapeHtml(entry.value)}" data-preview-source="${escapeHtml(entry.source??'')}" data-preview-plugin="${escapeHtml(entry.plugin??'Starfield.esm')}" data-preview-local-id="${escapeHtml(entry.localFormId??entry.value)}" data-preview-label="${escapeHtml(entry.label)}" data-preview-type="${escapeHtml(entry.type.toUpperCase())}" data-preview-category="${escapeHtml(entry.category)}" aria-label="Item model preview">${readingAction}</div>` : readingAction ? `<div class="inline-model-preview"><p class="inline-model-status">Preview unavailable.</p>${readingAction}</div>` : ''}
+        ${canPreviewModel(entry, uiPreferences.advanced) ? `<div class="inline-model-preview" data-inline-preview="${escapeHtml(entry.value)}" data-preview-source="${escapeHtml(entry.source??'')}" data-preview-plugin="${escapeHtml(entry.plugin??'Starfield.esm')}" data-preview-local-id="${escapeHtml(entry.localFormId??entry.value)}" data-preview-label="${escapeHtml(entry.label)}" data-preview-type="${escapeHtml(entry.type.toUpperCase())}" data-preview-category="${escapeHtml(entry.category)}" data-preview-editor-id="${escapeHtml(entry.editorId??entry.keywords?.[0]??'')}" aria-label="Item model preview">${readingAction}</div>` : readingAction ? `<div class="inline-model-preview"><p class="inline-model-status">Preview unavailable.</p>${readingAction}</div>` : ''}
         <div class="id-browser-detail-text">
         ${canInspectRecord(entry) ? `<section class="record-details" data-record-details="${escapeHtml(entry.value)}" data-record-type="${escapeHtml(entry.type.toUpperCase())}" aria-label="Description and stats" aria-live="polite"></section>` : ''}
         <dl class="id-browser-metadata">
@@ -2764,7 +2843,7 @@ function renderIdBrowserSelection(): string {
 
         ${activeCatalogPicker?.browser === 'id' && entry.available !== false ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-id-browser-selection>Use This ID</button>` : ''}
         <button class="favorite-button id-browser-favorite${isFavorite ? ' is-favorite' : ''}" type="button" data-id-favorite-toggle="${escapeHtml(favoriteKey)}" aria-pressed="${isFavorite}" aria-label="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">${isFavorite ? '★' : '☆'}</button>
-        ${entry.available === false ? '<span class="id-browser-unavailable">Required plugin is not active. ID actions are disabled.</span>' : `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(entry.value)}">Copy ID</button>`}
+        ${entry.available === false ? '<span class="id-browser-unavailable">CCC could not resolve the required plugin. ID actions are disabled.</span><button class="osf-btn osf-btn--sm" type="button" data-retry-id-plugin>Retry Plugin Lookup</button>' : `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(entry.value)}">Copy ID</button>`}
         ${editorId ? `<button class="osf-btn osf-btn--sm" type="button" data-copy-id-browser-id="${escapeHtml(editorId)}">Copy Editor ID</button>` : ''}
         ${action === 'additem'
           ? `<div class="id-browser-add-row"><label class="id-browser-quantity"><span class="osf-eyebrow">QUANTITY</span><input class="osf-input" id="id-browser-quantity" type="text" value="${idBrowserQuantity}" inputmode="numeric" autocomplete="off" aria-label="Item quantity from 1 to 999999"></label><button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-id-browser-action="additem">Add to Player</button></div>`
@@ -2856,6 +2935,7 @@ function renderGameSettingsPanel(): void {
 
 function renderIdBrowserPanel(): void {
   const results = matchingIds();
+  const fromLog = activityItemContext && activeView === (activityItemContext.entry.source === 'mod' ? 'mod-browser' : 'id-browser') && sameActivityItem(idBrowserSelected, activityItemContext.entry);
   const activeMod = modCatalogs.find((catalog) => catalog.key === idBrowserCategory);
   const globalModSearch = activeView === 'mod-browser' && Boolean(query) && (modSearchScope === 'all' || !activeMod);
   const includedTotal = activeView === 'mod-browser'
@@ -2868,6 +2948,8 @@ function renderIdBrowserPanel(): void {
       ? `${results.length.toLocaleString()} matching IDs / ${includedTotal.toLocaleString()} scanned mod IDs`
       : `${modCatalogs.length.toLocaleString()} scanned mods / ${includedTotal.toLocaleString()} IDs`
     : `${results.length.toLocaleString()} shown / ${includedTotal.toLocaleString()} included IDs${idBrowserRecordTypeFilter ? ` / ${idBrowserRecordTypeFilter}` : ''}`;
+
+  if (fromLog) resultCount.textContent = 'Item opened from Command Log';
 
   const renderResultRow = (entry: IdCatalogEntry, index: number) => devFeedbackRow(`
     <button class="id-browser-row${(devFeedbackIdReference(entry) ?? entry.referenceOnly) ? ' is-reference-only' : ''}${idTestedClass(entry)}${idBrowserSelected?.value === entry.value && idBrowserSelected?.type === entry.type && idBrowserSelected?.plugin === entry.plugin ? ' is-selected' : ''}" type="button" data-id-browser-index="${index}">
@@ -2884,7 +2966,7 @@ function renderIdBrowserPanel(): void {
           group.push({ entry, index });
           groups.set(category, group);
         });
-        const categoryOrder = ['Weapons', 'Armor / Apparel', 'Ammo', 'Aid', 'Resources & Miscellaneous', 'Books / Notes', 'Audio Slates', 'Perks', 'Powers', 'NPCs', 'Mods', 'Factions', 'Quests', 'Cells', 'Locations', 'Ships', 'Ship Parts & Other Forms', 'Furniture', 'Weather'];
+        const categoryOrder = ['Weapons', 'Throwables', 'Armor / Apparel', 'Ammo', 'Aid', 'Resources & Miscellaneous', 'Books / Notes', 'Audio Slates', 'Perks', 'Powers', 'NPCs', 'Mods', 'Factions', 'Quests', 'Cells', 'Locations', 'Ships', 'Ship Parts & Other Forms', 'Furniture', 'Weather'];
         return [...groups.entries()]
           .sort(([left], [right]) => {
             const leftIndex = categoryOrder.indexOf(left);
@@ -2906,7 +2988,8 @@ function renderIdBrowserPanel(): void {
     : results.map(renderResultRow).join('');
 
   customPanel.innerHTML = `
-    <section class="id-browser-panel${activeCatalogPicker?.browser === 'id' ? ' is-selecting' : ''}">
+    <section class="id-browser-panel${activeCatalogPicker?.browser === 'id' ? ' is-selecting' : ''}${fromLog ? ' has-log-item' : ''}">
+      ${fromLog ? '<section class="browser-selection-banner osf-card"><div><strong>FROM COMMAND LOG</strong><span>Opening details does not run the command again.</span></div><button class="osf-btn osf-btn--sm" type="button" data-back-to-command-log>Back to Command Log</button></section>' : ''}
       ${activeCatalogPicker?.browser === 'id' ? `<section class="browser-selection-banner osf-card"><div><strong>CHOOSE AN ID</strong><span>Select a matching record, then choose Use This ID. No console command will run.</span></div><button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-cancel-catalog-picker>Cancel Selection</button></section>` : ''}
       <div class="id-browser-workspace">
         <div class="id-browser-results" id="id-browser-results">
@@ -2920,6 +3003,7 @@ function renderIdBrowserPanel(): void {
       </div>
     </section>`;
 
+  customPanel.querySelector('[data-back-to-command-log]')?.addEventListener('click', returnToActivityItem);
   const resultsElement = document.querySelector('#id-browser-results');
   resultsElement?.querySelectorAll<HTMLDetailsElement>('[data-mod-category-key]').forEach((details) => {
     details.addEventListener('toggle', () => {
@@ -2950,12 +3034,16 @@ function renderIdBrowserPanel(): void {
     render();
     const replacement = document.querySelector<HTMLElement>('#id-browser-results');
     if (replacement) replacement.scrollTop = scrollTop;
+    if (entry.available === false && entry.plugin) void refreshUnavailableId(entry);
   });
 
   bindIdBrowserSelectionActions();
 }
 
 function bindIdBrowserSelectionActions(root: ParentNode = customPanel): void {
+  root.querySelector<HTMLButtonElement>('[data-retry-id-plugin]')?.addEventListener('click', () => {
+    if (idBrowserSelected) void refreshUnavailableId(idBrowserSelected);
+  });
   const quantityInput = root.querySelector<HTMLInputElement>('#id-browser-quantity');
   quantityInput?.addEventListener('input', () => {
     const quantity = Number(quantityInput.value);
@@ -2989,12 +3077,54 @@ function bindIdBrowserSelectionActions(root: ParentNode = customPanel): void {
   root.querySelector<HTMLButtonElement>('[data-cancel-catalog-picker]')?.addEventListener('click', () => finishCatalogPicker());
 }
 
+async function refreshUnavailableId(entry: IdCatalogEntry): Promise<void> {
+  if (!entry.plugin || !window.osfui?.request) return;
+  const token = ++officialEntryRefreshToken;
+  setStatus(`Checking ${entry.plugin} against the active load order…`, 'working');
+  try {
+    const reply = await window.osfui.request<PluginLoadOrderReply>('console.command-center.pluginLoadOrder', {
+      uiVersion: CONSOLE_COMMAND_CENTER_VERSION, plugin: entry.plugin, localFormId: entry.localFormId ?? '', formId: entry.value,
+    });
+    if (token !== officialEntryRefreshToken) return;
+    if (!reply?.ok || !Array.isArray(reply.plugins)) throw new Error('The current plugin load order is unavailable.');
+    officialLoadOrderLoading = Promise.resolve(reply);
+    idCatalogLoadOrderKnown = true;
+    packagedIdCatalog = resolvePackagedIdCatalog(packagedIdCatalog, reply);
+    idCatalog = [...packagedIdCatalog, ...modCatalogs.flatMap(catalog => catalog.entries)];
+    const resolved = resolveFavoriteIds([entry], packagedIdCatalog, reply)[0];
+    recordDiagnostic('item-availability-refresh', JSON.stringify({plugin:entry.plugin,localFormId:entry.localFormId,formId:entry.value,resolvedId:resolved.value,available:resolved.available,pluginCount:reply.plugins.length,owner:reply.plugins.find(plugin=>plugin.plugin.toLowerCase()===entry.plugin?.toLowerCase())}));
+    idFavorites = resolveFavoriteIds(idFavorites, packagedIdCatalog, reply);
+    writeFavoriteIds();
+    if (!idBrowserSelected || !sameActivityItem(idBrowserSelected, entry)) return;
+    idBrowserSelected = resolved;
+    rerenderKeepingPosition(render);
+    setStatus(resolved.available ? `Plugin lookup refreshed for ${entry.label}.` : `CCC still could not resolve ${entry.plugin} for ${entry.label}. The lookup details were saved to the diagnostic log.`, resolved.available ? 'normal' : 'error');
+  } catch (error) {
+    if (token === officialEntryRefreshToken) setStatus(`Plugin lookup failed for ${entry.plugin}: ${describe(error)}`, 'error');
+  }
+}
+
 async function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1): Promise<void> {
   if(entry.source==='mod'&&!entry.plugin){setStatus('This older mod favorite has no owner information. Remove it and favorite the item again from its mod.','error');return;}
   // Resolve at the point of use; a persisted runtime ID or earlier scan is only a snapshot.
-  if(entry.plugin){try{const reply=await window.osfui?.request<PluginLoadOrderReply>('console.command-center.pluginLoadOrder',{});const resolved=resolveFavoriteIds([entry],packagedIdCatalog,reply??null)[0];if(!resolved.available){setStatus('The item owner or local ID could not be resolved. Rescan its mod before using this item.','error');return;}entry=resolved;idBrowserSelected=entry;
+  if(entry.plugin){
+    let reply: PluginLoadOrderReply | null = null;
+    let lookupError: unknown;
+    try { reply = await window.osfui?.request<PluginLoadOrderReply>('console.command-center.pluginLoadOrder', {uiVersion: CONSOLE_COMMAND_CENTER_VERSION, plugin: entry.plugin, localFormId: entry.localFormId ?? '', formId: entry.value}) ?? null; }
+    catch (error) { lookupError = error; }
+    const resolved=resolveFavoriteIds([entry],packagedIdCatalog,reply)[0];
+    if (lookupError || !reply?.ok || !reply.plugins?.length || !resolved.available) {
+      recordDiagnostic('item-resolution', JSON.stringify({plugin:entry.plugin,localFormId:entry.localFormId,formId:entry.value,type:entry.type,source:entry.source,loadOrderOk:reply?.ok??false,pluginCount:reply?.plugins?.length??0,owner:reply?.plugins?.find(plugin=>plugin.plugin.toLowerCase()===entry.plugin?.toLowerCase()),resolvedId:resolved.value,available:resolved.available,error:lookupError?describe(lookupError):undefined}));
+    }
+    if(!resolved.available){
+      const message = !reply?.ok || !reply.plugins?.length
+        ? 'CCC could not read the current plugin load order. Check that the CCC interface and native plugin are from the same version, then restart Starfield.'
+        : `Could not resolve this item from ${entry.plugin}. Check that its plugin is enabled. For mod items, rescan the Mod Browser.`;
+      setStatus(message + (lookupError ? ' ' + describe(lookupError) : ''),'error');return;
+    }
+    entry=resolved;idBrowserSelected=entry;
     const key=idFavoriteKey(entry);idFavorites=idFavorites.map(favorite=>idFavoriteKey(favorite)===key?{...favorite,...entry}:favorite);writeFavoriteIds();
-  }catch(error){setStatus('Could not resolve the item against the current load order: '+describe(error),'error');return;}}
+  }
 
   const action = idBrowserAction(entry);
   if (!action) return;
@@ -3065,7 +3195,7 @@ async function requestIdBrowserQuickAction(entry: IdCatalogEntry, quantity = 1):
     verifyInGame: action === 'teleport',
     testStatus: action === 'forceweather' || (action === 'teleport' && !entry.referenceOnly && !reviewedReferenceNote(entry)) ? 'verified' : 'untested',
   };
-  requestExecution({ command, definition, rememberRecent: false });
+  requestExecution({ command, definition, rememberRecent: false, item: activityItemFromRecord(entry) });
 }
 
 let customHighlightCleanup: (() => void) | undefined;
@@ -4137,7 +4267,7 @@ document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && modelDialog) { event.preventDefault(); event.stopPropagation(); modelDialog.close(); return; }
   const settingsDialog = document.querySelector<HTMLDialogElement>('dialog.ui-settings-dialog[open]');
   if (event.key === 'Escape' && settingsDialog) { event.preventDefault(); event.stopPropagation(); settingsDialog.close(); return; }
-  const devReportDialog = document.querySelector<HTMLDialogElement>('dialog.dev-feedback-dialog[open]');
+  const devReportDialog = document.querySelector<HTMLDialogElement>('dialog.dev-feedback-dialog[open], dialog.diagnostic-test-dialog[open]');
   if (event.key === 'Escape' && devReportDialog) {
     event.preventDefault();
     event.stopPropagation();
@@ -4270,6 +4400,16 @@ if (window.osfui?.request) {
 
 render();
 installControllerSupport(window.osfui);
+if (typeof __CCC_DIAGNOSTIC_TEST__ !== 'undefined' && __CCC_DIAGNOSTIC_TEST__) {
+  void import('./diagnostic-test').then(({installDiagnosticTests}) => installDiagnosticTests({
+    version: CONSOLE_COMMAND_CENTER_VERSION,
+    request: async (name, payload, options) => {
+      if (!window.osfui?.request) throw new Error('OSF UI bridge unavailable');
+      return window.osfui.request(name, payload, options);
+    },
+    error: message => setStatus(message, 'error'),
+  }));
+}
 if (!welcomeHasBeenSeen()) openWelcome();
 
 installDevFeedback({
@@ -4310,7 +4450,7 @@ installRecordDetails(async (name, payload) => {
 installModelPreview(async (name, payload) => {
   if (previewReady || !window.osfui?.request) throw new Error('Live model loading requires the in-game native plugin.');
   return window.osfui.request(name, payload, { timeoutMs: name.endsWith('previewChunk') ? 12000 : 120000 });
-}, { advanced:()=>uiPreferences.advanced, quality: () => uiPreferences.previewResolution, setQuality: quality => { setPreviewResolution(quality); }, background:()=>uiPreferences.previewBackground,setBackground:background=>{setPreviewBackground(background);} });
+}, { advanced:()=>uiPreferences.advanced, quality: () => uiPreferences.previewResolution, setQuality: quality => { setPreviewResolution(quality); }, background:()=>uiPreferences.previewBackground,setBackground:background=>{setPreviewBackground(background);}, livePreviews:()=>!previewReady&&nativeBackendReady });
 
 installUiSettings({ changed: render, status: (message, error = false) => setStatus(message, error ? 'error' : 'success') });
 

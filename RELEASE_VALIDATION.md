@@ -1,5 +1,12 @@
 # Release validation
 
+## 1.4.17
+
+- All 354 JavaScript regression tests passed, along with the native preview suite, UI compatibility checks and release metadata checks.
+- Renderer checks covered the final food and aid views, including 26 records that use the Reuben-style container. Both porridge textures resolve, and the rebuilt preview renders its fiberglass bowl as opaque.
+- The source archive was checked against the staging tree. The Nexus archive contains the matching v1.4.17 DLL, the OSF UI view, the settings schema and all 3,460 images referenced by 4,823 thumbnail mappings. The normal build excludes the diagnostic test panel.
+- The automatic log format and native log writes were exercised in-game during earlier development builds. The final v1.4.17 build and preview angles were checked locally in the renderer. Final in-game visual confirmation is pending.
+
 ## 1.4.0 release scope
 
 This release consolidates 1.3.37–1.3.69. The detailed checks below distinguish native fixtures, installed-asset/browser comparisons and player reports. Successful automated checks do not certify every command, item, material, or inventory result in game. No new Working designations are added for release preparation.

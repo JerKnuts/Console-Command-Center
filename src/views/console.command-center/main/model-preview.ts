@@ -1,8 +1,12 @@
 import { createPreviewController, type PreviewGamepadEvent } from './preview-controller.ts';
 import {thumbnailUrl} from './preview-thumbnails.ts';
+import {previewOrientation,orientPreviewMeshes} from './preview-orientation.ts';
+import {errorReportGuidance} from './error-guidance.ts';
 import { createLoadingRing } from './loading-ring.ts';
 import { isDevModeEnabled } from './dev-feedback.ts';
 import {PREVIEW_BACKGROUNDS,previewBackground,type PreviewBackgroundId} from './preview-backgrounds.ts';
+const previewModelPaths = new WeakMap<ArrayBuffer, string>();
+
 type RecordForPreview = { value: string; label: string; type: string; available?: boolean; source?:string;category?:string };
 type RequestPreview = (name: string, payload: Record<string, string | number | boolean>) => Promise<unknown>;
 export function canPreviewModel(entry: RecordForPreview, _advanced?: boolean): boolean {
@@ -29,8 +33,14 @@ export function defaultPreviewMannequin(type:string,label:string,category=''):bo
 }
 export async function fetchPreview(request: RequestPreview, formId: string, current: () => boolean, mannequin = false, quality: 'low'|'medium'|'high'|'ultra' = 'high', sex: 'male'|'female' = 'female', geometryOnly:boolean|'color'=false,mannequinSex:'auto'|'female'|'male'='auto',mannequinFit:'standard'|'outfit'|'suit'='outfit'): Promise<ArrayBuffer> {
   const transferLimit=(quality==='ultra'?256:64)*1024*1024;
-  const reply = await request('console.command-center.previewModel', { formId, mannequin: mannequin ? 1 : 0, quality, sex, mannequinSex, mannequinFit, stage:geometryOnly==='color'?'color':geometryOnly?'geometry':'complete' }) as { ok?: boolean; ticket?: string; bytes?: number; compression?: string; decodedBytes?: number; maxChunkBytes?:number };
+  const reply = await request('console.command-center.previewModel', { formId, mannequin: mannequin ? 1 : 0, quality, sex, mannequinSex, mannequinFit, stage:geometryOnly==='color'?'color':geometryOnly?'geometry':'complete' }) as { ok?: boolean; ticket?: string; bytes?: number; compression?: string; decodedBytes?: number; maxChunkBytes?:number;modelPath?:string };
   if (!reply?.ok || typeof reply.ticket !== 'string' || !Number.isInteger(reply.bytes) || reply.bytes! < 12 || reply.bytes! > transferLimit) throw new Error('The native plugin returned an invalid model response.');
+  const finish = (buffer: ArrayBuffer): ArrayBuffer => {
+    if (typeof reply.modelPath === 'string' && reply.modelPath.length <= 1024) {
+      previewModelPaths.set(buffer, reply.modelPath);
+    }
+    return buffer;
+  };
   if(reply.maxChunkBytes!==undefined&&(!Number.isInteger(reply.maxChunkBytes)||reply.maxChunkBytes<4096||reply.maxChunkBytes>262144))throw new Error('Invalid model transfer capability.');
   const ticket=reply.ticket;const chunkSize=reply.maxChunkBytes??65536,parallel=4;
   const data = new Uint8Array(reply.bytes!);
@@ -48,11 +58,11 @@ export async function fetchPreview(request: RequestPreview, formId: string, curr
   if(reply.compression){
     if(reply.compression!=='deflate'||!Number.isInteger(reply.decodedBytes)||reply.decodedBytes!<12||reply.decodedBytes!>transferLimit)throw new Error('Invalid compressed model response.');
     const decoded=new Uint8Array(reply.decodedBytes!);const reader=new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate')).getReader();let offset=0;
-    try{while(true){if(!current())throw new Error('Preview closed.');const part=await reader.read();if(part.done)break;if(offset+part.value.length>decoded.length)throw new Error('Model decompression size mismatch.');decoded.set(part.value,offset);offset+=part.value.length;}if(offset!==decoded.length)throw new Error('Model decompression size mismatch.');return decoded.buffer;}finally{await reader.cancel();}
+    try{while(true){if(!current())throw new Error('Preview closed.');const part=await reader.read();if(part.done)break;if(offset+part.value.length>decoded.length)throw new Error('Model decompression size mismatch.');decoded.set(part.value,offset);offset+=part.value.length;}if(offset!==decoded.length)throw new Error('Model decompression size mismatch.');return finish(decoded.buffer);}finally{await reader.cancel();}
   }
-  return data.buffer;
+  return finish(data.buffer);
 }
-export function installModelPreview(request: RequestPreview, options?: { advanced?:()=>boolean; quality: () => 'low'|'medium'|'high'|'ultra'; setQuality?: (quality:'low'|'medium'|'high'|'ultra') => void; background?:()=>PreviewBackgroundId;setBackground?:(background:PreviewBackgroundId)=>void }): void {
+export function installModelPreview(request: RequestPreview, options?: { advanced?:()=>boolean; quality: () => 'low'|'medium'|'high'|'ultra'; setQuality?: (quality:'low'|'medium'|'high'|'ultra') => void; background?:()=>PreviewBackgroundId;setBackground?:(background:PreviewBackgroundId)=>void;livePreviews?:()=>boolean }): void {
   document.documentElement.style.setProperty('--ccc-preview-background',previewBackground(options?.background?.()).css);
   const renderers=new Set<ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']>>();
   const track=(renderer:ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']>)=>{renderers.add(renderer);renderer.showMissingTextures(isDevModeEnabled());const dispose=renderer.dispose;renderer.dispose=()=>{renderers.delete(renderer);dispose();};return renderer;};
@@ -76,7 +86,7 @@ export function installModelPreview(request: RequestPreview, options?: { advance
     const close = document.createElement('button'); close.className = 'osf-btn osf-btn--sm'; close.type = 'button'; close.textContent = 'Close';
     const header = document.createElement('header'); header.append(title, close);
     const status = document.createElement('p'); status.className = 'model-preview-status'; status.setAttribute('role', 'status'); status.textContent = 'Loading the installed item model…';
-    const canvas = document.createElement('canvas'); canvas.className = 'model-preview-canvas'; canvas.hidden = true; canvas.tabIndex = 0; canvas.setAttribute('aria-label', 'Left-drag to move the model. Hold the mouse wheel and drag to orbit. Hold right mouse and drag up to zoom in or down to zoom out. Scroll to zoom. Shift plus arrow keys also moves the model.');
+    const canvas = document.createElement('canvas'); canvas.className = 'model-preview-canvas'; canvas.hidden = true; canvas.tabIndex = 0; canvas.setAttribute('aria-label', 'Left-drag to move the model. Hold the mouse wheel and drag to orbit. Hold right mouse and drag up/down to zoom. Scroll to zoom. Shift plus arrow keys also moves the model.');
     const controls = document.createElement('div'); controls.className = 'model-preview-controls';
     const stage = document.createElement('div');stage.className = 'model-preview-stage';stage.append(canvas);
     const supportsMannequin = trigger.dataset.previewType === 'ARMO'; let mannequin = supportsMannequin?(rememberedMannequin??defaultPreviewMannequin(trigger.dataset.previewType??'',trigger.dataset.previewLabel??'',trigger.dataset.previewCategory)):false;
@@ -106,7 +116,7 @@ export function installModelPreview(request: RequestPreview, options?: { advance
     const power=document.createElement('input');power.type='range';power.min='0.1';power.max='3';power.step='0.1';power.value='1';power.setAttribute('aria-label','Preview light brightness');brightness.append(power);
     const hint=document.createElement('span');hint.textContent='Left-drag places the light under the cursor. Hold Shift for the far side. Arrow keys also move it.';
     lighting.append(moveLight,brightness,hint);
-    moveLight.addEventListener('click',()=>{lightMode=!lightMode;moveLight.setAttribute('aria-pressed',String(lightMode));moveLight.classList.toggle('osf-btn--osf-accent',lightMode);updateLightMarker();canvas.setAttribute('aria-label',lightMode?'Left-drag or arrow keys move the light. Middle-drag orbits. Right-drag or scroll zooms.':'Left-drag pans. Middle-drag orbits. Right-drag or scroll zooms.');});
+    moveLight.addEventListener('click',()=>{lightMode=!lightMode;moveLight.setAttribute('aria-pressed',String(lightMode));moveLight.classList.toggle('osf-btn--osf-accent',lightMode);updateLightMarker();canvas.setAttribute('aria-label',lightMode?'Left-drag or arrow keys move the light. Middle-drag orbits. Right-drag up/down zooms. Scroll zooms.':'Left-drag pans. Middle-drag orbits. Right-drag up/down zooms. Scroll zooms.');});
     power.addEventListener('input',()=>renderer?.lightStrength(Number(power.value)));
     const toolbar=document.createElement('div');toolbar.className='model-preview-toolbar';toolbar.append(controls,lighting);header.replaceChildren(title,toolbar,close);
     const controllerHint=document.createElement('p');controllerHint.className='model-preview-controller-hint';
@@ -139,7 +149,7 @@ export function installModelPreview(request: RequestPreview, options?: { advance
     const triggerWatchTimer=window.setInterval(watchTriggers,750);
     const controllerVisibility=(event:Event)=>{pad.reset();if((event as CustomEvent<boolean>).detail)watchTriggers();};
     document.addEventListener('ccc-controller-visibility',controllerVisibility);
-    dialog.addEventListener('close',()=>{triggerWatchStopped=true;window.clearInterval(triggerWatchTimer);document.removeEventListener('ccc-controller-visibility',controllerVisibility);void request('console.command-center.previewTriggerWatch',{watch:false}).catch(()=>{});});
+    dialog.addEventListener('close',()=>{triggerWatchStopped=true;window.clearInterval(triggerWatchTimer);document.removeEventListener('ccc-controller-visibility',controllerVisibility);void request('console.command-center.previewTriggerWatch',{watch:false}).catch(()=>{});if(!mannequin)window.dispatchEvent(new CustomEvent('ccc-preview-updated',{detail:id}));});
     let controllerFrame=0,previousFrame=performance.now();
     const animateController=(time:number)=>{if(!dialog.isConnected||!dialog.open)return;pad.step((time-previousFrame)/1000);previousFrame=time;controllerFrame=requestAnimationFrame(animateController);};
     dialog.addEventListener('close',()=>{cancelAnimationFrame(controllerFrame);pad.reset();window.removeEventListener('blur',resetPad);window.removeEventListener('gamepaddisconnected',resetPad);document.removeEventListener('visibilitychange',resetPad);});
@@ -173,8 +183,13 @@ export function installModelPreview(request: RequestPreview, options?: { advance
       const geometryKey=`${id}:${mannequin}:${sex}${mannequinSuffix}`,cacheKey=`${id}:${mannequin}:${quality}:${sex}${mannequinSuffix}`,lowKey=`${id}:${mannequin}:low:${sex}${mannequinSuffix}`,colorKey=`${id}:${mannequin}:color:${sex}${mannequinSuffix}`;
       const selectedMannequin=mannequin,selectedSex=sex,selectedMannequinSex=mannequinSex;
       const { decodePreview, createPreviewRenderer } = await import('./preview-renderer');if(!current())return;
-      const paint=(buffer:ArrayBuffer,packetQuality:typeof quality,geometryOnly=false)=>{geometryStage=geometryOnly;const meshes=decodePreview(buffer,packetQuality);canvas.hidden=false;
-        if(!renderer||renderedKey!==geometryKey||!renderer.updateMaterials(meshes,geometryOnly?'low':packetQuality)){const view=renderer?.getView()??previousView;renderer?.dispose();renderer=track(createPreviewRenderer(canvas,meshes,geometryOnly?'low':packetQuality,['Helmets','Apparel','Spacesuits','Armor','Armor / Apparel','Vehicles'].includes(trigger.dataset.previewCategory??'')?Math.PI:0));if(view)renderer.restoreView(view);}
+      const paint=(buffer:ArrayBuffer,packetQuality:typeof quality,geometryOnly=false)=>{
+        geometryStage=geometryOnly;
+        const orientation=previewOrientation(trigger.dataset.previewType??'',trigger.dataset.previewCategory,trigger.dataset.previewLabel,trigger.dataset.previewEditorId,previewModelPaths.get(buffer));
+        const meshes=decodePreview(buffer,packetQuality);
+        orientPreviewMeshes(meshes,orientation);
+        canvas.hidden=false;
+        if(!renderer||renderedKey!==geometryKey||!renderer.updateMaterials(meshes,geometryOnly?'low':packetQuality)){const view=renderer?.getView()??previousView;renderer?.dispose();renderer=track(createPreviewRenderer(canvas,meshes,geometryOnly?'low':packetQuality,orientation.yawOffset,orientation.pitch,orientation.yaw));if(view)renderer.restoreView(view);}
         renderedKey=geometryKey;renderer.showMissingTextures(!geometryOnly&&isDevModeEnabled());renderer.setQuality(geometryOnly?'low':packetQuality);renderer.showTextures(texturesEnabled);updateLightMarker();controls.querySelectorAll('button').forEach(button=>{button.disabled=false;});lighting.querySelectorAll<HTMLInputElement|HTMLButtonElement>('button,input').forEach(control=>{control.disabled=false;});return meshes;};
       let buffer=fullCache.get(cacheKey);
       const cachedColor=fullCache.get(lowKey)??fullCache.get(colorKey)??(!selectedMannequin?inlineCache.get(id+':'+selectedSex):undefined);
@@ -199,7 +214,7 @@ export function installModelPreview(request: RequestPreview, options?: { advance
       const textured = meshes.filter(mesh => mesh.texture).length;
       const incomplete=meshes.filter(mesh=>mesh.incompleteMaterial&&!mesh.mannequin).length;
       status.textContent = `Left: move • Hold wheel: orbit • Right up/down: zoom • Scroll: zoom • ${textured} textured ${textured === 1 ? 'piece' : 'pieces'}${incomplete ? ' • Some material layers are unavailable.' : ''}${mannequin && !meshes.some(mesh => mesh.mannequin) ? ' • Mannequin unavailable' : ''}`; controls.querySelectorAll('button').forEach(button => { button.disabled = false; });
-    } catch (error) { if (current()) { canvas.hidden = !renderer; controls.querySelectorAll('button').forEach(button=>{button.disabled=false;});lighting.querySelectorAll<HTMLInputElement|HTMLButtonElement>('button,input').forEach(control=>{control.disabled=!renderer;});const message=error instanceof Error ? error.message : 'This item cannot be previewed yet.';status.textContent=renderer?'Preview retained • Texture upgrade unavailable: '+message:message; } } finally{if(current()){loading.hidden=true;stage.setAttribute('aria-busy','false');}} };
+    } catch (error) { if (current()) { canvas.hidden = !renderer; controls.querySelectorAll('button').forEach(button=>{button.disabled=false;});lighting.querySelectorAll<HTMLInputElement|HTMLButtonElement>('button,input').forEach(control=>{control.disabled=!renderer;});const message=error instanceof Error ? error.message : 'This item cannot be previewed yet.';status.textContent=errorReportGuidance(renderer?'Preview retained • Texture upgrade unavailable: '+message:message); } } finally{if(current()){loading.hidden=true;stage.setAttribute('aria-busy','false');}} };
     qualitySelect.addEventListener('change',()=>{const quality=qualitySelect.value as 'low'|'medium'|'high'|'ultra';options?.setQuality?.(quality);void load();});
     mannequinButton.addEventListener('click', () => { mannequin = !mannequin;rememberedMannequin=mannequin; void load(); });
     mannequinSexButton.addEventListener('click',()=>{mannequinSex=mannequinSex==='auto'?'female':mannequinSex==='female'?'male':'auto';void load();});
@@ -216,29 +231,37 @@ export function installModelPreview(request: RequestPreview, options?: { advance
     image.alt=(host.dataset.previewLabel??'Item')+' preview';
     const status=document.createElement('p');status.className='inline-model-status';status.textContent='Loading preview…';status.setAttribute('role','status');
     const fullButton=document.createElement('button');fullButton.type='button';fullButton.className='osf-btn osf-btn--sm';fullButton.textContent='Model Viewer';fullButton.dataset.controllerHint='Y';
-    fullButton.dataset.previewModel=host.dataset.inlinePreview;fullButton.dataset.previewLabel=host.dataset.previewLabel??'Item model';fullButton.dataset.previewType=host.dataset.previewType;fullButton.dataset.previewSex='male';fullButton.dataset.previewCategory=host.dataset.previewCategory;
+    fullButton.dataset.previewModel=host.dataset.inlinePreview;fullButton.dataset.previewLabel=host.dataset.previewLabel??'Item model';fullButton.dataset.previewType=host.dataset.previewType;fullButton.dataset.previewSex='male';fullButton.dataset.previewCategory=host.dataset.previewCategory;fullButton.dataset.previewEditorId=host.dataset.previewEditorId;
     const loading=createLoadingRing('small');host.prepend(image,loading,status);if(!previewOnly)host.append(fullButton);
     const url=thumbnailUrl(host.dataset.previewPlugin??'Starfield.esm',host.dataset.previewLocalId??host.dataset.inlinePreview??'');
-    const dynamic=(host.dataset.previewSource==='mod'||host.dataset.previewType==='BOOK');
-    image.addEventListener('load',()=>{if(!current())return;image.hidden=false;loading.hidden=true;status.textContent=previewOnly?'Item preview':'Open Model Viewer to rotate and zoom';},{once:true});
-    const loadDynamic=async()=>{let renderer:ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']>|undefined;let canvas:HTMLCanvasElement|undefined;
-      try{const id=host.dataset.inlinePreview!,yaw=['Helmets','Apparel','Spacesuits','Armor','Armor / Apparel','Vehicles'].includes(host.dataset.previewCategory??'')?Math.PI:0,key=id+':'+host.dataset.previewPlugin+':'+yaw;
-        let blob=thumbnailImages.get(key);
-        if(!blob){status.textContent='Loading preview…';loading.hidden=false;const colorKey=`${id}:false:color:male`;const buffer=fullCache.get(colorKey)??await queuedPreview(id,current,false,'low','male','color');if(!current())return;remember(colorKey,buffer);
+    const dynamic=(host.dataset.previewSource==='mod'||host.dataset.previewType==='BOOK'||Boolean(options?.livePreviews?.()));
+    const snapshotOrientation=previewOrientation(host.dataset.previewType??'',host.dataset.previewCategory,host.dataset.previewLabel,host.dataset.previewEditorId);
+    const snapshotKey=host.dataset.inlinePreview+':'+host.dataset.previewPlugin+':'+snapshotOrientation.yawOffset+':'+snapshotOrientation.pitch+':'+(snapshotOrientation.roll??0)+':'+(snapshotOrientation.yaw??'')+':'+(snapshotOrientation.modelPitch??0);
+    image.addEventListener('load',()=>{if(!current())return;image.hidden=false;loading.hidden=true;status.textContent=previewOnly?'Item preview':'Open Model Viewer to rotate and zoom';});
+    let snapshotLoading=false;
+    const loadDynamic=async(force=false)=>{if(snapshotLoading||!current())return;snapshotLoading=true;let renderer:ReturnType<typeof import('./preview-renderer')['createPreviewRenderer']>|undefined;let canvas:HTMLCanvasElement|undefined;
+      try{const id=host.dataset.inlinePreview!,orientation=previewOrientation(host.dataset.previewType??'',host.dataset.previewCategory,host.dataset.previewLabel,host.dataset.previewEditorId),yaw=orientation.yawOffset,key=id+':'+host.dataset.previewPlugin+':'+yaw+':'+orientation.pitch+':'+(orientation.roll??0)+':'+(orientation.yaw??'')+':'+(orientation.modelPitch??0);
+        let blob=force?undefined:thumbnailImages.get(key);
+        if(!blob){status.textContent=image.naturalWidth?'Updating preview to match the installed game…':'Loading preview…';loading.hidden=Boolean(image.naturalWidth);const previewKey=`${id}:false:low:male`;const liveBuffer=['ultra','high','medium','low'].map(level=>fullCache.get(`${id}:false:${level}:male`)).find(buffer=>buffer&&buffer.byteLength<=64*1024*1024);const buffer=liveBuffer??await queuedPreview(id,current,false,'low','male',false);if(!current())return;if(!liveBuffer)remember(previewKey,buffer);
           const {decodePreview,createPreviewRenderer}=await import('./preview-renderer');if(!current())return;
-          canvas=document.createElement('canvas');canvas.className='inline-model-capture';canvas.setAttribute('aria-hidden','true');host.append(canvas);const meshes=decodePreview(buffer,'low');if(previewOnly)orientReadingPreview(meshes);renderer=createPreviewRenderer(canvas,meshes,'low',yaw);
+          const drawOrientation=previewOrientation(host.dataset.previewType??'',host.dataset.previewCategory,host.dataset.previewLabel,host.dataset.previewEditorId,previewModelPaths.get(buffer));
+          canvas=document.createElement('canvas');canvas.className='inline-model-capture';canvas.setAttribute('aria-hidden','true');host.append(canvas);const meshes=decodePreview(buffer,'low');if(previewOnly)orientReadingPreview(meshes);orientPreviewMeshes(meshes,drawOrientation);renderer=createPreviewRenderer(canvas,meshes,'low',drawOrientation.yawOffset,drawOrientation.pitch,drawOrientation.yaw);
           const captured=new Promise<Blob>((resolve,reject)=>canvas!.toBlob(value=>value?resolve(value):reject(new Error('Preview unavailable.')),'image/png'));renderer.dispose();renderer=undefined;canvas.remove();canvas=undefined;blob=await captured;if(!current())return;
           if(blob.size<=2*1024*1024){let bytes=blob.size;for(const image of thumbnailImages.values())bytes+=image.size;while(thumbnailImages.size&&(thumbnailImages.size>=12||bytes>2*1024*1024)){const first=thumbnailImages.keys().next().value!;bytes-=thumbnailImages.get(first)!.size;thumbnailImages.delete(first);}thumbnailImages.set(key,blob);}
         }
-        if(!current())return;objectUrl=URL.createObjectURL(blob);image.src=objectUrl;
-      }catch{if(current()){loading.hidden=true;status.textContent=previewOnly?'Preview unavailable.':'Preview unavailable. Open Model Viewer for details.';}}
-      finally{renderer?.dispose();canvas?.remove();}
+        if(!current())return;if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(blob);image.src=objectUrl;
+      }catch{if(current()){loading.hidden=true;status.textContent=image.naturalWidth?'Preview retained. Open Model Viewer for live details.':previewOnly?'Preview unavailable.':'Preview unavailable. Open Model Viewer for details.';}}
+      finally{snapshotLoading=false;renderer?.dispose();canvas?.remove();}
     };
     let observer:IntersectionObserver|undefined;
-    const startDynamic=()=>{if(observer)return;observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){observer!.disconnect();void loadDynamic();}});observer.observe(host);};
+    let refreshTimer:ReturnType<typeof setTimeout>|undefined;
+    const startDynamic=()=>{if(observer)return;observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){observer!.disconnect();refreshTimer=setTimeout(()=>{if(current()&&!document.querySelector('dialog.model-preview-dialog[open]'))void loadDynamic();},url?1000:0);}});observer.observe(host);};
+    const refreshFromViewer=(event:Event)=>{if((event as CustomEvent<string>).detail===host.dataset.inlinePreview&&current())void loadDynamic(true);};
+    window.addEventListener('ccc-preview-updated',refreshFromViewer);
     image.addEventListener('error',()=>{if(!current())return;if(dynamic&&!objectUrl)startDynamic();else{image.hidden=true;loading.hidden=true;status.textContent=previewOnly?'Preview unavailable.':'Open Model Viewer for a 3D preview';}},{once:true});
-    if(url)image.src=url;else if(dynamic)startDynamic();else{loading.hidden=true;status.textContent=previewOnly?'Preview unavailable.':'Open Model Viewer for a 3D preview';}
-    active.set(host,()=>{disposed=true;observer?.disconnect();if(objectUrl)URL.revokeObjectURL(objectUrl);image.removeAttribute('src');});
+    const savedSnapshot=thumbnailImages.get(snapshotKey);
+    if(savedSnapshot){objectUrl=URL.createObjectURL(savedSnapshot);image.src=objectUrl;}else if(url){image.src=url;if(dynamic)startDynamic();}else if(dynamic)startDynamic();else{loading.hidden=true;status.textContent=previewOnly?'Preview unavailable.':'Open Model Viewer for a 3D preview';}
+    active.set(host,()=>{disposed=true;observer?.disconnect();clearTimeout(refreshTimer);window.removeEventListener('ccc-preview-updated',refreshFromViewer);if(objectUrl)URL.revokeObjectURL(objectUrl);image.removeAttribute('src');});
   };
 
   let timer: ReturnType<typeof setTimeout> | undefined;
