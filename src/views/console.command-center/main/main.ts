@@ -28,6 +28,7 @@ import './dark-theme.css';
 import { gameSettingGroup, gameSettingMatches, gameSettingInspectCommand, gameSettingResetValue, gameSettingWriteCommand, type GameSettingEntry } from './game-settings-catalog';
 import { installControllerSupport } from './controller-support';
 import { CATEGORY_ORDER, COMMANDS, type CommandCategory, type CommandDefinition, type CommandInput } from './commands';
+import { papyrusInspectionRequest } from './papyrus-inspections';
 import {
   ID_BROWSER_TOTAL,
   QUEST_BROWSER_CATEGORY_ORDER,
@@ -237,7 +238,7 @@ const MAX_CUSTOM_COMMAND_LENGTH = 1024;
 const MAX_SAVED_CUSTOM_COMMANDS = 100;
 const MAX_CUSTOM_COMMAND_NAME_LENGTH = 50;
 const ENGINE_COMMAND_LIBRARY_TOTAL = 1468;
-const CONSOLE_COMMAND_CENTER_VERSION = '1.4.17';
+const CONSOLE_COMMAND_CENTER_VERSION = '1.4.19';
 const recordDiagnostic = createDiagnosticLog((name, payload, options) => {
   if (!window.osfui?.request) return Promise.reject(new Error('OSF UI bridge unavailable'));
   return window.osfui.request(name, payload, options);
@@ -1346,12 +1347,35 @@ async function readOfficialPluginLoadOrder(): Promise<PluginLoadOrderReply | nul
   if (!officialLoadOrderLoading) {
     officialLoadOrderLoading = (async () => {
       try {
-        const reply = await window.osfui?.request<PluginLoadOrderReply>('console.command-center.pluginLoadOrder', {});
-        return reply?.ok && Array.isArray(reply.plugins) ? reply : null;
-      } catch { return null; }
+        const reply = await window.osfui?.request<PluginLoadOrderReply>('console.command-center.pluginLoadOrder', { uiVersion: CONSOLE_COMMAND_CENTER_VERSION });
+        if (reply && (!reply.ok || !Array.isArray(reply.plugins))) {
+          recordDiagnostic('plugin-load-order-reply', JSON.stringify({ type: typeof reply, keys: Object.keys(reply), ok: reply.ok, pluginsType: typeof reply.plugins, pluginsArray: Array.isArray(reply.plugins), value: reply }));
+        }
+        return reply?.ok && Array.isArray(reply.plugins) && reply.plugins.length ? reply : null;
+      } catch (error) {
+        recordDiagnostic('plugin-load-order-error', describe(error));
+        return null;
+      }
     })();
   }
-  return officialLoadOrderLoading;
+  const pending = officialLoadOrderLoading;
+  const reply = await pending;
+  // A request made before the bridge/game is ready must not poison later views.
+  if (!reply && officialLoadOrderLoading === pending) officialLoadOrderLoading = null;
+  return reply;
+}
+
+async function refreshQuestAvailability(): Promise<void> {
+  officialLoadOrderLoading = null;
+  const reply = await readOfficialPluginLoadOrder();
+  if (!reply) {
+    setStatus('Could not read the active plugin load order. Try Refresh Quest Plugins again once CCC is connected.', 'error');
+    return;
+  }
+  questBrowserEntries = resolvePackagedQuestCatalog(questBrowserEntries, reply);
+  recordDiagnostic('quest-plugin-refresh', JSON.stringify({ pluginCount: reply.plugins?.length, owners: reply.plugins?.filter(plugin => ['shatteredspace.esm', 'sfbgs00d.esm', 'sfbgs050.esm'].includes(plugin.plugin.toLowerCase())) }));
+  rerenderKeepingPosition(render);
+  setStatus('Quest plugin IDs refreshed from the active load order.', 'normal');
 }
 
 function ensureIdCatalogLoaded(): Promise<void> {
@@ -1922,6 +1946,7 @@ function renderQuestBrowserSelection(entry: (Pick<QuestBrowserEntry, 'quest' | '
         </dl>
         <div class="quest-browser-actions">
           ${devFeedbackButton({ kind: 'Quest', name: entry.quest, id: entry.questId, source: entry.source, category: entry.category })}
+          ${!modQuest && entry.available === false ? '<button class="osf-btn osf-btn--sm" type="button" data-refresh-quest-plugins>Refresh Quest Plugins</button>' : ''}
           ${activeCatalogPicker?.browser === 'quest' && entry.available !== false ? `<button class="osf-btn osf-btn--sm osf-btn--osf-accent" type="button" data-use-quest-id="${escapeHtml(entry.questId)}" data-use-quest-title="${escapeHtml(entry.quest)}">Use This Quest</button>` : ''}
           <button class="osf-btn osf-btn--sm" type="button" data-quest-inspect="${modQuest && !scannedStagesKnown ? 'stage' : 'history'}" data-quest-id="${escapeHtml(entry.questId)}" data-quest-title="${escapeHtml(entry.quest)}"${questActionsReady ? '' : ' disabled'}>Inspect Quest State</button>
           <button class="osf-btn osf-btn--sm osf-btn--ghost" type="button" data-copy-text="${escapeHtml(entry.questId)}"${entry.available === false ? ' disabled' : ''}>Copy Quest ID</button>
@@ -2008,7 +2033,7 @@ function renderCommandCard(command: CommandDefinition, detailView = false): stri
     ? `<span class="availability-wrap" tabindex="0">
         <button class="osf-btn osf-btn--osf-accent execute-button" type="button" disabled>Unavailable</button>
         <span class="availability-popover is-danger" role="tooltip">
-          <strong>CONSOLE COMMAND</strong>
+          <strong>${command.inspection ? 'PAPYRUS INSPECTION' : 'CONSOLE COMMAND'}</strong>
           <code>${escapeHtml(command.command)}</code>
           <span>CCC blocks this card, but advanced users can enter the command manually in Starfield’s console.</span>
         </span>
@@ -2019,7 +2044,7 @@ function renderCommandCard(command: CommandDefinition, detailView = false): stri
           <button class="osf-btn execute-button command-action-toggle${selectedAction === 'secondary' ? ' osf-btn--osf-accent is-active' : ' execute-button--secondary'}" type="button" data-execute="${escapeHtml(command.id)}" data-command-action="secondary" aria-pressed="${selectedAction === 'secondary'}"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${escapeHtml(command.secondaryAction.label)}</button>
         </span>`
       : `<button class="osf-btn osf-btn--osf-accent execute-button" type="button" data-execute="${escapeHtml(command.id)}"${nativeBackendReady || canRunWithoutNative ? '' : ' disabled'}>${command.catalogSearch ? 'Search IDs' : escapeHtml(command.executeLabel ?? 'Execute')}</button>`;
-  const addToBatchControl = `<button class="osf-btn add-to-batch-button" type="button" data-add-to-batch="${escapeHtml(command.id)}"${unavailable ? ' disabled' : ''}>Add to Batch</button>`;
+  const addToBatchControl = command.inspection ? '' : `<button class="osf-btn add-to-batch-button" type="button" data-add-to-batch="${escapeHtml(command.id)}"${unavailable ? ' disabled' : ''}>Add to Batch</button>`;
 
   return `
     <article class="command-card${command.secondaryAction ? ' command-card--dual-action' : ''}${detailView ? ' command-card--detail' : ''}" data-command-id="${escapeHtml(command.id)}"${detailView ? '' : ' tabindex="0"'} aria-label="${escapeHtml(command.title)} command">
@@ -2234,13 +2259,13 @@ function showConfirmation(execution: PendingExecution, message: string, _risk: '
   confirmDialog.classList.remove('is-caution', 'is-danger');
   confirmLabel.textContent = 'CONFIRM';
   confirmTitle.textContent = execution.definition
-    ? `Execute ${execution.definition.title}?`
+    ? `${execution.definition.inspection ? 'Inspect' : 'Execute'} ${execution.definition.title}?`
     : execution.commands && execution.commands.length > 1
       ? `Execute ${execution.commands.length} commands?`
       : 'Execute batch?';
   confirmMessage.textContent = message;
   confirmCommand.textContent = execution.command;
-  confirmRun.textContent = 'Execute';
+  confirmRun.textContent = execution.definition?.inspection ? 'Inspect' : 'Execute';
   confirmRun.classList.remove('osf-btn--danger');
   confirmRun.classList.add('osf-btn--osf-accent');
   confirmBackdrop.hidden = false;
@@ -2256,7 +2281,7 @@ function requestExecution(execution: PendingExecution): void {
   const risk = execution.definition?.risk ?? (warning ? 'caution' : 'normal');
   showConfirmation(
     execution,
-    warning ?? 'Run this command now? Review the command below before continuing.',
+    warning ?? (execution.definition?.inspection ? 'Read the current game state through Papyrus?' : 'Run this command now? Review the command below before continuing.'),
     risk,
   );
 }
@@ -2440,13 +2465,20 @@ async function executeConsole(execution: PendingExecution): Promise<void> {
       if (activeView === 'recent' || activeView === 'activity') render();
       return;
     }
-    const reply = capturesOutput
+    const reply = execution.definition?.inspection
+      ? await window.osfui.request<QueryReply>('console.command-center.papyrusRead',
+          papyrusInspectionRequest(execution.definition.inspection, command), { timeoutMs: 12000 })
+      : capturesOutput
       ? await window.osfui.request<QueryReply>('console.command-center.query', { consoleCommand: command })
       : await window.osfui.request<ExecuteReply>('console.command-center.execute', {
         consoleCommand: command,
         closeBeforeExecute: execution.definition?.closeBeforeExecute === true,
       });
     if (!reply?.ok) throw new Error('Native backend did not report success');
+
+    if (execution.definition?.inspection && (reply as QueryReply & { operation?: string }).operation !== execution.definition.inspection) {
+      throw new Error('Native backend returned a different script inspection.');
+    }
 
     const executedCommand = reply.command || command;
     const capturedOutput = capturesOutput ? ((reply as QueryReply).output ?? '').trim() : '';
@@ -2506,6 +2538,10 @@ function updateCustomCommandLineNumbers(input: HTMLTextAreaElement, gutter: HTML
 }
 
 function appendCommandToBatch(command: CommandDefinition): void {
+  if (command.inspection) {
+    setStatus('Run this script inspection with its Inspect button.', 'normal');
+    return;
+  }
   const validationError = validateCommand(command);
   if (validationError) {
     setStatus(validationError, 'error');
@@ -3663,6 +3699,9 @@ function switchView(view: string): void {
     openModCategories.clear();
   }
   if (view === 'quest-browser') {
+    // Re-entering the browser uses the current game session, not an old snapshot.
+    officialLoadOrderLoading = null;
+    questBrowserLoaded = false;
     questBrowserSource = 'Base Game';
     questBrowserCategory = QUEST_BROWSER_CATEGORY_ORDER[0];
     selectedQuestKey = null;
@@ -3930,6 +3969,10 @@ commandList.addEventListener('click', (event) => {
     return;
   }
 
+  if ((event.target as Element | null)?.closest('[data-refresh-quest-plugins]')) {
+    void refreshQuestAvailability();
+    return;
+  }
   const questInspectButton = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-quest-inspect]');
   if (questInspectButton?.dataset.questInspect && questInspectButton.dataset.questId && questInspectButton.dataset.questTitle) {
     const mode = questInspectButton.dataset.questInspect === 'history' ? 'history' : 'stage';
@@ -4359,6 +4402,10 @@ async function connectNativeBackend(): Promise<boolean> {
       return true; // An unsupported runtime must not be retried as a transient failure.
     }
     nativeBackendReady = true;
+    if (!wasReady) {
+      officialLoadOrderLoading = null;
+      questBrowserLoaded = false;
+    }
     if (idCatalogLoaded && !idCatalogLoadOrderKnown) {
       idCatalogLoaded = false;
       officialLoadOrderLoading = null;

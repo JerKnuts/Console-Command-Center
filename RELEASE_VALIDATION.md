@@ -1,5 +1,12 @@
 # Release validation
 
+## 1.4.19
+
+- All 360 JavaScript regression tests and UI TypeScript/OSF compatibility checks pass. Coverage includes full-load-order requests without optional diagnostic fields, startup lookup recovery, all packaged DLC quest IDs, and unavailable-owner blocks.
+- In-game logs confirmed that the native lookup detects all three official add-ons, but rejected the request with `invalid-payload: missing or invalid field: plugin`. The corrected endpoint reads optional diagnostic fields without rejecting the request. Final in-game confirmation after this correction remains pending.
+- Headless browser checks at 1280, 1920 and 3440 pixels confirm that long status errors leave the content width unchanged and cause no horizontal page overflow.
+- The ten Papyrus inspections remain WIP and unverified. Automated checks do not establish their behavior in-game or promote any command to Working.
+
 ## 1.4.17
 
 - All 354 JavaScript regression tests passed, along with the native preview suite, UI compatibility checks and release metadata checks.

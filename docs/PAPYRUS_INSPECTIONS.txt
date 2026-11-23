@@ -1,0 +1,47 @@
+PAPYRUS INSPECTIONS - WIP IN 1.4.19
+
+Enable Advanced Options and open Command Browser > WIP > Script Functions.
+Search Papyrus to find the ten new cards. They all start unverified.
+Each card's Inspect button reads the current game state through the native
+scripting bridge and records its result in Results and Command Log.
+
+Target inputs accept player or a placed Reference ID. Sleep state, combat state
+and crew assignment require an actor. Item count also requires an item Base Form
+ID. Plugin installation takes the exact filename including .esm, .esp or .esl;
+spaces are supported. Followers and active quests require no inputs.
+
+TEST CHECKLIST
+
+1. Inspect Reference Scale. Compare with the existing Get Scale console card.
+2. Inspect Sleep State. Read an awake actor, then a sleeping actor. The documented
+   values are 0 awake, 2 wants to sleep, 3 sleeping, 4 wants to wake.
+3. Inspect Combat State. Compare with the existing Combat State console card.
+4. Inspect Item Count. Try credits and an item absent from the target inventory.
+   An actual integer zero should display as a successful result.
+5. Inspect Actor Owner. Try objects with and without actor ownership. None is a
+   valid result. A non-None result must resolve to an actor reference.
+6. Inspect Actor Owner Flag. A false result is valid. The flag can describe an
+   assigned temporary actor that is no longer available as a reference.
+7. Inspect Crew Assignment. Try assigned and unassigned actors.
+8. Inspect Current Followers. Check the names and IDs against current followers.
+9. Inspect Active Quests. Compare with the player quest log and Quest Browser.
+10. Inspect Plugin Installation. Try Starfield.esm, a loaded mod filename, a
+    filename containing spaces, and a filename that does not exist.
+
+Also verify that a base item ID used as a target and a non-actor used for a
+sleep-state read produce clear errors. Requests have an eight-second native
+timeout and a twelve-second browser timeout. Canceled reads and wrong result
+types are errors. Results from a previous loaded save are rejected.
+
+The automatic native log is Documents/My Games/Starfield/SFSE/Logs/Console
+Command Center.log. It records the operation and inputs, request failures,
+timeouts, and the returned type. Existing console cards are retained for
+comparison. Script inspections have no Add to Batch action.
+
+REFERENCE
+
+The initial set was selected from the supplied StarfieldScriptReference_MD
+collection, covering Game, Actor and ObjectReference. A documented signature
+provides an implementation lead. Only in-game checks can establish behavior
+on the supported runtime. Automatic documentation call-site matches are not
+used as evidence of console compatibility.

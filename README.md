@@ -2,7 +2,7 @@
 
 Console Command Center turns Starfield console commands into a searchable in-game menu for mouse, keyboard, and controller. It provides command inputs, ID selection, quest tools, mod scanning, editable command batches, read-only Results popups, item previews, and book/slate playback.
 
-**Current release: v1.4.17.** Reopen items and teleport destinations from Command Log, find grenades and mines in Throwables, and browse refreshed item previews. See the [changelog](CHANGELOG.md) and [release validation](RELEASE_VALIDATION.md).
+**Current release: v1.4.19.** Fix official add-on quest plugin lookups, recover failed lookups, and keep long status errors within the footer. Add ten read-only Papyrus inspections in WIP. See the [changelog](CHANGELOG.md) and [release validation](RELEASE_VALIDATION.md).
 
 Translation authors can use the [JSON/CSV translator guide](docs/TRANSLATION_GUIDE.md). CCC uses a web interface; SWF editing is not required. Translation packs are optional and fall back to English.
 
@@ -59,6 +59,8 @@ The assigned CCC keyboard shortcut also opens CCC over inventory, containers, sh
 Terran Armada, Free Lanes and Shattered Space display names are matched to each plugin’s own English localization, including books, notes, equipment and locations. See [Shattered Space name verification](docs/SHATTERED_SPACE_NAMES.md) and [Free Lanes name verification](docs/FREE_LANES_NAMES.md).
 
 In Dev Mode, Working is a manual toggle: click it again to clear the designation. Reporting an issue retains the command in its displayed category rather than making it disappear into WIP. Explicitly reviewed unresolved commands can still be assigned to WIP. Saved outcomes survive reload and report export. Reporting never executes the command or clears unavailable-action blocks.
+
+The Papyrus development build adds ten read-only **(Papyrus)** inspections under **WIP / Script Functions**, available with Advanced Options. They inspect scale, sleep/combat state, item counts, actor ownership, crew assignment, followers, active quests and plugin installation. Use **Inspect** to display a typed script result in Results and Command Log. These cards require in-game verification and use a dedicated script request. They cannot be added to console batch files. A timeout or invalid return is reported as an error. Names and Form IDs are included for reference results. See [Papyrus inspection testing](docs/PAPYRUS_INSPECTIONS.txt).
 
 Workshop / Outpost Objects offer **Spawn Object** for supported physical records. Review places one object at the player; it does not register outpost ownership, add a construction recipe, or create power/storage connections. Reference-only and unavailable records have no spawn action.
 

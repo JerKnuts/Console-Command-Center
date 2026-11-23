@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.19
+
+- **DLC quests:** Fix the native plugin lookup rejecting requests when optional diagnostic fields are absent. Shattered Space, Free Lanes and Terran Armada quest IDs now use the active load order returned by the game.
+- **Quest Browser recovery:** Retry failed or empty startup lookups, refresh when reopening the browser or reconnecting, and add **Refresh Quest Plugins** for unavailable quests. Missing plugins continue to block quest actions.
+- **Status bar:** Keep long error messages inside the footer so they cannot widen the screen or push quest details offscreen. The complete message remains available on hover.
+- **Papyrus inspections (WIP):** Add ten read-only script inspections for reference scale, sleep/combat state, item counts, ownership, crew assignment, followers, active quests and plugin installation. These use typed Results, cannot enter console batches, and remain unverified pending in-game testing.
+- **Diagnostics:** Record official add-on owners and lookup reply failures in the automatic CCC log.
+
 ## 1.4.17
 
 This release includes the changes tested since v1.4.0.

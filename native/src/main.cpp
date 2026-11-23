@@ -3,6 +3,7 @@
 #include <SFSE/SFSE.h>
 #include <RE/Starfield.h>
 #include <RE/B/BSScriptUtil.h>
+#include <RE/A/Array.h>
 
 #include <algorithm>
 #include <array>
@@ -51,7 +52,7 @@ namespace
         if (!CCC::MenuHotkey::RequestOpen(g_ui)) REX::WARN("CCC hotkey could not queue its view");
     }
 
-    constexpr const char* kBuildId = "1.4.17";
+    constexpr const char* kBuildId = "1.4.19";
     constexpr std::size_t kMaxCommandLength = 1024;
     constexpr REL::Version kTestedRuntime{ 1, 16, 244, 0 };
     REL::Version g_runtimeVersion{};
@@ -660,6 +661,234 @@ namespace
                 {"name", CCC::ModCatalogs::ReadSafeText(full ? full->GetFullName() : nullptr, 256).value_or("")}};
     }
 
+    enum class InspectionValue { number, integer, boolean, actor, reference, actors, quests };
+    struct InspectionSpec
+    {
+        const char* operation;
+        const char* script;
+        const char* function;
+        InspectionValue result;
+        bool targeted;
+        bool actorTarget;
+    };
+    constexpr std::array inspectionSpecs{
+        InspectionSpec{ "scale", "ObjectReference", "GetScale", InspectionValue::number, true, false },
+        InspectionSpec{ "sleepState", "Actor", "GetSleepState", InspectionValue::integer, true, true },
+        InspectionSpec{ "combatState", "Actor", "GetCombatState", InspectionValue::integer, true, true },
+        InspectionSpec{ "itemCount", "ObjectReference", "GetItemCount", InspectionValue::integer, true, false },
+        InspectionSpec{ "actorOwner", "ObjectReference", "GetActorRefOwner", InspectionValue::actor, true, false },
+        InspectionSpec{ "hasActorOwner", "ObjectReference", "HasActorRefOwner", InspectionValue::boolean, true, false },
+        InspectionSpec{ "crewAssignment", "Actor", "GetCrewAssignment", InspectionValue::reference, true, true },
+        InspectionSpec{ "followers", "Game", "GetPlayerFollowers", InspectionValue::actors, false, false },
+        InspectionSpec{ "activeQuests", "Game", "GetPlayerActiveQuests", InspectionValue::quests, false, false },
+        InspectionSpec{ "pluginInstalled", "Game", "IsPluginInstalled", InspectionValue::boolean, false, false },
+    };
+
+    struct InspectionReply
+    {
+        OSFUI::API::Request request;
+        std::string operation;
+        std::uint64_t generation;
+        std::atomic_bool finished{ false };
+
+        void Reject(const char* code, const char* message)
+        {
+            if (finished.exchange(true)) return;
+            REX::WARN("CCC Papyrus inspection: operation={} code={} detail={}", operation, code, message);
+            request.Reject(code, message);
+        }
+    };
+
+    template<class T>
+    OSFUI::API::Json InspectionForm(const RE::BSScript::Variable& value)
+    {
+        if (value.is<std::nullptr_t>()) return nullptr;
+        if (!value.is<RE::BSScript::Object>()) throw std::runtime_error("Unexpected script reference result.");
+        const auto object = RE::BSScript::get<RE::BSScript::Object>(value);
+        if (!object) return nullptr;
+        auto* gameVM = RE::GameVM::GetSingleton();
+        auto* vm = gameVM ? gameVM->GetVM() : nullptr;
+        if (!vm) throw std::runtime_error("The scripting interface became unavailable.");
+        const auto& handles = vm->GetObjectHandlePolicy();
+        const auto handle = object->GetHandle();
+        const auto type = RE::BSScript::GetVMTypeID<T>();
+        if (!handles.IsHandleLoaded(handle) || !handles.HandleIsType(type, handle)) {
+            throw std::runtime_error("The returned script reference is unavailable or has the wrong type.");
+        }
+        auto* form = static_cast<T*>(handles.GetObjectForHandle(type, handle));
+        if (!form) throw std::runtime_error("Could not resolve the returned script reference.");
+        return AreaForm(form);
+    }
+
+    OSFUI::API::Json InspectionValueJson(const InspectionSpec& spec, const RE::BSScript::Variable& value)
+    {
+        switch (spec.result) {
+        case InspectionValue::number:
+            if (!value.is<float>() || !std::isfinite(RE::BSScript::get<float>(value))) break;
+            return RE::BSScript::get<float>(value);
+        case InspectionValue::integer:
+            if (!value.is<std::int32_t>()) break;
+            return RE::BSScript::get<std::int32_t>(value);
+        case InspectionValue::boolean:
+            if (!value.is<bool>()) break;
+            return RE::BSScript::get<bool>(value);
+        case InspectionValue::actor:
+            return InspectionForm<RE::Actor>(value);
+        case InspectionValue::reference:
+            return InspectionForm<RE::TESObjectREFR>(value);
+        case InspectionValue::actors:
+        case InspectionValue::quests: {
+            auto result = OSFUI::API::Json::array();
+            // A typed None array represents an empty list. Other wrong types are errors.
+            if (value.GetType().IsArray() && !value.is<RE::BSScript::Array>()) return result;
+            if (!value.is<RE::BSScript::Array>()) break;
+            const auto array = RE::BSScript::get<RE::BSScript::Array>(value);
+            if (array->size() > 4096) throw std::runtime_error("The script returned more than 4096 entries.");
+            for (const auto& entry : *array) {
+                result.push_back(spec.result == InspectionValue::actors
+                    ? InspectionForm<RE::Actor>(entry) : InspectionForm<RE::TESQuest>(entry));
+            }
+            return result;
+        }
+        }
+        throw std::runtime_error("Starfield returned an unexpected script result type.");
+    }
+
+    std::string InspectionOutput(const OSFUI::API::Json& value)
+    {
+        if (value.is_null()) return "None";
+        if (value.is_object()) return value.value("id", "") + "  " + value.value("name", "") + "  " + value.value("editorId", "");
+        if (!value.is_array()) return value.dump();
+        std::string result = std::format("{} entries", value.size());
+        for (const auto& entry : value) result += "\n" + InspectionOutput(entry);
+        return result;
+    }
+
+    struct InspectionCallback final : RE::BSScript::IStackCallbackFunctor
+    {
+        InspectionCallback(std::shared_ptr<InspectionReply> reply, InspectionSpec spec) : state(std::move(reply)), spec(spec) {}
+        void CallQueued() override {}
+        void StartMultiDispatch() override {}
+        void EndMultiDispatch() override {}
+        void CallCanceled() override { state->Reject("papyrus-read-canceled", "Starfield canceled the script inspection."); }
+        void operator()(RE::BSScript::Variable value) override
+        {
+            if (state->finished.load()) return;
+            try {
+                const auto* tasks = SFSE::GetTaskInterface();
+                if (!tasks) { state->Reject("papyrus-read-unavailable", "The game task queue is unavailable."); return; }
+                tasks->AddTask([reply = state, spec = spec, value = std::move(value)]() {
+                    if (reply->finished.load()) return;
+                    try {
+                        if (reply->generation != g_loadGeneration.load()) throw std::runtime_error("The save changed. Run the inspection again.");
+                        const auto result = InspectionValueJson(spec, value);
+                        const auto output = std::format("{}.{} >> {}", spec.script, spec.function, InspectionOutput(result));
+                        const auto payload = OSFUI::API::Json{{"ok", true}, {"operation", reply->operation},
+                            {"value", result}, {"source", "papyrus"}, {"output", output}}
+                            .dump(-1, ' ', false, OSFUI::API::Json::error_handler_t::replace);
+                        if (!reply->finished.exchange(true)) {
+                            REX::INFO("CCC Papyrus inspection complete: operation={} resultType={}", reply->operation, result.type_name());
+                            reply->request.Reply(payload.c_str());
+                        }
+                    } catch (const std::exception& error) { reply->Reject("papyrus-read-failed", error.what()); }
+                    catch (...) { reply->Reject("papyrus-read-failed", "Could not return the script inspection result."); }
+                });
+            } catch (...) { state->Reject("papyrus-read-unavailable", "Could not queue the script inspection result."); }
+        }
+        std::shared_ptr<InspectionReply> state;
+        InspectionSpec spec;
+    };
+
+    std::uint32_t InspectionFormId(std::string_view text)
+    {
+        std::uint32_t id = 0;
+        const auto [end, error] = std::from_chars(text.data(), text.data() + text.size(), id, 16);
+        if (text.empty() || text.size() > 8 || error != std::errc{} || end != text.data() + text.size() || id == 0) {
+            throw std::runtime_error("Enter a valid nonzero 1-8 digit Form ID.");
+        }
+        return id;
+    }
+
+    void OnPapyrusRead(const OSFUI::API::Request& raw, void*) noexcept
+    {
+        OSFUI::API::JsonRequest request{ raw };
+        if (!request) return;
+        const auto operation = request.Get<std::string>("operation");
+        const auto spec = std::find_if(inspectionSpecs.begin(), inspectionSpecs.end(), [&](const auto& entry) {
+            return operation && *operation == entry.operation;
+        });
+        if (spec == inspectionSpecs.end()) { request.Reject("invalid-inspection", "Unknown script inspection."); return; }
+        try {
+            auto state = std::make_shared<InspectionReply>();
+            state->request = raw;
+            state->operation = *operation;
+            state->generation = g_loadGeneration.load();
+            const auto target = request.Get<std::string>("target").value_or("");
+            const auto item = request.Get<std::string>("item").value_or("");
+            const auto plugin = request.Get<std::string>("plugin").value_or("");
+            const auto* tasks = SFSE::GetTaskInterface();
+            if (!tasks) throw std::runtime_error("The game task queue is unavailable.");
+            tasks->AddTask([state, spec = *spec, target, item, plugin]() {
+                try {
+                    if (state->finished.load()) return;
+                    REX::INFO("CCC Papyrus inspection requested: operation={} target={} item={} plugin={}", state->operation,
+                        CCC::Diagnostics::SafeField(target, 16), CCC::Diagnostics::SafeField(item, 16), CCC::Diagnostics::SafeField(plugin, 255));
+                    if (state->generation != g_loadGeneration.load()) throw std::runtime_error("The save changed. Run the inspection again.");
+                    if (!RE::PlayerCharacter::GetSingleton()) throw std::runtime_error("Load a save before running script inspections.");
+                    auto* gameVM = RE::GameVM::GetSingleton();
+                    auto* vm = gameVM ? gameVM->GetVM() : nullptr;
+                    if (!vm) throw std::runtime_error("Starfield's scripting interface is unavailable.");
+                    std::uint64_t handle = 0;
+                    if (spec.targeted) {
+                        auto* form = LowerASCII(target) == "player" ? RE::PlayerCharacter::GetSingleton()
+                            : RE::TESForm::LookupByID<RE::TESObjectREFR>(InspectionFormId(target));
+                        if (!form) throw std::runtime_error("Target not found. Enter a placed Reference ID.");
+                        auto* actor = starfield_cast<RE::Actor*>(form);
+                        if (spec.actorTarget && !actor) throw std::runtime_error("This inspection requires an actor reference.");
+                        const auto& handles = vm->GetObjectHandlePolicy();
+                        handle = actor ? handles.GetHandleForObject(RE::BSScript::GetVMTypeID<RE::Actor>(), actor)
+                            : handles.GetHandleForObject(RE::BSScript::GetVMTypeID<RE::TESObjectREFR>(), form);
+                        if (handle == handles.EmptyHandle()) throw std::runtime_error("Could not bind the inspection target.");
+                    }
+                    std::vector<RE::BSScript::Variable> prepared;
+                    if (state->operation == "itemCount") {
+                        auto* form = RE::TESForm::LookupByID(InspectionFormId(item));
+                        if (!form || starfield_cast<RE::TESObjectREFR*>(form)) throw std::runtime_error("Choose an item Base Form ID.");
+                        RE::BSScript::Variable argument;
+                        RE::BSScript::PackVariable(argument, form);
+                        prepared.push_back(std::move(argument));
+                    }
+                    if (state->operation == "pluginInstalled") {
+                        const auto extension = LowerASCII(plugin.substr(plugin.find_last_of('.') + 1));
+                        if (!IsSafeBridgeString(plugin) || plugin.size() > 255 || plugin.find_first_of("<>:\"/\\|?*") != plugin.npos ||
+                            (extension != "esm" && extension != "esp" && extension != "esl")) {
+                            throw std::runtime_error("Enter the plugin filename including .esm, .esp or .esl.");
+                        }
+                        RE::BSScript::Variable argument;
+                        argument = RE::BSFixedString{ plugin };
+                        prepared.push_back(std::move(argument));
+                    }
+                    auto arguments = [prepared](RE::BSScrapArray<RE::BSScript::Variable>& values) {
+                        for (const auto& argument : prepared) values.push_back(argument);
+                        return true;
+                    };
+                    auto callback = RE::make_smart<InspectionCallback>(state, spec);
+                    const auto queued = spec.targeted
+                        ? vm->DispatchMethodCall(handle, spec.script, spec.function, arguments, callback, 0)
+                        : vm->DispatchStaticCall(spec.script, spec.function, arguments, callback, 0);
+                    if (!queued) throw std::runtime_error("Starfield could not queue the script inspection.");
+                } catch (const std::exception& error) { state->Reject("papyrus-read-failed", error.what()); }
+                catch (...) { state->Reject("papyrus-read-failed", "Could not start the script inspection."); }
+            });
+            if (!QueueMainTaskAfter(std::chrono::seconds{ 8 },
+                    [state]() { state->Reject("papyrus-read-timeout", "Starfield did not return a script result within 8 seconds. No value was verified."); },
+                    [state]() { state->Reject("papyrus-read-unavailable", "The game task queue stopped during the inspection."); })) {
+                state->Reject("papyrus-read-unavailable", "Could not schedule the script inspection timeout.");
+            }
+        } catch (const std::exception& error) { request.Reject("papyrus-read-failed", error.what()); }
+        catch (...) { request.Reject("papyrus-read-failed", "Could not start the script inspection."); }
+    }
+
     void OnIdentifyCurrentArea(const OSFUI::API::Request& raw, void*) noexcept
     {
         if (!IsRuntimeSupported()) { raw.Reject("unsupported-runtime", "Current-area identification is unavailable on this runtime."); return; }
@@ -915,15 +1144,21 @@ namespace
         if (!request) return;
         try {
             const auto reply = CCC::ModCatalogs::PluginLoadOrder();
-            const auto owner = request.Get<std::string>("plugin").value_or("");
-            const auto version = request.Get<std::string>("uiVersion").value_or("");
+            // Get<T> rejects missing fields immediately. These diagnostic
+            // fields are optional: a full load-order request needs no owner.
+            const auto& payload = request.Payload();
+            const auto owner = payload.value("plugin", std::string{});
+            const auto version = payload.value("uiVersion", std::string{});
             auto found = OSFUI::API::Json::object();
+            auto officialOwners = OSFUI::API::Json::array();
             for (const auto& plugin : reply.at("plugins")) {
-                if (LowerASCII(plugin.at("plugin").get<std::string>()) == LowerASCII(owner)) { found = plugin; break; }
+                const auto name = LowerASCII(plugin.at("plugin").get<std::string>());
+                if (name == LowerASCII(owner)) found = plugin;
+                if (name == "starfield.esm" || name == "shatteredspace.esm" || name == "sfbgs00d.esm" || name == "sfbgs050.esm") officialOwners.push_back(plugin);
             }
             CCC::Diagnostics::Record("plugin-load-order", version, kBuildId, g_runtimeVersion.string(),
-                OSFUI::API::Json{{"pluginCount", reply.at("plugins").size()}, {"compiledPlugins", reply.value("compiledPlugins", 0u)}, {"requestedOwner", owner}, {"owner", found},
-                    {"localFormId", request.Get<std::string>("localFormId").value_or("")}, {"formId", request.Get<std::string>("formId").value_or("")}}.dump(-1, ' ', false, OSFUI::API::Json::error_handler_t::replace),
+                OSFUI::API::Json{{"pluginCount", reply.at("plugins").size()}, {"compiledPlugins", reply.value("compiledPlugins", 0u)}, {"requestedOwner", owner}, {"owner", found}, {"officialOwners", officialOwners},
+                    {"localFormId", payload.value("localFormId", std::string{})}, {"formId", payload.value("formId", std::string{})}}.dump(-1, ' ', false, OSFUI::API::Json::error_handler_t::replace),
                 [](const std::string& line) { REX::INFO("{}", line); });
             (void)request.Reply(reply);
         } catch (const std::exception& error) {
@@ -1129,6 +1364,7 @@ namespace
         g_ui.RegisterRequest("console.command-center.query", &OnQuery, nullptr);
         g_ui.RegisterRequest("console.command-center.identifyCurrentArea", &OnIdentifyCurrentArea, nullptr);
         g_ui.RegisterRequest("console.command-center.questRead", &OnQuestRead, nullptr);
+        g_ui.RegisterRequest("console.command-center.papyrusRead", &OnPapyrusRead, nullptr);
         g_ui.RegisterRequest("console.command-center.setEffectiveActorValue", &OnSetEffectiveActorValue, nullptr);
         g_ui.RegisterRequest("console.command-center.modCatalogs", &OnModCatalogs, nullptr);
         g_ui.RegisterRequest("console.command-center.modCatalogRecords", &OnModCatalogRecords, nullptr);

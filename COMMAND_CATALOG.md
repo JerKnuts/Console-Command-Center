@@ -1,6 +1,6 @@
 # Command Browser catalog
 
-Current source: v1.4.0. The prepared catalog contains 213 cards, including 43 WIP entries, plus 1,468 remaining lazy-loaded engine reference cards. Displayed counts can differ with Advanced Options, saved test outcomes and promoted WIP entries.
+Current source: v1.4.19. The prepared catalog contains 223 cards, including 53 WIP entries, plus 1,468 remaining lazy-loaded engine reference cards. Displayed counts can differ with Advanced Options, saved test outcomes and promoted WIP entries.
 
 | Prepared category | Cards |
 | --- | ---: |
@@ -15,7 +15,7 @@ Current source: v1.4.0. The prepared catalog contains 213 cards, including 43 WI
 | World | 22 |
 | MISC | 16 |
 | Advanced Settings | 1 |
-| WIP | 43 |
+| WIP | 53 |
 
 Commands sort alphabetically within categories. MISC, Advanced Settings and WIP are pinned after the ordinary categories. Recent and Favorites preserve their own ordering. Advanced Options reveals WIP and Advanced Settings.
 

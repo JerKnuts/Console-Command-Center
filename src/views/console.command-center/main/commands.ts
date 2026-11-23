@@ -1,6 +1,7 @@
 import { CONFIRMED_READOUT_COMMANDS } from './confirmed-readout-commands';
 import { BOUNTY_FACTION_PICKER, CORE_COMPANION_PICKER, FORM_TYPE_PICKER, WEATHER_PICKER, PLAYER_ACTOR_VALUE_PICKER, REFERENCE_ACTOR_VALUE_PICKER, SHIP_ACTOR_VALUE_PICKER, GAME_SETTING_PICKER, OPEN_STATE_PICKER, POPULAR_LOCATION_PICKER, type ReferenceIdPicker } from './reference-ids';
 import { UNTESTED_COMMANDS } from './untested-commands';
+import { PAPYRUS_INSPECTIONS, type PapyrusInspectionOperation } from './papyrus-inspections';
 
 export type CommandCategory =
   | 'Gameplay'
@@ -53,6 +54,7 @@ export type CommandDefinition = {
   risk?: CommandRisk;
   testStatus?: CommandTestStatus;
   captureOutput?: boolean;
+  inspection?: PapyrusInspectionOperation;
   closeBeforeExecute?: boolean;
   unavailableReason?: string;
   effectiveTotal?: boolean;
@@ -2049,6 +2051,7 @@ export const COMMANDS: CommandDefinition[] = [
   },
   ...CONFIRMED_READOUT_COMMANDS,
   ...UNTESTED_COMMANDS,
+  ...PAPYRUS_INSPECTIONS,
 ];
 
 export const CATEGORY_ORDER: CommandCategory[] = [
